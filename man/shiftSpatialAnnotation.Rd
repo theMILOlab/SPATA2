@@ -2,7 +2,7 @@
 % Please edit documentation in R/s.R
 \name{shiftSpatialAnnotation}
 \alias{shiftSpatialAnnotation}
-\title{Shift the borders of a Spatial Annotation}
+\title{Shift the borders of a spatial annotation}
 \usage{
 shiftSpatialAnnotation(
   object,
@@ -44,6 +44,27 @@ The updated input object, containing the added, removed or computed results.
 This function moves a spatial annotation
 either in the x or y direction, or both. It allows for selective shifting of
 outer and/or inner borders of the annotation.
+}
+\examples{
+library(SPATA2)
+library(patchwork)
+library(stringr)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+p1 <- plotImage(object) + ggpLayerSpatAnnOutline(object, ids = "necrotic_area")
+
+plot(p1)
+
+object <- shiftSpatialAnnotation(object, id = "necrotic_area", shift_x = "0.5mm", shift_y = "0.25mm", new_id = "na_shifted")
+
+p2 <- plotImage(object) + ggpLayerSpatAnnOutline(object, ids = "na_shifted")
+
+# compare both
+p1 + p2
+
 }
 \seealso{
 \code{\link[=expandSpatialAnnotation]{expandSpatialAnnotation()}}, \code{\link[=smoothSpatialAnnotation]{smoothSpatialAnnotation()}}, \code{\link{SpatialAnnotation}}

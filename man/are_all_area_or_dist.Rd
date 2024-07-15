@@ -25,3 +25,11 @@ or to area values.
 Only returns \code{TRUE} if all values are valid distance inputs
 or all values are valid area inputs.
 }
+\examples{
+are_all_area_or_dist(c("2mm", "2cm", "3px", "4.5mm2")) # TRUE
+
+are_all_area_or_dist(c("2mm", "2CCm", "3px", "4.5mm2")) # FALSE
+
+are_all_area_or_dist(c("2mm", "2CCm", "3px", "4.5mm2"), error = T) # FALSE -> error
+
+}

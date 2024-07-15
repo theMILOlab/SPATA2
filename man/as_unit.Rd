@@ -83,9 +83,13 @@ more information about distance values, see details of \code{?is_dist}.
 \examples{
 
 library(SPATA2)
-library(SPATAData)
+library(tidyverse)
 
-object <- downloadSpataObject("269_T")
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+containsPixelScaleFactor(object) # must be TRUE
 
 pixel_values <- c(200, 450, 500)
 

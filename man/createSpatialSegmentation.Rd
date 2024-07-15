@@ -40,3 +40,19 @@ the Visium output) contain high resolution images. You can use the function
 \code{\link[=registerImage]{registerImage()}} to register images of higher resolution for a better
 histological classification.
 }
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+if(FALSE){
+
+ object <- createSpatialSegmentation(object)
+
+ }
+
+}

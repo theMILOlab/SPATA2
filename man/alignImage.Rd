@@ -82,8 +82,8 @@ be one of \code{\link[=getImageNames]{getImageNames()}}.}
 \item{opt}{Character value. Either \emph{'add'} or \emph{'set'}. Decides whether the
 input adjustments are added to the existing ones or set (replacing them).}
 
-\item{angle}{Numeric value ranging between 0-359. Determines if the image
-is supposed to be rotated in \strong{clockwise} direction.}
+\item{angle}{Numeric value ranging between 0-359. Determines if/how much the image
+is supposed to be rotated. Always rotates in \strong{clockwise} direction.}
 
 \item{flip_h, flip_v}{Logical values. Determine if the image is supposed
 to be flipped around the \strong{h}orizontal or \strong{v}ertical axis.}
@@ -130,3 +130,60 @@ remains as is after being \code{\link[=loadImage]{loaded}}. The transformations
 are applied upon extraction of the image. Use \code{\link[=getImageTransformations]{getImageTransformations()}} to
 otbain the instructions currently stored.
 }
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+
+# ----- prepare
+library(SPATA2)
+library(EBImage)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+img_bad <-
+  getImage(object) \%>\%
+  translate(v = c(25, 20), bg.col = "green")
+
+#----- opt = "set" (the default)
+object <- registerImage(object, img = img_bad, img_name = "bad", overwrite = T)
+object <- activateImage(object, img_name = "bad")
+
+plotSurface(object, pt_clr = "red", display_image = T)
+
+object <- alignImage(object, img_name = "bad", opt = "set", transl_h = -25, transl_v = -20)
+
+plotSurface(object, pt_clr = "red", display_image = T)
+
+#----- opt = "add"
+object <- registerImage(object, img = img_bad, img_name = "bad", overwrite = T)
+object <- activateImage(object, img_name = "bad")
+
+plotSurface(object, pt_clr = "red", display_image = T)
+
+object <- alignImage(object, img_name = "bad", opt = "add", transl_h = -15, transl_v = -10)
+
+plotSurface(object, pt_clr = "red", display_image = T)
+
+object <- alignImage(object, img_name = "bad", opt = "add", transl_h = -10, transl_v = -10)
+
+plotSurface(object, pt_clr = "red", display_image = T)
+
+# ----- interactive
+
+if(FALSE){ # diffused, run separately
+
+  object <- alignImageInteractive(object)
+
+}
+
+}
+\keyword{internal}

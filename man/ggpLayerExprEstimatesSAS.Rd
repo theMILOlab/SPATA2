@@ -2,13 +2,13 @@
 % Please edit documentation in R/g.R
 \name{ggpLayerExprEstimatesSAS}
 \alias{ggpLayerExprEstimatesSAS}
-\title{Add IAS area expansion}
+\title{Add SAS expression estimates}
 \usage{
 ggpLayerExprEstimatesSAS(
   object,
   ids,
   distance = "dte",
-  binwidth = recBinwidth(object),
+  resolution = recSgsRes(object),
   core = FALSE,
   alpha_core = 0,
   fill_core = NA,
@@ -27,26 +27,24 @@ ggpLayerExprEstimatesSAS(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
+\item{ids}{Character vector. Specifies the IDs of the spatial annotations of interest.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
 
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
-\item{line_size}{Numeric. The size with which to display encircling lines
-of the area expansion.}
+\item{line_size}{Numeric. The size with which to display lines
+of the expression estimates.}
 
 \item{line_size_core}{Numeric. The size with which to display the core outline
 of the spatial annotation.}
@@ -67,18 +65,29 @@ they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
 }
 \description{
-Adds the circular expansion used by the IAS-algorithm
-of the area of  an spatial annotation to a surface plot.
+Visualizes the distances at which expression of a numeric
+feature is estimated with a certain \link[=spatialAnnotationScreening]{SAS} set up.
 }
 \examples{
 
-object <- downloadPubExample("313_T")
+library(SPATA2)
+library(tidyverse)
 
-plotImageGgplot(object) +
- ggpLayerEncirclingSAS(
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <-
+ createNumericAnnotations(
    object = object,
-   id = "necrotic_area",
-   distance = "2.25mmm",
-   binwidth = "112.5um"
- )
+   variable = "HM_HYPOXIA",
+   threshold = "kmeans_high",
+   id = "hypoxia_ann",
+   force1 = TRUE
+   )
+
+plotSurface(object, color_by = "HM_HYPOXIA", outline = T, pt_clrsp = "Reds 3") +
+ ggpLayerExprEstimatesSAS(object, ids = "hypoxia_ann", distance = "3mm") +
+ ggpLayerScaleBarSI(object, sb_pos = c("3mm", "2mm"))
+
 }

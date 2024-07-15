@@ -16,6 +16,12 @@ getBarcodeSpotDistances(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
+input options.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

@@ -2,37 +2,11 @@
 % Please edit documentation in R/deprecated_a-i.R
 \name{getBarcodeSpotDistance}
 \alias{getBarcodeSpotDistance}
-\title{Obtain barcode spot distances}
+\title{Deprecated}
 \usage{
-getBarcodeSpotDistance(
-  object,
-  unit = "pixel",
-  force = FALSE,
-  verbose = NULL,
-  ...
-)
-}
-\arguments{
-\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-
-\item{...}{Used to absorb deprecated arguments or functions.}
-}
-\value{
-If \code{unit} is \emph{'pixel'} a numeric value that scales
-the center to center distance of barcode spots to the current image.
-Else an object of class \code{unit}.
+getBarcodeSpotDistance(...)
 }
 \description{
-Computes the distance from every barcode spot to every other
-barcode spot.
+Deprecated in favor of \code{\link[=getObsDistances]{getObsDistances()}}.
 }
-\details{
-The output data.frame has a number of rows that is equal to
-\code{nBarcodes(object)^2}
-}
+\keyword{internal}

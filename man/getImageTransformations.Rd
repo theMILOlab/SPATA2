@@ -47,3 +47,26 @@ Extracts a list of instructions for required
 image transformations to ensure alignment of the image with
 the \code{\link[=concept_images]{reference image}}.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+plotImage(object)
+
+object <- alignImage(object, img_name = "lowres", angle = 90)
+
+# note that $angle contains instructions to rotate the image to 90°
+getImageTransformations(object, img_name = "lowres")
+
+plotImage(object)
+
+object <- resetImageTransformations(object, img_name = "lowres")
+
+getImageTransformations(object, img_name = "lowres")
+
+plotImage(object)
+
+}

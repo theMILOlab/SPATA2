@@ -10,13 +10,13 @@ plotExprVsDistSA(
   variables,
   ids = idSA(object),
   distance = "dte",
-  binwidth = recBinwidth(object),
+  resolution = recSgsRes(object),
   core = FALSE,
   pt_alpha = 0.1,
   pt_color = "black",
   pt_clrp = NULL,
   pt_size = 1.5,
-  line_alpha = 0.9,
+  line_alpha = 0,
   line_color = "forestgreen",
   line_size = 1.75,
   border_linealpha = 1,
@@ -29,10 +29,8 @@ plotExprVsDistSA(
   ee_linesize = 1,
   ee_linetype = "solid",
   se_fill = ggplot2::alpha("lightgrey", 0.5),
-  normalize = FALSE,
   unit = getDefaultUnit(object),
   ggpLayers = NULL,
-  outlier_rm = FALSE,
   ncol = NULL,
   nrow = NULL,
   ...
@@ -42,7 +40,7 @@ plotExprVsDistST(
   object,
   variables,
   id = idST(object),
-  binwidth = recBinwidth(object),
+  resolution = recSgsRes(object),
   width = NULL,
   pt_alpha = 0.5,
   pt_color = "black",
@@ -64,16 +62,13 @@ objects of classes for which a method has been defined.}
 
 \item{variables}{Character vector. All numeric variables hat are supposed to be plotted.}
 
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
+\item{ids}{Character vector. Specifies the IDs of the spatial annotations of interest.}
 
 \item{distance}{A numeric vector of distances to the annotation's edge.}
 
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
@@ -90,9 +85,11 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 
 \item{se_fill}{The fill color for the smoothing line's standard error area (default: "lightgrey").}
 
-\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
-
-Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
+input options.}
 
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
@@ -108,5 +105,30 @@ A ggplot.
 }
 \description{
 Generates a scatterplot to visualize the relationship between gene expression and
-the distance of data points to an annotation's outline.
+the distance of data points to a spatial reference. Set \code{line_alpha} > 0 to visualize the
+inferred expression pattern used for spatial gradient screening.
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <- normalizeCounts(object, activate = TRUE)
+
+object <-
+ createNumericAnnotations(
+   object = object,
+   variable = "HM_HYPOXIA",
+   threshold = "kmeans_high",
+   id = "hypoxia_ann",
+   inner_borders = FALSE,
+   force1 = TRUE
+   )
+
+ plotExprVsDistSA(object, variables = c("HM_HYPOXIA", "METRN"), ids = "hypoxia_ann", core = T)
+
 }

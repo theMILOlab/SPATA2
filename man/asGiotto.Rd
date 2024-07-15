@@ -7,18 +7,11 @@
 asGiotto(object, transfer_features = TRUE, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of either one of the following classes: \code{Seurat}, \code{SingleCellExperiment}, \code{AnnDataR6}}
-
 \item{transfer_features, transfer_meta_data}{Logical or character. Specifies
 if meta/feature, e.g clustering, data from the input object is transferred
 to the output object. If TRUE, all variables of the feature/meta data.frame
 are transferred. If character, named variables are transferred. If FALSE,
 none are transferred.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
 }
 \value{
 An object of class \code{Giotto}.

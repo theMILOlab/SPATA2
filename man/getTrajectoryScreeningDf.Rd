@@ -7,6 +7,6 @@
 getTrajectoryScreeningDf(...)
 }
 \description{
-Deprecated
+Deprecated in favor of \code{\link[=getStsDf]{getStsDf()}}.
 }
 \keyword{internal}

@@ -2,17 +2,11 @@
 % Please edit documentation in R/deprecated_j-z.R
 \name{resetImageJustification}
 \alias{resetImageJustification}
-\title{Reset image justification}
+\title{Deprecated}
 \usage{
 resetImageJustification(object)
 }
-\arguments{
-\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-}
-\value{
-The updated input object, containing the added, removed or computed results.
-}
 \description{
-Resets slot @justification of the \code{HistologyImaging} object.
+Deprecated in favor of \code{\link[=resetImageTransformations]{resetImageTransformations()}}.
 }
+\keyword{internal}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/getA-G.R
 \name{getFeatureNames}
 \alias{getFeatureNames}
-\title{Obtain feature names}
+\title{Obtain metadata column names}
 \usage{
 getFeatureNames(object, of_class = NULL, ...)
 }
@@ -10,14 +10,14 @@ getFeatureNames(object, of_class = NULL, ...)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{of_class}{Character vector. Specify the classes a feature must be of for
-it's name to be returned.}
+\item{of_class}{Character vector. Specify the class(es) a metadata entry must be of for
+its name to be returned.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-A named character vector of the variables in the feature data slot.
+A named character vector of the variables in the metadata slot (excluding 'sample').
 }
 \description{
-Extracts names of features \strong{from the meta data.frame}.
+Extracts names of entries \strong{from the meta data.frame}.
 }

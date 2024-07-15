@@ -136,3 +136,9 @@ A ggplot.
 Plots a common volcano plot with p-value on the y- and logfold
 change on the x-axis.
 }
+\section{Tutorials}{
+
+Extensive tutorials for how to use this function can be found on our website
+\url{https://themilolab.github.io/SPATA2/} .
+}
+

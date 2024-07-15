@@ -25,11 +25,6 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
-
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of spatial annotations} for more information.}
 

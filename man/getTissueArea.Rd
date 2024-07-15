@@ -4,7 +4,7 @@
 \alias{getTissueArea}
 \title{Obtain tissue area size}
 \usage{
-getTissueArea(object, unit, method = NULL, img_name = activeImage(object))
+getTissueArea(object, unit, method = "obs", img_name = activeImage(object))
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
@@ -12,20 +12,50 @@ objects of classes for which a method has been defined.}
 
 \item{unit}{Character value. Output unit. Must be one of \code{validUnitsOfArea()}.}
 
-\item{method}{Character value. Either \emph{'obs'} or \emph{'image'}. Decides whether
-the tissue outline used based on the \link[=concept_observations]{observations}
-or the image is used. If \code{method = NULL}, the function checks first if any \code{\link{HistoImage}}
-is registered. If so, the outline from the image specified with \code{img_name} is returned.
-If there are no images, the outline computed with \code{identifyTissueOutline(..., method = 'obs')}
-is used.}
+\item{method}{Character value. Defines the origin based on which the outline
+is computed. Either \emph{'image'} or \emph{'obs'}.}
 
 \item{img_name}{Character value. The name of the image of interest.
 If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
 }
 \value{
-Single value. Numeric if \code{unit} is \emph{px}. Else value of class \code{unit}.
+A vector of \link[=concept_area_measures]{area measures}. Length is equal to the number
+of tissue sections.
 }
 \description{
 Computes and extracts the size of the area covered by the tissue.
+}
+\examples{
+
+library(SPATA2)
+
+## Example 1 - image based
+object <- example_data$object_UKF313T_diet
+
+object <- identifyPixelContent(object)
+object <- identifyTissueOutline(object, method = "image")
+
+plotImage(object, outline = TRUE) +
+ ggpLayerAxesSI(object, unit = "mm")
+
+getTissueArea(object, unit = "mm")
+
+## Example 2 - coordinates based
+object <- example_data$object_lmu_mci_diet
+
+object <- identifyTissueOutline(object)
+
+plotSurface(object, color_by = "tissue_section") +
+ ggpLayerTissueOutline(object)
+
+area_out <- getTissueArea(object)
+
+print(area_out)
+
+sum(area_out)
+
+}
+\seealso{
+\code{\link[=getTissueSections]{getTissueSections()}}, \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}
 }

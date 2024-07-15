@@ -53,11 +53,20 @@ the computational progress will be printed.
 \item{...}{Additional arguments given to \code{ggplot2::geom_smooth()}.}
 }
 \value{
-Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.
+Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.
 }
 \description{
 Use argument \code{variables} to denote the numeric variables
 of interest. First one will be mapped on to the x-axis and the second
 one on to the y-axis.
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotScatterplot(object, variables = c("HM_HYPOXIA", "METRN"))
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/s.R
 \name{spatialAnnotationScreening}
 \alias{spatialAnnotationScreening}
-\title{Implementation of the SAS-algorithm}
+\title{The Spatial Annotation Screening algorithm}
 \usage{
 spatialAnnotationScreening(
   object,
@@ -10,7 +10,7 @@ spatialAnnotationScreening(
   variables,
   core,
   distance = "dte",
-  binwidth = recBinwidth(object),
+  resolution = recSgsRes(object),
   angle_span = c(0, 360),
   unit = getDefaultUnit(object),
   bcs_exclude = character(0),
@@ -22,10 +22,11 @@ spatialAnnotationScreening(
   model_subset = NULL,
   model_remove = NULL,
   estimate_R2 = TRUE,
-  control = SPATA2::sgs_loess_control,
+  control = NULL,
   n_random = 10000,
   rm_zero_infl = TRUE,
   seed = 123,
+  add_image = TRUE,
   verbose = NULL,
   ...
 )
@@ -34,29 +35,32 @@ spatialAnnotationScreening(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
+\item{ids}{Character vector. Specifies the IDs of the spatial annotations of interest.}
 
-\item{variables}{Character vector. All numeric variables (meaning genes,
-gene-sets and numeric features) that are supposed to be included in
+\item{variables}{Character vector. The numeric variables to be included in
 the screening process.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
 
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the spatial annotation.
-(See details fore more.)}
+an angle span relative to the center of its closest spatial annotation.}
 
-\item{bcs_exclude}{Character value containing name(s) of data points to be excluded from the analysis.}
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
+input options.}
+
+\item{bcs_exclude}{Character value containing the barcodes of observations to be excluded
+from the analysis.}
 
 \item{model_add}{Named list. Every slot in the list must be either a formula
 containing a function that takes a numeric vector as input and returns a numeric
@@ -78,15 +82,46 @@ the computational progress will be printed.
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-An object of class \code{SpatialAnnotationScreening}. See documentation
-with \code{?SpatialAnnotationScreening} for more information.
+An object of class \code{\link{SpatialAnnotationScreening}}.
 }
 \description{
 Screens the sample for numeric variables that stand
 in meaningful, spatial relation to annotated structures/areas, \link[=concept_spatial_annotation]{spatial annotations}.
 For a detailed explanation on how to define the parameters \code{distance},
-\code{n_bins_dist}, \code{binwidth}, \code{angle_span} and \code{n_bins_angle}
-see details section.
+\code{resolution}, \code{angle_span} and \code{n_bins_angle} see details section.
+}
+\section{Tutorials}{
+
+Extensive tutorials for how to use this function can be found on our website
+\url{https://themilolab.github.io/SPATA2/} .
+}
+
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+object <- identifyTissueOutline(object)
+
+ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "all")
+
+# opt 1 prefiltering by SPARKX is recommended, but not required
+object <- runSPARKX(object)
+genes <- getSparkxGenes(object, threshold_pval = 0.05)
+
+# opt 2
+genes <- getGenes(object)
+
+sas_out <-
+ spatialAnnotationScreening(
+   object = object,
+   ids = ids,
+   variables = genes,
+   core = FALSE
+   )
+
 }
 \seealso{
 \code{\link[=createGroupAnnotations]{createGroupAnnotations()}}, \code{\link[=createImageAnnotations]{createImageAnnotations()}},

@@ -51,3 +51,15 @@ provided this way: \code{arg_input <- units::set_unit(x = c(2,4), value = 'mm')}
 Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
 to specify the input in pixel you have to use input option 1. In pixel.
 }
+\examples{
+
+library(SPATA2)
+
+dist_vals <- c("2mm", "2.3mm")
+
+extrat_unit(dist_vals)
+
+pixels <- c(2,5, 500)
+
+extract_unit(pixels)
+}

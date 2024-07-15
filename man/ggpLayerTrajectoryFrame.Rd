@@ -2,7 +2,7 @@
 % Please edit documentation in R/g.R
 \name{ggpLayerTrajectoryFrame}
 \alias{ggpLayerTrajectoryFrame}
-\title{Create a Trajectory Frame Layer for ggplot}
+\title{Add the screening frame of a spatial trajectory}
 \usage{
 ggpLayerTrajectoryFrame(
   object,

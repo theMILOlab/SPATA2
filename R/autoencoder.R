@@ -1,5 +1,5 @@
 #' @rdname runAutoencoderAssessment
-#' @export
+#' @keywords internal
 assessAutoencoderOptions <- function(expr_mtr,
                                      activations,
                                      bottlenecks,
@@ -307,7 +307,7 @@ plotAutoencoderResults <- function(object,
 #' of activations/bottlenecks as well as the additional set up.}
 #' }
 #'
-#' @export
+#' @keywords internal
 
 runAutoencoderAssessment <- function(object,
                                      activations,

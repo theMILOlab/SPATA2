@@ -37,14 +37,11 @@ constructing the \code{\link{SpatialAnnotation}} object.}
 
 \item{tags}{A character vector of tags for the spatial annotation.}
 
-\item{area}{A named list of data.frames with the numeric variables \emph{x_orig} and \emph{y_orig}.
+\item{area}{A named list of data.frames with the numeric variables \emph{x} and \emph{y} or \emph{x_orig} and \emph{y_orig}.
 Observations correspond to the vertices of the polygons that are needed to represent the
 spatial annotation. \strong{Must} contain exactly one slot named \emph{outer} which sets the outer border
 of the spatial annotation. \strong{Can} contain multiple slots named \emph{inner} (suffixed)
-with numbers that correspond to inner polygons - holes within the annotation.
-
-The scale of the two variables must correspond to the scale of the \emph{x_orig} and
-\emph{y_orig} variables of the coordinates data.frame.}
+with numbers that correspond to inner polygons - holes within the annotation.}
 
 \item{id}{Character value. The ID of the spatial annotation. If \code{NULL},
 the ID of the annotation is created by combining the string \emph{'spat_ann'} with
@@ -57,6 +54,46 @@ The updated input object, containing the added, removed or computed results.
 }
 \description{
 Adds spatial annotations using a polygon.
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+create_circle_polygon <- function(p, r, n) {
+
+ angles <- seq(0, 2 * pi, length.out = n + 1)
+
+ x_coords <- p[1] + r * cos(angles)
+ y_coords <- p[2] + r * sin(angles)
+
+ polygon_df <- data.frame(x = x_coords, y = y_coords)
+
+ return(polygon_df)
+
+}
+
+center <-
+ getCoordsDf(object)[c("x", "y")] \%>\%
+ map_dbl(.f = mean)
+
+area_circle <- create_circle_polygon(center, r = 75, n = 100)
+
+object <- addSpatialAnnotation(object, area = list(outer = area_circle), id = "circle")
+
+plotSpatialAnnotations(object, ids = "circle")
+
+hole <- create_circle_polygon(center, r = 25, n = 100)
+
+object <- addInnerBorder(object, id = "circle", border_df = hole, new_id = "circle_with_hole")
+
+plotSpatialAnnotations(object, ids = c("circle", "circle_with_hole"))
+
+
 }
 \seealso{
 \code{\link[=getCoordsDf]{getCoordsDf()}}

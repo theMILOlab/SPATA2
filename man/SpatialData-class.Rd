@@ -20,7 +20,8 @@ or \emph{\link[=concept_spatial_trajectories]{spatial trajectories}}.
 \item{\code{coordinates}}{data.frame. Data.frame that stores information about identified
 or known entities located on the imaged tissue, such as cells or capture spots.}
 
-\item{\code{images}}{list. List of objects of class \code{\link{HistoImage}}.}
+\item{\code{images}}{list. List of objects of class \code{\link{HistoImage}} - the container objects
+for images.}
 
 \item{\code{method}}{SpatialMethod. Object of class \code{\link{SpatialMethod}}.}
 

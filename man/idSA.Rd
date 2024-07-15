@@ -8,8 +8,6 @@
 idSA(object, verbose = NULL)
 
 idST(object, verbose = NULL)
-
-idST(object, verbose = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
@@ -29,3 +27,4 @@ or a spatial trajectory if there exist only one of each in the object. Mostly
 used to define the default of dependent functions. Return an error if there
 are no or more than one IDs found.
 }
+\keyword{internal}

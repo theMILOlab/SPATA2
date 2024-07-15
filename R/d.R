@@ -199,7 +199,7 @@ discardExpressionMatrix <- function(...){
 
 
 
-#' @title Dissolve Groups in a SPATA2 Object
+#' @title Dissolve groups in a SPATA2 object
 #'
 #' @description This function dissolves specified groups in a [`SPATA2`] object by merging them into
 #' the closest neighboring groups based on the pairwise distances
@@ -212,6 +212,8 @@ discardExpressionMatrix <- function(...){
 #'
 #' @inherit update_dummy return
 #'
+#' @seealso [`createSpatialSegmentation()`]
+#'
 #' @details This function performs the following steps:
 #' 1. Retrieves the metadata data frame from the [`SPATA2`] object.
 #' 2. Checks if the specified grouping and groups to dissolve exist in the object.
@@ -222,12 +224,14 @@ discardExpressionMatrix <- function(...){
 #'
 #' @examples
 #' \dontrun{
-#'   # Assuming `spata_obj` is a SPATA2 object with grouping variable 'clusters'
+#'   # Assuming `spata_obj` is a SPATA2 object with grouping variable 'histology'
+#'   # created via createSpatialSegmentation() with a small subset of spots that
+#'   # left unnamed since the manual outline did not include them by accident
 #'   spata_obj <- dissolveGroups(
 #'     object = spata_obj,
-#'     grouping = 'clusters',
-#'     groups_dissolve = c('cluster1', 'cluster2'),
-#'     grouping_new = 'new_clusters'
+#'     grouping = 'histology',
+#'     groups_dissolve = "unnamed",
+#'     grouping_new = 'histology_complete'
 #'   )
 #' }
 
@@ -302,22 +306,27 @@ dissolveGroups <- function(object,
 
 
 
-#' @title Distance to cover the whole tissue
+#' @title Distance to edge of tissue section
 #'
-#' @description Computes the distance from the center of a spatial annotation
-#' to the **farest** point of the tissue outline.
+#' @description Computes the distance from the border of a spatial annotation
+#' to the **farest** data point of the tissue section it is located on.
 #'
-#' @inherit spatialAnnotationScreening params
+#' @inherit getSpatialAnnotation params
 #' @param unit The output unit of the distance measure.
 #'
 #' @return Distance measure.
+#'
+#' @seealso [`whichTissueSection()`]
+#'
 #' @export
 #'
 distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object)){
 
   section <- whichTissueSection(object, id)
 
-  coords_df <- getCoordsDf(object)
+  coords_df <-
+    joinWithVariables(object, variables = "tissue_section") %>%
+    dplyr::filter(tissue_section == {{section}})
 
   spat_ann_mtr <-
     getSpatAnnOutlineDf(object, id = id) %>%

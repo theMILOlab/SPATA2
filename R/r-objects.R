@@ -221,11 +221,13 @@ bcsp_dist <- 7
 chrom_levels <- base::as.character(1:22)
 
 chrom_arm_levels <-
-  purrr::map(
-    .x = chrom_levels,
-    .f = ~ stringr::str_c(., c("p", "q"))
-  ) %>%
-  purrr::flatten_chr()
+  purrr::flatten_chr(
+    purrr::map(
+      .x = chrom_levels,
+      .f = ~ stringr::str_c(., c("p", "q"))
+    )
+  )
+
 
 cnv_heatmap_list <-
   list(
@@ -467,7 +469,7 @@ depr_info <-
       "flipCoords" = "flipCoordinates",
       "getDefaultGrouping" = "activeGrouping",
       "getDefaultTrajectory" = "getDefaultTrajectoryId",
-      "getExpressionMatrix" = "getMatrix",
+      "getExpressionMatrix" = "getProcessedMatrix() or getMatrix",
       "getFeatureDf" = "getMetaDf",
       "getHistoImaging" = "getSpatialData",
       "getImageAnnotationAreaDf" = "getImgAnnBorderDf",
@@ -488,6 +490,7 @@ depr_info <-
       "getMethodName" = "getSpatialMethod()@name",
       "getProcessedMatrix" = "getMatrix",
       "getPubExample" = "downloadPubExample",
+      "getResultsDf" = "getSgsResultsDf",
       "getSampleNames" = "getSampleName",
       "getTrajectoryDf" = "getTrajectoryScreeningDf",
       "getTrajectoryNames" = "getTrajectoryIds",
@@ -497,6 +500,7 @@ depr_info <-
       "ggpLayerImageAnnotation" = "ggpLayerImgAnnBorder",
       "ggpLayerImgAnnBorder" = "ggpLayerImgAnnOutline",
       "ggpLayerSampleMask" = "ggpLayerTissueOutline",
+      "imageAnnotationToSegmentation" = "spatialAnnotationToSegmentation",
       "incorporate_tissue_outline" = "include_tissue_outline",
       "is_euol_dist" = "is_dist_euol",
       "is_dist_euol" = "is_dist_si",
@@ -505,15 +509,10 @@ depr_info <-
       "joinWithFeatures" = "joinWithVariables",
       "joinWithGenes" = "joinWithVariables",
       "joinWithGeneSets" = "joinWithVariables",
-
       "lastImageAnnotation" = "lastSpatialAnnotation",
-
       "mapImageAnnotationTags" = "mapSpatialAnnotationTags",
-
       "plotCnvResults" = "plotCnvLineplot() or plotCnvHeatmap",
-
       "plotImageAnnotations" = "plotSpatialAnnotations",
-
       "plotTrajectory" = "plotSpatialTrajectories",
       "ploTrajectoryFeatures" = "plotTrajectoryLineplot",
       "plotTrajectoryFeaturesDiscrete" = "plotTrajectoryBarplot",
@@ -523,6 +522,7 @@ depr_info <-
       "plotTrajectoryGeneSets" = "plotTrajectoryLineplot",
       "plotTrajectoryHeatmap" = "plotStsHeatmap",
       "plotTrajectoryLineplot" = "plotStsLineplot",
+      "recBinwidth" = "resSgsRes",
       "runCnvAnalysis" = "runCNV",
       "runDeAnalysis" = "runDEA",
       "setActiveExpressionMatrix" = "setActiveMatrix",
@@ -545,11 +545,13 @@ depr_info <-
     ),
     args = list(
       "average_genes" = NA_character_,
+      "binwidth" = "resolution",
       "combine_with_wd" = "add_wd",
       "euol" = "unit",
       "expr_mtr" = "proc_mtr",
       "discrete_feature" = "grouping_variable",
       "display_trajectory_parts" = NA_character_,
+      "grouping_variable" = "grouping",
       "inc_outline" = "incl_edge",
       "linealpha" = "line_alpha",
       "linecolor" = "line_color",
@@ -592,6 +594,7 @@ depr_info <-
       "project_on_trajectory" = list("segment_df" = "traj_df"),
       "runBayesSpaceClustering" = list("dirname" = "directory_10X"),
       "runGSEA" = list("gene_set_list" = NA_character_, "gene_sets" = "signatures"),
+      "saveSpataObject" = list("directory_spata" = "dir"),
       "setDefaultGrouping" = list("grouping_variable" = "grouping"),
       "setImageDirHighres" = list("dir_highres" = "dir"),
       "setImageDirLowres" = list("dir_lowres" = "dir"),
@@ -892,28 +895,6 @@ protected_variable_names <- c(
   "y_orig"
 )
 
-#' @title Pseudo `HistoImage`
-#'
-#' @description A [`HistoImage`] object that serves as the container for some
-#' spatial related functions that are applicable to spatial methods even if they
-#' do not come with an image (e.g. MERFISH, SlideSeq).
-#'
-#' This is necessary, as `SPATA2` stores a variety of spatial information
-#' in the [`HistoImaging`] and [`HistoImage`] containers. Therefore, code relies
-#' on the presence of a `HistoImage` object inside the `spata2` object even though
-#' there is no actual image of the tissue.
-#'
-#' @export
-PseudoHistoImage <-
-  HistoImage(
-    active = TRUE,
-    image = empty_image,
-    name = "pseudo",
-    reference = TRUE,
-    scale_factors = list(coords = 1),
-    transformations = default_image_transformations
-  )
-
 
 pub_dropbox_links <- list(
   "269_T" = "https://www.dropbox.com/s/kgu6c93wd08otxd/269_T.RDS?dl=1",
@@ -1149,7 +1130,7 @@ spatial_methods <-
   list(
     "MERFISH" = MERFISH,
     "SlideSeqV1" = SlideSeqV1,
-    "Undefined" = SpatialMethod(name = "Undefined", version = current_spata2_version, unit = "px"),
+    "Undefined" = SpatialMethod(name = "Undefined", observational_unit = "undefined", version = current_spata2_version, unit = "px"),
     "VisiumSmall" = VisiumSmall,
     "VisiumLarge" = VisiumLarge,
     "Xenium" = Xenium

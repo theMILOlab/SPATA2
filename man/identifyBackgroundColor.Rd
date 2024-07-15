@@ -45,3 +45,4 @@ Identifies the background color based on the results
 of \code{\link[=identifyPixelContent]{identifyPixelContent()}} by averaging the color values of
 all pixels identified as background.
 }
+\keyword{internal}

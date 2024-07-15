@@ -84,6 +84,56 @@ SpatialAnnotation <- setClass(Class = "SpatialAnnotation",
                               ))
 
 
+
+
+#' @title The \code{SpatialGradientScreening} - Class
+#'
+#' @description S4 class that contains input for and output of spatial gradient
+#' screening implementation [`spatialAnnotationScreening()`] and [`spatialTrajectoryScreening()`].
+#'
+#' @slot coordinates data.frame. A data.frame as obtained by [`getCoordsDfSA()`] or [`getCoordsDfST()`],
+#' respectively, with the setup used for the screening.
+#' @slot models data.frame. A data.frame in which columns correspond to the
+#' modeled gradients used for the model fitting.
+#' @slot qc list. A named list that contains results from the quality control
+#' steps. Reserved list slots are:
+#'
+#' \itemize{
+#'  \item{cf}{ Numeric value. The correction factor used to adjust the span.}
+#'  \item{est_R2}{ List. Results from estimating the overal R2 between noise and total variation.}
+#'  \item{zero_infl_vars}{ Character vector. Names of variables that have been identified as zero inflated.}
+#'  }
+#'
+#' @slot results A named list that contains the screening results. Reserved list
+#' slots are:
+#'
+#' \itemize{
+#'  \item{significance}{ Data frame with results from the identification of non-random gradients.}
+#'  \item{model_fits}{ Data frame with results from gradient ~ model fits.}
+#'  }
+#'
+#' @slot sample Character value. The name of the [`SPATA2`] object with which
+#' the screening was conducted.
+#'
+#' @slot set_up A list of parameters required to reproduce the set up of the
+#' screening.
+#'
+#' @details The following classes are derivates of this class: [`SpatialAnnotationScreening`],
+#' [`SpatialTrajectoryScreening`].
+#'
+#' @export
+#'
+SpatialGradientScreening <-  setClass(Class = "SpatialGradientScreening",
+                                        slots = list(
+                                          coordinates = "data.frame",
+                                          models = "data.frame",
+                                          qc = "list",
+                                          results = "list",
+                                          sample = "character",
+                                          set_up = "list"
+                                        ))
+
+
 #' @title The \code{SpatialMethod} - Class
 #'
 #' @description Abstracts the concept of spatial biology experiments
@@ -98,11 +148,11 @@ SpatialAnnotation <- setClass(Class = "SpatialAnnotation",
 #' one corner of the rectangle, and the second value represents the diagonally opposite corner.
 #' @slot info list. List of miscellaneous meta data about the method.
 #' @slot method_specific list. List method specific data. Depending on the
-#' method the following slot names are reserved. See section *Method specifics:*
+#' method certain slot names are reserved. See section *Method specifics:*
 #' for more information.
 #' @slot name character. The name of the spatial method. (E.g. *'Visium'*)
 #' @slot observational_unit character. Name with which to refer to
-#' the data points the method focuses on. (E.g. *'barcode_spot'*)
+#' the data points the method focuses on. (E.g. *'barcode_spot'*, or *'cell'*)
 #' @slot unit character. The SI to be used by default.
 #'
 #' @section Method specifics:
@@ -151,7 +201,8 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
 #' @slot annotations list. List of objects of class [`SpatialAnnotation`].
 #' @slot coordinates data.frame. Data.frame that stores information about identified
 #' or known entities located on the imaged tissue, such as cells or capture spots.
-#' @slot images list. List of objects of class [`HistoImage`].
+#' @slot images list. List of objects of class [`HistoImage`] - the container objects
+#' for images.
 #' @slot method SpatialMethod. Object of class [`SpatialMethod`].
 #' @slot meta list. List for meta data regarding the imaged tissue portion.
 #' @slot misc list. A flexible list for miscellaneous input.
@@ -359,7 +410,7 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 #' @slot scale_factors list. List of single numeric values serving as scale factors for
 #' multiple purposes Reserved slot names:
 #' \itemize{
-#'   \item{*coords*:} {Coordinate scale factor to be multiplied by the original x and y variables (*x_orig*, *y_orig*) upon
+#'   \item{*image*:} {Image scale factor with which the original x and y variables (*x_orig*, *y_orig*) are multiplied with upon
 #'   extraction of the coordinates data.frame (resulting in the *x* and *y* variables) ensuring alignment with the image.}
 #'   \item{*pixel*:} {Pixel scale factor used to convert pixel values into SI units. It must have an
 #'   attribute called "unit" conforming to the format "SI-unit/px".}
@@ -428,7 +479,7 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 
 # M -----------------------------------------------------------------------
 
-#' @title The \code{MolecularAssay} - class
+#' @title The \code{MolecularAssay} - Class
 #'
 #' @description A class to represent molecular assay data, including analysis results, metrics, and
 #' statistical summaries. The `MolecularAssay` class encapsulates various components
@@ -441,16 +492,13 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #' @slot active_mtr Character string indicating which matrix to extract and
 #' use by default.
 #' @slot analysis List of analysis results where each element can represent
-#'  a different analysis aspect.
+#' a different analysis aspect.
 #' @slot meta_var Data.frame of meta data for the molecules.
 #' @slot mtr_counts Matrix object storing raw counts metrics from the assay. Rownames
 #' should corresponds to the molecule names. Colnames should correspond to the
 #' barcodes (IDs) of the observations to which the molecule counts were mapped.
 #' @slot mtr_proc List of processed metrics, potentially including normalized
 #' values or transformed data.
-#' @slot molecules Data.frame. Meta data for the molecules including, x- and y-coordinates
-#' in 2d space as well as summary statistics. Name (identifier) of each molecule is
-#' stored in variable *mol_id*.
 #' @slot omic Character value. A string that best characterizes the type of molecular data
 #' the assay carries (e.g., "transcriptomics", "proteomics").
 #' @slot signatures Named list of character vectors.
@@ -468,7 +516,6 @@ MolecularAssay <- setClass(Class = "MolecularAssay",
                              active_mtr = "character",
                              analysis = "list",
                              meta_var = "data.frame",
-                             molecules = "data.frame",
                              mtr_counts = "Matrix",
                              mtr_proc = "list",
                              omic = "character",
@@ -531,7 +578,7 @@ NumericAnnotation <- setClass(Class = "NumericAnnotation",
 #'
 #' @seealso [`findSDEGS()`]
 #'
-#' @export
+#' @keywords internal
 #'
 SDEGS <- methods::setClass(Class = "SDEGS",
                            slots = list(
@@ -630,8 +677,8 @@ SPATA2 <- setClass(Class = "SPATA2",
 #' @slot projection data.frame. Data.frame that contains the length of the
 #' projection of each barcode spot onto the trajectory.
 #' @slot sample character. The sample name.
-#' @slot segment data.frame. Contains the course of the trajectory in
-#' form of a data.frame with the variables \emph{x, y, xend} and \emph{yend.}
+#' @slot segment data.frame. Contains the coordinates to reproduce the course
+#' of the trajectory with variables named *x_orig* and *y_orig*.
 #' @slot width numeric. The width of the rectangle that was spanned along
 #' the trajectory. (Length of the rectangle corresponds to the length of
 #' the segment.)
@@ -649,90 +696,40 @@ SpatialTrajectory <- setClass(Class = "SpatialTrajectory",
 #' @title The \code{SpatialAnnotationScreening} - Class
 #'
 #' @description S4 class that contains input for and output of the
-#' function \code{SpatialAnnotationScreening()}.
+#' function [`spatialAnnotationScreening()`].
 #'
-#' @slot angle_span numeric. Vector of length two. Confines the area of interest
-#' by angle relative to the center of the image annotation.
-#' @slot binwidth numeric. The value with which the polygon that encircles
-#' the image annotation is consecutively expanded via \code{sf::st_buffer()},
-#' @slot coords data.frame. Coordinates data.frame of the sample.
-#' @slot annotation SpatialAnnotation. The spatial annotation chosen for the
-#' screening.
-#' @slot info list. Miscellaneous information.
-#' @slot method_padj character. The method with which p-values were adjusted.
-#' @slot models data.frame. The model data.frame that has been used for the
-#' screening.
-#' @slot n_bins_angle numeric. Number of bins that were created anglewise.
-#' @slot n_bins_circle numeric. Number of bins that were created circlewise.
-#' @slot results_primary data.frame. Data.frame that contains the results of
-#' the model fitting per angle bin.
-#' @slot results data.frame. Data.frame that contains the summary of
-#' all gene-model fits across all angle bins.
-#' @slot sample character. The sample name.
-#' @slot significance data.frame. Data.frame that contains the p-values for
-#' each variable.
-#' @slot summarize_with character. Either \emph{'mean'} or \emph{'median'}.
+#' @slot annotations list. A list of the [`SpatialAnnotation`] objects used in
+#' the screening.
+#'
+#' @details
+#' This class is an extension of class [`SpatialGradientScreening`] and inherits
+#' all of its slots.
 #'
 #' @export
 #'
 SpatialAnnotationScreening <-  setClass(Class = "SpatialAnnotationScreening",
                                         slots = list(
-                                          angle_span = "numeric",
-                                          annotation = "SpatialAnnotation",
-                                          binwidth = "numeric",
-                                          coords = "data.frame",
-                                          distance = "numeric",
-                                          info = "list",
-                                          method_padj = "character",
-                                          models = "data.frame",
-                                          n_bins_angle = "numeric",
-                                          n_bins_circle = "numeric",
-                                          results_by_angle = "data.frame",
-                                          results = "data.frame",
-                                          sample = "character",
-                                          significance = "data.frame",
-                                          summarize_with = "character"
-                                        ))
+                                          annotations = "list"
+                                        ), contains = "SpatialGradientScreening")
 
 
-#' @title The \code{SpatialTrajectoryScreening} - class
+#' @title The \code{SpatialTrajectoryScreening} - Class
 #'
 #' @description S4 class that contains input for and output of the
-#' function \code{spatialTrajectoryScreening()}.
+#' function [`spatialTrajectoryScreening()`].
 #'
-#' @slot binwidth numeric. The width of the bins in which the barcode-spots
-#' are put based on the projection length values.
-#' @slot coords data.frame. Coordinates data.frame of the sample.
-#' @slot id character. The ID of the screened trajectory.
-#' @slot method_padj character. The method with which p-values were adjusted.
-#' @slot models data.frame. The model data.frame that has been used for the
-#' screening.
-#' @slot n_bins numeric. The number of bins in which the barcode-spots
-#' are distributed based on their projection length.
-#' @slot results data.frame. A data.frame that contains the model evaluations
-#' @slot sample character. The sample name.
-#' @slot summarize_with character. The name of the function that has been
-#' used to summarize the variables by bin.
-#' @slot spatial_trajectory SpatialTrajectory. The spatial trajectory based on
-#' which the screening took place.
+#' @slot trajectory The [SpatialTrajectory] object used for the screening.
+#'
+#' @details
+#' This class is an extension of class [`SpatialGradientScreening`] and inherits
+#' all of its slots.
 #'
 #' @export
 #'
-SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
-                                                slots = list(
-                                                  binwidth = "numeric",
-                                                  coords = "data.frame",
-                                                  id = "character",
-                                                  info = "list",
-                                                  method_padj = "character",
-                                                  models = "data.frame",
-                                                  n_bins = "numeric",
-                                                  results = "data.frame",
-                                                  sample = "character",
-                                                  significance = "data.frame",
-                                                  summarize_with = "character",
-                                                  spatial_trajectory = "SpatialTrajectory"
-                                                ))
+SpatialTrajectoryScreening <-  setClass(Class = "SpatialTrajectoryScreening",
+                                        slots = list(
+                                          trajectory = "SpatialTrajectory"
+                                        ), contains = "SpatialGradientScreening")
 
 
 # T -----------------------------------------------------------------------

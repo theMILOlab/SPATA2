@@ -29,6 +29,8 @@
 #' @param reverse_whitin Logical. If TRUE the gene sets are displayed in a reversed
 #' order within the groups.
 #'
+#' @inheritSection tutorial_hint_dummy Tutorials
+#'
 #' @export
 plotGseaDotPlot <- function(object,
                             across = getDefaultGrouping(object, verbose = TRUE, "across"),

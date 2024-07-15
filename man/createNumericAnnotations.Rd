@@ -17,7 +17,7 @@ createNumericAnnotations(
   minPts = recDbscanMinPts(object),
   force1 = FALSE,
   fct_incr = 1,
-  min_size = nBarcodes(object) * 0.01,
+  min_size = nObs(object) * 0.01,
   concavity = 2,
   method_gs = NULL,
   transform_with = NULL,
@@ -34,7 +34,7 @@ objects of classes for which a method has been defined.}
 
 \item{threshold}{Character value. Determines the method and/or the threshold
 by which the data points are filtered. Valid input options are \emph{'kmeans_high'},
-\emph{'kmeans_low'} and \emph{operator.value} combinations such as \emph{'>0.75'} or \emph{'<=0.5'}.
+\emph{'kmeans_low'} and operator-value combinations such as \emph{'>0.75'} or \emph{'<=0.5'}.
 See details for more.}
 
 \item{id}{Character value. The ID of the spatial annotation. If \code{NULL},
@@ -62,7 +62,10 @@ number of minimum points required in the eps neighborhood for core points
 (including the point itself)}
 
 \item{force1}{Logical value. If \code{TRUE}, spatial sub groups identified by DBSCAN
-are merged into one cluster.}
+are merged into one cluster. \strong{Note}: If \code{FALSE} (the default), the input for \code{ìd} is suffixed
+with an index to label each spatial annotation created uniquely, regardless of
+how many are eventually created. E.g. if \code{id = "my_ann"} and the algorithm
+created two spatial annotations, they are named \emph{my_ann_1} and \emph{my_ann_2}.}
 
 \item{min_size}{Numeric value. The minimum number of data points a dbscan cluster
 must have in order not to be discarded as a spatial outlier.}
@@ -172,25 +175,31 @@ The vignette on distance measures in SPATA2 has been replaced. Click
 
 \examples{
 
- library(patchwork)
+library(SPATA2)
+library(tidyverse)
+library(patchwork)
 
- object <- downloadSpataObject("275_T")
+data("example_data")
 
- # create an image annotation based on the segregated area of
- # high expression in hypoxia signatures
+object <- example_data$object_UKF275T_diet
+
+# create an image annotation based on the segregated area of
+# high expression in hypoxia signatures
  object <-
    createNumericAnnotations(
      object = object,
      variable = "HM_HYPOXIA",
      threshold = "kmeans_high",
-     id = "hypoxia"
-     )
+     id = "hypoxia",
+     tags = "hypoxic"
+   )
 
-  # visualize both
-  plotSurface(object, color_by = "HM_HYPOXIA") +
+ # visualize both
+ plotSurface(object, color_by = "HM_HYPOXIA") +
    legendLeft() +
-  plotImage(object) +
-   ggpLayerSpatAnnOutline(object, tags = c("hypoxia", "createGroupAnnotations"))
+
+ plotImage(object) +
+   ggpLayerSpatAnnOutline(object, tags = c("hypoxic"))
 
 }
 \seealso{

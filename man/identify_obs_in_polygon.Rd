@@ -3,7 +3,7 @@
 \name{identify_obs_in_polygon}
 \alias{identify_obs_in_polygon}
 \alias{identify_obs_in_spat_ann}
-\title{Identify Observations Inside a Polygon}
+\title{Identify observations inside a polygon}
 \usage{
 identify_obs_in_polygon(
   coords_df,

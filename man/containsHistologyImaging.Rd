@@ -2,11 +2,11 @@
 % Please edit documentation in R/deprecated_a-i.R
 \name{containsHistologyImaging}
 \alias{containsHistologyImaging}
-\title{Check availability of \code{HistologyImaging} object}
+\title{Deprecated}
 \usage{
-containsHistologyImaging(object)
+containsHistologyImaging(...)
 }
 \description{
-Deprecated in favor of \code{\link[=containsHistoImaging]{containsHistoImaging()}}.
+Deprecated in favor of \code{\link[=containsHistoImages]{containsHistoImages()}}.
 }
 \keyword{internal}

@@ -2,12 +2,12 @@
 % Please edit documentation in R/l.R
 \name{loadSpataObject}
 \alias{loadSpataObject}
-\title{Load corresponding objects}
+\title{Load SPATA2 object}
 \usage{
 loadSpataObject(directory_spata, verbose = TRUE, update = TRUE)
 }
 \arguments{
-\item{directory_spata}{Character value. The directory from which to load the spata-object.}
+\item{directory_spata}{Character value. The directory from which to load the \link{`SPATA2'} object.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -18,12 +18,12 @@ the computational progress will be printed.
 The load object of interest.
 }
 \description{
-Family of functions to load corresponding objects of different analysis
-platforms. See details and value for more information.
+Reads an .RDS file, checks if it is an object of class \code{\link{SPATA2}}
+and checks whether it must be updated.
 }
 \details{
 \code{loadSpataObject()} is a wrapper around \code{base::readRDS()} with which
-you could load your spata-object as well. The other two functions take the spata-object
+you could load your [\verb{SPATA2'] object as well. The other two functions take the [}SPATA2'] object
 and use \code{getDirectoryInstructions()} to extract the directories of the corresponding object to be loaded under which
 they were saved the last time \code{saveCorresponding*()} was used.
 }

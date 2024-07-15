@@ -29,3 +29,4 @@ is_inside_plg(point, polygon_df) # Returns TRUE
 \seealso{
 \code{\link[sp:point.in.polygon]{sp::point.in.polygon()}}
 }
+\keyword{internal}

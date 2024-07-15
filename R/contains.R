@@ -5,7 +5,7 @@
 #'
 #' @inherit argument_dummy params
 #'
-#' @return TRUE if the assay is found in the object, FALSE otherwise.
+#' @return Logical value.
 #'
 #' @seealso [`getAssayNames()`], [`MolecularAssay`]
 #'
@@ -108,7 +108,7 @@ setMethod(
   }
 )
 
-#' @title Check availability of miscellaneous content
+#' @title Check availability CNV results
 #'
 #' @description Logical tests that check if content exists in the `SPATA2` object.
 #'
@@ -461,7 +461,7 @@ setMethod(
 #' @inherit argument_dummy params
 #'
 #' @return Logical value.
-#' @export
+#' @keywords internal
 setGeneric(name = "containsPseudoImage", def = function(object, ...){
 
   setGeneric(name = "containsPseudoImage")
@@ -469,7 +469,6 @@ setGeneric(name = "containsPseudoImage", def = function(object, ...){
 })
 
 #' @rdname containsPseudoImage
-#' @export
 setMethod(
   f = "containsPseudoImage",
   signature = "ANY",
@@ -562,48 +561,6 @@ setMethod(
 )
 
 
-#' @title Check availability of section variable
-#'
-#' @description Tests if the results of [`identifySpatialOutliers()`] exist
-#' in the object, namely a variable called *section* in the coordinates
-#' data.frame.
-#'
-#' @inherit argument_dummy params
-#'
-#' @seealso [`containsSpatialOutliers()`] to check if the section variable
-#' contains any identified spatial outliers.
-#'
-#' @return Logical value.
-#' @export
-#'
-setGeneric(name = "containsSectionVariable", def = function(object, ...){
-
-  standardGeneric(f = "containsSectionVariable")
-
-})
-
-#' @rdname containsSectionVariable
-#' @export
-setMethod(
-  f = "containsSectionVariable",
-  signature = "ANY",
-  definition = function(object, error = FALSE, ...){
-
-    coords_df <- getCoordsDf(object)
-
-    out <- "section" %in% base::colnames(coords_df)
-
-    feedback_missing(
-      x = out,
-      use_fn = "identifySpatialOutliers",
-      error = error
-    )
-
-    return(out)
-
-  }
-)
-
 #' @title Checks availability of `SpatialData` object
 #'
 #' @description Tests if the input object contains an object
@@ -632,50 +589,36 @@ containsSpatialData <- function(object, error = FALSE){
 #'
 #' @inherit argument_dummy params
 #'
-#' @seealso [`excludeSpatialOutliers()`] to exclude spatial outliers from further
+#' @seealso [`removeSpatialOutliers()`] to exclude spatial outliers from further
 #' analysis.
 #'
 #' @return Logical value.
 #' @export
 #'
-setGeneric(name = "containsSpatialOutliers", def = function(object, ...){
+containsSpatialOutliers <- function(object, ...){
 
-  standardGeneric(f = "containsSpatialOutliers")
+  containsTissueOutline(object, error = TRUE)
 
-})
+  meta_df <- getMetaDf(object)
+  n_outlier <- base::sum(meta_df[["sp_outlier"]])
 
-#' @rdname containsSpatialOutliers
-#' @export
-setMethod(
-  f = "containsSpatialOutliers",
-  signature = "ANY",
-  definition = function(object, ...){
+  out <- n_outlier >= 1
 
-    containsSectionVariable(object, error = TRUE)
+  fdb_fn <- list(...)[["fdb_fn"]]
 
-    n_outlier <-
-      getCoordsDf(object) %>%
-      dplyr::filter(section == "outlier") %>%
-      base::nrow()
+  if(base::isFALSE(out) & base::is.character(fdb_fn)){
 
-    out <- n_outlier >= 1
-
-    fdb_fn <- list(...)[["fdb_fn"]]
-
-    if(base::isFALSE(out) & base::is.character(fdb_fn)){
-
-      confuns::give_feedback(
-        msg = "No spatial outliers in this object.",
-        fdb.fn = fdb_fn,
-        with.time = FALSE
-      )
-
-    }
-
-    return(out)
+    confuns::give_feedback(
+      msg = "No spatial outliers in this object.",
+      fdb.fn = fdb_fn,
+      with.time = FALSE
+    )
 
   }
-)
+
+  return(out)
+
+}
 
 
 #' @title Check availability of spots
@@ -704,7 +647,7 @@ setMethod(
   signature = "ANY",
   definition = function(object, error = FALSE){
 
-    out <- getSpatialMethod(object)@observational_unit == "spot"
+    out <- stringr::str_detect(getSpatialMethod(object)@observational_unit, "spot")
 
     if(base::isFALSE(out) && base::isTRUE(error)){
 
@@ -922,7 +865,7 @@ setMethod(
 #' @inherit argument_dummy params
 #'
 #' @return Logical value.
-#' @export
+#' @keywords internal
 #'
 containsVersion <- function(object, check_not_empty = FALSE){
 

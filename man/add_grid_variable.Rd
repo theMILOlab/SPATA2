@@ -2,7 +2,7 @@
 % Please edit documentation in R/add.R
 \name{add_grid_variable}
 \alias{add_grid_variable}
-\title{Add Grid Variable to Coordinate Data Frame}
+\title{Add grid variable to coordinate data.rame}
 \usage{
 add_grid_variable(coords_df, nr, grid_name = "grid", keep_temp = FALSE)
 }
@@ -20,6 +20,18 @@ used in the process (x_bins.temp and y_bins.temp) are retained in the output dat
 }
 \value{
 A data frame with the added grid variable.
+
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+coords_df <-
+getCoordsDf(object) \%>\%
+add_grid_variable(nr = 50)
+
+print(coords_df)
 }
 \description{
 This function adds a grid variable to a data frame containing x and y coordinates.

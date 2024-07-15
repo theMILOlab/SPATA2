@@ -2,9 +2,12 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageDir}
 \alias{getImageDir}
+\alias{getImageDirectories}
 \title{Obtain directory to image}
 \usage{
 getImageDir(object, img_name = activeImage(object))
+
+getImageDirectories(object)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
@@ -15,7 +18,7 @@ If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. E
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
 }
 \value{
-Character value.
+Character value or vector in case of \code{getImageDirectories()}.
 }
 \description{
 Extracts the directory from where the image was loaded when

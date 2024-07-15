@@ -113,20 +113,20 @@ to specify the input in pixel you have to use input option 1. In pixel.
 }
 \examples{
 
- library(tidyverse)
+library(SPATA2)
 
- object <- downloadPubExample("313_T")
+data("example_data")
 
- object <- setDefault(object, pt_clrsp = "BuGn", display_image = FALSE)
+object <- example_data$object_UKF275T_diet
 
- # ------ for surface plots
+ containsPixelScaleFactor(object) # must be TRUE
 
  # no axes specification
- plotSurface(object, color_by = "FN1") +
+ plotSurface(object, color_by = "METRN") +
   ggpLayerThemeCoords()
 
  # in millimeters
- plotSurface(object, color_by = "FN1") +
+ plotSurface(object, color_by = "METRN") +
   ggpLayerThemeCoords() +
   ggpLayerAxesSI(object, unit = "mm")
 
@@ -136,11 +136,13 @@ to specify the input in pixel you have to use input option 1. In pixel.
 
  print(my_breaks)
 
- plotSurface(object, color_by = "FN1") +
+ # breaks can be a vector of distance values
+ plotSurface(object, color_by = "METRN") +
   ggpLayerThemeCoords() +
   ggpLayerAxesSI(object, unit = "mm", breaks = my_breaks, add_labs = TRUE)
 
- plotSurface(object, color_by = "FN1") +
+ # or a list of vectors of distance values for each axis
+ plotSurface(object, color_by = "METRN") +
   ggpLayerThemeCoords() +
   ggpLayerAxesSI(object, unit = "mm", breaks = list(x = my_breaks, y = str_c(2:5, "mm")), add_labs = TRUE)
 

@@ -13,7 +13,7 @@ labsNone <- function(){
 
 }
 
-#' @export
+#' @keywords internal
 lastSpatialAnnotation <- function(object){
 
   ios <-
@@ -39,6 +39,19 @@ lastSpatialAnnotation <- function(object){
 # legend ------------------------------------------------------------------
 
 #' @title ggplot2 basic manipulation
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotSurface(object, color_by = "HM_HYPOXIA")
+#' plotSurface(object, color_by = "HM_HYPOXIA") + legendBottom()
+#'
 #' @export
 legendBottom <- purrr::partial(.f = ggplot2::theme, legend.position = "bottom")
 
@@ -159,20 +172,8 @@ load_adata_matrix_converter <- function(adata, mname, matrix, verbose){
 }
 
 
-#' @title Load gene set data.frame
-#'
-#' @inherit argument_dummy params
-#' @param gene_set_path If set to NULL the default \code{SPATA::gsdf} is used.
-#' If a directory is specified the object is loaded via \code{base::readRDS()}, checked
-#' and used if valid. If it is invalid the default \code{SPATA::gsdf} is used .
-#'
-#' @return A data.frame.
-#'
-#' @export
-#' @keywords internal
-loadGeneSetDf <- loadGSDF
 
-#' @title Load image
+#' @title Load image slot content
 #'
 #' @description Reads the image based on the directory stored in slot @@dir
 #' of the `HistoImage` object. This makes the image availble quicker but
@@ -310,17 +311,17 @@ setMethod(
 )
 
 
-#' @title Load corresponding objects
+#' @title Load SPATA2 object
 #'
-#' @description Family of functions to load corresponding objects of different analysis
-#' platforms. See details and value for more information.
+#' @description Reads an .RDS file, checks if it is an object of class [`SPATA2`]
+#' and checks whether it must be updated.
 #'
 #' @inherit argument_dummy params
 #' @inherit check_object params
-#' @param directory_spata Character value. The directory from which to load the spata-object.
+#' @param directory_spata Character value. The directory from which to load the [`SPATA2'] object.
 #'
 #' @details \code{loadSpataObject()} is a wrapper around \code{base::readRDS()} with which
-#' you could load your spata-object as well. The other two functions take the spata-object
+#' you could load your [`SPATA2'] object as well. The other two functions take the [`SPATA2'] object
 #' and use \code{getDirectoryInstructions()} to extract the directories of the corresponding object to be loaded under which
 #' they were saved the last time \code{saveCorresponding*()} was used.
 #'
@@ -333,7 +334,8 @@ loadSpataObject <- function(directory_spata, verbose = TRUE, update = TRUE){
   confuns::check_directories(
     directories = directory_spata,
     ref = "directory_spata",
-    type = "files")
+    type = "files"
+    )
 
   confuns::give_feedback(
     msg = "Loading `SPATA2` object.",

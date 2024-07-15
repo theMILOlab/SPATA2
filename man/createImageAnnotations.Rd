@@ -2,7 +2,7 @@
 % Please edit documentation in R/create.R
 \name{createImageAnnotations}
 \alias{createImageAnnotations}
-\title{Add spatial annotations based on histo-morphological features}
+\title{Create spatial annotations based on histo-morphological features}
 \usage{
 createImageAnnotations(object, ...)
 }
@@ -21,6 +21,22 @@ histomorphological features of an image. The outline created this way is
 used to create a \code{\link{SpatialAnnotation}} of subclass \code{\link{ImageAnnotation}}.
 
 Not to confuse with \code{\link[=createSpatialSegmentation]{createSpatialSegmentation()}}.
+}
+\examples{
+
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+if(FALSE){ # diffuse
+
+ object <- createImageAnnotations(object)
+
+}
+
+
 }
 \seealso{
 \code{\link[=addSpatialAnnotation]{addSpatialAnnotation()}}, \code{\link[=mergeWithTissueOutline]{mergeWithTissueOutline()}}

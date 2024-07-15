@@ -49,9 +49,6 @@ variances are kept even if the total number of genes}
 
 \item{method_dist}{Character value or vector (see details for more). Denotes the distance methods (e.g. \emph{'euclidean'}) to be used. Run \code{validDistanceMethods()}
 to obtain all valid input options.}
-
-\item{mtr_name}{Character value. The name of the matrix to extract. If
-\code{NULL}, defaults to the active matrix of the provided or specified \link[=MolecularAssay]{assay}.}
 }
 \value{
 An updated spata-object.

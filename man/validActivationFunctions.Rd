@@ -6,25 +6,18 @@
 \alias{validAlluvialTypes}
 \alias{validColorPalettes}
 \alias{validColorSpectra}
-\alias{validDeAnalysisMethods}
+\alias{validDeaMethods}
 \alias{validDefaultInstructionSlots}
-\alias{validDimRedMethods}
-\alias{validDirectoryInstructionSlots}
 \alias{validDistanceMethods}
 \alias{validHierarchicalClusterMethods}
 \alias{validModelNames}
-\alias{validPatternRecognitionMethods}
 \alias{validPadjMethods}
-\alias{validPlotTypes}
-\alias{validPubExamples}
 \alias{validSpatialMethods}
-\alias{validTrajectoryTrends}
 \alias{validUnits}
 \alias{validUnitsOfArea}
 \alias{validUnitsOfAreaSI}
 \alias{validUnitsOfLength}
 \alias{validUnitsOfLengthSI}
-\alias{validEuropeanUnitsOfLength}
 \title{Obtain valid argument inputs}
 \usage{
 validActivationFunctions()
@@ -37,13 +30,9 @@ validColorPalettes(flatten = FALSE)
 
 validColorSpectra(flatten = FALSE)
 
-validDeAnalysisMethods()
+validDeaMethods()
 
 validDefaultInstructionSlots()
-
-validDimRedMethods()
-
-validDirectoryInstructionSlots()
 
 validDistanceMethods()
 
@@ -51,17 +40,9 @@ validHierarchicalClusterMethods()
 
 validModelNames()
 
-validPatternRecognitionMethods()
-
 validPadjMethods()
 
-validPlotTypes(fn_name)
-
-validPubExamples()
-
 validSpatialMethods()
-
-validTrajectoryTrends()
 
 validUnits()
 
@@ -72,8 +53,6 @@ validUnitsOfAreaSI()
 validUnitsOfLength()
 
 validUnitsOfLengthSI()
-
-validEuropeanUnitsOfLength(name = T)
 }
 \value{
 Character vectors or named lists of such.

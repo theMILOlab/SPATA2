@@ -4,20 +4,13 @@
 \alias{plotMosaicplot}
 \title{Plot mosaic plot}
 \usage{
-plotMosaicplot(
-  object,
-  grouping_variable,
-  fill_by,
-  clrp = NULL,
-  clrp_adjust = NULL,
-  ...
-)
+plotMosaicplot(object, grouping, fill_by, clrp = NULL, clrp_adjust = NULL, ...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{grouping_variable}{Character value. The grouping variable that is
+\item{grouping}{Character value. The grouping variable that is
 plotted on the x-axis.}
 
 \item{fill_by}{Character value. The grouping variable that is used to
@@ -35,9 +28,19 @@ represent the group.}
 \item{...}{Additional arguments given to \code{ggmosaic::geom_mosaic()}}
 }
 \value{
-Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.
+Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.
 }
 \description{
 Plots a mosaic plot of two grouping variables.
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotMosaicPlot(object, grouping = "seurat_clusters", fill_by = "bayes_space")
+
 }

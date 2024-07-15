@@ -54,3 +54,4 @@ of activations/bottlenecks as well as the additional set up.}
 Assesses different neural network set ups regarding
 the activation function and the number of bottleneck neurons.
 }
+\keyword{internal}

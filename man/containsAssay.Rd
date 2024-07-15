@@ -18,7 +18,7 @@ as set by \code{\link[=activateAssay]{activateAssay()}}.}
 function throws an error.}
 }
 \value{
-TRUE if the assay is found in the object, FALSE otherwise.
+Logical value.
 }
 \description{
 Checks if the provided object contains a specific assay.

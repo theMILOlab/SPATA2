@@ -53,11 +53,6 @@ be one of \code{\link[=getImageNames]{getImageNames()}}.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
 }
 \description{
 The \verb{rotate*()} family rotates the current image

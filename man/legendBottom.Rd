@@ -27,3 +27,16 @@ legendTop(...)
 \description{
 ggplot2 basic manipulation
 }
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotSurface(object, color_by = "HM_HYPOXIA")
+plotSurface(object, color_by = "HM_HYPOXIA") + legendBottom()
+
+}

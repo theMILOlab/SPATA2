@@ -2,7 +2,7 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSpatAnnSf}
 \alias{getSpatAnnSf}
-\title{Obtain simple feature}
+\title{Obtain the outline of a spatial anontation}
 \usage{
 getSpatAnnSf(object, id, img_name = activeImage(object))
 }

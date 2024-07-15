@@ -24,3 +24,4 @@ Transformed input. Vector of the same length as \code{input} and of class \code{
 \description{
 Transforms pixel values to SI units (e.g. '\emph{7.5mm2'}, '20um2')
 }
+\keyword{internal}

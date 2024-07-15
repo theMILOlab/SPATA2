@@ -287,7 +287,7 @@ joinWithUmap <- function(object,
 #' @title Join data with variables
 #'
 #' @description Joins data.frames of the `SPATA2` objects \link[=concept_observations]{observations} with additional
-#' variables, such as molecular data, signatures, and meta features.
+#' \link[=concept_variables]{variables}, such as molecular data, signatures, and meta features.
 #'
 #' @inherit argument_dummy params
 #'
@@ -327,6 +327,14 @@ joinWithVariables <- function(object,
   variables <- variables[!variables %in% c("barcodes", "sample")]
   variables <- base::unique(variables)
   spata_df <- dplyr::select(spata_df, -dplyr::any_of(variables))
+
+  against <- getVariableNames(object)
+
+  if(base::any(!variables %in% against)){
+
+    not_found <- variables[!variables %in% against]
+
+  }
 
   # stratify variables
   var_types <- getVarTypeList(object, variables = variables)

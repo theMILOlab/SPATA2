@@ -3,26 +3,13 @@
 \name{setImageAnnotation}
 \alias{setImageAnnotation}
 \alias{setImageAnnotations}
-\title{Set image annotations}
+\title{Deprecated}
 \usage{
-setImageAnnotation(object, img_ann, align = TRUE, overwrite = FALSE)
+setImageAnnotation(object, img_ann, ...)
 
-setImageAnnotations(object, img_anns, align = TRUE, overwrite = FALSE)
-}
-\arguments{
-\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-
-\item{img_ann}{An object of class \code{ImageAnnotation}.}
-
-\item{align}{Logical value. If \code{TRUE}, image annotations
-are aligned with image justification changes of the image of the
-\code{SPATA2} object.}
-
-\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
-
-\item{img_anns}{List of objects of class \code{ImageAnnotation}.}
+setImageAnnotations(object, img_anns, ...)
 }
 \description{
-Sets image annotations in the correct slot.
+Deprecated in favor of \code{\link[=setSpatialAnnotation]{setSpatialAnnotation()}}.
 }
+\keyword{internal}

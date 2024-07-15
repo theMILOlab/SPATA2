@@ -11,7 +11,7 @@ getSpatialAnnotation(object, ...)
 \S4method{getSpatialAnnotation}{SPATA2}(
   object,
   id = idSA(object),
-  add_image = TRUE,
+  add_image = containsHistoImages(object),
   expand = 0,
   square = FALSE,
   ...

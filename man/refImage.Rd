@@ -4,7 +4,7 @@
 \alias{refImage}
 \alias{refImage,SPATA2-method}
 \alias{refImage,SpatialData-method}
-\title{Obtain name of reference content}
+\title{Obtain name of reference iamge}
 \usage{
 refImage(object, ...)
 
@@ -22,5 +22,5 @@ objects of classes for which a method has been defined.}
 Character value.
 }
 \description{
-Handy functions to quickly access the name of reference content.
+Handy functions to quickly access the name of the reference image.
 }

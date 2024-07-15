@@ -4,7 +4,7 @@
 \alias{nSpatialAnnotations}
 \alias{nSpatialAnnotations,SPATA2-method}
 \alias{nSpatialAnnotations,SpatialData-method}
-\title{Number of image annotations}
+\title{Number of spatial annotations}
 \usage{
 nSpatialAnnotations(object, ...)
 
@@ -22,5 +22,5 @@ objects of classes for which a method has been defined.}
 Numeric value.
 }
 \description{
-Returns the number of \code{ImageAnnotation}-objects in the sample.
+Returns the number of \code{\link{SpatialAnnotation}} objects in the sample.
 }

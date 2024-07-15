@@ -25,3 +25,4 @@ Logical value.
 Tests if the object only contains a pseudo image which
 makes it not suitable for image depending processes.
 }
+\keyword{internal}

@@ -4,29 +4,21 @@
 \alias{mergeGroups}
 \title{Lump groups together}
 \usage{
-mergeGroups(
-  object,
-  grouping_variable,
-  grouping_variable_new,
-  keep = NULL,
-  drop = NULL,
-  new_group = "other",
-  verbose = NULL
-)
+mergeGroups(object, grouping, grouping_new, merge, new_group, verbose = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{grouping_variable}{Character value. The grouping variable whose
+\item{grouping}{Character value. The grouping variable whose
 groups are supposed to be merged.}
 
-\item{grouping_variable_new}{Character value or NULL. If character,
+\item{grouping_new}{Character value or NULL. If character,
 the results are stored in a new variable named accordingly. If NULL,
-the grouping variable is updated - DE analysis results will be discarded.}
+the grouping variable is updated - DEA results will be discarded.}
 
-\item{keep}{Character vector or NULL. If character, specifies the groups
-that are supposed to remain as they are. Every other group is lumped together.}
+\item{merge}{Character vector or NULL. If character, specifies the groups
+that are merged together.}
 
 \item{new_group}{Character value. The new group name of the merge.}
 
@@ -34,15 +26,34 @@ that are supposed to remain as they are. Every other group is lumped together.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{merge}{Character vector or NULL. If character, specifies the groups
-that are merged together.}
 }
 \description{
 Merge groups into one group.
 }
 \details{
 Only one argument of \code{keep} or \code{merge} must be specified.
-If \code{grouping_variable_new} is NULL DE analysis results of the specified
+If \code{grouping_new} is NULL DEA results of the specified
 grouping variable is resetted.
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <-
+  mergeGroups(
+    object = object,
+    grouping = "bayes_space",
+    grouping_new = "bayes_space_merged",
+    merge = c("2", "4"),
+    new_group = "2.4.merged"
+   )
+
+plotSurface(object, color_by = "bayes_space")
+plotSurface(object, color_by = "bayes_space_merged")
+
 }

@@ -208,20 +208,20 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #'
 #' @examples
 #'
-#'  library(tidyverse)
+#' library(SPATA2)
 #'
-#'  object <- downloadPubExample("313_T")
+#' data("example_data")
 #'
-#'  object <- setDefault(object, pt_clrsp = "BuGn", display_image = FALSE)
+#' object <- example_data$object_UKF275T_diet
 #'
-#'  # ------ for surface plots
+#'  containsPixelScaleFactor(object) # must be TRUE
 #'
 #'  # no axes specification
-#'  plotSurface(object, color_by = "FN1") +
+#'  plotSurface(object, color_by = "METRN") +
 #'   ggpLayerThemeCoords()
 #'
 #'  # in millimeters
-#'  plotSurface(object, color_by = "FN1") +
+#'  plotSurface(object, color_by = "METRN") +
 #'   ggpLayerThemeCoords() +
 #'   ggpLayerAxesSI(object, unit = "mm")
 #'
@@ -231,11 +231,13 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #'
 #'  print(my_breaks)
 #'
-#'  plotSurface(object, color_by = "FN1") +
+#'  # breaks can be a vector of distance values
+#'  plotSurface(object, color_by = "METRN") +
 #'   ggpLayerThemeCoords() +
 #'   ggpLayerAxesSI(object, unit = "mm", breaks = my_breaks, add_labs = TRUE)
 #'
-#'  plotSurface(object, color_by = "FN1") +
+#'  # or a list of vectors of distance values for each axis
+#'  plotSurface(object, color_by = "METRN") +
 #'   ggpLayerThemeCoords() +
 #'   ggpLayerAxesSI(object, unit = "mm", breaks = list(x = my_breaks, y = str_c(2:5, "mm")), add_labs = TRUE)
 #'
@@ -526,6 +528,21 @@ ggpLayerAxesSI <- function(object,
 #' @return List of ggpLayer outputs.
 #' @export
 #'
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotImage(object) +
+#'  ggpLayerCaptureArea(object, opt = "rect")
+#'
+#' plotImage(object) +
+#'  ggpLayerCaptureArea(object, opt = "crop")
+#'
 ggpLayerCaptureArea <- function(object,
                                 opt = c("rect"),
                                 rect_alpha = 0.9,
@@ -638,13 +655,13 @@ ggpLayerColorGroupScale <- function(object,
 
 
 
-#' @title Add IAS area expansion
+#' @title Add SAS expression estimates
 #'
-#' @description Adds the circular expansion used by the IAS-algorithm
-#' of the area of  an spatial annotation to a surface plot.
+#' @description Visualizes the distances at which expression of a numeric
+#' feature is estimated with a certain \link[=spatialAnnotationScreening]{SAS} set up.
 #'
-#' @param line_size Numeric. The size with which to display encircling lines
-#' of the area expansion.
+#' @param line_size Numeric. The size with which to display lines
+#' of the expression estimates.
 #' @param line_size_core Numeric. The size with which to display the core outline
 #' of the spatial annotation.
 #'
@@ -658,20 +675,31 @@ ggpLayerColorGroupScale <- function(object,
 #'
 #' @examples
 #'
-#' object <- downloadPubExample("313_T")
+#' library(SPATA2)
+#' library(tidyverse)
 #'
-#' plotImageGgplot(object) +
-#'  ggpLayerEncirclingSAS(
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <-
+#'  createNumericAnnotations(
 #'    object = object,
-#'    id = "necrotic_area",
-#'    distance = "2.25mmm",
-#'    binwidth = "112.5um"
-#'  )
+#'    variable = "HM_HYPOXIA",
+#'    threshold = "kmeans_high",
+#'    id = "hypoxia_ann",
+#'    force1 = TRUE
+#'    )
+#'
+#' plotSurface(object, color_by = "HM_HYPOXIA", outline = T, pt_clrsp = "Reds 3") +
+#'  ggpLayerExprEstimatesSAS(object, ids = "hypoxia_ann", distance = "3mm") +
+#'  ggpLayerScaleBarSI(object, sb_pos = c("3mm", "2mm"))
+#'
 
 ggpLayerExprEstimatesSAS <- function(object,
                                      ids,
                                      distance = "dte",
-                                     binwidth = recBinwidth(object),
+                                     resolution = recSgsRes(object),
                                      core = FALSE,
                                      alpha_core = 0,
                                      fill_core = NA,
@@ -721,7 +749,7 @@ ggpLayerExprEstimatesSAS <- function(object,
                 object = object,
                 id = id,
                 distance = distance,
-                binwidth = binwidth,
+                resolution = resolution,
                 core = core,
                 direction = direction,
                 incl_edge = FALSE,
@@ -784,7 +812,7 @@ ggpLayerExprEstimatesSAS <- function(object,
                 object = object,
                 id = id,
                 distance = distance,
-                binwidth = binwidth,
+                resolution = resolution,
                 direction = direction,
                 incl_edge = TRUE,
                 verbose = verbose
@@ -827,8 +855,37 @@ ggpLayerExprEstimatesSAS <- function(object,
 
 }
 
-
+#' @title Add SAS screening direction
+#'
+#' @description Visualizes the screenining direction of an \link[=spatialAnnotationScreening]{SAS}
+#' set up on top of a surface plots. See examples.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggpLayerExprEstimatesSAS params
+#'
+#' @details
+#' **In contrast** to [`ggpLayerExprEstimates()`], which visualizes
+#' the precise positions of the expression estimates, `ggpLayerScreeningDiretionSAS()` visualizes
+#' only the concept, the idea, of the screening direction. This is particularly useful, if the screening
+#' set up includes multiple annotations in one tissue section, where `ggpLayerExprEstimates()` fails
+#' to visualize the combined expression estimates.
+#'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"))
+#'
+#' plotImage(object) +
+#'   ggpLayerSpatAnnOutline(object, ids = ids, fill = "lightgrey") +
+#'   ggpLayerScreeningDirectionSAS(object, ids = ids, line_size = 0.5)
+#'
+#'
 ggpLayerScreeningDirectionSAS <- function(object,
                                           ids,
                                           distance = "dte",
@@ -836,10 +893,10 @@ ggpLayerScreeningDirectionSAS <- function(object,
                                           line_color = "black",
                                           line_size = 1,
                                           line_type = "solid",
-                                          nmx = 50,
-                                          seed = 123,
                                           verbose = NULL,
                                           ...){
+  seed <- 123
+  nmx <- 50
 
   hlpr_assign_arguments(object)
   deprecated(...)
@@ -915,14 +972,14 @@ ggpLayerScreeningDirectionSAS <- function(object,
 
 #' @title Fix ggplot frame
 #'
-#' @description Fixes the frame of an surface plot based
-#' on the coordinates range of the \code{SPATA2} object in
-#' case of `ggpLayerFixFrame()` or based on specific distance
-#' inputs in case of `ggpLayerFrame()`.
+#' @description Crops the frame of a surface plot. Soft deprecated in favor
+#' of the arguments `xrange` and `yrange` in [`plotSurface()`].
 #'
+#' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
 #' @export
+#'
 ggpLayerFrame <- function(object, xrange, yrange, expand = FALSE){
 
   is_dist(input = xrange, error = TRUE)
@@ -953,46 +1010,41 @@ ggpLayerFixFrame <- function(object){
 
 #' @title Set plot limits
 #'
-#' @description Sets the limits on the x- and y-axis of a ggplot based on the coordinate
-#' range or the image range.
+#' @description Sets the limits on the x- and y-axis of a surface plot based on
+#' the coordinate range of the objects \link[=concept_observations]{observations}
+#' or the image.
 #'
-#' @param opt Specifies the function with which the limits are set. If
-#' \emph{'scale'} (the default), \code{ggplot2::scale_x|y_continuous()} is used.
-#' If \emph{'ccs'}, \code{ggplot2::coord_cartesian()} is used.
+#' Soft deprecated in favor of the arguments `xrange` and `yrange` in [`plotSurface()`].
 #'
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
-#' @note If \emph{'scale'}, always adds \code{ggplot2::coord_equal()}.
-#'
 #' @export
 #'
-ggpLayerFrameByCoords <- function(object = "object", opt = "ccs"){
+#' @examples
+#'
+#' library(SPATA2)
+#' library(patchwork)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotImage(object) + plotSurface(object)
+#'
+#' (plotImage(object) + ggpLayerFrameByCoords(object)) + plotSurface(object)
+#'
+#'
+ggpLayerFrameByCoords <- function(object = "object", ...){
+
+  opt <- "ccs"
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
   xlim <- getCoordsRange(object)$x
   ylim <- getCoordsRange(object)$y
 
-  confuns::check_one_of(
-    input = opt,
-    against = c("scale", "ccs")
-  )
-
-  if(opt == "scale"){
-
-    out <-
-      list(
-        scale_x = ggplot2::scale_x_continuous(limits = xlim),
-        scale_y = ggplot2::scale_y_continuous(limits = ylim),
-        coord = ggplot2::coord_equal()
-      )
-
-  } else {
-
-    out <- ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
-
-  }
+  ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
 
   return(out)
 
@@ -1001,32 +1053,16 @@ ggpLayerFrameByCoords <- function(object = "object", opt = "ccs"){
 
 #' @rdname ggpLayerFrameByCoords
 #' @export
-ggpLayerFrameByImage <- function(object = "object", opt = "ccs"){
+ggpLayerFrameByImage <- function(object = "object", ...){
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
   xlim <- getImageRange(object)$x
   ylim <- getImageRange(object)$y
 
-  confuns::check_one_of(
-    input = opt,
-    against = c("scale", "ccs")
-  )
+  out <- ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
 
-  if(opt == "scale"){
-
-    out <-
-      list(
-        scale_x = ggplot2::scale_x_continuous(limits = xlim),
-        scale_y = ggplot2::scale_y_continuous(limits = ylim),
-        coord = ggplot2::coord_equal()
-      )
-
-  } else {
-
-    out <- ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
-
-  }
+  return(out)
 
 }
 
@@ -1036,15 +1072,15 @@ ggpLayerFrameByImage <- function(object = "object", opt = "ccs"){
 #' Depending on the \code{plot_type} this can be added to a surface plot
 #' or a dimensional reduction plot.
 #'
-#' @param plot_type Character value. Either \emph{'surface', 'tsne'} or
-#' \emph{'umap'}.
-#' @param groups_subset Character value or NULL. If character,
-#' specifies the exact groups that are encircled. If NULL, all groups
+#' @param plot_type Character value. Either *'surface'* or the name of a conducted
+#' dimensional reduction.
+#' @param group_subset Character value or `NULL`. If character,
+#' specifies the exact groups that are outlined. If `NULL`, all groups
 #' are encircled.
 #' @param outlier_rm,minPts Logical. If `TRUE`, spatial outlier of the group to outline
 #' are removed from the outline via `dbscan::dbscan(..., minPts = minPts`). Ignored
 #' if `plot_type` is not *'surface'*.
-#' @param ... Additional arguments given to `ggforce::geom_mark_hull()`. Affects
+#' @param ... Additional arguments given to `ggforce::geom_polygon()`. Affects
 #' the encircling.
 #'
 #' @inherit ggpLayerTissueOutline params
@@ -1056,20 +1092,20 @@ ggpLayerFrameByImage <- function(object = "object", opt = "ccs"){
 #'
 #' @examples
 #'
-#'  object <- downloadPubExample("269_T")
+#' library(SPATA2)
+#' library(tidyverse)
 #'
-#'  plotImageGgplot(object) +
-#'   ggpLayerGroupOutline(
-#'     object = object,
-#'     plot_type = "surface",
-#'     grouping = "histology",
-#'     groups_subset = "tumor",
-#'     line_color = color_vector("npg")[1]
-#'     )
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotSurface(object, color_by = "bayes_space") +
+#'  ggpLayerGroupOutline(object, grouping = "bayes_space", group_subset = c("1", "2"))
+#'
 #'
 ggpLayerGroupOutline <- function(object,
                                  grouping,
-                                 groups_subset = NULL,
+                                 group_subset = NULL,
                                  plot_type = "surface",
                                  line_alpha = 1,
                                  line_color = "black",
@@ -1096,7 +1132,7 @@ ggpLayerGroupOutline <- function(object,
   )
 
   confuns::check_one_of(
-    input = groups_subset,
+    input = group_subset,
     against = getGroupNames(object, grouping = grouping)
   )
 
@@ -1116,18 +1152,18 @@ ggpLayerGroupOutline <- function(object,
       getMetaDf(object) %>%
       confuns::check_across_subset(
         across = grouping,
-        across.subset = groups_subset
+        across.subset = group_subset
       )
 
     groups <- base::levels(groups_df[[grouping]])
 
+    if(containsSpatialAnnotations(object)){
+
+      object <- removeSpatialAnnotations(object, ids = getSpatAnnIds(object))
+
+    }
+
     for(g in groups){
-
-      if(containsSpatialAnnotations(object)){
-
-        object <- removeSpatialAnnotations(object, ids = getSpatAnnIds(object))
-
-      }
 
       object <-
         createGroupAnnotations(
@@ -1195,7 +1231,7 @@ ggpLayerGroupOutline <- function(object,
         ) %>%
         confuns::check_across_subset(
           across = grouping,
-          across.subset = groups_subset
+          across.subset = group_subset
         )
 
       if(base::isTRUE(outlier_rm)){
@@ -1234,7 +1270,7 @@ ggpLayerGroupOutline <- function(object,
                 .x = base::unique(group_df[["group_outline"]]),
                 .f = function(go){
 
-                  avg_dist <- recBinwidth(object, unit = "px")
+                  avg_dist <- recSgsRes(object, unit = "px")
 
                   df <-
                     dplyr::filter(group_df, group_outline == {{go}}) %>%
@@ -1306,6 +1342,29 @@ ggpLayerGroupOutline <- function(object,
 #' @inherit ggpLayer_dummy return
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <-
+#'  createNumericAnnotations(
+#'    object = object,
+#'    variable = "HM_HYPOXIA",
+#'    threshold = "kmeans_high",
+#'    id = "hypoxia_ann",
+#'    force1 = TRUE
+#'    )
+#'
+#' plotSurface(object, color_by = "HM_HYPOXIA", outline = T, pt_clrsp = "Reds 3") +
+#'  ggpLayerHorizonSAS(object, id = "hypoxia_ann", distance = "3mm") +
+#'  ggpLayerScaleBarSI(object, sb_pos = c("3mm", "2mm"))
+#'
 ggpLayerHorizonSAS <- function(object,
                                id,
                                distance = distToEdge(object, id),
@@ -1382,6 +1441,19 @@ ggpLayerHorizonSAS <- function(object,
 #' @inheritSection section_dummy Image visualization with ggplot2
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' ggplot() +
+#'  ggpLayerImage(object)
+#'
 #'
 
 setGeneric(name = "ggpLayerImage", def = function(object, ...){
@@ -1546,10 +1618,10 @@ setMethod(
 
 
 
-#' @title Adds data points to the surface plot
+#' @title Add the observations to the surface plot
 #'
 #' @description Adds the data points (beads, cells, spots, etc.) of the object
-#' to the plot.
+#' to the plot. (The working horse of [`plotSurface()`]).
 #'
 #' @param ... Additional arguments given to `scale_color_add_on()`.
 #'
@@ -1562,6 +1634,19 @@ setMethod(
 #' @inherit ggpLayer_dummy return
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' ggplot() +
+#'  ggpLayerPoints(object, color_by = "HM_HYPOXIA")
+#'
 #'
 setGeneric(name = "ggpLayerPoints", def = function(object, ...){
 
@@ -1969,95 +2054,6 @@ setMethod(
 )
 
 
-#' @title Add horizontal and vertical lines
-#'
-#' @param xi Distance measures of where to add vertical lines. Intercepts on x-axis.
-#' @param yi Expression values of where to add horizontal lines. Intercepts on y-axis.
-#' @param ... Additional arguments given to `ggplot2::geom_h/vline()`
-#'
-#' @inherit argument_dummy params
-#'
-#' @export
-ggpLayerLineplotAid <- function(object, xi, yi = 0.5, l = NULL, id = NULL, ...){
-
-  if(base::is.null(l)){
-
-    l <- getTrajectoryLength(object, id = id, unit = "px")
-
-  }
-
-  color <- list(...)[["color"]]
-
-  if(base::is.null(color)){ color <- "grey"}
-
-  linetype <- list(...)[["linetype"]]
-
-  if(base::is.null(linetype)){ linetype <- "dashed"}
-
-  mapping <- ggplot2::aes(x = x, y = y, xend = xend, yend = yend)
-
-  if(!base::is.null(yi)){
-
-    nyi <- base::length(yi)
-
-    df <-
-      base::data.frame(
-        x = base::rep(0, nyi),
-        xend = base::rep(l, nyi),
-        y = yi,
-        yend = yi
-      )
-
-    hlines <-
-      ggplot2::geom_segment(
-        data = df,
-        mapping = mapping,
-        color = color,
-        linetype = linetype,
-        ...
-        )
-
-  } else {
-
-    hlines <- NULL
-
-  }
-
-  if(!base::is.null(xi)){
-
-    xi <- as_pixel(input = xi, object = object)
-
-    nxi <- base::length(xi)
-
-    df <-
-      base::data.frame(
-        x = xi,
-        xend = xi,
-        y = base::rep(0, nxi),
-        yend = base::rep(1, nxi)
-      )
-
-    vlines <-
-      ggplot2::geom_segment(
-        data = df,
-        mapping = mapping,
-        color = color,
-        linetype = linetype,
-        ...
-        )
-
-  } else {
-
-    vlines <- NULL
-
-  }
-
-  out <- c(hlines, vlines)
-
-  return(out)
-
-}
-
 #' @title Add a rectangular to the plot
 #'
 #' @description Adds a rectangular to the plot.
@@ -2079,6 +2075,43 @@ ggpLayerLineplotAid <- function(object, xi, yi = 0.5, l = NULL, id = NULL, ...){
 #' @inherit argument_dummy params
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(patchwork)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <-
+#'  createNumericAnnotations(
+#'    object = object,
+#'    variable = "HM_HYPOXIA",
+#'    threshold = "kmeans_high",
+#'    id = "hypoxia_ann",
+#'    inner_borders = FALSE,
+#'    force1 = TRUE
+#'    )
+#'
+#' # range of hypoxia annotation
+#' hr <- getSpatAnnRange(object, id = "hypoxia_ann")
+#'
+#' hr_ggpL <- ggpLayerSpatAnnOutline(object, ids = "hypoxia_ann")
+#'
+#' plotSurface(object, "HM_HYPOXIA") + hr_ggpL
+#'
+#' p_rect <-
+#'  plotImage(object) +
+#'  hr_ggpL +
+#'  ggpLayerRect(object, xrange = hr$x, yrange = hr$y)
+#'
+#' p_zoomed <-
+#'  plotImage(object) +
+#'  ggpLayerZoom(object, xrange = hr$x, yrange = hr$y)
+#'
+#' p_rect + p_zoomed
 #'
 ggpLayerRect <- function(object = "object",
                          xrange,
@@ -2135,7 +2168,7 @@ ggpLayerSasEvaluation <- function(object,
                                   core,
                                   variables,
                                   distance = distToEdge(object, id),
-                                  binwidth = recBinwidth(object),
+                                  resolution = recSgsRes(object),
                                   angle_span = c(0, 360),
                                   unit = getDefaultUnit(object),
                                   model_subset = NULL,
@@ -2156,7 +2189,7 @@ ggpLayerSasEvaluation <- function(object,
       variables = variables,
       id = id,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       core = core,
       angle_span = angle_span,
       model_add = model_add,
@@ -2171,7 +2204,7 @@ ggpLayerSasEvaluation <- function(object,
       object = object,
       id = id,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       core = core,
       verbose = FALSE
     )
@@ -2216,7 +2249,7 @@ ggpLayerSasEvaluation <- function(object,
       y = pos_y
     )
 
-  bw <- as_unit(binwidth, unit = unit, object = object)
+  bw <- as_unit(resolution, unit = unit, object = object)
 
   bw_val_half <- extract_value(bw)/2
 
@@ -2334,22 +2367,7 @@ ggpLayerSasEvaluation <- function(object,
 #' `text_nudge_x` and `text_nudge_y` or set the position precisely with `text_pos`.
 #'
 #' @export
-#'
-#' @examples
-#'
-#' object <- downloadPubExample("313_T", verbose = FALSE)
-#'
-#' plotImageGgplot(object) +
-#'  ggpLayerEncirclingSAS(
-#'    object = object,
-#'    id = "necrotic_area",
-#'    distance = "2.25mm"
-#'  ) +
-#'  ggpLayerScaleBarSI(
-#'   object = object,
-#'   sb_dist = "2.25mm",
-#'   sb_pos = "top_right"
-#'   )
+#' @inherit ggpLayerHorizonSAS examples
 #'
 ggpLayerScaleBarSI <- function(object,
                                sb_dist = "1mm",
@@ -2620,6 +2638,8 @@ ggpLayerScaleBarSI <- function(object,
 #' does not contain any inner borders).
 #'
 #' @export
+#'
+#' @inherit ggpLayerRect examples
 #'
 ggpLayerSpatAnnOutline <- function(object,
                                    ids = NULL,
@@ -3124,8 +3144,19 @@ ggpLayerSpatAnnRect <- function(object, ids, expand = "25%", ...){
 #' @description Adds a theme to the plot that displays the coordinates of
 #' the tissue.
 #'
-#' @return List.
+#' @inherit ggpLayer_dummy return
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotSurface(object) + ggpLayerThemeCoords()
 #'
 ggpLayerThemeCoords <- function(unit = NULL){
 
@@ -3172,13 +3203,18 @@ ggpLayerThemeCoords <- function(unit = NULL){
 #'
 #' @examples
 #'
-#' object <- download("MCD_LMU")
+#' library(SPATA2)
+#' library(tidyverse)
 #'
-#' plotImage(object, unit = "mm") +
-#'  ggpLayerTissueOutline(object, incl_edge = TRUE)
+#' data("example_data")
 #'
-#' plotImage(object, unit = "mm") +
-#'  ggpLayerTissueOutline(object, incl_edge = FALSE)
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotSurface(object, color_by = "HM_HYPOXIA", pt_clrsp = "Reds 3") +
+#'  ggpLayerTissueOutline(object)
+#'
+#' # alternative
+#' plotSurface(object, color_by = "HM_HYPOXIA", pt_clrsp = "Reds 3", outline = TRUE)
 #'
 
 setGeneric(name = "ggpLayerTissueOutline", def = function(object, ...){
@@ -3205,7 +3241,7 @@ setMethod(
                         smooth_with = "none",
                         scale_fct = 1,
                         outline_fct = c(1.75, 2.75),
-                        expand_outline = recBinwidth(object, "px")/1.25,
+                        expand_outline = recSgsRes(object, "px")/1.25,
                         ...){
 
     hlpr_assign_arguments(object)
@@ -3653,11 +3689,11 @@ setMethod(
 )
 
 
-#' @title Add trajectory layer
+#' @title Add spatial trajectories
 #'
-#' @description Adds trajectories in form of arrows to a surface plot.
+#' @description Adds spatial trajectories in form of arrows to a surface plot.
 #'
-#' @param trajectories Character vector. The name of the trajectories
+#' @param ids Character vector. The IDs of the trajectories
 #' that should be plotted.
 #' @param arrow A list of arguments given to \code{ggplot2::arrow()}. Based
 #' on which the trajectories are plotted.
@@ -3668,10 +3704,10 @@ setMethod(
 #'
 #' @export
 #'
-ggpLayerTrajectories <- function(object = "object",
-                                 ids,
-                                 arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
-                                 ...){
+ggpLayerSpatialTrajectories <- function(object = "object",
+                                        ids,
+                                        arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
+                                        ...){
 
   hlpr_assign_arguments(object)
 
@@ -3687,7 +3723,7 @@ ggpLayerTrajectories <- function(object = "object",
     purrr::set_names(nm = ids) %>%
     purrr::imap_dfr(
       .f = ~ dplyr::mutate(.x@segment, ids = .y, x = x_orig * scale_fct, y = y_orig * scale_fct)
-      ) %>%
+    ) %>%
     tibble::as_tibble()
 
   out <-
@@ -3706,7 +3742,7 @@ ggpLayerTrajectories <- function(object = "object",
 
 
 
-#' @title Create a Trajectory Frame Layer for ggplot
+#' @title Add the screening frame of a spatial trajectory
 #'
 #' @description This function generates a ggplot layer representing a trajectory
 #' frame based on a specified trajectory segment in a `spata2` object. It creates
@@ -3778,7 +3814,7 @@ ggpLayerTrajectoryFrame <- function(object,
 #' @keywords internal
 ggpLayerTrajectoryBins <- function(object,
                                    id,
-                                   binwidth = getCCD(object, unit = "px"),
+                                   resolution = getCCD(object, unit = "px"),
                                    line_color = "black",
                                    line_size = 1.5){
 
@@ -3786,9 +3822,9 @@ ggpLayerTrajectoryBins <- function(object,
   width <- traj@width
   tl <- getTrajectoryLength(object, id = id)
 
-  binwidth <- as_pixel(binwidth, object_t269)
+  resolution <- as_pixel(resolution, object_t269)
 
-  vline_pos <- seq(from = 0, to = tl, length.out = tl/binwidth)
+  vline_pos <- seq(from = 0, to = tl, length.out = tl/resolution)
 
   trajectory_name <- id
 
@@ -3802,7 +3838,7 @@ ggpLayerTrajectoryBins <- function(object,
     make_orthogonal_segments(
       sp = base::as.numeric(traj@segment[1, ]),
       ep = base::as.numeric(traj@segment[2, ]),
-      binwidth = binwidth,
+      resolution = resolution,
       out_length = width
     )
 
@@ -3857,6 +3893,8 @@ ggpLayerTrajectoryBins <- function(object,
 #' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
 #'
 #' @export
+#' @inherit ggpLayerRect examples
+#'
 ggpLayerZoom <- function(object = NULL,
                          xrange = NULL,
                          yrange = NULL,

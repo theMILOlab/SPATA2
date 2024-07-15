@@ -40,3 +40,4 @@ disease. Nat Neurosci 26, 430-446 (2023).
 \seealso{
 \code{\link[=findSDEGS]{findSDEGS()}}
 }
+\keyword{internal}

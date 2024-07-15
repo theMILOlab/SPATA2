@@ -18,7 +18,8 @@ runDEA(
 runDeAnalysis(...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
@@ -28,6 +29,15 @@ barcode spots of your object in a certain manner.}
 \item{method_de}{Character value. Denotes the method to according to which the de-analysis is performed.
 Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-function. Run \code{SPATA::dea_methods}
 to obtain all valid input options.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{...}{Additional arguments given to \code{Seurat::FindAllMarkers()}}
 
@@ -57,4 +67,17 @@ across all groups found in the feature variable \emph{seurat_clusters} according
 stores the results in the respective slot. Then it does the same according to method \emph{bimod}.)
 
 The results are obtainable via \code{getDeaResults()}, \code{getDeaResultsDf()} and \code{getDeaGenes()}.
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+object <- runDEA(object, across = "histology")
+
+plotDeaDotplot(object, across = "histology")
+plotDeaDotplot(object, across = "histology", across_subset = c("tumor", "transition"))
+
 }

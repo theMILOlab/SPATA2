@@ -47,3 +47,4 @@ of previous algorithms.
 \code{excludeTissueFragments()} requires the output of \code{\link[=identifyTissueOutline]{identifyTissueOutline()}} and
 \code{excludeSpatialOutliers()} requires the output of \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}
 }
+\keyword{internal}

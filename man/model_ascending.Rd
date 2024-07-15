@@ -3,7 +3,7 @@
 \name{model_ascending}
 \alias{model_ascending}
 \alias{model_descending}
-\title{Generate Model-Based Ascending or Descending Sequence}
+\title{Generate model-based ascending or descending sequence}
 \usage{
 model_ascending(input, incl = 1, ro = range(input))
 

@@ -54,3 +54,4 @@ plot(image)
 plot(image_proc)
 
 }
+\keyword{internal}

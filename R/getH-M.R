@@ -102,7 +102,7 @@ setMethod(
 
 # getImage ----------------------------------------------------------------
 
-#' @title Obtain `Image` object
+#' @title Obtain object of class `Image`
 #'
 #' @description Extracts the image as an object of class `Image`
 #' as specified in the package `EBImage`.
@@ -542,12 +542,25 @@ setMethod(
 #'
 #' @inherit argument_dummy params
 #'
-#' @return Character value.
+#' @return Character value or vector in case of `getImageDirectories()`.
 #'
 #' @export
 getImageDir <- function(object, img_name = activeImage(object)){
 
   getHistoImage(object, img_name = img_name)@dir
+
+}
+
+#' @rdname getImageDir
+#' @export
+getImageDirectories <- function(object){
+
+  containsHistoImages(object, error = TRUE)
+
+  sp_data <- getSpatialData(object)
+
+  sp_data@images %>%
+    purrr::map_chr(.f = ~ .x@dir)
 
 }
 
@@ -704,6 +717,9 @@ getImageRasterInfo <- function(object, xrange = NULL, yrange = NULL){
 #'   or to the left, respectively. }
 #'  }
 #' @export
+#'
+#' @inherit resetImageTransformations examples
+#'
 
 setGeneric(name = "getImageTransformations", def = function(object, ...){
 
@@ -888,7 +904,7 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 
 # getL --------------------------------------------------------------------
 
-#' @title Obtain object logfile
+#' @title Obtain object logfile data.frame
 #'
 #' @description Extracts the logfile which stores information on the progress
 #' made with the provided [`SPATA2`] object.
@@ -909,17 +925,19 @@ getLogfileDf <- function(object ){
 
 #' @title Obtain a data matrix
 #'
-#' @description Extracts matrices of molecular data.
+#' @description Extracts a matrix or multiple matrices of molecular data.
 #'
 #' @param mtr_name Character value. The name of the matrix to extract. If
 #' `NULL`, defaults to the active matrix of the provided or specified \link[=MolecularAssay]{assay}.
 #' @inherit argument_dummy params
 #'
-#' @return A matrix with rownames corresponding to the features and
-#' column names corresponding to the barcodes. Or a named list of such in
+#' @return A numeric matrix with rownames corresponding to molecule names and
+#' column names corresponding to barcodes. Or a named list of such in
 #' case of `getMatrices()`.
 #'
-#' @seealso [`getMatrixNames()`], [`getProcessedMatrixNames()`]
+#' @seealso [`getCountMatrix()`] to extract raw counts without additional argument
+#' specification required, [`getMatrixNames()`] for a vector of all matrix names of
+#' an assay, [`getProcessedMatrixNames()`] for a vector of all processed matrix of an assay.
 #'
 #' @export
 
@@ -1119,6 +1137,25 @@ getMetaDf <- function(object){
     dplyr::select(barcodes, sample, dplyr::everything())
 
 }
+
+
+#' @title Obtain method specifics
+#'
+#' @description Extracts a list of method specifics from the `SpatialMethod` of
+#' the `SPATA2` object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A named list.
+#' @export
+getMethodSpecifics <- function(object){
+
+  getSpatialMethod(object)@method_specifics
+
+}
+
+
+
 
 #' @title Obtain molecule names
 #'

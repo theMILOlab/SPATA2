@@ -2,12 +2,12 @@
 % Please edit documentation in R/s.R
 \name{spatial_gradient_screening}
 \alias{spatial_gradient_screening}
-\title{Low level implementation of the spatial gradient screening}
+\title{Low level implementation of the spatial gradient screening algorithm}
 \usage{
 spatial_gradient_screening(
   coords_df,
   variables,
-  binwidth,
+  resolution,
   cf = 1,
   rm_zero_infl = TRUE,
   n_random = 10000,
@@ -30,7 +30,7 @@ spatial_gradient_screening(
 \item{variables}{Character vector of numeric variable names that are integrated
 in the screening process.}
 
-\item{binwidth}{Units value of the same unit of the \emph{dist} variable in
+\item{resolution}{Units value of the same unit of the \emph{dist} variable in
 \code{coords_df}.}
 
 \item{n_random}{Number of random permutations for the significance testing of step 2.}
@@ -67,5 +67,5 @@ the fit.
 }
 }
 \description{
-Conducts spatial gradient screening. See details for more information.
+Conducts spatial gradient screening.
 }

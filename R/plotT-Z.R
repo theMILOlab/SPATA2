@@ -214,9 +214,9 @@ plotTrajectoryRidgeplot <- function(object,
 
 }
 
-#' @rdname plotUmap
+#' @rdname plotUMAP
 #' @export
-plotTsne <- function(object,
+plotTSNE <- function(object,
                      color_by = NULL,
                      color_aes = "color",
                      color_trans = "identity",
@@ -271,7 +271,17 @@ plotTsne <- function(object,
 
 }
 
-#' @rdname plotUmap
+#' @rdname plotUMAP
+#' @export
+plotTsne <- function(...){
+
+  deprecated(fn = TRUE, ...)
+
+  plotTSNE(...)
+
+}
+
+#' @rdname plotUMAP
 #' @export
 plotTsneComparison <- function(object,
                                color_by,
@@ -331,16 +341,17 @@ plotTsneComparison <- function(object,
 #' @inherit check_pt params
 #' @inherit confuns::argument_dummy params
 #'
-#' @inherit ggplot_family return
+#' @inherit ggplot_dummy return
 #'
 #' @details The comparison version of each function take a vector of variables
 #' to color by. A list of plots is created that is arranged via \code{grid.arrange()}.
 #'
-#'
 #' @export
 #'
+#' @inherit runPCA examples
+#'
 
-plotUmap <- function(object,
+plotUMAP <- function(object,
                      color_by = NULL,
                      color_aes = "color",
                      color_trans = "identity",
@@ -397,8 +408,17 @@ plotUmap <- function(object,
 
 }
 
+#' @rdname plotUMAP
+#' @export
+plotUmap <- function(...){
 
-#' @rdname plotUmap
+  deprecated(fn = T, ...)
+
+  plotUMAP(...)
+
+}
+
+#' @rdname plotUMAP
 #' @export
 plotUmapComparison <- function(object,
                                color_by,
@@ -478,7 +498,7 @@ plotVioBoxplot <- function(object,
     joinWithVariables(
       object = object,
       spata_df = getSpataDf(object),
-      variables = variables,
+      variables = c(variables, across),
       method_gs = method_gs,
       smooth = FALSE,
       normalize = normalize
@@ -552,7 +572,7 @@ plotViolinplot <- function(object,
     joinWithVariables(
       object = object,
       spata_df = getSpataDf(object),
-      variables = variables,
+      variables = c(variables, across),
       method_gs = method_gs,
       smooth = FALSE,
       normalize = normalize
@@ -623,8 +643,7 @@ plotViolinplot <- function(object,
 #'
 #' @inherit argument_dummy params
 #'
-#'
-#' @export
+#' @keywords internal
 
 setGeneric(name = "plotVolcano", def = function(object, ...){
 

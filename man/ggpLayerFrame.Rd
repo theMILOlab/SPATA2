@@ -9,6 +9,22 @@ ggpLayerFrame(object, xrange, yrange, expand = FALSE)
 
 ggpLayerFixFrame(object)
 }
+\arguments{
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
+
+\item{xrange, yrange}{\link[=concept_distance_measure]{Distance vector} of length
+two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
+the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
+the two dimensional space being cropped from x-coordinate 200px up to
+x-coordinate 500px. If \code{NULL}, the original range is used.}
+
+\item{expand}{Specifies image expansion. An image that is cropped based on an image
+annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
+that is width/x-axis and height/y-axis, are set to include only the image annotation area
+and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
+\emph{Expansion of cropped image sections} for more information.}
+}
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
 that can be added to ggplots via the \code{+} operator. In most of the cases
@@ -16,8 +32,6 @@ they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
 }
 \description{
-Fixes the frame of an surface plot based
-on the coordinates range of the \code{SPATA2} object in
-case of \code{ggpLayerFixFrame()} or based on specific distance
-inputs in case of \code{ggpLayerFrame()}.
+Crops the frame of a surface plot. Soft deprecated in favor
+of the arguments \code{xrange} and \code{yrange} in \code{\link[=plotSurface]{plotSurface()}}.
 }

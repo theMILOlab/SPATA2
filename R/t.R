@@ -144,6 +144,102 @@ tab_surface_plots_app <- function(){shinydashboard::tabItem(tabName = "surface_p
 
 
 
+
+
+# tag ---------------------------------------------------------------------
+
+
+
+#' @title Tag spatial annotations
+#'
+#' @description Adjusts tags of spatial annotations.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#' @param ids A character vector of IDs naming the spatial annotations that are
+#' affected by the changes.
+#' @param tags A character vector of tags.
+#' @param opt A character string specifying the kind of adjustment: either *'add'* to
+#' add tags to existing tags or *'set'* to replace existing tags with the new ones.
+#'
+#' @export
+
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' plotSpatialAnnotations(object)
+#' getSpatAnnTags(object, simplify = FALSE)
+#'
+#' object <- tagSpatialAnnotations(object, ids = c("necrotic_edge", "necrotic_edge2"), tags = "edge")
+#'
+#' getSpatAnnTags(object, simplify = FALSE)
+
+setGeneric(name = "tagSpatialAnnotations", def = function(object, ...){
+  standardGeneric(f = "tagSpatialAnnotations")
+})
+
+#' @rdname tagSpatialAnnotations
+#' @export
+setMethod(
+  f = "tagSpatialAnnotations",
+  signature = "SPATA2",
+  definition = function(object, ids, tags, opt = "add"){
+
+    sp_data <- getSpatialData(object)
+
+    sp_data <- tagSpatialAnnotations(sp_data, ids = ids, tags = tags, opt = opt)
+
+    object <- setSpatialData(object, sp_data = sp_data)
+
+    returnSpataObject(object)
+  }
+)
+
+#' @rdname tagSpatialAnnotations
+#' @export
+setMethod(
+  f = "tagSpatialAnnotations",
+  signature = "SpatialData",
+  definition = function(object, ids, tags, opt = "add"){
+
+    confuns::check_one_of(
+      input = ids,
+      against = getSpatAnnIds(object)
+    )
+
+    confuns::check_one_of(
+      input = opt,
+      against = c("add", "set")
+    )
+
+    object@annotations[ids] <-
+      purrr::map(
+        .x = object@annotations[ids],
+        .f = function(spat_ann){
+
+          if(opt == "add"){
+
+            spat_ann@tags <- base::unique(c(spat_ann@tags, tags))
+
+          } else if(opt == "set"){
+
+            spat_ann@tags <- base::unique(tags)
+
+          }
+
+          return(spat_ann)
+        }
+      )
+
+    return(object)
+  }
+)
+
+
 # te ----------------------------------------------------------------------
 
 #' @keywords internal
@@ -780,6 +876,7 @@ transform_coords <- function(coords_df, transformations, center, ranges, ...){
 #' is `FALSE`, the output is a string suffixed with *px*.
 #'
 #' @export
+#' @keywords internal
 #'
 transform_dist_si_to_pixel <- function(input,
                                        object = NULL,
@@ -818,6 +915,7 @@ transform_dist_si_to_pixel <- function(input,
 }
 
 
+#' @keywords internal
 #' @rdname transform_dist_si_to_pixel
 #' @export
 transform_dist_si_to_pixels <- function(input,
@@ -890,7 +988,8 @@ transform_dist_si_to_pixels <- function(input,
 #' transforms vectors of lengths one or more.
 #'
 #' @export
-#'
+#' @keywords internal
+
 transform_pixel_to_dist_si <- function(input,
                                        unit,
                                        object = NULL,
@@ -940,6 +1039,7 @@ transform_pixel_to_dist_si <- function(input,
 
 }
 
+#' @keywords internal
 #' @rdname transform_pixel_to_dist_si
 #' @export
 transform_pixels_to_dist_si <- function(input,
@@ -984,7 +1084,7 @@ transform_pixels_to_dist_si <- function(input,
 #' @inherit transform_pixel_to_dist_si params return
 #'
 #' @export
-#'
+#' @keywords internal
 transform_pixel_to_area_si <- function(input,
                                        unit,
                                        object,
@@ -1029,6 +1129,7 @@ transform_pixel_to_area_si <- function(input,
 }
 
 
+#' @keywords internal
 #' @rdname transform_pixel_to_si
 #' @export
 transform_pixels_to_area_si <- function(input,
@@ -1074,7 +1175,7 @@ transform_pixels_to_area_si <- function(input,
 #' is `FALSE`, the output is a string suffixed with *px*.
 #'
 #' @export
-#'
+#' @keywords internal
 transform_area_si_to_pixel <- function(input,
                                   object,
                                   round = FALSE){
@@ -1112,6 +1213,7 @@ transform_area_si_to_pixel <- function(input,
 
 }
 
+#' @keywords internal
 #' @rdname transform_area_si_to_pixel
 #' @export
 transform_area_si_to_pixels <- function(input,

@@ -2,8 +2,7 @@
 % Please edit documentation in R/m.R
 \name{mapSpatialAnnotationTags}
 \alias{mapSpatialAnnotationTags}
-\alias{mapImageAnnotationTags}
-\title{Image annotation and barcode intersection}
+\title{Spatial annotation and barcode intersection}
 \usage{
 mapSpatialAnnotationTags(
   object,
@@ -15,17 +14,10 @@ mapSpatialAnnotationTags(
   merge_sep = "_",
   merge_drop = FALSE
 )
-
-mapImageAnnotationTags(...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
-
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
 
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of spatial annotations} for more information.}
@@ -42,8 +34,6 @@ are separated with while being merged.}
 
 \item{merge_drop}{Logical value. If TRUE and \code{merge} is TRUE, all image-annotation-
 tag-variables are dropped.}
-
-\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A data.frame.

@@ -1,5 +1,5 @@
 
-#' @title Empty image slot
+#' @title Unload image slot content
 #'
 #' @description Removes the image from slot @@image of a `HistoImage`.
 #' Useful for efficient data storing.
@@ -68,7 +68,7 @@ setMethod(
   signature = "HistoImage",
   definition = function(object, verbose = TRUE, ...){
 
-    if(containsImage(object)){
+    if(containsImage(object) & !purrr::is_empty(object@dir)){
 
       confuns::give_feedback(
         msg = glue::glue("Unloading image {object@name}."),
@@ -165,12 +165,15 @@ setMethod(
 
 
 
+
+
+
 # update ------------------------------------------------------------------
 
 #' @title doc
 #'
 #' @return object
-#' @export
+#' @keywords internal
 #'
 update_spata2v2_to_spata2v3 <- function(object, method = NULL, verbose = TRUE){
 
@@ -1395,3 +1398,101 @@ setMethod(
 
 
 
+
+
+#' @title Use specified variable for tissue outline
+#'
+#' @description This function sets a specified variable from the metadata of the given object to
+#' be used if [`identifyTissueOutline()`] does not produce acceptable results.
+#'
+#' @inherit argument_dummy params
+#' @param var_name A character string specifying the name of the variable in the metadata to be used for
+#' the tissue outline.
+#' @param min_obs Numeric value. The minimal number of observations a group must have
+#' to be considered a tissue section. Defaults to 5% of the total number of observations. Must be higher than 3.
+#' @inherit update_dummy return
+#'
+#' @seealso [`createSpatialSegmentation()`] to create the outline manually, then use the created
+#' spatial segmentation variable as input for `var_name`.
+#'
+#' @export
+useVarForTissueOutline <- function(object,
+                                   var_name,
+                                   concavity = 2,
+                                   min_obs = nObs(object)*0.05){
+
+  base::stopifnot(min_obs > 3)
+
+  coords_df <- getCoordsDf(object)
+  meta_df <- getMetaDf(object)
+
+  confuns::check_one_of(
+    input = var_name,
+    against = getGroupingOptions(object)
+  )
+
+  coords_df <-
+    getCoordsDf(object) %>%
+    joinWithVariables(object, variables = var_name, spata_df = .)
+
+  groups_ordered <-
+    dplyr::group_by(coords_df, !!rlang::sym(var_name)) %>%
+    dplyr::summarise(min_y = base::mean(y, na.rm = TRUE)) %>%
+    dplyr::arrange(min_y) %>%
+    dplyr::pull(var = {{var_name}}) %>%
+    base::as.character()
+
+  meta_df$tissue_section <- character(1)
+
+  for(i in seq_along(groups_ordered)){
+
+    group <- groups_ordered[i]
+
+    if(n_obs >= min_obs){
+
+      name <- stringr::str_c("tissue_section", i, sep = "_")
+
+    } else {
+
+      name <- "tissue_section_0"
+
+    }
+
+    meta_df$tissue_section[meta_df[[var_name]] == group] <- name
+
+  }
+
+  meta_df$tissue_section <- base::factor(meta_df$tissue_section)
+
+  object <- setMetaDf(object, meta_df = meta_df)
+
+  # create polygons
+  sp_data <- getSpatialData(object)
+
+  coords_df_flt <-
+    joinWithVariables(object, variables = "tissue_section", spata_df = getCoordsDf(object)) %>%
+    dplyr::filter(tissue_section != "tissue_section_0")
+
+  sp_data@outline[["tissue_section"]] <-
+    purrr::map_df(
+      .x = base::unique(coords_df_flt[["tissue_section"]]),
+      .f = function(section){
+
+        dplyr::filter(coords_df_flt, tissue_section == {{section}}) %>%
+          dplyr::select(x = x_orig, y = y_orig) %>%
+          #increase_n_data_points(fct = 10, cvars = c("x", "y")) %>%
+          base::as.matrix() %>%
+          concaveman::concaveman(concavity = concavity) %>%
+          tibble::as_tibble() %>%
+          magrittr::set_colnames(value = c("x_orig", "y_orig")) %>%
+          dplyr::mutate(section = {{section}}) %>%
+          dplyr::select(section, x_orig, y_orig)
+
+      }
+    )
+
+  object <- setSpatialData(object, sp_data = sp_data)
+
+  returnSpataObject(object)
+
+}

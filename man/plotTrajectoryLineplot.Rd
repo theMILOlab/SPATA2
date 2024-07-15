@@ -3,27 +3,9 @@
 \name{plotTrajectoryLineplot}
 \alias{plotTrajectoryLineplot}
 \alias{plotTrajectoryRidgeplot}
-\title{Plot continuous trajectory dynamics}
+\title{Deprecated}
 \usage{
-plotTrajectoryLineplot(
-  object,
-  variables,
-  id = idST(object),
-  width = getTrajectoryLength(object, id),
-  binwidth = recBinwidth(object),
-  unit = getSpatialMethod(object)@unit,
-  smooth_span = 0.2,
-  smooth_se = TRUE,
-  line_color = NULL,
-  line_size = 1.5,
-  clrp = NULL,
-  clrp_adjust = NULL,
-  ggpLayers = NULL,
-  ncol = NULL,
-  nrow = NULL,
-  verbose = NULL,
-  ...
-)
+plotTrajectoryLineplot(...)
 
 plotTrajectoryRidgeplot(
   object,
@@ -61,78 +43,7 @@ plotTrajectoryRidgeplot(
   ...
 )
 }
-\arguments{
-\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-
-\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
-of interest.}
-
-\item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
-relevant barcode spots into groups that are then aligned with respect to the
-chosen trajectory's direction.#'}
-
-\item{smooth_span}{Numeric value. Controls the degree of smoothing.
-Given to argument \code{span} of \code{stats::loess()}.}
-
-\item{smooth_se}{Logical. If set to TRUE the confidence interval will be}
-
-\item{line_color}{Character. Affects color of the main lines of the plot.}
-
-\item{line_size}{Numeric value. Specifies the thicknes of the lines with which
-the trajectory dynamics are displayed.}
-
-\item{clrp}{Character value. Specifies the color palette to be used to represent
-groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
-input options.}
-
-\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
-color palette that is used to represent the groups. Names of the input vector must refer
-to the group and the respective named element denotes the color with which to
-represent the group.}
-
-\item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
-Skim \code{ggpLayer*()}-functions for more options.}
-
-\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-
-\item{...}{Additional arguments given to \code{ggplot2::facet_wrap()} if argument
-\code{display_facets} is set to TRUE.}
-
-\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
-are binned into.}
-
-\item{method_gs}{Character value. The method according to which gene sets will
-be handled specified as a character of length one. This can be either 'mean
-or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
-
-\item{smooth_method}{The smoothing method that will be used specified as a
-single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).}
-
-\item{display_trajectory_parts}{Logical. If set to TRUE the returned plot
-visualizes the parts in which the trajectory has been partitioned while beeing
-drawn.}
-
-\item{x_nth}{Numeric value. If the number of breaks/labels on the
-x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
-every label is kept. If 2, every second label is kept. If 3, every
-third label is kept. And so on.}
-
-\item{summarize_with}{Character value. Name of the function with which to summarize.}
-
-\item{display_facets}{Logical. If set to TRUE sub plots for every specified gene, gene-set
-or feature are displayed via \code{ggplot2::facet_wrap()}}
-}
-\value{
-Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.
-}
 \description{
-Displays values along a trajectory direction with
-a smoothed lineplot or ridgeplot.
+Deprecated in favor of \code{\link[=plotStsLineplot]{plotStsLineplot()}}
 }
+\keyword{internal}

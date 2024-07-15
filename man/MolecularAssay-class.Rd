@@ -4,7 +4,7 @@
 \name{MolecularAssay-class}
 \alias{MolecularAssay-class}
 \alias{MolecularAssay}
-\title{The \code{MolecularAssay} - class}
+\title{The \code{MolecularAssay} - Class}
 \description{
 A class to represent molecular assay data, including analysis results, metrics, and
 statistical summaries. The \code{MolecularAssay} class encapsulates various components
@@ -31,10 +31,6 @@ barcodes (IDs) of the observations to which the molecule counts were mapped.}
 
 \item{\code{mtr_proc}}{List of processed metrics, potentially including normalized
 values or transformed data.}
-
-\item{\code{molecules}}{Data.frame. Meta data for the molecules including, x- and y-coordinates
-in 2d space as well as summary statistics. Name (identifier) of each molecule is
-stored in variable \emph{mol_id}.}
 
 \item{\code{omic}}{Character value. A string that best characterizes the type of molecular data
 the assay carries (e.g., "transcriptomics", "proteomics").}

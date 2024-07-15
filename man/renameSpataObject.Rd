@@ -22,3 +22,13 @@ Renames the \code{\link{SPATA2}} object.
 Sets slot @sample of all S4 classes within the \code{SPATA2} object
 to the new name.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+object <- renameSpataObject(object, sample_name = "my_new_name")
+
+}

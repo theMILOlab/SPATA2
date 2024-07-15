@@ -5,7 +5,7 @@
 \alias{getTissueOutlineDf,SPATA2-method}
 \alias{getTissueOutlineDf,SpatialData-method}
 \alias{getTissueOutlineDf,HistoImage-method}
-\title{Obtain tissue outline}
+\title{Obtain the outline of tissue sections}
 \usage{
 getTissueOutlineDf(object, ...)
 

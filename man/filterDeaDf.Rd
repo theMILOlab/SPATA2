@@ -2,7 +2,7 @@
 % Please edit documentation in R/f.R
 \name{filterDeaDf}
 \alias{filterDeaDf}
-\title{Postprocess de-analysis results}
+\title{Postprocess DEA results}
 \usage{
 filterDeaDf(
   dea_df,
@@ -38,19 +38,6 @@ with an average log fold change below that threshold are ignored.}
 
 \item{n_lowest_pval}{Numeric value. Affects the total number of genes that are kept. See details.}
 
-\item{across_subset}{Character vector or NULL. Specifies the particular groups
-of interest the grouping variable specified in argument \code{across} contains.
-
-If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
-with a \emph{'-'}. (Saves writing if there are more groups you are interested in
-than groups you are not interested in.)
-
-Use \code{getGroupNames()} to obtain all valid input options.}
-
-\item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
-determines the order in which the groups of interest are displayed. Groups that
-are not included are dropped which affects the colors with which they are displayed.}
-
 \item{return}{Character value. Denotes the output type. One of \emph{'data.frame', 'vector'} or \emph{'list}}
 }
 \value{
@@ -83,3 +70,4 @@ group.
 \item{Arranges the genes according to the highest \emph{avg_logFC}-values}
 }
 }
+\keyword{internal}

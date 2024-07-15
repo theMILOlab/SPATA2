@@ -50,21 +50,17 @@ has specific defaults.
 }
 \examples{
 
-# --- identify tissue sections
-object <- downloadPubExample("MCI_LMU", verbose = FALSE)
+library(SPATA2)
+library(EBImage)
+library(tidyverse)
 
-coords_df <- getCoordsDf(object)
+data("example_data")
 
-coords_df <- add_tissue_section_variable(coords_df, ccd = getCCD(object, "px"))
+object <- example_data$object_MCD_LMU_diet
 
-plotSurface(coords_df, color_by = "section")
-
-# --- identify artefact spots
-object <- SPATAData::downloadSpataObject("269_T", verbose = FALSE)
-
-coords_df <- getCoordsDf(object)
-
-coords_df <- add_tissue_section_variable(coords_df, ccd = getCCD(object, "px"))
+coords_df <-
+ getCoordsDf(object) \%>\%
+ add_dbscan_variable(eps = getCCD(object, unit = "px"), name = "section")
 
 plotSurface(coords_df, color_by = "section")
 

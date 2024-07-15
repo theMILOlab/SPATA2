@@ -4,13 +4,22 @@
 \alias{addSegmentationVariable}
 \title{Add Segmentation Variable}
 \usage{
-addSegmentationVariable(object, name, verbose = NULL, ...)
+addSegmentationVariable(
+  object,
+  name,
+  init_value = "unnamed",
+  verbose = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{name}{A character string specifying the name of the segmentation variable to add.}
+
+\item{init_value}{A character string specifying the initial value of each observation.
+Defaults to \emph{unnnamed}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -20,13 +29,15 @@ the computational progress will be printed.
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \description{
-This function adds a segmentation variable to the metadata of the given object.
+This function adds a new, empty segmentation variable to the metadata of the given object for
+further naming within \code{\link[=createSpatialSegmentation]{createSpatialSegmentation()}}.
 }
 \details{
 This function checks if the provided segmentation variable name is not already used
-by a feature, gene, or gene set in the object. If the name is unique, it adds the segmentation variable
-to the object's metadata.
+by a different meta feature, molecule or molecular signature in the object. If the name is
+unique, it adds the segmentation variable to the object's metadata.
 }
 \seealso{
-\code{\link[=getSegmentationNames]{getSegmentationNames()}}, \code{\link[=getFeatureNames]{getFeatureNames()}}, \code{\link[=getMetaDf]{getMetaDf()}}, \code{\link[=setMetaDf]{setMetaDf()}}
+\code{\link[=getSegmVarNames]{getSegmVarNames()}}, \code{\link[=getFeatureNames]{getFeatureNames()}}, \code{\link[=getMetaDf]{getMetaDf()}}, \code{\link[=setMetaDf]{setMetaDf()}}
 }
+\keyword{internal}

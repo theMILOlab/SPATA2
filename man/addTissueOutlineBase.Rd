@@ -43,3 +43,4 @@ Output of \code{graphics::polygon()} is directly plotted.
 \description{
 Adds polygons to a base plot.
 }
+\keyword{internal}

@@ -24,7 +24,7 @@ plotCnvHeatmap(
   text_color = "black",
   text_position = "top",
   text_size = 3.5,
-  display_hlines = TRUE,
+  display_hlines = is.character(across),
   hline_alpha = 0.75,
   hline_color = "black",
   hline_size = 0.5,
@@ -41,11 +41,18 @@ plotCnvHeatmap(
   clrp_adjust = NULL,
   clrsp = "Blue-Red 3",
   limits = NULL,
-  annotation_size_top = 0.0125,
-  annotation_size_side = 0.0125,
+  meta_vars = NULL,
+  meta_vars_clrs = list(),
+  normalize = NULL,
+  arrange_by = across,
+  arrange_desc = FALSE,
+  annotation_size_top = 0.025,
+  annotation_size_side = 0.025,
   pretty_name = TRUE,
   ggpLayers = list(),
-  verbose = NULL
+  bcs_rm = NULL,
+  verbose = NULL,
+  ...
 )
 }
 \arguments{
@@ -147,6 +154,10 @@ are colored. Should be one of \code{validColorSpectra()[[\emph{'Diverging'}]]}.}
 \item{limits}{Numeric vector of length two or NULL, If numeric, sets the limits
 of the colorscale (\code{oob} is set to \code{scales::squish}).}
 
+\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
+
+Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
+
 \item{annotation_size_top, annotation_size_side}{Numeric values. Used to adjust
 the size of the row/column annotation of the heatmap.}
 
@@ -155,10 +166,15 @@ the size of the row/column annotation of the heatmap.}
 \item{ggpLayers}{A list of additional \code{gg} elements to customize the
 output plot. See details for more.}
 
+\item{bcs_rm}{Character vector or \code{NULL}. If character, specifies the observations
+to be removed prior to analysis or visualization by their barcode.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A plot of class \code{aplot}.
@@ -196,3 +212,9 @@ named. E.g.: \code{ggpLayers} = \code{list(grouping = theme(legend.position = "n
 removes only the legend of the grouping while leaving the legends that come
 with other plot elements as they are.
 }
+\section{Tutorials}{
+
+Extensive tutorials for how to use this function can be found on our website
+\url{https://themilolab.github.io/SPATA2/} .
+}
+

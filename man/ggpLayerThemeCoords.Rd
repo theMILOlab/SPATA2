@@ -7,9 +7,24 @@
 ggpLayerThemeCoords(unit = NULL)
 }
 \value{
-List.
+\code{ggpLayer*()}-functions return lists of \code{ggproto} objects
+that can be added to ggplots via the \code{+} operator. In most of the cases
+they are supposed to be added to plots created with the \code{plotSurface*()}
+family.
 }
 \description{
 Adds a theme to the plot that displays the coordinates of
 the tissue.
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotSurface(object) + ggpLayerThemeCoords()
+
 }

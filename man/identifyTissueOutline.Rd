@@ -11,7 +11,7 @@ identifyTissueOutline(object, ...)
 
 \S4method{identifyTissueOutline}{SPATA2}(
   object,
-  method,
+  method = "obs",
   minPts = recDbscanMinPts(object),
   eps = recDbscanEps(object),
   img_name = activeImage(object),
@@ -60,11 +60,20 @@ the computational progress will be printed.
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Identifies the spatial boundaries of the tissue. Using \code{method},
-the origin of the outline can be determined. See the vignette
-on \link[=concept_tissue_outline]{tissue outlines} in SPATA2 for more information.
+Identifies and stores the spatial boundaries of the tissue section(s).
+Then it assigns \link[=concept_observations]{observations} to their respective section.
+See details for more.
 }
 \details{
+In case of \code{method = obs}, DBSCAN is applied to categorize the data points
+of the object based on their spatial proximity, grouping those that are close
+enough to be deemed part of a single contiguous tissue section. Data points that
+are isolated and situated at a significant distance from others are identified
+as spatial outliers.The resulting classifications are saved in a \emph{tissue_section}
+variable within the object's meta data.frame. Afterwards, polygons are created
+to outline the groups of data points which represent a tissue section.
+See example 'method = obs'.
+
 In case of \code{method = image} the object must contain an image named as
 indicated by the input of argument \code{img_name}. Furthermore, the results
 of \code{\link[=identifyPixelContent]{identifyPixelContent()}} for that image are required. If \code{img_name} specifies
@@ -72,7 +81,75 @@ multiple images, the function iterates over all of them. Since results of both m
 are stored in different locations, the object can contain results of both methods.
 When extracting the tissue outline via \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}} or \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}
 use argument \code{method} to decide on which results to use.
+See example 'method = image'.
+}
+\section{DBSCAN input}{
+
+For objects derived from the Visium platform with a fixed center to center
+distance, we recommend to set \code{eps = getCCD(object, unit = "px")*1.25}
+and \code{minPts = 3} which has worked well for us. For objects derived
+from platforms that do not rely on a fixed grid of data points (MERFISH, SlideSeq, etc.)
+we recommend the average minimal distance between the data points times 10 for
+\code{eps} and \code{minPts = 2}. The function defaults to these recommendations using
+\code{\link[=recDbscanEps]{recDbscanEps()}} and \code{\link[=recDbscanMinPts]{recDbscanMinPts()}} by default. This can, of course,
+be overwritten manually by the user by specifying the parameters otherwise!
+Note that you can visualize the results with \code{plotSurface(object, color_by = 'tissue_section')}
+and repeat the process with different parameter input to overwrite the last
+results untill you are satisfied with the output.
+}
+
+\examples{
+
+library(SPATA2)
+library(ggplot2)
+
+data("example_data")
+
+obj1 <- example_data$object_UKF275T_diet
+
+obj2 <- example_data$object_lmu_mci_diet
+
+
+# example: 'method = obs'
+obj1 <- identifyTissueOutline(obj1, method = "obs")
+
+obj2 <- identifyTissueOutline(obj2, method = "obs")
+
+## visualize the categorization of spots with the new meta variable 'tissue_section'
+
+plotSurface(obj1, color_by = "tissue_section") # one single contiguous section
+
+plotSurface(obj2, color_by = "tissue_section") # two contiguous sections
+
+## visualize the outline
+
+df1_obs <- getTissueOutlineDf(obj1)
+
+ggplot(df1_obs, mapping = aes(x, y, group = section)) +
+ geom_polygon(fill = NA, color = "black")
+
+df2_obs <- getTissueOutlineDf(obj2)
+
+ggplot(df2_obs, mapping = aes(x, y, group = section)) +
+ geom_polygon(fill = NA, color = "black")
+
+# example 'method = image'
+
+activeImage(obj1)
+
+obj1 <- identifyPixelContent(obj1, img_name = "image1") # image processing needed
+obj1 <- identifyTissueOutline(obj1, method = "image", img_name = "image1")
+
+plotImage(obj1, outline = T)
+
+df1_img <- getTissueOutlineDf(obj1, method = "image")
+
+ggplot(mapping = aes(x, y, group = section)) +
+ geom_polygon(fill = NA, color = "black", data = df1_obs) +
+ geom_polygon(fill = NA, color = "red", data = df1_img)
+
 }
 \seealso{
-\code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}, \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}
+\code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}, \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}, \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}},
+\code{\link[=useVarForTissueOutline]{useVarForTissueOutline()}}
 }

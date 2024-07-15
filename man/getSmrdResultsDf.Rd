@@ -2,37 +2,11 @@
 % Please edit documentation in R/deprecated_a-i.R
 \name{getSmrdResultsDf}
 \alias{getSmrdResultsDf}
-\title{Obtain IAS results (data.frame)}
+\title{Deprecated}
 \usage{
-getSmrdResultsDf(
-  ias,
-  eval = "ias_score",
-  pval = "p_value_mean_adjusted",
-  threshold_pval = 1,
-  threshold_eval = 0,
-  model_subset = NULL,
-  model_remove = NULL
-)
-}
-\arguments{
-\item{threshold_pval, threshold_eval}{Numeric value. Used to filter
-the output accordingly.}
-
-\item{model_subset}{Character value. Used as a regex to subset models.
-Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}
-and \code{showModels()} to visualize them.}
-
-\item{model_remove}{Character value. Used as a regex to remove models
-are not supposed to be included.}
-
-\item{var_pval, var_eval}{Character value. Specifies the p-value- and the
-evaluation variable based on which the thresholds are applied.}
-}
-\value{
-Data.frame.
+getSmrdResultsDf(ias, ...)
 }
 \description{
-Extracts (and filters) the summarized IAS results in form
-of a data.frame
+Deprecated in favor of \code{\link[=getSgsResults]{getSgsResults()}}.
 }
 \keyword{internal}

@@ -21,3 +21,4 @@ or \emph{x} and \emph{y}.
 Adds image dimensions \emph{width} and \emph{height} as variables to
 a data.frame of \emph{x} and \emph{y} corodiantes or vice versa.
 }
+\keyword{internal}

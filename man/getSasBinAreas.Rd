@@ -22,18 +22,14 @@ getSasBinAreas(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue using \code{\link[=distToEdge]{distToEdge()}}.}
-
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the spatial annotation.
-(See details fore more.)}
+an angle span relative to the center of its closest spatial annotation.}
 
 \item{use_outline}{Logical value. If \code{TRUE}, uses the outline variable
 set with \code{setOutlineVarName()} or if none is set DBSCAN to identify the
@@ -60,3 +56,4 @@ with the area scale factor as is obtained by \code{getPixelScaleFactor(object, u
 where unit is the squared unit of input for argument \code{binwidth}. E.g.
 if \code{binwidth} = \emph{'0.1mm'} then \code{unit} = \emph{mm2}.
 }
+\keyword{internal}

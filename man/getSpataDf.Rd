@@ -2,12 +2,15 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSpataDf}
 \alias{getSpataDf}
-\title{Obtain a spata-data.frame}
+\title{Obtain a data.frame of observations}
 \usage{
 getSpataDf(object, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A tidy data.frame containing the character variables \emph{barcodes}
@@ -22,3 +25,4 @@ to extract data for your individual analysis.
 \seealso{
 joinWith
 }
+\keyword{internal}

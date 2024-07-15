@@ -135,10 +135,29 @@ This function is a wrapper around \code{readVisium()},
 of the \code{BayesSpace} package. The results are stored in form of a grouping
 variable in the feature data.frame of the returned \code{SPATA2} object.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+# tests options for q from 3 to 15 and picks the best
+object <- runBayesSpaceClustering(object, name = "new_bspace", qs = 3:15)
+
+plotLoglik(object)
+
+# run with q = 10 to force 10 clusters in the output
+object <- runBayesSpaceClustering(object, name = "bspace_10", qs = 10)
+
+}
 \references{
 Zhao E, Stone MR, Ren X, Guenthoer J, Smythe KS, Pulliam T,
 Williams SR, Uytingco CR, Taylor SEB, Nghiem P, Bielas JH, Gottardo R.
 Spatial transcriptomics at subspot resolution with BayesSpace.
 Nat Biotechnol. 2021 Nov;39(11):1375-1384. doi: 10.1038/s41587-021-00935-2.
 Epub 2021 Jun 3. PMID: 34083791; PMCID: PMC8763026.
+}
+\seealso{
+\code{\link[=plotLoglik]{plotLoglik()}}, \code{\link[=find_elbow_point]{find_elbow_point()}}
 }

@@ -8,7 +8,7 @@
 \alias{unloadImages}
 \alias{unloadImages,SPATA2-method}
 \alias{unloadImages,SpatialData-method}
-\title{Empty image slot}
+\title{Unload image slot content}
 \usage{
 unloadImage(object, ...)
 

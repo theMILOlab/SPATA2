@@ -30,26 +30,29 @@ estimate_r2_for_sas_run <- function(object,
                                     ids,
                                     distance,
                                     core,
-                                    binwidth,
+                                    resolution,
                                     angle_span = c(0, 360),
                                     noise_levels = base::seq(from = 0, to = 100, length.out = 11),
                                     n_sim = 25,
-                                    control = SPATA2::sgs_loess_control,
-                                    verbose = NULL){
+                                    control = NULL,
+                                    bcs_exclude = character(),
+                                    verbose = NULL,
+                                    ...){
 
+  deprecated(...)
   hlpr_assign_arguments(object)
+
+  if(is.null(control)){ control <- sgs_loess_control}
 
   unit <- getDefaultUnit(object)
 
-  if(base::length(binwidth) == 1){
+  if(base::length(resolution) == 1){
 
-    binwidth <- rep(binwidth, 2)
+    resolution <- rep(resolution, 2)
 
   }
 
-  binwidth <- as_unit(binwidth, unit = unit, object = object)
-
-
+  resolution <- as_unit(resolution, unit = unit, object = object)
 
   # step 1 data simulation
   simulations <-
@@ -73,7 +76,7 @@ estimate_r2_for_sas_run <- function(object,
       ids = ids,
       simulations = simulations,
       core = core,
-      binwidth = binwidth[2],
+      resolution = resolution[2],
       distance = distance,
       noise_levels = noise_levels,
       noise_types = "ed",
@@ -82,15 +85,22 @@ estimate_r2_for_sas_run <- function(object,
       verbose = verbose
     )
 
-  binwidth <- binwidth[1]
-
   object <-
-    addProcessedMatrix(object, expr_mtr = sim_mtr, mtr_name = "simR2", overwrite = TRUE) %>%
-    activateMatrix(object, mtr_name = "simR2")
+    createMolecularAssay(
+      object = object,
+      omic = "simR2",
+      active_mtr = "sim",
+      mtr_proc = list(sim = sim_mtr),
+      activate = TRUE,
+      overwrite = TRUE,
+      verbose = FALSE
+      )
 
   variables <- base::rownames(sim_mtr)
 
   gc()
+
+  resolution <- resolution[1]
 
   # step 2 screening
   coords_df <-
@@ -98,14 +108,15 @@ estimate_r2_for_sas_run <- function(object,
       object = object,
       ids = ids,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       angle_span = angle_span,
       dist_unit = unit,
       core = core,
       variables = variables,
       periphery = FALSE,
       verbose = FALSE
-    )
+    ) %>%
+    dplyr::filter(!barcodes %in% {{bcs_exclude}})
 
   variables <- variables[variables %in% base::names(coords_df)]
 
@@ -117,17 +128,18 @@ estimate_r2_for_sas_run <- function(object,
 
   }
 
-  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  resolution <- as_unit(resolution, unit = unit, object = object)
 
   cf <-
     compute_correction_factor_sas(
       object = object,
       id = ids,
       distance = distance,
-      core = core
+      core = core,
+      coords_df_sa = coords_df
       )
 
-  span <- base::as.numeric(binwidth/tot_dist) / cf
+  span <- base::as.numeric(resolution/tot_dist) / cf
 
   expr_est_pos <- compute_expression_estimates(coords_df)
 
@@ -139,7 +151,6 @@ estimate_r2_for_sas_run <- function(object,
   )
 
   pb <- confuns::create_progress_bar(total = nv)
-
 
   sas_df <-
     purrr::map_df(
@@ -210,7 +221,7 @@ estimate_r2_for_sas_run <- function(object,
 
 estimate_r2_for_sts_run <- function(object,
                                     id,
-                                    binwidth,
+                                    resolution,
                                     width,
                                     noise_levels = base::seq(from = 0, to = 100, length.out = 11),
                                     n_sim = 20,
@@ -242,7 +253,7 @@ estimate_r2_for_sts_run <- function(object,
       object = object,
       id = id,
       simulations = simulations,
-      binwidth = binwidth,
+      resolution = resolution,
       width = width,
       noise_levels = noise_levels,
       noise_types = "ed",
@@ -252,8 +263,15 @@ estimate_r2_for_sts_run <- function(object,
     )
 
   object <-
-    addExpressionMatrix(object, expr_mtr = sim_mtr, mtr_name = "simR2", overwrite = TRUE) %>%
-    setActiveMatrix(object = ., mtr_name = "simR2", verbose = FALSE)
+    createMolecularAssay(
+      object = object,
+      omic = "simR2",
+      active_mtr = "sim",
+      mtr_proc = list(sim = sim_mtr),
+      activate = TRUE,
+      overwrite = TRUE,
+      verbose = FALSE
+    )
 
   variables <- base::rownames(sim_mtr)
 
@@ -263,7 +281,7 @@ estimate_r2_for_sts_run <- function(object,
     getCoordsDfST(
       object = object,
       id = id,
-      binwidth = binwidth,
+      resolution = resolution,
       width = width,
       variables = variables,
       dist_unit = unit,
@@ -275,16 +293,11 @@ estimate_r2_for_sts_run <- function(object,
   # max_dist does not depend on `core` option
   min_dist <- as_unit(input = 0, unit = unit, object = object)
   max_dist <- getTrajectoryLength(object, id = id, unit = unit)
-  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  resolution <- as_unit(resolution, unit = unit, object = object)
   tot_dist <- max_dist - min_dist
-  span <- base::as.numeric(binwidth/tot_dist)
+  span <- base::as.numeric(resolution/tot_dist)
 
-  expr_est_pos <-
-    compute_positions_expression_estimates(
-      min_dist = min_dist,
-      max_dist = max_dist,
-      amccd = binwidth
-    )
+  expr_est_pos <- compute_expression_estimates(coords_df)
 
   pb <- confuns::create_progress_bar(total = base::length(variables))
 
@@ -303,9 +316,7 @@ estimate_r2_for_sts_run <- function(object,
             formula = x.var.x ~ dist,
             data = coords_df,
             span = span,
-            family = "gaussian",
-            statistics = "none",
-            surface = "direct"
+            control = base::do.call(stats::loess.control, args = control)
           )
 
         gradient <-
@@ -355,7 +366,7 @@ estimate_r2_for_sts_run <- function(object,
 
 # evaluate ----------------------------------------------------------------
 
-
+#' @keywords internal
 #' @export
 evaluate_model_fits <- function(input_df,
                                 var_order ){
@@ -403,7 +414,7 @@ evaluate_model_fits <- function(input_df,
 #' @note `excludeTissueFragments()` requires the output of [`identifyTissueOutline()`] and
 #' `excludeSpatialOutliers()` requires the output of [`identifySpatialOutliers()`]
 #'
-#' @export
+#' @keywords internal
 #'
 setGeneric(name = "exclude", def = function(object, ...){
 
@@ -644,8 +655,20 @@ extract_unit <- function(input){
 #' @inherit is_dist params details
 #'
 #' @return Numeric value.
+#'
 #' @export
 #'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' dist_vals <- c("2mm", "2.3mm")
+#'
+#' extrat_unit(dist_vals)
+#'
+#' pixels <- c(2,5, 500)
+#'
+#' extract_unit(pixels)
 extract_value <- function(input){
 
   # regex works for area and distance values
@@ -838,9 +861,9 @@ expand_image_side <- function(expand_with,
 }
 
 
-#' @title Expand the borders of a Spatial Annotations
+#' @title Expand the outline of spatial annotations
 #'
-#' @description Expands or shrinks the outer border of a spatial annotation.
+#' @description Expands or shrinks the outer outline of a spatial annotation.
 #'
 #' @param id Character value. The ID of the spatial annotation of interest.
 #' @param expand Distance measure with which to expand the border. Negative
@@ -853,6 +876,22 @@ expand_image_side <- function(expand_with,
 #' @seealso [`smoothSpatialAnnotation()`], [`shiftSpatialAnnotation()`], [`SpatialAnnotation`]
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotImage(object) + ggpLayerSpatAnnOutline(object, ids = "vessel1", line_color = "red")
+#' plotSpatialAnnotations(object, "vessel1")
+#'
+#' object <- expandSpatialAnnotation(object, id = "vessel1", expand = "50um", new_id = "vessel1_exp")
+#'
+#' plotSpatialAnnotations(object, ids = c("vessel1", "vessel1_exp"))
 #'
 expandSpatialAnnotation <- function(object,
                                     id,
@@ -877,14 +916,14 @@ expandSpatialAnnotation <- function(object,
   outline_df <-
     getSpatAnnOutlineDf(object, ids = id, outer = TRUE, inner = FALSE)
 
-  csf <- getScaleFactor(object, fct_name = "coords")
+  isf <- getScaleFactor(object, fct_name = "image")
 
   expand <- as_pixel(input = expand, object = object)
 
   outer_df_new <-
     dplyr::select(spat_ann@area$outer, x, y) %>%
     buffer_area(df = ., buffer = expand) %>%
-    dplyr::mutate(x_orig = x / {{csf}}, y_orig = y / {{csf}}) %>%
+    dplyr::mutate(x_orig = x / {{isf}}, y_orig = y / {{isf}}) %>%
     dplyr::select(-x, -y)
 
   spat_ann@area$outer <- outer_df_new

@@ -102,9 +102,9 @@ setMethod(
 
 # plotP -------------------------------------------------------------------
 
-#' @rdname plotUmap
+#' @rdname plotUMAP
 #' @export
-plotPca <- function(object,
+plotPCA <- function(object,
                     color_by = NULL,
                     n_pcs = NULL,
                     method_gs = NULL,
@@ -240,13 +240,17 @@ plotPca <- function(object,
 
 }
 
+#' @rdname plotUMAP
+#' @export
+plotPca <- plotPCA
 
-#' @title Plot Pca Variation
+
+#' @title Plot PCA Variation
 #'
 #' @description Displays a scree plot of the current principal component
 #' analysis data stored in the object.
 #'
-#' @inherit check_sample params
+#' @inherit argument_dummy params
 #' @inherit getPcaMtr params
 #'
 #' @inherit ggplot_family return
@@ -502,7 +506,18 @@ plotRidgeplot <- function(object,
 #' riverplots check out the website of the package \code{ggalluvial} at
 #' \emph{https://corybrunson.github.io/ggalluvial/articles/ggalluvial.html}.
 #'
-#' @return A ggplot.
+#' @inherit ggplot_dummy return
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotRiverplot(object, grouping_variables = c("seurat_clusters", "bayes_space"), fill_by = "bayes_space")
+#'
+#'
 #' @export
 #'
 plotRiverplot <- function(object,
@@ -536,7 +551,7 @@ plotRiverplot <- function(object,
   )
 
   plot_df <-
-    getFeatureDf(object) %>%
+    getMetaDf(object) %>%
     dplyr::select(dplyr::all_of(all_vars)) %>%
     dplyr::group_by_all() %>%
     dplyr::summarize(n = dplyr::n(), .groups = "keep")
@@ -571,7 +586,8 @@ plotRiverplot <- function(object,
       clrp.adjust = clrp_adjust,
       ...
     ) +
-    ggplot2::theme_void()
+    ggplot2::theme_void() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text())
 
 }
 
@@ -588,15 +604,38 @@ plotRiverplot <- function(object,
 #'
 #' @inheritSection section_dummy Distance measures
 #'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <-
+#'  createNumericAnnotations(
+#'    object = object,
+#'    variable = "HM_HYPOXIA",
+#'    threshold = "kmeans_high",
+#'    id = "hypoxia_ann",
+#'    inner_borders = FALSE,
+#'    force1 = TRUE
+#'    )
+#'
+#' plotSurface(object, color_by = "bayes_space") +
+#'   ggpLayerSpatAnnOutline(object, ids = "hypoxia_ann")
+#'
+#' plotSasBarplot(object, grouping = "bayes_space", id = "hypoxia_ann")
+#'
 #' @export
 #'
 plotSasBarplot <- function(object,
                            grouping,
                            id = idSA(object),
                            distance = distToEdge(object, id),
-                           angle_span = c(0, 360),
-                           binwidth = getCCD(object)*2,
+                           resolution = getCCD(object)*2,
                            unit = getDefaultUnit(object),
+                           angle_span = c(0, 360),
                            round = 2,
                            clrp = NULL,
                            clrp_adjust = NULL,
@@ -615,16 +654,18 @@ plotSasBarplot <- function(object,
       object = object,
       ids = id,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       angle_span = angle_span,
-      variables = grouping,
       core = FALSE,
       periphery = FALSE
     )
 
+  coords_df_sas <-
+    joinWithVariables(object, variables = grouping, spata_df = coords_df_sas)
+
   p_out <-
     plot_sgs_barplot(
-      coords_df_sgs,
+      coords_df_sas,
       grouping = grouping,
       round = round,
       clrp = clrp,
@@ -637,7 +678,7 @@ plotSasBarplot <- function(object,
 
   p_out +
     ggplot2::labs(
-      x = glue::glue("Distance to Annotation"),
+      x = glue::glue("Distance to Annotation ({unit})"),
       y = c("fill" = "Percentage [%]", "count" = "Count")[position]
     )
 
@@ -658,12 +699,37 @@ plotSasBarplot <- function(object,
 #' @inheritSection section_dummy Distance measures
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#' library(ggplot2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+#'
+#' object <- normalizeCounts(object, activate = T)
+#'
+#' # visualize with lines
+#' plotSasLineplot(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+#'   labs(x = "Distance to Necrosis")
+#'
+#' # visualize with ridgeplots
+#' plotSasRidgeplot(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+#'   labs(x = "Distance to Necrosis")
+#'
+#' # visualize with a heatmap
+#' plotSasHeatmap(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+#'   labs(x = "Distance to Necrosis")
+#'
 
 plotSasHeatmap <- function(object,
                            variables,
                            ids = idSA(object),
                            distance = "dte",
-                           binwidth = recBinwidth(object),
+                           resolution = recSgsRes(object),
                            core = FALSE,
                            arrange_rows = "none",
                            unit = getDefaultUnit(object),
@@ -753,20 +819,21 @@ plotSasHeatmap <- function(object,
 #' @inherit as_unit params
 #' @inherit getSasDf params
 #' @inherit plotSasHeatmap params details
-#' @inherit plotTrajectoryLineplot params
+#' @inherit plotStsLineplot params
 #' @inherit argument_dummy params
 #' @inherit ggplot_dummy return
-#' @inherit ggpLayerLineplotAid params
 #'
 #' @inheritSection section_dummy Distance measures
 #'
 #' @export
 #'
+#' @inherit plotSasHeatmap examples
+#'
 plotSasLineplot <- function(object,
                             variables,
                             ids = idSA(object),
                             distance = "dte",
-                            binwidth = recBinwidth(object),
+                            resolution = recSgsRes(object),
                             core = FALSE,
                             angle_span = c(0,360),
                             smooth_span = 0.2,
@@ -799,7 +866,7 @@ plotSasLineplot <- function(object,
       variables = variables,
       ids = ids,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       unit = unit,
       core = core,
       angle_span = angle_span,
@@ -866,18 +933,19 @@ plotSasLineplot <- function(object,
 #' @inherit plotTrajectoryLineplot params
 #' @inherit argument_dummy params
 #' @inherit ggplot_dummy return
-#' @inherit ggpLayerLineplotAid params
 #' @inherit plotSasLineplot
 #'
 #' @inheritSection section_dummy Distance measures
 #'
 #' @export
 #'
+#' @inherit plotSasHeatmap examples
+#'
 plotSasRidgeplot <- function(object,
                              variables,
                              ids = idSA(object),
                              distance = distToEdge(object, id),
-                             binwidth = recBinwidth(object),
+                             resolution = recSgsRes(object),
                              angle_span = c(0,360),
                              core = FALSE,
                              smooth_span = 0.3,
@@ -908,7 +976,7 @@ plotSasRidgeplot <- function(object,
       variables = variables,
       ids = ids,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       unit = unit,
       core = core,
       angle_span = angle_span,
@@ -975,6 +1043,15 @@ plotSasRidgeplot <- function(object,
 #' @param ... Additional arguments given to \code{ggplot2::geom_smooth()}.
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotScatterplot(object, variables = c("HM_HYPOXIA", "METRN"))
 
 plotScatterplot <- function(object,
                             variables,
@@ -1071,6 +1148,21 @@ plotScatterplot <- function(object,
 #' @seealso [`getSpatialAnnotations()`]
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+#'
+#' plotSpatialAnnotations(object, ids = ids)
+#'
+#' plotSpatialAnnotations(object, ids = ids, square = T)
+#'
+#' plotSpatialAnnotations(object, id = ids, fill = "orange", square = T, expand = "50%")
 #'
 #'
 setGeneric(name = "plotSpatialAnnotations", def = function(object, ...){
@@ -1356,7 +1448,7 @@ setMethod(
 )
 
 
-#' @title Plot spatial trajectory
+#' @title Plot spatial trajectories
 #'
 #' @description Displays the spatial course of spatial trajectory that was
 #' drawn with \code{createSpatialTrajectories()} on a surface plot.
@@ -1380,6 +1472,15 @@ setMethod(
 #' @inherit ggplot_family return
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' plotSpatialTrajectories(object, color_by = "histology", pt_clrp = "npg", ids = "horizontal_mid")
 #'
 plotSpatialTrajectories <- function(object,
                                     ids = NULL,
@@ -1498,7 +1599,7 @@ plotSpatialTrajectories <- function(object,
       data = df,
       mapping = ggplot2::aes(x = x, y = y, alpha = rel_loc, color = .data[[color_by]])
     ) +
-    ggpLayerTrajectories(
+    ggpLayerSpatialTrajectories(
       object = object,
       ids = ids,
       arrow = arrow,
@@ -1540,13 +1641,7 @@ plotStatisticsInteractive <- function(spata_df){
 }
 
 
-
-
-
-
-
-
-#' @title Plot categorical trajectory dynamics
+#' @title Plot STS barplot
 #'
 #' @description Displays discrete variables along a trajectory.
 #'
@@ -1555,10 +1650,20 @@ plotStatisticsInteractive <- function(spata_df){
 #' @inherit ggplot_dummy return
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' plotStsBarplot(object, grouping = "histology", id = "horizontal_mid")
+#'
 plotStsBarplot <- function(object,
                            grouping,
                            id = idST(object),
-                           binwidth = getCCD(object)*2,
+                           resolution = getCCD(object)*2,
                            unit = getDefaultUnit(object),
                            round = 2,
                            clrp = NULL,
@@ -1577,7 +1682,7 @@ plotStsBarplot <- function(object,
       object = object,
       id = "horizontal_mid",
       variables = grouping,
-      binwidth = binwidth,
+      resolution = resolution,
       outside = FALSE
     )
 
@@ -1604,7 +1709,7 @@ plotStsBarplot <- function(object,
 
 }
 
-#' @title Plot trajectory expression dynamic in heatmap
+#' @title Plot STS heatmap
 #'
 #' @description Displays variable-expression values along a trajectory
 #' direction with a smoothed heatmap (from left to right).
@@ -1623,6 +1728,23 @@ plotStsBarplot <- function(object,
 #' @inherit ggplot_dummy return
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' object <- normalizeCounts(objcect, activate = TRUE)
+#'
+#' genes <- c("EGFR", "MBP", "MAG", "SNAP25")
+#'
+#' plotStsHeatmap(object, id = "horizontal_mid", variables = genes)
+#'
+#' plotStsLineplot(object, id = "horizontal_mid", variables = genes)
+#'
+#' plotStsRidgeplot(object, id = "horizontal_mid", variables = genes)
 #'
 plotStsHeatmap <- function(object,
                            variables,
@@ -1673,7 +1795,7 @@ plotStsHeatmap <- function(object,
 
 
 
-#' @title Plot continuous trajectory dynamics
+#' @title Plot STS line- and ridgeplot
 #'
 #' @description Displays values along a trajectory direction with
 #' a smoothed lineplot or ridgeplot.
@@ -1689,6 +1811,8 @@ plotStsHeatmap <- function(object,
 #' @inherit ggplot_dummy return
 #'
 #' @export
+#' @inherit plotStsHeatmap examples
+#'
 plotStsLineplot <- function(object,
                             variables,
                             id = idST(object),

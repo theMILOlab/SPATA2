@@ -3,7 +3,7 @@
 \name{activateAssay}
 \alias{activateAssay}
 \alias{activeAssay}
-\title{Default assay}
+\title{Default assay name}
 \usage{
 activateAssay(object, assay_name, verbose = NULL)
 
@@ -13,9 +13,8 @@ activeAssay(object)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
-one assay: Denotes the assay of interest. Defaults to the active assay,
-as set by \code{\link[=activateAssay]{activateAssay()}}.}
+\item{assay_name}{Character value. The name of the assay to activate as
+the default assay}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -23,13 +22,22 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-\code{activateAssay()}: Updated \code{SPATA2} object.
-\code{activeAssay()}: Character value. Name of the default assay.
+\itemize{
+\item{activateAssay()}: Updated \code{SPATA2} object.
+\item{activateAssay()}: Character value. Name of the currently active assay.
+}
 }
 \description{
-Sets and extracts the active (default) assay. Only relevant if the
-\code{SPATA2} object contains more than one molecular assay.
+Sets and extracts the active (default) assay name.
+}
+\examples{
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+activeAssay(object)
+
 }
 \seealso{
-\code{\link{MolecularAssay}}
+\code{\link[=getAssay]{getAssay()}}, \code{\link[=getAssayNames]{getAssayNames()}}
 }

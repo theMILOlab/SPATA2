@@ -2,9 +2,7 @@
 % Please edit documentation in R/m.R
 \name{merge_intersecting_polygons}
 \alias{merge_intersecting_polygons}
-\title{Merge polygons
-This function merges intersecting polygons by inserting the sub-polygon into
-the main polygon where they intersect.}
+\title{Merge polygons}
 \usage{
 merge_intersecting_polygons(
   main_poly,
@@ -26,7 +24,6 @@ merge_intersecting_polygons(
 A data frame representing the merged polygons.
 }
 \description{
-Merge polygons
 This function merges intersecting polygons by inserting the sub-polygon into
 the main polygon where they intersect.
 }
@@ -43,3 +40,4 @@ sub_poly <- data.frame(x = c(0.5, 1.5, 1.5, 0.5), y = c(0.5, 0.5, 1.5, 1.5))
 merge_intersecting_polygon(main_poly, sub_poly)
 
 }
+\keyword{internal}

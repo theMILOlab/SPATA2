@@ -21,6 +21,12 @@ The updated input object, containing the added, removed or computed results.
 Removes data points that fall on tissue fragments as
 identified by \code{\link[=identifyTissueOutline]{identifyTissueOutline()}} and \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}
 }
+\section{Tutorials}{
+
+Extensive tutorials for how to use this function can be found on our website
+\url{https://themilolab.github.io/SPATA2/} .
+}
+
 \seealso{
 \code{\link[=removeSpatialOutliers]{removeSpatialOutliers()}}, \code{\link[=identifyTissueOutline]{identifyTissueOutline()}} and \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}
 }

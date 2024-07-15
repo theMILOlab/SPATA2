@@ -6,7 +6,7 @@
 \alias{plotImageBase,SpatialData-method}
 \alias{plotImageBase,HistoImage-method}
 \alias{plotImageBase,Image-method}
-\title{Plot histology image}
+\title{Plot image with R base plotting}
 \usage{
 plotImageBase(object, ...)
 

@@ -22,17 +22,18 @@ ggpLayerHorizonSAS(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
-\item{line_size}{Numeric. The size with which to display encircling lines
-of the area expansion.}
+\item{line_size}{Numeric. The size with which to display lines
+of the expression estimates.}
 
 \item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
 \emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
@@ -59,4 +60,27 @@ family.
 \description{
 Visualizes the border between screened tissue (environment)
 and everything beyond that is not included in the screening (periphery).
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <-
+ createNumericAnnotations(
+   object = object,
+   variable = "HM_HYPOXIA",
+   threshold = "kmeans_high",
+   id = "hypoxia_ann",
+   force1 = TRUE
+   )
+
+plotSurface(object, color_by = "HM_HYPOXIA", outline = T, pt_clrsp = "Reds 3") +
+ ggpLayerHorizonSAS(object, id = "hypoxia_ann", distance = "3mm") +
+ ggpLayerScaleBarSI(object, sb_pos = c("3mm", "2mm"))
+
 }

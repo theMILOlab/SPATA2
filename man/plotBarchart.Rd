@@ -12,7 +12,7 @@ plotBarchart(
   relevel = NULL,
   clrp = NULL,
   clrp_adjust = NULL,
-  position = NULL,
+  position = "stack",
   display_facets = NULL,
   ncol = NULL,
   nrow = NULL,
@@ -63,11 +63,23 @@ proportion you want to display. Must not contain the feature specified in
 \code{across} - if \code{across} is not set to NULL.}
 }
 \value{
-Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.
+Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.
 }
 \description{
 Visualizes the count or the proportion of barcode spots falling
 into certain groups via barcharts. It does so either for the whole sample or
 in a comparing manner if \code{across} is specified.
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotBarchart(object, grouping_variables = c("seurat_clusters", "bayes_space"))
+
 }

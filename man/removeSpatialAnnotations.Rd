@@ -10,7 +10,7 @@ removeSpatialAnnotations(object, ids)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{ids}{Character value. The IDs of the spatial annotations to
+\item{ids}{Character vector. The IDs of the spatial annotations to
 remove.}
 }
 \value{
@@ -18,4 +18,24 @@ The updated input object, containing the added, removed or computed results.
 }
 \description{
 Removes spatial annotations from the SPATA2 object.
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+getSpatAnnIds(object)
+plotSpatialAnnotations(object)
+
+# get IDs tagged with both 'necrotic' and 'compr'
+ids_rm <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "all")
+
+print(ids_rm)
+
+object <- removeSpatialAnnotations(object, ids = ids_rm)
+
+plotSpatialAnnotations(object)
+
 }

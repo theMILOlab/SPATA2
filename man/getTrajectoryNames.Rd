@@ -2,12 +2,11 @@
 % Please edit documentation in R/deprecated_a-i.R
 \name{getTrajectoryNames}
 \alias{getTrajectoryNames}
-\title{Deprecated.}
+\title{Deprecated}
 \usage{
 getTrajectoryNames(object, ...)
 }
 \description{
-This function is deprecated in favor of
-getTrajectoryIds().
+Deprecated in favor of \code{\link[=getSpatialTrajectoryIds]{getSpatialTrajectoryIds()}}.
 }
 \keyword{internal}

@@ -61,7 +61,7 @@ with which other histology images are aligned.}
 \item{\code{scale_factors}}{list. List of single numeric values serving as scale factors for
 multiple purposes Reserved slot names:
 \itemize{
-\item{\emph{coords}:} {Coordinate scale factor to be multiplied by the original x and y variables (\emph{x_orig}, \emph{y_orig}) upon
+\item{\emph{image}:} {Image scale factor with which the original x and y variables (\emph{x_orig}, \emph{y_orig}) are multiplied with upon
 extraction of the coordinates data.frame (resulting in the \emph{x} and \emph{y} variables) ensuring alignment with the image.}
 \item{\emph{pixel}:} {Pixel scale factor used to convert pixel values into SI units. It must have an
 attribute called "unit" conforming to the format "SI-unit/px".}

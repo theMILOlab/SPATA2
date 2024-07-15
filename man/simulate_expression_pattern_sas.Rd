@@ -12,7 +12,7 @@ simulate_expression_pattern_sas(
   simulations,
   core,
   distance = "dte",
-  binwidth = recBinwidth(object),
+  resolution = recSgsRes(object),
   angle_span = c(0, 360),
   noise_levels = seq(0, 100, length.out = 21),
   noise_types = c("ed", "ep", "fp", "cb"),
@@ -31,7 +31,7 @@ simulate_expression_pattern_sts(
   id,
   simulations,
   width,
-  binwidth = recBinwidth(object),
+  resolution = recSgsRes(object),
   noise_levels = seq(0, 100, length.out = 21),
   noise_types = c("ed", "ep", "fp", "cb"),
   range_sim = c(0, 1),
@@ -56,10 +56,7 @@ simulate_random_expression(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
+\item{ids}{Character vector. Specifies the IDs of the spatial annotations of interest.}
 
 \item{simulations}{A list of \emph{simulation lists}. A simulations list is a list
 that contains at least three slots that provide instructions for a set of
@@ -75,18 +72,18 @@ to simulate the expression.
 A simulation list can have an additional slot called \emph{noise_levels} which,
 if present, overwrites the input for \code{noise_levels} for the specific simulation.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
 
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the spatial annotation.
-(See details fore more.)}
+an angle span relative to the center of its closest spatial annotation.}
 
 \item{noise_levels}{A vector of integers between 0-100 (inclusive). Indicate
 the respective levels of noise to be added to each simulation in percent.
@@ -132,3 +129,4 @@ Where \code{nl} is the noise level of the simulation, \code{sim_id} corresponds 
 the slot \emph{id} of the simulation list and \code{n} is the index of the simulation
 in case slot \emph{n} of the simulation instruction is bigger than one.
 }
+\keyword{internal}

@@ -2,19 +2,11 @@
 % Please edit documentation in R/deprecated_a-i.R
 \name{getActiveMatrixName}
 \alias{getActiveMatrixName}
-\alias{getActiveExpressionMatrixName}
-\title{Obtain name of currently active data matrix}
+\title{Deprecated}
 \usage{
 getActiveMatrixName(object, ...)
-
-getActiveExpressionMatrixName(...)
-}
-\arguments{
-\item{object}{A valid spata-object.}
-}
-\value{
-Character value.
 }
 \description{
-Obtain name of currently active data matrix
+Deprecated in favor of \code{\link[=activeMatrix]{activeMatrix()}}.
 }
+\keyword{internal}

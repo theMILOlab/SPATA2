@@ -36,12 +36,11 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
-
-\item{unit}{Character value. Specifies the desired unit.}
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
+input options.}
 
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of spatial annotations} for more information.}
@@ -56,61 +55,32 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-Numeric vector of the same length as \code{ids}. Named accordingly.
 Contains the area of the spatial annotations in the unit that is specified in \code{unit}.
 The unit is attached to the output as an attribute named \emph{unit}. E.g. if
 \verb{unit = *mm2*} the output value has the unit \emph{mm^2}.
 }
 \description{
-Computes the area of an spatial annotation in SI units of area.
+Computes the area of spatial annotations.
 }
-\details{
-First, the side length of each pixel is calculated and based on that the area.
-
-Second, the number of pixels that fall in the area given by the outer border
-of the spatial annotation is computed with \code{sp::point.in.polygon()}.
-
-Third, if the spatial annotation contains holes the pixel that fall in these
-holes are removed.
-
-Fourth, the number of remaining pixels s multiplied with
-the area per pixel.
+\note{
+The area is computed solely based on the outline of the annotation even
+if the annotation transgresses the tissue outline! If you only want the area
+of the annotation on the tissue section adjust the annotation with \code{\link[=mergeWithTissueOutline]{mergeWithTissueOutline()}}.
+See examples.
 }
-\section{Selection of spatial annotations}{
+\examples{
 
+library(SPATA2)
 
-Selection of spatial annotations via the arguments \code{ids}, \code{class}, \code{tags} and
-\code{test} works in three steps:
+object <- example_data$object_UKF313T_diet
 
-First, if \code{ids} is a character it prefilters the annotations by ID and only
-the specified ones are submitted to the next steps. If it is \code{NULL}, all
-annotations are submitted to the next steps.
+ids <- c("necrotic_edge2", "necrotic_edge2_transgr")
 
-Secondd, if \code{class} is a character it filters the annotations remaining
-after the first step by their class. If \code{NULL}, the step is skipped.
+plotSpatialAnnotations(object, ids = ids)
 
-Third, if \code{tags} is a character it is used in combination with \code{test} to select
-from the spatial annotations that remain after the second step based on the meta data
-they are tagged with. There are multiple options:
-\enumerate{
-\item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
-must be tagged with at least one of the input tags.
-\item Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-must be tagged with all of the input tags. Can contain tags that are not specified.
-\item Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-must be tagged with all of the input tags. Can not be tagged with anything else.
-\item Argument \code{test} set to \emph{not_identical} or \emph{4}: To be included, an image
-annotation must \strong{not} be tagged with the combination of input tags.
-\item Argument \code{test} set to \emph{'none'} or \emph{5}: To be included, an image annotation
-must \strong{not} contain any of the input tags.
+getSpatAnnArea(object, ids = ids)
+
 }
-
-If \code{tags} is \code{NULL}, the step is skipped. Therefore, if \code{ids}, \code{class} and \code{tags}
-are all NULL, which is the default, all annotations are selected as all subsetting
-steps are skipped. Eventually, the remaining spatial annotations are submitted to
-whatever the respective function does.
-}
-
 \seealso{
 \code{\link[=getSpatAnnOutlineDf]{getSpatAnnOutlineDf()}}, \code{\link[=getCCD]{getCCD()}}, \code{\link[=as_unit]{as_unit()}}
 }

@@ -4,7 +4,7 @@
 \alias{centerSpatialAnnotation}
 \alias{centerSpatialAnnotation,SPATA2-method}
 \alias{centerSpatialAnnotation,SpatialData-method}
-\title{Center the Borders of a Spatial Annotation}
+\title{Center the borders of a spatial annotation}
 \usage{
 centerSpatialAnnotation(object, ...)
 
@@ -50,7 +50,7 @@ The updated input object, containing the added, removed or computed results.
 }
 \description{
 Shifts the borders of a spatial annotation in a way that
-it's center corresponds to the input of \code{c(center_x, center_y)}.
+its center corresponds to the input of \code{c(center_x, center_y)}.
 }
 \seealso{
 \code{\link[=expandSpatialAnnotation]{expandSpatialAnnotation()}}, \code{\link[=shiftSpatialAnnotation]{shiftSpatialAnnotation()}},

@@ -12,7 +12,7 @@ Encoding: UTF-8
 LazyData: true
 License: GPL-3
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.3.2
 Imports: 
     aplot,
     broom,
@@ -23,12 +23,15 @@ Imports:
     DT,
     FNN,
     ggalt,
+    ggalluvial,
     ggforce,
     ggplot2,
+    ggpubr,
     ggridges,
     ggsci,
     glue,
     grid,
+    hdf5r,
     keys,
     lubridate,
     magick,
@@ -76,9 +79,11 @@ Collate:
     'd.R'
     'data.R'
     'delete_maybe.R'
+    'deprecated.R'
     'deprecated_a-i.R'
     'deprecated_j-z.R'
     'dev.R'
+    'discuss.R'
     'documentation-dummies.R'
     'downgrade.R'
     'e.R'
@@ -119,5 +124,5 @@ Collate:
     'v.R'
     'w.R'
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5)
 URL: https://themilolab.com/

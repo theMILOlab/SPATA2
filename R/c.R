@@ -24,7 +24,7 @@ center_polygon <- function(polygon, window_size) {
 }
 
 
-#' @title Center the Borders of a Spatial Annotation
+#' @title Center the borders of a spatial annotation
 #'
 #' @description Shifts the borders of a spatial annotation in a way that
 #' its center corresponds to the input of `c(center_x, center_y)`.
@@ -140,52 +140,7 @@ setMethod(
 )
 
 
-#' @title Center tissue
-#'
-#' @description Computes the necessary translations in order to center
-#' the identified tissue outline in the center of the image.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @export
-#'
-setGeneric(name = "centerTissueOutline", def = function(object, ...){
 
-  standardGeneric(f = "centerTissueOutline")
-
-})
-
-#' @rdname centerTissueOutline
-#' @export
-setMethod(
-  f = "centerTissueOutline",
-  signature = "HistoImage",
-  definition = function(object, verbose = TRUE, ...){
-
-    confuns::give_feedback(
-      msg = "Centering tissue outline.",
-      verbose = verbose
-    )
-
-    center <- getImageCenter(object)
-
-    outline_centroid <- getTissueOutlineCentroid(object, transform = FALSE)[c("x", "y")]
-
-    req_translation <- center - outline_centroid
-
-    object@transformations$translate$centroid_alignment$horizontal <-
-      base::unname(object@transformations$translate$centroid_alignment$horizontal + req_translation["x"])
-
-    object@transformations$translate$centroid_alignment$vertical <-
-      base::unname(object@transformations$translate$centroid_alignment$vertical - req_translation["y"])
-
-    object@centered <- TRUE
-
-    return(object)
-
-  }
-)
 
 # cl ----------------------------------------------------------------------
 
@@ -280,17 +235,19 @@ compute_area <- function(poly){
 }
 
 
+#' @keywords internal
+compute_avg_dp_distance <- function(object, vars = c("x_orig", "y_orig"), coords_df = NULL){
 
-compute_avg_dp_distance <- function(object, vars = c("x_orig", "y_orig")){
+  if(base::is.null(coords_df)){ coords_df <- getCoordsDf(object)}
 
-  getCoordsDf(object) %>%
-    dplyr::select(dplyr::all_of(vars)) %>%
+    dplyr::select(coords_df, dplyr::all_of(vars)) %>%
     base::as.matrix() %>%
     FNN::knn.dist(data = ., k = 1) %>%
     base::mean()
 
 }
 
+#' @keywords internal
 compute_avg_vertex_distance <- function(polygon_df) {
 
   # ensure the polygon is closed (first and last point are the same)
@@ -338,7 +295,11 @@ compute_corr <- function(gradient, model){
 
 #' @keywords internal
 #' @export
-compute_correction_factor_sas <- function(object, ids, distance, core, coords_df_sa = NULL){
+compute_correction_factor_sas <- function(object,
+                                          ids,
+                                          distance,
+                                          core,
+                                          coords_df_sa = NULL){
 
   if(base::is.null(coords_df_sa)){
 
@@ -484,25 +445,18 @@ compute_distance <- function(starting_pos, final_pos){
 
 }
 
-#' Compute Position-Based Expression Estimates
+#' Compute
 #'
 #' This function computes position-based expression estimates given the minimum
 #' and maximum distances and the average minimum center-to-center distance (AMCCD).
 #'
-#' @param min_dist Minimum distance for estimation.
-#' @param max_dist Maximum distance for estimation.
-#' @param amccd Average Minimum Center-to-Center Distance (AMCCD).
+#' @param coords_df A coordinates data.frame as obtained by [`getCoordsDfSA()`]
+#' or [`getCoordsDfST`].
 #'
 #' @return A numeric vector representing position-based expression estimates.
 #'
-#' @note This function validates that the units of \code{amccd}, \code{min_dist},
-#' and \code{max_dist} match to ensure consistent unit measurements.
-
-#' @return A numeric vector representing positions for expression estimates.
+#' @keywords internal
 #'
-#' @export
-#'
-
 compute_expression_estimates <- function(coords_df){
 
   out <-
@@ -661,9 +615,9 @@ compute_relative_variation <- function(gradient){
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @export
+#' @keywords internal
 #'
-computeChromosomalDamage <- function(object, chr_vars = stringr::str_c("Chr", 1:22)){
+computeChromosomalInstability <- function(object, chr_vars = stringr::str_c("Chr", 1:22)){
 
   containsCNV(object, error = TRUE)
 
@@ -675,12 +629,13 @@ computeChromosomalDamage <- function(object, chr_vars = stringr::str_c("Chr", 1:
   new_feat <-
     dplyr::group_by(chr_df, barcodes) %>%
     dplyr::summarize(
-      chrom_damage = stats::var(x = cnv_val, na.rm = T)
+      chrom_instab = stats::var(x = cnv_val, na.rm = T)
     )
 
-  new_feat$chrom_damage[is.na(new_feat$chrom_damage)] <- base::mean(new_feat$chrom_damage, na.rm = TRUE)
+  new_feat$chrom_instab[is.na(new_feat$chrom_instab)] <- base::mean(new_feat$chrom_instab, na.rm = TRUE)
 
   object <- addFeatures(object, feature_df = new_feat, overwrite = TRUE)
+  object <- addFeatures(object, feature_df = chrom_instab_zscore, overwrite = TRUE)
 
   returnSpataObject(object)
 
@@ -860,6 +815,21 @@ computeMetaFeatures <- function(object,
 #'
 #' @export
 #'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' containsCDD(object) # must be TRUE
+#'
+#' object <- computePixelScaleFactor(object)
+#'
+#' getPixelScaleFactor(object, unit = "mm")
+#'
+#'
 setGeneric(name = "computePixelScaleFactor", def = function(object, ...){
 
   standardGeneric(f = "computePixelScaleFactor")
@@ -1031,7 +1001,7 @@ container <- function(...){
 #'  \code{sttringr::str_c()} if input for argument \code{tags} is a list.
 #'
 #' @return A data.frame with two variables: \emph{tags} and \emph{n}
-#' @export
+#' @keywords internal
 #'
 countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 
@@ -1090,7 +1060,7 @@ countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 #' @param image Object of class `Image` from the `ÈBIMage` package.
 #'
 #' @return Cropped input object.
-#' @export
+#' @keywords internal
 crop_image <- function(image,
                        xrange = NULL,
                        yrange = NULL,
@@ -1101,7 +1071,7 @@ crop_image <- function(image,
 
 }
 
-#' @title Subset by x- and y-range
+#' @title Subset SPATA2 object
 #'
 #' @description Creates a subset of the original `SPATA2` object
 #' based on x- and y-range. Data poitns that fall into the
@@ -1115,8 +1085,24 @@ crop_image <- function(image,
 #' @seealso [`ggpLayerRect()`] to visualize the rectangle based on which
 #' the subsetting is done.
 #'
-#'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' orig_frame <- ggpLayerFrameByCoords(object)
+#'
+#' plotSurface(object, color_by = "bayes_space")
+#'
+#' object_cropped <-
+#'  cropSpataObject(object, xrange = c("2mm", "4mm"), yrange = c("2mm", "4mm"))
+#'
+#' plotSurface(object_cropped, color_by = "bayes_space") + orig_frame
 #'
 cropSpataObject <- function(object,
                             xrange,
@@ -1141,7 +1127,7 @@ cropSpataObject <- function(object,
 
   object_cropped <- subsetByBarcodes(object, barcodes = barcodes, verbose = verbose)
 
-  object_cropped@information$cropped <- list(xrange = xrange, yrange = yrange)
+  object_cropped@obj_info$cropped <- list(xrange = xrange, yrange = yrange)
 
   if(base::isTRUE(adjust_capture_area)){
 
@@ -1159,12 +1145,80 @@ cropSpataObject <- function(object,
 }
 
 
+#' @title Split SPATA2 object
+#'
+#' @description This function splits a [`SPATA2`] object into multiple sub-objects based on a
+#' specified grouping variable.
+#'
+#' @inherit argument_dummy params
+#' @param reduce A logical value indicating whether to reduce the `SPATA2` sub-objects after splitting.
+#' Default is `FALSE`.
+#'
+#' @return A named list of `SPATA2` sub-objects split by the specified grouping.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' object <- example_data$object_lmu_mci_object
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' plotSurface(object, color_by = "tissue_section")
+#'
+#' obj_list <- splitSpataObject(object, grouping = "tissue_section")
+#'
+#' purrr::map(obj_list, .f = ~ .x)
+#'
+splitSpataObject <- function(object,
+                             grouping,
+                             reduce = FALSE,
+                             verbose = NULL){
 
+  confuns::is_value(x = grouping, mode = "character")
+
+  confuns::check_one_of(
+    input = grouping,
+    against = getGroupingOptions(object)
+  )
+
+  groups <- getGroupNames(object, grouping = grouping)
+
+  out <-
+    purrr::map(
+      .x = groups,
+      .f = function(g){
+
+        barcodes_keep <-
+          getMetaDf(object) %>%
+          dplyr::filter(!!rlang::sym(grouping) == {{g}}) %>%
+          dplyr::pull(barcodes)
+
+        object_sub <-
+          subsetByBarcodes(object, barcode = barcodes_keep, verbose = FALSE) %>%
+          renameSpataObject(sample_name = stringr::str_c(object@sample, g, sep = "_"))
+
+        if(base::isTRUE(reduce)){
+
+          object_sub <- reduceSpataObject(object_sub)
+
+        }
+
+        return(object_sub)
+
+      }
+    ) %>% purrr::set_names(nm = groups)
+
+  return(out)
+
+}
 
 
 # cu ----------------------------------------------------------------------
 
-#' @title The current version of `SPATA2`
+#' @title The current version of SPATA2
 #' @description Outputs the current version of the package.
 #'
 #' @return List of three numeric slots: *major*, *minor*, *patch*

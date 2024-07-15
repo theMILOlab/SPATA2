@@ -15,15 +15,32 @@ waive_if_null <- function(x, to_pxl = FALSE){
 }
 
 
-#' @title Tissue section belonging
+#' @title Tissue section belonging of spatial annotations
 #'
 #' @description Checks to which tissue section the spatial annotation
 #' belongs. (Only required in case of multiple tissue sections per sample.)
 #'
-#' @inherit spatialAnnotationScreening params
+#' @param id Character value. The spatial annotation ID of interest.
+#' @inherit argument_dummy params
 #'
 #' @return Character value.
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' object <- example_data$object_lmu_mci_diet
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' plotSurface(object, color_by = "tissue_section") +
+#'   ggpLayerSpatAnnOutline(object, ids = c("inj1", "inj2"))
+#'
+#' whichTissueSection(object, id = "inj1")
+#'
+#' whichTissueSection(object, id = "inj2")
+#'
 
 whichTissueSection <- function(object, id){
 

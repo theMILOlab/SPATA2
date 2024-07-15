@@ -47,3 +47,4 @@ in relation by identifying the outline of the tissue section
 allows to relate observations to the spatial position and extent of image
 annotations.
 }
+\keyword{internal}

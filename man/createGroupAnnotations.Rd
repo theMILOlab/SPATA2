@@ -15,7 +15,7 @@ createGroupAnnotations(
   inner_borders = TRUE,
   eps = recDbscanEps(object),
   minPts = recDbscanMinPts(object),
-  min_size = nBarcodes(object) * 0.01,
+  min_size = nObs(object) * 0.01,
   force1 = FALSE,
   concavity = 2,
   overwrite = FALSE,
@@ -59,7 +59,10 @@ number of minimum points required in the eps neighborhood for core points
 must have in order not to be discarded as a spatial outlier.}
 
 \item{force1}{Logical value. If \code{TRUE}, spatial sub groups identified by DBSCAN
-are merged into one cluster.}
+are merged into one cluster. \strong{Note}: If \code{FALSE} (the default), the input for \code{ìd} is suffixed
+with an index to label each spatial annotation created uniquely, regardless of
+how many are eventually created. E.g. if \code{id = "my_ann"} and the algorithm
+created two spatial annotations, they are named \emph{my_ann_1} and \emph{my_ann_2}.}
 
 \item{concavity}{Numeric value. Given to argument \code{concavity} of
 \code{\link[concaveman:concaveman]{concaveman::concaveman()}}. Determines the relative measure of concavity.
@@ -113,6 +116,28 @@ The vignette on distance measures in SPATA2 has been replaced. Click
 \code{\link[=concept_distance_measure]{here}} to read it.
 }
 
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <-
+ createGroupAnnotations(
+   object = object,
+   grouping = "bayes_space",
+   group = "1",
+   id = "bspace1",
+   tags = "bspace_ann"
+   )
+
+ plotSurface(object, color_by = "bayes_space") +
+   ggpLayerSpatAnnOutline(object, tags = "bspace_ann")
+
+}
 \seealso{
 \code{\link[=recDbscanEps]{recDbscanEps()}}, \code{\link[=recDbscanMinPts]{recDbscanMinPts()}}
 }

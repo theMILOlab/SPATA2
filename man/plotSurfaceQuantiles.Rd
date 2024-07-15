@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotSurface.R
 \name{plotSurfaceQuantiles}
 \alias{plotSurfaceQuantiles}
-\title{Plot a surface plot colored by binned numeric variables}
+\title{Deprecated}
 \usage{
 plotSurfaceQuantiles(
   object,
@@ -24,61 +24,7 @@ plotSurfaceQuantiles(
   ...
 )
 }
-\arguments{
-\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-
-\item{color_by}{Character value. Specifies the numeric variable of interest:
-
-\itemize{
-\item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
-\item{ \strong{Genes} as a character vector. If more than one gene is specified the average
-expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
-\item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames(..., of_class = "numeric")}}
-}}
-
-\item{n_qntls}{Numeric value. Specifies the number of bins in which
-to distribute the barcode spots.}
-
-\item{keep_qntls}{Numeric vector. Specifies the quantiles to highlight by
-color. The remaining ones are displayed in grey.}
-
-\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
-
-\item{pt_clrp}{The color palette to be used if the specified variable displayed by
-color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
-
-\item{pt_size}{Numeric value. Specifies the size of all points.}
-
-\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
-
-\item{smooth_span}{Numeric value. Controls the degree of smoothing.
-Given to argument \code{span} of \code{stats::loess()}.}
-
-\item{display_image}{Logical. If set to TRUE the histology image of the specified sample
-is displayed underneath the plot.}
-
-\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
-\code{scattermore::geom_scattermore()} which allows quick plotting of several
-thousand data points. If the number of data points plotted is bigger than
-10.000 it is used anyway.}
-
-\item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
-of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
-the point size must be adjusted with the argument \code{pt_size}.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-
-\item{...}{Additional arguments given to \code{scale_color_add_on()}.}
-}
-\value{
-A ggplot.
-}
 \description{
-This function calculates the quantiles specified in \code{n_qntl}
-of the numeric variable specified in \code{color_by} and divides the barcode
-spots accordingly. If you want to grey-out certain quantiles use argument \code{keep_qntls}.
+Deprecated in favor of \code{\link[=plotSurface]{plotSurface()}}.
 }
+\keyword{internal}

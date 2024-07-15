@@ -31,6 +31,22 @@ Computes the pixel scale factor. Only possible for methods
 that have a fixed center to center distance between their
 observational units (e.g. Visium).
 }
+\examples{
+
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+containsCDD(object) # must be TRUE
+
+object <- computePixelScaleFactor(object)
+
+getPixelScaleFactor(object, unit = "mm")
+
+
+}
 \seealso{
 \code{\link[=containsCCD]{containsCCD()}}, \code{\link[=getPixelScaleFactor]{getPixelScaleFactor()}}, \code{\link[=setPixelScaleFactor]{setPixelScaleFactor()}}
 }

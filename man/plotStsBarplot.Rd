@@ -2,13 +2,13 @@
 % Please edit documentation in R/plotN-S.R
 \name{plotStsBarplot}
 \alias{plotStsBarplot}
-\title{Plot categorical trajectory dynamics}
+\title{Plot STS barplot}
 \usage{
 plotStsBarplot(
   object,
   grouping,
   id = idST(object),
-  binwidth = getCCD(object) * 2,
+  resolution = getCCD(object) * 2,
   unit = getDefaultUnit(object),
   round = 2,
   clrp = NULL,
@@ -28,17 +28,15 @@ objects of classes for which a method has been defined.}
 \item{grouping}{Character value. The grouping variable of interest. Use
 \code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
 
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
-\item{unit}{Character value. The unit in which the distance
-to the spatial annotation is displayed on the x-axis.
-
-If \code{FALSE}, plots the bin numbers instead.}
-
-\item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
-of \code{base::round()}. Rounds transformed values before they are returned.}
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
+input options.}
 
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
@@ -63,4 +61,14 @@ A ggplot.
 }
 \description{
 Displays discrete variables along a trajectory.
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+plotStsBarplot(object, grouping = "histology", id = "horizontal_mid")
+
 }

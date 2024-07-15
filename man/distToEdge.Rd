@@ -2,7 +2,7 @@
 % Please edit documentation in R/d.R
 \name{distToEdge}
 \alias{distToEdge}
-\title{Distance to cover the whole tissue}
+\title{Distance to edge of tissue section}
 \usage{
 distToEdge(object, id = idSA(object), unit = getDefaultUnit(object))
 }
@@ -10,12 +10,20 @@ distToEdge(object, id = idSA(object), unit = getDefaultUnit(object))
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{id}{Character value specifying the ID of the spatial annotation of interest.
+If there is only one spatial annotation in the object, the function
+will default to using it. However, if there are multiple annotations,
+this argument must be explicitly specified to identify the target annotation.}
+
 \item{unit}{The output unit of the distance measure.}
 }
 \value{
 Distance measure.
 }
 \description{
-Computes the distance from the center of a spatial annotation
-to the \strong{farest} point of the tissue outline.
+Computes the distance from the border of a spatial annotation
+to the \strong{farest} data point of the tissue section it is located on.
+}
+\seealso{
+\code{\link[=whichTissueSection]{whichTissueSection()}}
 }

@@ -50,3 +50,26 @@ Eventually the new features are joined via \code{dplyr::left_join()} over the
 key-variables \emph{barcodes} or \emph{x} and \emph{y}. Additional steps secure
 the joining process.
 }
+\examples{
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+meta_df <- getMetaDf(object)
+
+names(meta_df)
+
+new_meta_df <-
+ dplyr::transmute(
+   .data = meta_df,
+   barcodes = barcodes,
+   new_feat = sample(letters[1:5], size = nrow(meta_df), replace = T) \%>\% as.factor()
+   )
+
+object <- addFeatures(object, feature_df = new_meta_df)
+
+plotSurface(object, color_by = "new_feat")
+}

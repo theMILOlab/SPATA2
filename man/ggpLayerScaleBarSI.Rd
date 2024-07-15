@@ -100,18 +100,24 @@ The vignette on distance measures in SPATA2 has been replaced. Click
 
 \examples{
 
-object <- downloadPubExample("313_T", verbose = FALSE)
+library(SPATA2)
+library(tidyverse)
 
-plotImageGgplot(object) +
- ggpLayerEncirclingSAS(
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <-
+ createNumericAnnotations(
    object = object,
-   id = "necrotic_area",
-   distance = "2.25mm"
- ) +
- ggpLayerScaleBarSI(
-  object = object,
-  sb_dist = "2.25mm",
-  sb_pos = "top_right"
-  )
+   variable = "HM_HYPOXIA",
+   threshold = "kmeans_high",
+   id = "hypoxia_ann",
+   force1 = TRUE
+   )
+
+plotSurface(object, color_by = "HM_HYPOXIA", outline = T, pt_clrsp = "Reds 3") +
+ ggpLayerHorizonSAS(object, id = "hypoxia_ann", distance = "3mm") +
+ ggpLayerScaleBarSI(object, sb_pos = c("3mm", "2mm"))
 
 }

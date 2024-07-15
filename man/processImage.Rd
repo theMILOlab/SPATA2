@@ -33,3 +33,4 @@ A wrapper around the image processing functions:
 \item{\code{\link[=identifyBackgroundColor]{identifyBackgroundColor()}}}
 }
 }
+\keyword{internal}

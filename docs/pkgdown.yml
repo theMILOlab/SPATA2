@@ -1,31 +1,25 @@
-pandoc: 2.19.2
-pkgdown: 2.0.7
+pandoc: 3.1.11
+pkgdown: 2.0.9
 pkgdown_sha: ~
 articles:
-  cc-image-annotation-screening: cc-image-annotation-screening.html
-  cc-model-fitting-in-spatial-transcriptomic-studies: cc-model-fitting-in-spatial-transcriptomic-studies.html
-  cc-spatial-measures: cc-spatial-measures.html
-  cc-spatial-segmentation-vs-image-annotations: cc-spatial-segmentation-vs-image-annotations.html
-  cc-spatial-trajectory-screening: cc-spatial-trajectory-screening.html
-  spata-v2-autoencoder: spata-v2-autoencoder.html
-  spata-v2-clustering: spata-v2-clustering.html
-  spata-v2-cnv-analysis: spata-v2-cnv-analysis.html
-  spata-v2-dea: spata-v2-dea.html
-  spata-v2-genes-gene-sets-and-features: spata-v2-genes-gene-sets-and-features.html
-  spata-v2-gsea: spata-v2-gsea.html
-  spata-v2-image-annotation-screening: spata-v2-image-annotation-screening.html
-  spata-v2-image-annotations: spata-v2-image-annotations.html
-  spata-v2-image-handling: spata-v2-image-handling.html
-  spata-v2-installation: spata-v2-installation.html
-  spata-v2-object-initiation-and-manipulation: spata-v2-object-initiation-and-manipulation.html
-  spata-v2-platform-compatibility: spata-v2-platform-compatibility.html
-  spata-v2-plotting-misc: spata-v2-plotting-misc.html
-  spata-v2-plotting-surface: spata-v2-plotting-surface.html
-  spata-v2-scd: spata-v2-scd.html
-  spata-v2-spata-data: spata-v2-spata-data.html
-  spata-v2-spatial-segmentation: spata-v2-spatial-segmentation.html
+  adding-data: adding-data.html
+  clustering: clustering.html
+  cnv: cnv.html
+  creating-spatial-annotations: creating-spatial-annotations.html
+  creating-spatial-trajectories: creating-spatial-trajectories.html
+  dea: dea.html
+  gsea: gsea.html
+  image-handling: image-handling.html
+  initiation-and-preprocessing-customized: initiation-and-preprocessing-customized.html
+  initiation-and-preprocessing-visium: initiation-and-preprocessing-visium.html
+  newslog: newslog.html
   spata-v2-spatial-trajectories: spata-v2-spatial-trajectories.html
-  spata-v2-spatial-trajectory-screening: spata-v2-spatial-trajectory-screening.html
-  spata-v2-subsetting: spata-v2-subsetting.html
-last_built: 2023-06-10T13:27Z
+  spatial-annotation-screening: spatial-annotation-screening.html
+  spatial-measures: spatial-measures.html
+  spatial-segmentation: spatial-segmentation.html
+  spatial-trajectory-screening: spatial-trajectory-screening.html
+  surface-plotting: surface-plotting.html
+  using-spatial-annotations: using-spatial-annotations.html
+  using-spatial-trajectories: using-spatial-trajectories.html
+last_built: 2024-07-07T16:11Z
 

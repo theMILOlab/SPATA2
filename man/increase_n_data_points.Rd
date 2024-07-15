@@ -23,3 +23,4 @@ This function artificially increases the number of data points in a given coordi
 It generates additional points by adding random noise to the existing coordinates,
 ensuring the new points stay within the original range of the data.
 }
+\keyword{internal}

@@ -4,7 +4,7 @@
 \alias{mergeWithTissueOutline}
 \title{Integrate tissue outline in spatial annotation}
 \usage{
-mergeWithTissueOutline(object, id, new_id = NULL)
+mergeWithTissueOutline(object, id, new_id)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
@@ -14,12 +14,37 @@ objects of classes for which a method has been defined.}
 is supposed to be cut at the tissue edge.}
 
 \item{new_id}{If character, gives the resulting spatial annotation a new
-id. If \code{NULL}, the spatial annotaiton is effectively overwritten.}
+id. If \code{NULL}, the spatial annotation is overwritten!}
 }
 \value{
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Ensures that the outline of a spatial annotaiton does not
+Ensures that the outline of a spatial annotation does not
 transgresses the outline of the tissue.
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+if(!containsTissueOutline(object)){
+
+  object <- identifyTissueOutline(object)
+
+}
+
+# image annotation which transgresses the tissue edge
+plotSpatialAnnotations(object, ids = c("necrotic_edge2_transgr"))
+
+object <-
+  mergeWithTissueOutline(object, id = "necrotic_edge2_transgr", new_id = "necrotic_edge2", overwrite = TRUE)
+
+plotSpatialAnnotations(object, ids = c("necrotic_edge2_transgr", "necrotic_edge2"))
+
+}
+\seealso{
+\code{\link[=identifyTissueOutline]{identifyTissueOutline()}}
 }

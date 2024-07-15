@@ -28,11 +28,6 @@ ggpLayerSpatAnnOutline(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
-
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of spatial annotations} for more information.}
 
@@ -87,4 +82,42 @@ fill aesthetic of the plot.
 
 \code{expand_outline} only works if \code{inner} is FALSE (or the spatial annotation
 does not contain any inner borders).
+}
+\examples{
+
+library(SPATA2)
+library(patchwork)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <-
+ createNumericAnnotations(
+   object = object,
+   variable = "HM_HYPOXIA",
+   threshold = "kmeans_high",
+   id = "hypoxia_ann",
+   inner_borders = FALSE,
+   force1 = TRUE
+   )
+
+# range of hypoxia annotation
+hr <- getSpatAnnRange(object, id = "hypoxia_ann")
+
+hr_ggpL <- ggpLayerSpatAnnOutline(object, ids = "hypoxia_ann")
+
+plotSurface(object, "HM_HYPOXIA") + hr_ggpL
+
+p_rect <-
+ plotImage(object) +
+ hr_ggpL +
+ ggpLayerRect(object, xrange = hr$x, yrange = hr$y)
+
+p_zoomed <-
+ plotImage(object) +
+ ggpLayerZoom(object, xrange = hr$x, yrange = hr$y)
+
+p_rect + p_zoomed
+
 }

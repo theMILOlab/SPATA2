@@ -15,3 +15,4 @@ Cropped input object.
 \description{
 Crops an image.
 }
+\keyword{internal}

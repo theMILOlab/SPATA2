@@ -34,8 +34,8 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 spata-objects can store more than one sample.}
 }
 \value{
-Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.
+Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.
 }
 \description{
 Compares the distribution of the expression levels of \code{genes}

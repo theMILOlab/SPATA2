@@ -53,6 +53,23 @@
 #'
 #' @export
 #'
+#' @seealso [`plotLoglik()`], [`find_elbow_point()`]
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' # tests options for q from 3 to 15 and picks the best
+#' object <- runBayesSpaceClustering(object, name = "new_bspace", qs = 3:15)
+#'
+#' plotLoglik(object)
+#'
+#' # run with q = 10 to force 10 clusters in the output
+#' object <- runBayesSpaceClustering(object, name = "bspace_10", qs = 10)
+#'
 runBayesSpaceClustering <- function(object,
                                     name = "bayes_space",
                                     # given to spatialPreprocess()
@@ -88,6 +105,25 @@ runBayesSpaceClustering <- function(object,
                                     seed = 123,
                                     verbose = NULL,
                                     ...){
+
+
+  if(!"BayesSpace" %in% base::rownames(installed.packages())){
+
+    install <- utils::askYesNo(msg = "BayesSpace is not installed. Do you want to install it?")
+
+    if(base::isTRUE(install)){
+
+      if(!requireNamespace("BiocManager", quietly = TRUE)){ install.packages("BiocManager") }
+
+      BiocManager::install("BayesSpace")
+
+    } else {
+
+      stop("Can not continue without BayesSpace package.")
+
+    }
+
+  }
 
   deprecated(...)
 
@@ -306,7 +342,7 @@ runBayesSpaceClustering <- function(object,
 #' A pan-cancer compendium of chromosomal instability. Nature 606, 976–983 (2022).
 #' https://doi.org/10.1038/s41586-022-04789-9
 #'
-#' @export
+#' @keywords internal
 runCIN <- function(object,
                    bin_size = 1000000,
                    window_k = 10,
@@ -611,6 +647,28 @@ runCIN <- function(object,
 #' @return An updated `SPATA2` object containg the results in the respective slot.
 #' @export
 #'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' # make sure that "/my_cnv_folder" exists
+#' dir.exists("my_cnv_folder")
+#'
+#' # this can take some time
+#' object <- runCNV(object, directory_cnv_folder = "my_cnv_folder")
+#'
+#' plotCnvHeatmap(object, across = "histology")
+#'
+#' # chromosomal alterations are immediately added to the objects
+#' # meta features
+#'
+#' getFeatureNames(object)
+#'
+#' plotSurface(object, color_by = "Chr7", pt_clrsp = "Reds 3")
+#'
 
 runCNV <- function(object,
                    ref_annotation = cnv_ref[["annotation"]], # data.frame denoting reference data as reference
@@ -639,6 +697,25 @@ runCNV <- function(object,
                    define_signif_tumor_subclusters = list(p_val = 0.05, hclust_method = "ward.D2", cluster_by_groups = TRUE, partition_method = "qnorm"),
                    plot_cnv = list(k_obs_groups = 5, cluster_by_groups = TRUE, output_filename = "infercnv.outliers_removed", color_safe_pal = FALSE,
                                    x.range = "auto", x.center = 1, output_format = "pdf", title = "Outliers Removed")){
+
+
+  if(!"infercnv" %in% rownames(installed.packages())){
+
+    install <- utils::askYesNo(msg = "infercnv is not installed. Do you want to install it?")
+
+    if(base::isTRUE(install)){
+
+      if(!requireNamespace("BiocManager", quietly = TRUE)){ install.packages("BiocManager") }
+
+      BiocManager::install("infercnv")
+
+    } else {
+
+      stop("Can not continue without infercnv package.")
+
+    }
+
+  }
 
   # 1. Control --------------------------------------------------------------
 
@@ -1213,7 +1290,8 @@ runCnvAnalysis <- function(object, ...){
 #'
 #' See details for more.
 #'
-#' @inherit across_dummy params
+#' @inherit argument_dummy params
+#'
 #' @inherit check_sample params
 #' @inherit check_method params
 #' @param fc_name,base Given to corresponding arguments of \code{Seurat::FindAllMarkers()}.
@@ -1236,6 +1314,9 @@ runCnvAnalysis <- function(object, ...){
 #' @inherit update_dummy return
 #'
 #' @export
+#'
+#' @inherit plotDeaDotPlot examples
+#'
 
 runDEA <- function(object,
                    across,
@@ -1395,6 +1476,19 @@ runDeAnalysis <- function(...){
 #'
 #' @export
 #'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' # requires the results of runDEA(object, across = "histology")!
+#'
+#' object <- runGSEA(object, across = "histology")
+#'
+#' plotGseaDotplot(object, across = "histology")
+#'
 
 runGSEA <- function(object,
                     across,
@@ -1421,6 +1515,20 @@ runGSEA <- function(object,
 
   deprecated(...)
 
+  if(!"hypeR" %in% base::rownames(installed.packages())){
+
+    install <- utils::askYesNo(msg = "hypeR is not installed. Do you want to install it?")
+
+    if(base::isTRUE(install)){
+
+      if (!require("BiocManager", quietly = TRUE)){ install.packages("BiocManager") }
+
+      BiocManager::install("hypeR")
+
+    }
+
+  }
+
   if(!base::is.numeric(background)){
 
     background <- nMolecules(object)
@@ -1446,7 +1554,7 @@ runGSEA <- function(object,
 
   check_one_of(
     input = methods_de,
-    against = validDeAnalysisMethods()
+    against = validDeaMethods()
   )
 
   ma <- getAssay(object, assay_name = assay_name)
@@ -1616,6 +1724,20 @@ runGSEA <- function(object,
 #' [`getGroupNames()`]
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' object <- runPCA(object, n_pcs = 20)
+#'
+#' object <- runKmeansClustering(object, ks = 3:10, n_pcs = 20)
+#'
+#' getFeatureNames(object)
+#'
 
 runKmeansClustering <- function(object,
                                 ks,
@@ -1668,16 +1790,27 @@ runKmeansClustering <- function(object,
 #'
 #' @inherit argument_dummy params
 #'
-#' @return
-#'
-#'  \itemize{
-#'   \item{\code{runPca()}:}{ An updated `SPATA2` object containing the reduction variables in the pca data.frame.}
-#'   \item{\code{runPca2()}:}{ The direct output object of \code{irlba::prcomp_irlba()}}.
-#'   }
+#' @inherit update_dummy return
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' object <- runPCA(object)
+#' object <- runTSNE(object)
+#' object <- runUMAP(object)
+#'
+#' plotPCA(object, color_by = "histology")
+#' plotTSNE(object, color_by = "histology")
+#' plotUMAP(object, color_by = "histology")
+#'
 
-runPca <- function(object,
+runPCA <- function(object,
                    n_pcs = 30,
                    mtr_name = activeMatrix(object),
                    assay_name = activeAssay(object),
@@ -1702,8 +1835,16 @@ runPca <- function(object,
 
 }
 
-#' @rdname runPca
-#' @export
+#' @rdname runPCA
+runPca <- function(...){
+
+  deprecated(fn = T, ...)
+
+  runPCA(...)
+
+}
+
+#' @keywords internal
 runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, ...){
 
   check_object(object)
@@ -1857,12 +1998,15 @@ runSDEA <- function(object,
 #' @export
 #'
 #' @examples
+#' library(SPATA2)
 #'
-#'  object <- SPATAData::downloadSpataObject("275_T")
+#' data("example_data")
 #'
-#'  object <- runSeuratClustering(object, name = "seurat_clusters")
+#' object <- example_data$object_UKF269T_diet
 #'
-#'  plotSurface(object, color_by = "seurat_clusters")
+#' object <- runSeuratClustering(object, name = "new_seurat_clst")
+#'
+#' plotSurface(object, color_by = "new_seurat_clst")
 #'
 runSeuratClustering <- function(object,
                                 name = "seurat_clusters",
@@ -1967,7 +2111,21 @@ runSeuratClustering <- function(object,
 #'
 #' @export
 #'
-runSparkx <- function(object,
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' object <- runSPARKX(object)
+#'
+#' sparkx_genes <- getSparkxGenes(object, threshold = 0.05)
+#'
+#' sparkx_df <- getSparkxGenesDf(object)
+#'
+#'
+runSPARKX <- function(object,
                       assay_name = activeAssay(object),
                       numCores = 1,
                       option = "mixture",
@@ -1975,12 +2133,32 @@ runSparkx <- function(object,
 
   hlpr_assign_arguments(object)
 
+  # install if required
+  if(!"SPARK" %in% base::rownames(installed.packages())){
+
+    install <- utils::askYesNo(msg = "SPARK is not installed. Do you want to install it?")
+
+    if(base::isTRUE(install)){
+
+      if("devtools" %in% base::rownames(installed.packages())){
+
+        install.packages("devtools")
+
+      }
+
+      devtools::install_github('xzhoulab/SPARK')
+
+    }
+
+  }
+
+  # run algorithm
   coords_mtr <- if (object@platform == 'MERFISH') {
     getCoordsMtr(object, orig = TRUE)
   } else {
     getCoordsMtr(object)
   }
-  
+
   count_mtr <- getCountMatrix(object)
 
   barcodes <- base::colnames(count_mtr)
@@ -2004,6 +2182,15 @@ runSparkx <- function(object,
 
 }
 
+#' @export
+runSparkx <- function(...){
+
+  deprecated(fn = T, ...)
+
+  runSPARKX(...)
+
+}
+
 # runT --------------------------------------------------------------------
 
 #' @title Run t-Stochastic Neighbour Embedding
@@ -2018,16 +2205,14 @@ runSparkx <- function(object,
 #' \code{Rtsne::Rtsne()}.
 #' @param ... Additional arguments given to \code{Rtsne::Rtsne()}.
 #'
-#' @return
-#'
-#'  \itemize{
-#'   \item{\code{runTsne()}:}{ An updated `SPATA2` object containing the reduction variables in the tsne data.frame.}
-#'   \item{\code{runTsne2()}:}{ The direct output-object of \code{Rtsne::Rtsne()}}
-#'   }
+#' @inherit update_dummy return
 #'
 #' @export
+#'
+#' @inherit runPCA examples
+#'
 
-runTsne <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, ...){
+runTSNE <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, ...){
 
   check_object(object)
 
@@ -2054,8 +2239,17 @@ runTsne <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, ..
 
 }
 
-#' @rdname runTsne
+#' @rdname runTSNE
 #' @export
+runTsne <- function(...){
+
+  deprecated(fn = T, ...)
+
+  runTSNE(...)
+
+}
+
+#' @keywords internal
 runTsne2 <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, ...){
 
   check_object(object)
@@ -2074,25 +2268,23 @@ runTsne2 <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, .
 
 # runU --------------------------------------------------------------------
 
-#' @title Run UMAP-Analysis
+#' @title Run UMAP
 #'
-#' @description Takes the pca-data of the object up to the principal component denoted
+#' @description Takes the pca data of the object up to the principal component denoted
 #' in argument \code{n_pcs} and performs UMAP with it.
 #'
 #' @inherit check_sample params
 #' @inherit runTsne params
 #' @param ... Additional arguments given to \code{umap::umap()}.
 #'
-#' @return
-#'
-#'  \itemize{
-#'   \item{\code{runUmap()}:}{ An updated `SPATA2` object containing the reduction variables in the umap data.frame.}
-#'   \item{\code{runUmap2()}:}{ The direct output-object of \code{umap::umap()}}
-#'   }
+#' @inherit update_dummy return
 #'
 #' @export
+#'
+#' @inherit runPCA examples
+#'
 
-runUmap <- function(object, n_pcs = 20, ...){
+runUMAP <- function(object, n_pcs = 20, ...){
 
   check_object(object)
 
@@ -2114,8 +2306,17 @@ runUmap <- function(object, n_pcs = 20, ...){
 
 }
 
-#' @rdname runUmap
+#' @rdname runUMAP
 #' @export
+runUmap <- function(...){
+
+  deprecated(fn = T, ...)
+
+  runUMAP(...)
+
+}
+
+#' @keywords internal
 runUmap2 <- function(object, n_pcs = 20, ...){
 
   deprecated(...)

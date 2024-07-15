@@ -87,3 +87,4 @@ to specify the input in pixel you have to use input option 1. In pixel.
 \code{transform_pixel_to_dist_si()} transforms only single values. \code{transform_pixels_to_dist_si()}
 transforms vectors of lengths one or more.
 }
+\keyword{internal}

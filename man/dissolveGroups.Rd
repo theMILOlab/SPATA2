@@ -2,7 +2,7 @@
 % Please edit documentation in R/d.R
 \name{dissolveGroups}
 \alias{dissolveGroups}
-\title{Dissolve Groups in a SPATA2 Object}
+\title{Dissolve groups in a SPATA2 object}
 \usage{
 dissolveGroups(object, grouping, groups_dissolve, grouping_new = NULL)
 }
@@ -39,12 +39,17 @@ This function performs the following steps:
 }
 \examples{
 \dontrun{
-  # Assuming `spata_obj` is a SPATA2 object with grouping variable 'clusters'
+  # Assuming `spata_obj` is a SPATA2 object with grouping variable 'histology'
+  # created via createSpatialSegmentation() with a small subset of spots that
+  # left unnamed since the manual outline did not include them by accident
   spata_obj <- dissolveGroups(
     object = spata_obj,
-    grouping = 'clusters',
-    groups_dissolve = c('cluster1', 'cluster2'),
-    grouping_new = 'new_clusters'
+    grouping = 'histology',
+    groups_dissolve = "unnamed",
+    grouping_new = 'histology_complete'
   )
 }
+}
+\seealso{
+\code{\link[=createSpatialSegmentation]{createSpatialSegmentation()}}
 }

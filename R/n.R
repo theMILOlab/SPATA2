@@ -1,22 +1,8 @@
 
-#' @title Number of barcodes
-#'
-#' @description Returns the number of barcodes in the sample.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Numeriv value.
-#'
-#' @export
-nBarcodes <- function(object){
+#' @keywords internal
+nBarcodes <- function(object){ deprecated(fn = T); nObs(object)}
 
-  getCoordsDf(object) %>%
-    base::nrow()
-
-}
-
-
-#' @title Number of counts
+#' @keywords internal
 #' @export
 nCounts <- function(object, molecule, assay_name = activeAssay(object), ...){
 
@@ -30,7 +16,7 @@ nCounts <- function(object, molecule, assay_name = activeAssay(object), ...){
 
 }
 
-#' @rdname nMolecules
+#' @keywords internal
 #' @export
 nGenes <- function(object){
 
@@ -38,17 +24,6 @@ nGenes <- function(object){
 
 }
 
-#' @export
-nest_shifted_projection_df <- function(shifted_projection_df){
-
-  out_df <-
-    dplyr::select(shifted_projection_df, -dplyr::contains("trajectory_part"), -proj_length_binned) %>%
-    dplyr::group_by(variables) %>%
-    tidyr::nest()
-
-  return(out_df)
-
-}
 
 
 #' @title Number of molecules
@@ -75,7 +50,7 @@ nMolecules <- function(object, assay_name = activeAssay(object)){
 #'
 #' @description Normalizes the count matrix of a molecular assay.
 #'
-#' @param method Character value. The normalization method. One of c(*'LogNormaize'*,
+#' @param method Character value. The normalization method. One of c(*'LogNormalize'*,
 #' *'CLR'*, *'RC'*).
 #' @param mtr_name_new Character value. The name under which the new processed matrix
 #' is stored in the `SPATA2` object.
@@ -88,10 +63,19 @@ nMolecules <- function(object, assay_name = activeAssay(object)){
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <- normalizeData(object)
 #'
 #' @export
 #'
-
 normalizeCounts <- function(object,
                             method = "LogNormalize",
                             mtr_name_new = method,
@@ -154,9 +138,27 @@ normalizeCounts <- function(object,
 
 }
 
-#' @title Number of image annotations
+
+#' @title Number of observations
 #'
-#' @description Returns the number of \code{ImageAnnotation}-objects in the sample.
+#' @description Returns the number of \link[=concept_observations]{observations}
+#' in the sample.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric value.
+#'
+#' @export
+nObs <- function(object){
+
+  getCoordsDf(object) %>%
+    base::nrow()
+
+}
+
+#' @title Number of spatial annotations
+#'
+#' @description Returns the number of [`SpatialAnnotation`] objects in the sample.
 #'
 #' @inherit argument_dummy params
 #'
@@ -193,6 +195,7 @@ setMethod(
   }
 )
 
+#' @keywords internal
 #' @export
 nImageDims <- function(object){
 
@@ -203,7 +206,7 @@ nImageDims <- function(object){
 
 #' @title Number of spatial trajectories
 #'
-#' @description Returns the number of \code{SpatialTrajectries}-objects in the sample.
+#' @description Returns the number of [`SpatialTrajectory`] objects in the sample.
 #'
 #' @inherit argument_dummy params
 #'

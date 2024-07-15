@@ -3,62 +3,77 @@
 
 # save --------------------------------------------------------------------
 
-#' @title Save corresponding objects
+#' @title Save a SPATA2 object with a default directory
 #'
-#' @description Family of functions to save corresponding objects of different analysis
-#' platforms. See details and value for more information.
+#' @description Saves the [`SPATA2`] object under a default directory.
 #'
-#' @inherit adjustDirectoryInstructions params
-#' @inherit check_object params
-#' @inherit cds_dummy params
-#' @inherit seurat_object_dummy params
-#' @param directory_spata,directory_cds_directory_seurat_object Character value or NULL. Set details for more.
-#'
-#' @details If \code{directory_<platform>} is set to NULL (the default) all functions first check if the spata-object contains any
-#' deposited default directories. If so the specified object to be saved is saved under
-#' that direction. If \code{directory_<platform>} is specified as a character it's input is taken as the
-#' directory under which to store the object and the deposited directory is overwritten
-#' such that the next time you load the spata-object it contains the updated directory.
-#' In order for that to work the \code{saveCorresponding*()}-functions - apart from saving the object of interest -  return the
-#' updated spata-object while \code{saveSpataObject()} simply returns an invisible TRUE
-#' as the  new directory (if provided) is stored inside the object before it is saved.
+#' @inherit argument_dummy params
+#' @param dir Character value. The directory under which to store
+#' the `SPATA2` object. If `NULL`, defaults to the directory set with [`setSpataDir()`].
 #'
 #' @return Apart from their side effect (saving the object of interest) all three functions
-#' return the provided, updated spata-object.
+#' return the provided, updated `SPATA2` object.
+#'
+#' @seealso [`setSpataDir()`], [`getSpataDir()`]
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' getSpataDir(object) # fails, no directory set
+#'
+#' # opt 1
+#' object <- setSpataDir(object, directory_spata = "my_folder/object_UKF269T.RDS")
+#'
+#' saveSpataObject(object)
+#'
+#' # opt 2
+#' object <- saveSpataObject(object, directory_spata = "my_folder/object_UKF269T.RDS")
+#'
+#' getSpataDir(object)
+#'
 saveSpataObject <- function(object,
-                            directory_spata = NULL,
+                            dir = NULL,
                             verbose = NULL,
                             ...){
 
+  deprecated(...)
+
   hlpr_assign_arguments(object)
 
-  confuns::is_value(directory_spata, mode = "character", skip.allow = TRUE, skip.val = NULL)
+  confuns::is_value(dir, mode = "character", skip.allow = TRUE, skip.val = NULL)
 
-  if(base::is.character(directory_spata)){
+  if(base::is.character(dir)){
 
-    object <- setSpataDir(object, dir = directory_spata)
+    object <- setSpataDir(object, dir = dir)
+
+  } else {
+
+    dir <-
+      base::tryCatch({
+
+        getSpataDir(object)
+
+      }, error = function(error){
+
+        base::warning(glue::glue("Attempting to extract a valid directory from the `SPATA2` object resulted in the following error: {error}"))
+
+        NULL
+
+      })
 
   }
 
-  directory_spata <-
-    base::tryCatch({
 
-      getDirectoryInstructions(object, to = "spata_object")
-
-    }, error = function(error){
-
-      base::warning(glue::glue("Attempting to extract a valid directory from the spata-object resulted in the following error: {error}"))
-
-      NULL
-
-    })
-
-  if(base::is.character(directory_spata) & directory_spata != "not defined"){
+  if(base::is.character(dir)){
 
     confuns::give_feedback(
-      msg = glue::glue("Saving SPATA2 object under '{directory_spata}'."),
+      msg = glue::glue("Saving SPATA2 object under '{dir}'."),
       verbose = verbose
     )
 
@@ -69,7 +84,7 @@ saveSpataObject <- function(object,
 
     }, error = function(error){
 
-      base::warning(glue::glue("Attempting to save the spata-object under {directory_spata} resulted in the following error: {error} "))
+      base::warning(glue::glue("Attempting to save the `SPATA2` object under {directory_spata} resulted in the following error: {error} "))
 
     })
 
@@ -80,7 +95,7 @@ saveSpataObject <- function(object,
 
   } else {
 
-    base::warning("Could not save the spata-object.")
+    base::warning("Could not save the `SPATA2` object.")
 
   }
 
@@ -90,8 +105,6 @@ saveSpataObject <- function(object,
 }
 
 # scale -------------------------------------------------------------------
-
-
 
 #' @title Scale coordinate variable pairs
 #'
@@ -399,7 +412,7 @@ shift_smrd_projection_df <- function(smrd_projection_df,
 
 
 
-#' @title Shift the borders of a Spatial Annotation
+#' @title Shift the borders of a spatial annotation
 #'
 #' @description This function moves a spatial annotation
 #' either in the x or y direction, or both. It allows for selective shifting of
@@ -419,6 +432,27 @@ shift_smrd_projection_df <- function(smrd_projection_df,
 #' @seealso [`expandSpatialAnnotation()`], [`smoothSpatialAnnotation()`], [`SpatialAnnotation`]
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#' library(patchwork)
+#' library(stringr)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' p1 <- plotImage(object) + ggpLayerSpatAnnOutline(object, ids = "necrotic_area")
+#'
+#' plot(p1)
+#'
+#' object <- shiftSpatialAnnotation(object, id = "necrotic_area", shift_x = "0.5mm", shift_y = "0.25mm", new_id = "na_shifted")
+#'
+#' p2 <- plotImage(object) + ggpLayerSpatAnnOutline(object, ids = "na_shifted")
+#'
+#' # compare both
+#' p1 + p2
+#'
 
 shiftSpatialAnnotation <- function(object,
                                    id,
@@ -429,7 +463,7 @@ shiftSpatialAnnotation <- function(object,
                                    new_id = FALSE,
                                    overwrite = FALSE){
 
-  csf <- getScaleFactor(object, fct_name = "coords")
+  csf <- getScaleFactor(object, fct_name = "image")
 
   shift_x <- as_pixel(shift_x, object = object)/csf
   shift_y <- as_pixel(shift_y, object = object)/csf
@@ -463,7 +497,7 @@ shiftSpatialAnnotation <- function(object,
         .f = function(plg){
 
           plg$x_orig <- plg$x_orig + shift_x
-          plg$y_orig <- plt$y_orig + shift_y
+          plg$y_orig <- plg$y_orig + shift_y
 
           return(plg)
 
@@ -500,6 +534,20 @@ setMethod(f = "show", signature = "ANY", definition = function(object){
 
   stringr::str_c("An object of class '", base::class(object), "'.") %>%
     base::writeLines()
+
+})
+
+#' @export
+setMethod(f = "show", signature = "SpatialMethod", definition = function(object){
+
+  out <-
+    purrr::map(
+      .x = methods::slotNames(object),
+      .f = ~ methods::slot(object, name = .x)
+    ) %>%
+    purrr::set_names(nm = methods::slotNames(object))
+
+  return(out)
 
 })
 
@@ -771,10 +819,6 @@ simulate_complete_coords_sa <- function(object, id, distance){
 
   if(containsMethod(object, method_name = "Visium")){
 
-    pixel_df <-
-      getPixelDf(object) %>%
-      dplyr::mutate(barcodes = pixel, x = width, y = height)
-
     sa_range <-
       getSpatAnnRange(object, id = id) %>%
       map(.f = function(r){
@@ -789,8 +833,6 @@ simulate_complete_coords_sa <- function(object, id, distance){
     tot_dist <-
       as_pixel(distance, object = object, add_attr = F) %>%
       ceiling()
-
-    tot_dist <- tot_dist
 
     ccd <- getCCD(object, unit = "px")
 
@@ -949,6 +991,7 @@ simulate_complete_coords_st <- function(object, id){
 #' in case slot *n* of the simulation instruction is bigger than one.
 #'
 #' @export
+#' @keywords internal
 #'
 
 simulate_expression_pattern_sas <- function(object,
@@ -956,7 +999,7 @@ simulate_expression_pattern_sas <- function(object,
                                             simulations,
                                             core,
                                             distance = "dte",
-                                            binwidth = recBinwidth(object),
+                                            resolution = recSgsRes(object),
                                             angle_span = c(0, 360),
                                             noise_levels = seq(0,100, length.out = 21),
                                             noise_types = c("ed", "ep", "fp", "cb"),
@@ -978,12 +1021,12 @@ simulate_expression_pattern_sas <- function(object,
     getCoordsDfSA(
       object = object,
       ids = ids,
-      binwidth = binwidth,
+      resolution = resolution[1],
       distance = distance,
       angle_span = angle_span,
       core = TRUE,
       periphery = TRUE,
-      verbose = verbose
+      verbose = FALSE
     )
 
   if(base::isFALSE(core)){
@@ -1273,9 +1316,9 @@ simulate_expression_pattern_sas <- function(object,
     verbose = verbose
   )
 
-  coords_df_sim <- coords_df_sim[base::names(coords_df_random)]
-
   if(base::nrow(coords_df_random) != 0){
+
+    coords_df_sim <- coords_df_sim[base::names(coords_df_random)]
 
     coords_df_sim <- base::rbind(coords_df_sim, coords_df_random)
 
@@ -1304,7 +1347,7 @@ simulate_expression_pattern_sts <- function(object,
                                             id,
                                             simulations,
                                             width,
-                                            binwidth = recBinwidth(object),
+                                            resolution = recSgsRes(object),
                                             noise_levels = seq(0,100, length.out = 21),
                                             noise_types = c("ed", "ep", "fp", "cb"),
                                             range_sim = c(0,1),
@@ -1325,7 +1368,7 @@ simulate_expression_pattern_sts <- function(object,
       object = object,
       id = id,
       width = width,
-      binwidth = binwidth
+      resolution = resolution
     )
 
   # basis for simulation
@@ -1700,15 +1743,12 @@ simulate_random_expression <- function(object,
 #' The output list contains the following components:
 #' \describe{
 #'   \item{gradient}{A numeric vector representing the inferred expression gradient.}
-#'   \item{lds}{A numeric value representing the Loess Deviation Score (LDS) for the inferred gradient.}
 #'   \item{model}{A loess model object fitted to the simulated data.}
 #'   \item{tot_var}{A numeric value representing the total variation of the inferred gradient.}
 #' }
 #'
-#' @details This function generates random expression patterns with specified randomness levels, fits loess curves to the data,
-#' computes gradients, LDS, loess models, and total variation for each simulation, and returns the results in a named list.
-#'
 #' @export
+#' @keywords internal
 
 simulate_random_gradients <- function(coords_df,
                                       span,
@@ -1887,7 +1927,7 @@ simulate_spatial_niches <- function(coords_df,
 
 # smooth ------------------------------------------------------------------
 
-#' @title Smooth the Borders of a Spatial Annotation
+#' @title Smooth the border of a spatial annotation
 #'
 #' @description This function applies a smoothing algorithm to the borders of a
 #' [`SpatialAnnotation`] object. It can smooth both outer and inner borders using various methods.
@@ -1896,15 +1936,35 @@ simulate_spatial_niches <- function(coords_df,
 #' @param outer Logical; if TRUE, the outer border of the annotation is smoothed.
 #' @param inner Logical or numeric; if TRUE, all inner borders are smoothed.
 #'              If a numeric value is provided, only the specified inner border is smoothed.
-#' @param ... Additional arguments passed to the smoothing function.
+#' @param ... Additional arguments passed to the smoothing function `smoothr::ksmooth()`, `smoothr::chaikin()`, etc.
 #'
 #' @inherit shiftSpatialAnnotation params
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
+#' @note Requires the package 'terra' and 'smoothr'.
+#'
 #' @seealso [`expandSpatialAnnotation()`], [`shiftSpatialAnnotation()`], [`SpatialAnnotation`]
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+#'
+#' plotSpatialAnnotations(object, ids = "necrotic_edge")
+#'
+#' object <-
+#'  smoothSpatialAnnotation(object, id = "necrotic_edge", method = "ksmooth", new_id = "necrotic_edge_sm", smoothness = 50)
+#'
+#' plotSpatialAnnotations(object, ids = c("necrotic_edge", "necrotic_edge_sm"))
+#'
+#'
 smoothSpatialAnnotation <- function(object,
                                     id,
                                     method,
@@ -1913,6 +1973,22 @@ smoothSpatialAnnotation <- function(object,
                                     new_id = FALSE,
                                     overwrite = FALSE,
                                     ...){
+
+  if(!"terra" %in% base::rownames(installed.packages())){
+
+    install <- utils::askYesNo(msg = "Package 'terra' and/or 'smoothr' is not installed. Do you want to install it?")
+
+    if(base::isTRUE(install)){
+
+      install.packages(c("smoothr", "terra"))
+
+    } else {
+
+      stop("Can not continue with 'terra' package.")
+
+    }
+
+  }
 
   spat_ann <- getSpatialAnnotation(object, id = id)
 
@@ -2069,17 +2145,15 @@ smoothSpatially <- function(coords_df,
 
 # spatial -----------------------------------------------------------------
 
-
-
-#' @title Low level implementation of the spatial gradient screening
+#' @title Low level implementation of the spatial gradient screening algorithm
 #'
-#' @description Conducts spatial gradient screening. See details for more information.
+#' @description Conducts spatial gradient screening.
 #'
 #' @param coords_df A data.frame that contains at least a numeric variable named
 #' *dist* as well the numeric variables denoted in `variables`.
 #' @param variables Character vector of numeric variable names that are integrated
 #' in the screening process.
-#' @param binwidth Units value of the same unit of the *dist* variable in
+#' @param resolution Units value of the same unit of the *dist* variable in
 #' `coords_df`.
 #' @param control A list given to `control` of [`stats::loess()`].
 #' @param n_random Number of random permutations for the significance testing of step 2.
@@ -2111,7 +2185,7 @@ smoothSpatially <- function(coords_df,
 
 spatial_gradient_screening <- function(coords_df,
                                        variables,
-                                       binwidth,
+                                       resolution,
                                        cf = 1,
                                        rm_zero_infl = TRUE,
                                        n_random = 10000,
@@ -2160,7 +2234,7 @@ spatial_gradient_screening <- function(coords_df,
   }
 
   # define the alpha parameter of the loess fitting as the percentage that the
-  # binwidth represents of the distance (both must be of the same unit)
+  # resolution represents of the distance (both must be of the same unit)
 
   total_dist <- compute_dist_screened(coords_df)
 
@@ -2173,7 +2247,7 @@ spatial_gradient_screening <- function(coords_df,
 
   }
 
-  span <- base::as.numeric(binwidth/total_dist) / cf
+  span <- base::as.numeric(resolution/total_dist) / cf
 
   expr_est_pos <- compute_expression_estimates(coords_df)
 
@@ -2193,7 +2267,7 @@ spatial_gradient_screening <- function(coords_df,
       coords_df = coords_df,
       span = span,
       expr_est_pos = expr_est_pos,
-      amccd = binwidth,
+      amccd = resolution,
       n = n_random,
       seed = seed,
       control = control,
@@ -2368,36 +2442,31 @@ spatial_gradient_screening <- function(coords_df,
 }
 
 
-#' @title Implementation of the SAS-algorithm
+#' @title The Spatial Annotation Screening algorithm
 #'
 #' @description Screens the sample for numeric variables that stand
 #' in meaningful, spatial relation to annotated structures/areas, \link[=concept_spatial_annotation]{spatial annotations}.
 #' For a detailed explanation on how to define the parameters \code{distance},
-#' \code{n_bins_dist}, \code{binwidth}, \code{angle_span} and \code{n_bins_angle}
-#' see details section.
+#' \code{resolution}, \code{angle_span} and \code{n_bins_angle} see details section.
 #'
-#' @inherit getSpatialAnnotation params
-#' @param variables Character vector. All numeric variables (meaning genes,
-#' gene-sets and numeric features) that are supposed to be included in
+#' @param ids Character vector. Specifies the IDs of the spatial annotations of interest.
+#' @param variables Character vector. The numeric variables to be included in
 #' the screening process.
-#' @param distance \code{\link[=concept_distance_measure]{Distance value}}. Specifies
+#' @param distance \code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 #' the distance from the border of the spatial annotation to the \emph{horizon} in
-#' the periphery up to which the screening is conducted. (See details for more.)
-#' Defaults to a distance that covers the whole tissue using [`distToEdge()`].
-#' @param binwidth Distance value. The width of the distance bins to which
-#' each data point is assigned. Defaults to our platform dependent
-#' recommendation using [`recBinwidth()`].
+#' the periphery up to which the screening is conducted. Defaults to a distance
+#' that covers the whole tissue section the spatial annotation is located
+#' on using [`distToEdge()`]. (This distance must not be exceeded.)
 #' @param angle_span Numeric vector of length 2. Confines the area screened by
-#' an angle span relative to the center of the spatial annotation.
-#'  (See details fore more.)
-#' @param bcs_exclude Character value containing name(s) of data points to be excluded from the analysis.
+#' an angle span relative to the center of its closest spatial annotation.
+#' @param bcs_exclude Character value containing the barcodes of observations to be excluded
+#' from the analysis.
 #'
 #' @inherit add_models params
 #' @inherit argument_dummy params
 #' @inherit buffer_area params
 #'
-#' @return An object of class \code{SpatialAnnotationScreening}. See documentation
-#' with \code{?SpatialAnnotationScreening} for more information.
+#' @return An object of class [`SpatialAnnotationScreening`].
 #'
 #' @seealso [`createGroupAnnotations()`], [`createImageAnnotations()`],
 #' [`createNumericAnnotations()`] for how to create spatial annotations.
@@ -2412,13 +2481,41 @@ spatial_gradient_screening <- function(coords_df,
 #'
 #' @export
 #'
+#' @inheritSection tutorial_hint_dummy Tutorials
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "all")
+#'
+#' # opt 1 prefiltering by SPARKX is recommended, but not required
+#' object <- runSPARKX(object)
+#' genes <- getSparkxGenes(object, threshold_pval = 0.05)
+#'
+#' # opt 2
+#' genes <- getGenes(object)
+#'
+#' sas_out <-
+#'  spatialAnnotationScreening(
+#'    object = object,
+#'    ids = ids,
+#'    variables = genes,
+#'    core = FALSE
+#'    )
+#'
 
 spatialAnnotationScreening <- function(object,
                                        ids,
                                        variables,
                                        core,
                                        distance = "dte",
-                                       binwidth = recBinwidth(object),
+                                       resolution = recSgsRes(object),
                                        angle_span = c(0, 360),
                                        unit = getDefaultUnit(object),
                                        bcs_exclude = character(0),
@@ -2430,12 +2527,14 @@ spatialAnnotationScreening <- function(object,
                                        model_subset = NULL,
                                        model_remove = NULL,
                                        estimate_R2 = TRUE,
-                                       control = SPATA2::sgs_loess_control,
+                                       control = NULL,
                                        n_random = 10000,
                                        rm_zero_infl = TRUE,
                                        seed = 123,
+                                       add_image = TRUE,
                                        verbose = NULL,
                                        ...){
+
 
   hlpr_assign_arguments(object)
 
@@ -2444,6 +2543,8 @@ spatialAnnotationScreening <- function(object,
     msg = "Starting spatial annotation screening.",
     verbose = verbose
   )
+
+  if(is.null(control)){ control <- sgs_loess_control}
 
   if(base::isTRUE(estimate_R2)){
 
@@ -2457,7 +2558,7 @@ spatialAnnotationScreening <- function(object,
         object = object,
         ids = ids,
         distance = distance,
-        binwidth = binwidth,
+        resolution = resolution,
         angle_span = angle_span,
         core = core,
         ...
@@ -2474,18 +2575,15 @@ spatialAnnotationScreening <- function(object,
 
   }
 
-  cf <-
-    compute_correction_factor_sas(object, ids = ids, distance = distance, core = core)
-
   # test input
-  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  resolution <- as_unit(resolution, unit = unit, object = object)
 
   coords_df <-
     getCoordsDfSA(
       object = object,
       ids = ids,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       angle_span = angle_span,
       dist_unit = unit,
       core = core,
@@ -2495,6 +2593,15 @@ spatialAnnotationScreening <- function(object,
 
   coords_df_flt <-
     dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
+
+  cf <-
+    compute_correction_factor_sas(
+      object = object,
+      ids = ids,
+      distance = distance,
+      core = core,
+      coords_df_sa = coords_df_flt
+      )
 
   coords_df_flt <-
     joinWithVariables(
@@ -2511,7 +2618,7 @@ spatialAnnotationScreening <- function(object,
     spatial_gradient_screening(
       coords_df = coords_df_flt,
       variables = variables,
-      binwidth = binwidth,
+      resolution = resolution,
       cf = cf,
       sign_var = sign_var,
       sign_threshold = sign_threshold,
@@ -2527,34 +2634,49 @@ spatialAnnotationScreening <- function(object,
       rm_zero_infl = rm_zero_infl
     )
 
+
   coords_df_recreate <-
     getCoordsDfSA(
       object = object,
       ids = ids,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       angle_span = angle_span,
       dist_unit = unit,
       core = TRUE, # to include in visualization
       core0 = !core,
-      verbose = FALSE
+      verbose = FALSE,
+      incl_edge = FALSE,
+      drop_na = FALSE
     )
 
   SAS_out <-
     SpatialAnnotationScreening(
-      coords = coords_df_recreate,
-      info =
-        list(
-          r2 = r2,
-          random_simulations = sgs_out$random,
-          distance = distance,
-          coef = coef,
-          zero_infl_vars = sgs_out$zero_infl_vars
-          ),
+      annotations = getSpatialAnnotations(object, ids = ids, add_image = add_image),
+      coordinates = coords_df_recreate,
       models = sgs_out$models,
-      significance = sgs_out$pval,
-      results = sgs_out$eval,
-      sample = object@sample
+      qc =
+        list(
+          cf = cf,
+          est_R2 = if(!is.null(r2)){list(meanR2 = base::mean(r2$r2_df$r2), all = r2$r2_df)} else { NULL },
+          span = sgs_out$span,
+          random_sim = sgs_out$random_simulations,
+          zero_infl_vars = sgs_out$zero_infl_vars
+        ),
+      results = list(significance = sgs_out$pval, model_fits = sgs_out$eval),
+      sample = object@sample,
+      set_up = list(
+        angle_span = angle_span,
+        bcs_exclude = bcs_exclude,
+        control = control,
+        core = core,
+        distance = distance,
+        n_random = n_random,
+        resolution = resolution,
+        rm_zero_infl = rm_zero_infl,
+        seed = seed,
+        variables = variables
+      )
     )
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
@@ -2571,14 +2693,10 @@ spatialAnnotationScreening <- function(object,
 #' changes along the course of the spatial trajectory.
 #'
 #' @inherit getTrajectoryDf params
-#' @param variables Character vector. All numeric variables (meaning genes,
-#' gene-sets and numeric features) that are supposed to be included in
+#' @param variables Character vector. All numeric variables to be included in
 #' the screening process.
-#' @param n_bins Numeric value or vector of length 2. Specifies exactly how many bins are
-#' created. (See details for more.)
-#'
-#' @param summarize_with Character value. Either \emph{'mean'} or \emph{'median'}.
-#' Specifies the function with which the bins are summarized.
+#' @param width Distance measure. The width of the trajectory frame. Defaults
+#' to the trajectory length.
 #'
 #' @inherit add_models params
 #' @inherit argument_dummy params
@@ -2589,10 +2707,36 @@ spatialAnnotationScreening <- function(object,
 #' @seealso [`createSpatialTrajectories()`]
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' object <- runSPARKX(object)
+#' genes <- getSparkxGenes(object, threshold_pval = 0.05)
+#'
+#' id <- "horizontal_mid"
+#'
+#' plotImage(object) +
+#'   ggpLayerSpatialTrajectories(object, ids = id)
+#'
+#' plotSpatialTrajectories(object, ids = id)
+#'
+#' sts_out <-
+#'   spatialTrajectoryScreening(
+#'     object = object,
+#'     id = id,
+#'     variables = genes
+#'     )
+#'
 spatialTrajectoryScreening <- function(object,
                                        id,
                                        variables,
-                                       binwidth = recBinwidth(object),
+                                       resolution = recSgsRes(object),
                                        width = getTrajectoryLength(object, id),
                                        unit = getDefaultUnit(object),
                                        bcs_exclude = character(0),
@@ -2622,9 +2766,8 @@ spatialTrajectoryScreening <- function(object,
       estimate_r2_for_sts_run(
         object = object,
         id = id,
-        binwidth = binwidth,
-        width = width,
-        ...
+        resolution = resolution,
+        width = width
       )
 
     confuns::give_feedback(
@@ -2648,6 +2791,7 @@ spatialTrajectoryScreening <- function(object,
     getCoordsDfST(
       object = object,
       id = id,
+      resolution = resolution,
       variables = variables,
       width = width,
       dist_unit = unit,
@@ -2661,7 +2805,7 @@ spatialTrajectoryScreening <- function(object,
       coords_df = dplyr::filter(coords_df, rel_loc == "inside"),
       variables = variables,
       cf = cf,
-      binwidth = as_unit(binwidth, object = object, unit = unit),
+      resolution = as_unit(resolution, object = object, unit = unit),
       sign_var = sign_var,
       sign_threshold = sign_threshold,
       force_comp = force_comp,
@@ -2676,19 +2820,29 @@ spatialTrajectoryScreening <- function(object,
 
   STS_out <-
     SpatialTrajectoryScreening(
-      coords = dplyr::select(coords_df, -dplyr::any_of(variables)),
-      info =
+      coordinates = coords_df,
+      models = sgs_out$models,
+      qc =
         list(
-          r2 = r2,
-          random_simulations = sgs_out$random,
-          distance = distance,
-          coef = coef,
+          cf = cf,
+          est_R2 = if(!is.null(r2)){ list(meanR2 = base::mean(r2$r2_df$r2), all = r2$r2_df) } else { NULL },
+          span = sgs_out$span,
+          random_sim = sgs_out$random_simulations,
           zero_infl_vars = sgs_out$zero_infl_vars
         ),
-      models = sgs_out$models,
-      significance = sgs_out$pval,
-      results = sgs_out$eval,
-      sample = object@sample
+      results = list(significance = sgs_out$pval, model_fits = sgs_out$eval),
+      sample = object@sample,
+      set_up = list(
+        bcs_exclude = bcs_exclude,
+        control = control,
+        n_random = n_random,
+        resolution = resolution,
+        rm_zero_infl = rm_zero_infl,
+        seed = seed,
+        variables = variables,
+        width = width
+      ),
+      trajectory = getSpatialTrajectory(object, id = id)
     )
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
@@ -2698,6 +2852,95 @@ spatialTrajectoryScreening <- function(object,
 }
 
 
+
+
+#' @title Convert spatial annotation to grouping variable
+#'
+#' @description Converts one or more spatial annotations to a binary
+#' segmentation variable in the feature data.frame.
+#' @param ids Character vector. Specifies the spatial annotation(s) of interest.
+#' data points that fall into the area of these annotations are labeled
+#' with the input for argument \code{inside}.
+#' @param grouping_name Character value. The name of the new segmentation variable.
+#' @param inside Character value. The group name for the data points that
+#' are located inside the area of the spatial annotation(s).
+#' @param outside Character value. The group name for the data points that
+#' are located outside the area of the spatial annotation(s).
+#' @param overwrite Logical. Set to TRUE to overwrite existing variables with
+#' the same name.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(patchwork)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <-
+#'  createNumericAnnotations(
+#'    object = object,
+#'    variable = "HM_HYPOXIA",
+#'    threshold = "kmeans_high",
+#'    id = "hypoxia_ann",
+#'    inner_borders = FALSE,
+#'    force1 = TRUE
+#'    )
+#'
+#'
+#'  object <-
+#'    spatialAnnotationToGrouping(
+#'      object = object,
+#'      ids = "hypoxia_ann",
+#'      grouping_name = "hyp_group"
+#'      )
+#'
+#'  plotSurface(object, "hyp_group")
+#'
+#'  plotBoxplot(object, variables = "HM_HYPOXIA", group_by = "hyp_group")
+#'
+spatialAnnotationToGrouping <- function(object,
+                                        ids,
+                                        grouping_name,
+                                        inside = "inside",
+                                        outside = "outside",
+                                        overwrite = FALSE){
+
+  confuns::are_values("inside", "outside", mode = "character")
+
+  confuns::check_none_of(
+    input = grouping_name,
+    against = getFeatureNames(object),
+    ref.against = "names of the feature data",
+    overwrite = overwrite
+  )
+
+  bcsp_inside <- getSpatAnnBarcodes(object, ids = ids)
+
+  mdata <-
+    getMetaDf(object) %>%
+    dplyr::mutate(
+      {{grouping_name}} := dplyr::case_when(
+        condition = barcodes %in% {{bcsp_inside}} ~ {{inside}},
+        TRUE ~ {{outside}}
+      ),
+      {{grouping_name}} := base::factor(
+        x = !!rlang::sym(grouping_name),
+        levels = c(inside, outside)
+      )
+    )
+
+  object <- setMetaDf(object, meta_df = mdata)
+
+  return(object)
+
+}
 
 # split -------------------------------------------------------------------
 
@@ -2784,21 +3027,39 @@ strongH5 <- function(text){
 # subset ------------------------------------------------------------------
 
 
-#' @title Subsetting by barcodes
+#' @title Subset SPATA2 object
 #'
-#' @description Removes unwanted data points from the object without any significant
-#' post processing.
+#' @description Keeps only specified observations.
 #'
-#' @param barcodes Character vector. The barcodes of the data points that are
+#' @param barcodes Character vector. The barcodes of the observations that are
 #' supposed to be \bold{kept}.
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @return An updated \code{spata2} object.
-#'
 #' @details Unused levels of factor variables in the feature data.frame are dropped.
 #'
+#' @seealso [`removeObs()`]
+#'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#' library(dplyr)
+#' library(patchwork)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' barcodes_keep <-
+#'  getMetaDf(object) %>%
+#'  filter(bayes_sapce %in% c("3", "2", "1")) %>%
+#'  pull(barcodes)
+#'
+#' object_sub <- subsetByBarcodes(object, barcodes = barcodes_keep)
+#'
+#' plotSurface(object, color_by = "bayes_space") +
+#'  plotSurface(object_sub, color_by = "bayes_space")
 #'
 subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
@@ -2851,9 +3112,7 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
   }
 
-
-
-  n_bcsp <- nBarcodes(object)
+  n_bcsp <- nObs(object)
 
   confuns::give_feedback(
     msg = glue::glue("{n_bcsp} barcodes remaining."),
@@ -2863,270 +3122,5 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
   returnSpataObject(object)
 
 }
-
-
-#' @title Subset by genes
-#'
-#' @description Removes genes from the data set. This affects count- and expression matrices
-#' and can drastically decrease object size.
-#'
-#' @param genes Character vector of gene names that are kept.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @note Gene dependent analysis results such as DEA or SPARKX
-#' are **not** subsetted. Stored results are kept as they are. To update them run
-#' the algorithms again.
-#'
-#' @export
-subsetByGenes <- function(object, genes, verbose = NULL){
-
-  confuns::check_one_of(
-    input = genes,
-    against = getGenes(object)
-  )
-
-  object@data[[1]] <-
-    purrr::map(
-      .x = object@data[[1]],
-      .f = function(mtr){
-
-        mtr[genes, ]
-
-        }
-    )
-
-  object@obj_info$subset$genes <-
-    c(genes, object@obj_info$subset$genes) %>%
-    base::unique()
-
-  returnSpataObject(object)
-
-}
-
-
-#' @rdname export
-subsetIAS <- function(ias, angle_span = NULL, angle_bins = NULL, variables = NULL, verbose = TRUE){
-
-  if(purrr::map_lgl(c(angle_span, angle_bins, variables), .f = base::is.null)){
-
-    stop("Please provide at least one subset input.")
-
-  }
-
-  stopifnot(base::min(angle_span) >= 0)
-  stopifnot(base::max(angle_span) <= 360)
-
-  amin_input <- base::min(angle_span)
-  amax_input <- base::max(angle_span)
-
-  n_bins <- ias@n_angle_bins
-
-  confuns::give_feedback(
-    msg = "Subsetting object of class ImageAnnotationScreening.",
-    verbose = verbose
-  )
-
-  if(base::is.numeric(angle_span)){
-
-    ias@results_primary <-
-      dplyr::mutate(
-        .data = ias@results_primary,
-        temp = stringr::str_remove_all(base::as.character(bins_angle), pattern = "\\(|\\]")
-      ) %>%
-      tidyr::separate(col = temp, into = c("amin", "amax"), sep = ",") %>%
-      dplyr::mutate(
-        amin = base::as.numeric(amin),
-        amax = base::as.numeric(amax)
-      ) %>%
-      dplyr::filter(amin >= {{amin_input}} & amax <= {{amax_input}}) %>%
-      dplyr::select(-amin, -amax)
-
-  }
-
-  if(base::is.character(angle_bins)){
-
-    ias@results_primary <- dplyr::filter(ias@results_primary, bins_angle %in% {{angle_bins}})
-
-  }
-
-  if(base::is.character(variables)){
-
-    ias@results_primary <- dplyr::filter(ias@results_primary, variables %in% {{variables}})
-
-  }
-
-  ias@results_primary$bins_angle <- base::droplevels(ias@results_primary$bins_angle)
-
-  confuns::give_feedback(
-    msg = "Summarizing.",
-    verbose = verbose
-  )
-
-  ias@results_primary <- summarize_ias_df(df = ias@results_primary)
-
-  confuns::give_feedback(msg = "Done.", verbose = verbose)
-
-  return(ias)
-
-}
-
-
-# summarize ---------------------------------------------------------------
-
-
-#' @export
-summarize_and_shift_variable_df <- function(grouped_df, variables){
-
-  dplyr::summarise(
-    .data = grouped_df,
-    dplyr::across(
-      .cols = dplyr::any_of(variables),
-      .fns = ~ base::mean(.x, na.rm = TRUE)
-    )
-  ) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(
-      dplyr::across(
-        .cols = dplyr::any_of(variables),
-        .fns = confuns::normalize
-      )
-    ) %>%
-    tidyr::pivot_longer(
-      cols = dplyr::any_of(variables),
-      values_to = "values",
-      names_to = "variables"
-    ) %>%
-    dplyr::mutate(
-      bins_order = stringr::str_remove(bins_circle, pattern = "Circle ") %>% base::as.numeric()
-    ) %>%
-    # remove NA
-    dplyr::group_by(variables) %>%
-    dplyr::filter(!base::any(base::is.na(values)))
-
-
-}
-
-
-#' @keywords internal
-summarize_corr_string <- function(x, y){
-
-  res <- stats::cor.test(x = x, y = y, alternative = "greater")
-
-  out <- stringr::str_c(res$estimate, res$p.value, sep = "_")
-
-  return(out)
-
-}
-
-#' @keywords internal
-summarize_rauc <- function(x, y, n){
-
-  out <-
-    base::abs((x-y)) %>%
-    pracma::trapz(x = 1:n, y = .)
-
-  return(out)
-
-}
-
-#' @keywords internal
-summarize_projection_df <- function(projection_df,
-                                    n_bins = NA_integer_,
-                                    binwidth = NA,
-                                    summarize_with = "mean"){
-
-  confuns::check_one_of(
-    input = summarize_with,
-    against = c("mean", "median", "sd")
-  )
-
-  # extract numeric variables that can be
-  num_vars <-
-    dplyr::select(projection_df, -dplyr::any_of(projection_df_names)) %>%
-    dplyr::select_if(.predicate = base::is.numeric) %>%
-    base::names()
-
-  binned_projection_df <-
-    bin_projection_df(
-      projection_df = projection_df,
-      n_bins = n_bins,
-      binwidth = binwidth
-      )
-
-  smrd_projection_df <-
-    dplyr::select(
-      .data = binned_projection_df,
-      dplyr::any_of(c(projection_df_names, num_vars)),
-      proj_length_binned
-      ) %>%
-    dplyr::group_by(proj_length_binned) %>%
-    dplyr::summarise(
-      dplyr::across(
-        .cols = dplyr::all_of(num_vars),
-        .fns = summarize_formulas[[summarize_with]]
-      )
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(trajectory_order = dplyr::row_number()) %>%
-    dplyr::select(dplyr::all_of(smrd_projection_df_names), dplyr::everything())
-
-  return(smrd_projection_df)
-
-}
-
-
-#' @title Summarize IAS-results
-#'
-#' @description Summarizes the results of the IAS-algorithm. Creates
-#' the content of slot @@results of the \code{ImageAnnotationScreening}-class.
-#'
-#' @details Model fitting and evaluation happens within every angle-bin.
-#' To get a single evaluation for every gene the results of every
-#' angle-bin must be summarized.
-#'
-#' @export
-summarizeIAS <- function(ias, method_padj = "fdr"){
-
-  smrd_df <-
-    dplyr::mutate(
-      .data  = ias@results_primary,
-      p_value = tidyr::replace_na(data = p_value, replace = 1),
-      corr = tidyr::replace_na(data = corr, replace = 0)
-    ) %>%
-    dplyr::group_by(variables, models) %>%
-    dplyr::summarise(
-      n_bins_angle = dplyr::n_distinct(bins_angle),
-      corr_mean = base::mean(corr),
-      #corr_median = stats::median(corr),
-      #corr_min = base::min(corr),
-      #corr_max = base::max(corr),
-      #corr_sd = stats::sd(corr),
-      raoc_mean = base::mean(raoc),
-      p_value_mean = base::mean(p_value),
-      #p_value_median = stats::median(p_value),
-      #p_value_combined = base::prod(p_value),
-      rmse_mean = base::mean(rmse),
-      mae_mean = base::mean(mae)
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(
-      ias_score = (raoc_mean + corr_mean) / 2,
-      p_value_mean_adjusted = stats::p.adjust(p = p_value_mean, method = method_padj)
-      #p_value_median_adjusted = stats::p.adjust(p = p_value_median, method = method_padj),
-      #p_value_combined_adjusted = stats::p.adjust(p = p_value_combined, method = method_padj)
-    ) %>%
-    dplyr::select(variables, models, ias_score, dplyr::everything())
-
-  ias@method_padj <- method_padj
-
-  ias@results <- smrd_df
-
-  return(ias)
-
-}
-
-
 
 

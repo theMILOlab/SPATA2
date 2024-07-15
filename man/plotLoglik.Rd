@@ -21,3 +21,16 @@ the optimal number of clusters.
 For this function to work the results of \code{\link[=runBayesSpaceClustering]{runBayesSpaceClustering()}}
 are required.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+# this might take some time...
+object <- runBayesSpaceClustering(object, name = "bspace", qs = 3:15)
+
+plotLoglik(object)
+
+}

@@ -32,3 +32,4 @@ is \code{FALSE}, the output is a string suffixed with \emph{px}.
 Transforms area in SI units to pixel based on the current
 resolution of the image in the \code{SPATA2} object.
 }
+\keyword{internal}

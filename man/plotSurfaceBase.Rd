@@ -59,9 +59,6 @@ represent the group.}
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
 
-\item{display_image}{Logical. If set to TRUE the histology image of the specified sample
-is displayed underneath the plot.}
-
 \item{xrange, yrange}{\link[=concept_distance_measure]{Distance vector} of length
 two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
 the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
@@ -78,6 +75,12 @@ and nothing more. Using \code{expand}, the cropped image section can be adjusted
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
+input options.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }

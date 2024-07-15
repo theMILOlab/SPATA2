@@ -1,6 +1,20 @@
 # create_ ------------------------------------------------------------------
 
 #' @keywords internal
+create_circle_polygon <- function(p, r, n) {
+
+  angles <- seq(0, 2 * pi, length.out = n + 1)
+
+  x_coords <- p[1] + r * cos(angles)
+  y_coords <- p[2] + r * sin(angles)
+
+  polygon_df <- data.frame(x = x_coords, y = y_coords)
+
+  return(polygon_df)
+
+}
+
+#' @keywords internal
 create_encircling_add_on <- function(df, color, pt_size, linesize){
 
   if(base::nrow(df) == 0){
@@ -949,6 +963,27 @@ create_spatial_trajectories_ui <- function(plot_height = "600px", breaks_add = N
 #' @seealso [`recDbscanEps()`], [`recDbscanMinPts()`]
 #'
 #' @export
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <-
+#'  createGroupAnnotations(
+#'    object = object,
+#'    grouping = "bayes_space",
+#'    group = "1",
+#'    id = "bspace1",
+#'    tags = "bspace_ann"
+#'    )
+#'
+#'  plotSurface(object, color_by = "bayes_space") +
+#'    ggpLayerSpatAnnOutline(object, tags = "bspace_ann")
+#'
 createGroupAnnotations <- function(object,
                                    grouping,
                                    group,
@@ -959,7 +994,7 @@ createGroupAnnotations <- function(object,
                                    inner_borders = TRUE,
                                    eps = recDbscanEps(object),
                                    minPts = recDbscanMinPts(object),
-                                   min_size = nBarcodes(object)*0.01,
+                                   min_size = nObs(object)*0.01,
                                    force1 = FALSE,
                                    concavity = 2,
                                    overwrite = FALSE,
@@ -1038,18 +1073,20 @@ createGroupAnnotations <- function(object,
 #' storage. The `HistoImage` can be created in three ways.
 #'
 #' First (recommended): The directory is specified via `dir` and `img` is `NULL`.
-#' In this case, the function reads the image from the directory and stores both
-#' in the `HistoImage` container. Since the directory is stored, too, the image
-#' can be conveniently unloaded and loaded in downstream analysis.
+#' In this case, the function reads the image from the directory and stores both,
+#' the image as well as the directoryin the `HistoImage` container. Since the
+#' directory is stored, too, the image can be conveniently unloaded and loaded
+#' in downstream analysis.
 #'
 #' Second: The image is provided via `img` and the directory `dir` is `NULL`.
 #' In this case, the function creates the `HistoImage` container and stores the
-#' image but since no directory is available, loading and unloading later on
+#' image but since no directory is available, unloading and loading later on
 #' is not possible.
 #'
 #' Third: Both, `img` and `dir` is specified. In this case, the image is stored
-#' in the `HistoImage` container next to the directory and the directory is used
-#' to save the image on the device which allows loading and unloading later on.
+#' in the `HistoImage` container next to the directory and if the directory `dir`
+#' does not exist, the directory is used to save the image on the device which
+#' allows unloading and loading later on.
 #'
 #' @seealso [`HistoImage-class`]
 #'
@@ -1158,472 +1195,9 @@ createHistoImage <- function(img_name,
 
 }
 
-
-#' @title Create an object of class `SpatialData`
-#'
-#' @description Official constructor function of the S4 class [`SpatialData`].
-#' Functions suffixed by the platform name are wrappers written for their
-#' standardized output folder.
-#'
-#' @param active Character value. Name of the `HistoImage` that is set
-#' to the active image. Defaults to the reference image.
-#' @param coordinates Data.frame of at least three variables:
-#'
-#'  \itemize{
-#'   \item{*barcodes*: }{Character variable with unique IDs for each observation.}
-#'   \item{*x_orig*: }{Numeric variable representing x-coordinates in a cartesian coordinate system.}
-#'   \item{*y_orig*: }{Numeric variable representing y-coordinates in a cartesian coordinate system.}
-#'   }
-#'
-#' Coordinates should align with the tissue outline of the reference `HistoImage` after being
-#' multiplied withe its coordinate scale factor in slot @@scale_factors$coords.
-#' @param dir The directory to the output folder of the platform.
-#' @param file_coords Character value or `NULL`. If character, specifies the filename
-#' **within** the directory `dir` that leads to the coordinates .csv file. If `NULL`
-#' the expected filename is tried:
-#'
-#'  \itemize{
-#'   \item{*MERFISH*:}{ File that contains *'cell_metadata'* and ends with *'.csv'*}
-#'   \item{*SlideSeqV1*:}{ File that ends with *'...MatchedBeadLocation.csv'*}
-#'   \item{*Visium*:}{ File named *'tissue_positions_list.csv'* or *'tissue_positions.csv'*}
-#'   \item{*Xenium*:}{ File named *'cells.csv.gz'*.}
-#'   }
-#'
-#' @param hist_img_ref The `SpatialData` serving as the \code{\link[=concept_images]{reference image}}.
-#' Should be created with `createHistoImage()`.
-#' @param hist_imgs List of additional `HistoImage` objects for slot @@images.
-#' @param img_ref,img_active
-#' Character values specifying which of the images to register and how to register
-#' them. Click \code{\link[=concept_images]{here}} for more information about the definitions
-#' of the reference image and the active image. Setting both arguments to the same
-#' value results in the function to register the specified image as the active
-#' as well as the reference image. Valid input options depend
-#' on the platform used:
-#'
-#' \itemize{
-#'  \item{*Visium*:}{ Either *'lowres'* or *'hires'*.}
-#' }
-#'
-#' @param meta List of meta data regarding the tissue.
-#' @param misc List of miscellaneous information.
-#' @param sample Character value. The sample name of the tissue.
-#'
-#' @inherit argument_dummy params
-#'
-#' @seealso [`registerImage()`] to register images afterwards.
-#'
-#' @return An object of class `SpatialData`
-#' @export
-#'
-createSpatialData <- function(sample,
-                              hist_img_ref = NULL,
-                              hist_imgs = list(),
-                              active = NULL,
-                              unload = TRUE,
-                              coordinates = tibble::tibble(),
-                              meta = list(),
-                              method = SpatialMethod(),
-                              scale_factors = list(),
-                              misc = list(),
-                              verbose = TRUE,
-                              ...){
-
-  confuns::is_value(x = sample, mode = "character")
-
-  # basic
-  object <- SpatialData()
-  object@sample <- sample
-  object@meta <- meta
-  object@method <- method
-  object@misc <- misc
-  object@scale_factors <- scale_factors
-  object@version <- current_spata2_version
-
-  # set registered images
-  object@images <-
-    purrr::keep(.x = hist_imgs, .p = ~ methods::is(.x, class2 = "HistoImage")) %>%
-    purrr::map(.x = ., .f = function(hist_img){
-
-      if(hist_img@sample != sample){
-
-        stop(glue::glue("HistoImage {hist_img@name} is from sample {hist_img@sample}."))
-
-      }
-
-      hist_img@active <- FALSE
-      hist_img@reference <- FALSE
-
-      return(hist_img)
-
-    }) %>%
-    purrr::set_names(x = ., nm = purrr::map_chr(.x = ., .f = ~ .x@name))
-
-  # set reference image
-  object@name_img_ref <- hist_img_ref@name
-  object@images[[hist_img_ref@name]] <- hist_img_ref
-
-  if(base::is.null(active)){
-
-    active <- hist_img_ref@name
-
-  }
-
-  confuns::give_feedback(
-    msg = glue::glue("Active image: '{active}'."),
-    verbose = verbose
-  )
-
-  object <-
-    activateImage(
-      object = object,
-      img_name = active,
-      verbose = FALSE
-    )
-
-  # empty image slots
-  if(base::isTRUE(unload)){
-
-    object <- unloadImages(object, active = FALSE)
-
-  }
-
-  # coordinates
-  if(!purrr::is_empty(x = coordinates)){
-
-    confuns::check_data_frame(
-      df = coordinates,
-      var.class = purrr::set_names(
-        x = c("character", "numeric", "numeric"),
-        nm = c("barcodes", "x_orig", "y_orig")
-      )
-    )
-
-    confuns::is_key_variable(
-      df = coordinates,
-      key.name = "barcodes",
-      stop.if.false = TRUE
-    )
-
-    object@coordinates <- coordinates
-
-  }
-
-  return(object)
-
-}
-
-#' @rdname createSpatialData
-#' @export
-createSpatialDataMERFISH <- function(dir,
-                                      sample,
-                                      file_coords = NULL,
-                                      meta = list(),
-                                      misc = list(),
-                                      verbose = TRUE){
-
-  # read coordinates
-  if(!base::is.character(file_coords)){
-
-    file_coords <-
-      base::list.files(path = dir, full.names = TRUE) %>%
-      stringr::str_subset(pattern = "cell_metadata.*\\.csv$")
-
-    if(base::length(file_coords) == 0){
-
-      stop("Did not find coordinates. If not specified otherwise, directory
-           must contain one '~...cell_metadata...' .csv -file.")
-
-    } else if(base::length(file_coords) > 1){
-
-      stop("Found more than one potential barcode files. Please specify argument
-           `file_coords`.")
-
-    }
-
-  } else {
-
-    file_coords <- base::file.path(dir, file_coords)
-
-    if(!base::file.exists(file_coords)){
-
-      stop(glue::glue("Directory to coordinates '{file_coords}' does not exist."))
-
-    }
-
-  }
-
-  misc[["dirs"]][["coords"]] <- file_coords
-
-  confuns::give_feedback(
-    msg = glue::glue("Reading coordinates from: '{file_coords}'"),
-    verbose = verbose
-  )
-
-  coords_df <- read_coords_merfish(dir_coords = file_coords)
-
-  psf <- magrittr::set_attr(1, which = "unit", value = "um/px")
-
-  sp_data <-
-    SpatialData(
-      coordinates = coords_df,
-      meta = meta,
-      method = spatial_methods[["MERFISH"]],
-      misc = misc,
-      sample = sample,
-      scale_factors = list(pixel = psf),
-      version = current_spata2_version
-    )
-
-  return(sp_data)
-
-}
-
-
-#' @rdname createSpatialData
-#' @export
-createSpatialDataSlideSeqV1 <- function(dir,
-                                         sample,
-                                         file_coords = NULL,
-                                         meta = list(),
-                                         misc = list()){
-
-  # read coordinates
-  if(!base::is.character(file_coords)){
-
-    file_coords <-
-      base::list.files(path = dir, full.names = TRUE) %>%
-      stringr::str_subset(pattern = "MatchedBeadLocation\\.csv$")
-
-    if(base::length(file_coords) == 0){
-
-      stop("Did not find coordinates. If not specified otherwise, directory
-           must contain one '~...MatchedBeadLocation.csv' file.")
-
-    } else if(base::length(file_coords) > 1){
-
-      stop("Found more than one potential barcode files. Please specify argument
-           `file_coords`.")
-
-    }
-
-  } else {
-
-    file_coords <- base::file.path(dir, file_coords)
-
-    if(!base::file.exists(file_coords)){
-
-      stop(glue::glue("Directory to coordinates '{file_coords}' does not exist."))
-
-    }
-
-  }
-
-  misc[["misc"]][["coords"]] <- file_coords
-  coords_df <-  read_coords_slide_seq_v1(dir_coords = file_coords)
-
-  # create pseudo image
-  sp_data <-
-    SpatialData(
-      coordinates = coords_df,
-      meta = meta,
-      method = SlideSeqV1,
-      misc = misc,
-      sample = sample,
-      version = current_spata2_version
-    )
-
-  return(sp_data)
-
-}
-
-
-#' @rdname createSpatialData
-#' @export
-createSpatialDataVisium <- function(dir,
-                                     sample,
-                                     img_ref = "lowres",
-                                     img_active = "lowres",
-                                     meta = list(),
-                                     misc = list(),
-                                     verbose = TRUE){
-
-  # check input directory
-  isDirVisium(dir = dir, error = TRUE)
-
-  # get all files in folder and subfolders
-  files <- base::list.files(dir, full.names = TRUE, recursive = TRUE)
-
-  # check required image availability
-  req_images <- base::unique(c(img_ref, img_active))
-
-  confuns::check_one_of(
-    input = req_images,
-    against = c("lowres", "hires"),
-    ref.input = "required images"
-  )
-
-  lowres_path <- base::file.path(dir, "spatial", "tissue_lowres_image.png")
-  hires_path <- base::file.path(dir, "spatial", "tissue_hires_image.png")
-
-  if("lowres" %in% req_images){
-
-    if(!lowres_path %in% files){
-
-      stop(glue::glue("'{lowres_path}' is missing."))
-
-    }
-
-  }
-
-  if("hires" %in% req_images){
-
-    if(!hires_path %in% files){
-
-      stop(glue::glue("'{hires_path}' is missing."))
-
-    }
-
-  }
-
-  # load in data
-
-  # check and load tissue positions for different space ranger versions
-  v1_coords_path <- base::file.path(dir, "spatial", "tissue_positions_list.csv")
-  v2_coords_path <- base::file.path(dir, "spatial", "tissue_positions.csv")
-
-  if(v2_coords_path %in% files){
-
-    space_ranger_version <- 2
-    coords_df <- read_coords_visium(dir_coords = v2_coords_path)
-    misc[["dirs"]][["coords"]] <- v2_coords_path
-
-  } else if(v1_coords_path %in% files){
-
-    space_ranger_version <- 1
-    coords_df <- read_coords_visium(dir_coords = v1_coords_path)
-    misc[["dirs"]][["coords"]] <- v1_coords_path
-
-  }
-
-  if(base::nrow(coords_df) < 10000){
-
-    method <- spatial_methods[["VisiumSmall"]]
-
-  } else {
-
-    method <- spatial_methods[["VisiumLarge"]]
-
-  }
-
-  # load scalefactors
-  scale_factors <-
-    jsonlite::read_json(path = base::file.path(dir, "spatial", "scalefactors_json.json"))
-
-  # load images
-  # reference image
-  img_list <- list()
-
-  if("hires" %in% req_images){
-
-    img_list[["hires"]] <-
-      createHistoImage(
-        dir = hires_path,
-        sample = sample,
-        img_name ="hires",
-        scale_factors =
-          list(
-            image = scale_factors$tissue_hires_scalef
-          ),
-        reference = img_ref == "hires",
-        verbose = verbose
-      )
-
-  }
-
-  if("lowres" %in% req_images){
-
-    img_list[["lowres"]] <-
-      createHistoImage(
-        dir = lowres_path,
-        sample = sample,
-        img_name ="lowres",
-        scale_factors =
-          list(
-            image = scale_factors$tissue_lowres_scalef
-          ),
-        reference = img_ref == "lowres",
-        verbose = verbose
-      )
-  }
-
-  # compute spot size
-  spot_size <-
-    scale_factors$fiducial_diameter_fullres *
-    scale_factors[[stringr::str_c("tissue", img_ref, "scalef", sep = "_")]] /
-    base::max(getImageDims(img_list[[img_ref]]))*100
-
-  spot_scale_fct <- 1.15
-
-  method@method_specifics[["spot_size"]] <- spot_size * spot_scale_fct
-
-  # create output
-  object <-
-    createSpatialData(
-      sample = sample,
-      hist_img_ref = img_list[[img_ref]],
-      hist_imgs = img_list[req_images[req_images != img_ref]],
-      active = img_active,
-      unload = TRUE,
-      coordinates = coords_df,
-      method = method,
-      meta = meta,
-      misc = misc
-    )
-
-  # compute pixel scale factor
-  object <- computePixelScaleFactor(object, verbose = verbose)
-
-  return(object)
-
-}
-
-
-#' @rdname createSpatialData
-#' @export
-createSpatialDataXenium <- function(dir,
-                                     sample,
-                                     meta = list(),
-                                     misc = list()){
-
-  file_coords <- base::file.path(dir, "cells.csv.gz")
-
-  coords_df <- read_coords_xenium(dir_coords = file_coords)
-
-  # create pseudo image
-  psf <- magrittr::set_attr(x = 1, which = "unit", value = "um/px")
-
-  sp_data <-
-    SpatialData(
-      coordinates = coords_df,
-      meta = meta,
-      method = spatial_methods[["Xenium"]],
-      misc = misc,
-      scale_factors = list(pixel = psf),
-      sample = sample,
-      version = current_spata2_version
-    )
-
-  return(sp_data)
-
-}
-
-
-
-
-
 # createI -----------------------------------------------------------------
 
-#' @title Add spatial annotations based on histo-morphological features
+#' @title Create spatial annotations based on histo-morphological features
 #'
 #' @description Opens an interface in which the user can interactively outline
 #' histomorphological features of an image. The outline created this way is
@@ -1637,6 +1211,21 @@ createSpatialDataXenium <- function(dir,
 #' @seealso [`addSpatialAnnotation()`], [`mergeWithTissueOutline()`]
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' if(FALSE){ # diffuse
+#'
+#'  object <- createImageAnnotations(object)
+#'
+#' }
+#'
 #'
 createImageAnnotations <- function(object, ...){
 
@@ -2704,6 +2293,158 @@ createImageAnnotations <- function(object, ...){
 }
 
 
+# createM -----------------------------------------------------------------
+
+#' @title Add a molecular assay
+#'
+#' @description Creates and adds an object of class [`MolecularAssay`]
+#' to the [`SPATA2`] object.
+#'
+#' @param active_mtr Character value. The name of the matrix chosen as
+#' the \link[=concept_active]{active} matrix. If `mtr_proc` is an empty
+#' list, this value defaults to *'counts'*
+#'
+#' @param mtr_counts A count matrix. Column names correspond to the barcodes of
+#' the \link[=concept_observations]{observations}.
+#' Rownames correspond to the names of the molecular features (genes, proteins, metabolites etc.).
+#' @param mtr_proc A list of processed matrices set in slot @@mtr_proc.
+#' @param ... Gives access to set remaining slots of the [`MolecularAssay`]
+#' object.
+#'
+#' @inherit initiateSpataObject params
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' Creating an assay only with processed matrices (`mtr_proc`) while not specifying
+#' `mtr_counts` is possible. In that case, `mtr_counts` is populated with an empty
+#' matrix that contains all unique molecule names found in the matrices as rownames
+#' and barcodes as colnames.
+#'
+#' @export
+#'
+createMolecularAssay <- function(object,
+                                 omic,
+                                 active_mtr = NULL,
+                                 mtr_counts = Matrix::Matrix(),
+                                 mtr_proc = list(),
+                                 overwrite = FALSE,
+                                 activate = FALSE,
+                                 verbose = NULL,
+                                 ...){
+
+  hlpr_assign_arguments(object)
+
+  # check validity
+  confuns::check_none_of(
+    input = omic,
+    against = getAssayNames(object),
+    ref.against = "existing assays",
+    overwrite = overwrite
+  )
+
+  # check validity
+  if(!purrr::is_empty(mtr_proc)){
+
+    confuns::is_named(input = mtr_proc)
+    mtr_proc <- confuns::discard_unnamed(input = mtr_proc)
+
+    for(i in base::seq_along(mtr_proc)){
+
+      if(!base::is.matrix(mtr_proc[[i]]) & !methods::is(mtr_proc[[i]], class2 = "Matrix")){
+
+        list_slot <- base::names(mtr_proc)[i]
+
+        stop(glue::glue("Slot '{list_slot}' of `mtr_proc` does not contain a matrix."))
+
+      }
+
+    }
+
+  }
+
+  if(base::identical(x = mtr_counts, y = Matrix::Matrix()) &
+     !base::identical(x = mtr_proc, y = list())){
+
+    confuns::give_feedback(
+      msg = "Populating empty count matrix with barcodes and molecule names from `mtr_proc`.",
+      verbose = verbose
+    )
+
+    barcodes <-
+      purrr::map(mtr_proc, .f = base::colnames) %>%
+      purrr::flatten_chr() %>%
+      base::unique()
+
+    molecule_names <-
+      purrr::map(mtr_proc, .f = base::rownames) %>%
+      purrr::flatten_chr() %>%
+      base::unique()
+
+    mtr_counts <-
+      Matrix::Matrix(
+        data = 0L ,
+        nrow = base::length(molecule_names),
+        ncol = base::length(barcodes)
+        ) %>%
+      magrittr::set_rownames(molecule_names) %>%
+      magrittr::set_colnames(barcodes)
+
+  }
+
+  if(base::is.null(active_mtr)){
+
+    active_mtr <- "counts"
+
+  } else {
+
+    confuns::check_one_of(
+      input = active_mtr,
+      against = c("counts", base::names(mtr_proc))
+    )
+
+  }
+
+  ma <-
+    MolecularAssay(
+      mtr_counts = mtr_counts,
+      mtr_proc = mtr_proc,
+      omic = omic,
+      ...
+    )
+
+  object <- setAssay(object, assay = ma)
+
+  if(base::isTRUE(activate)){
+
+    object <-
+      activateAssay(
+        object = object,
+        assay_name = omic,
+        verbose = verbose
+      )
+
+  }
+
+  if(purrr::is_empty(active_mtr)){
+
+    warning("No active matrix specified. Define with `activateMatrix()`.")
+
+  } else {
+
+    object <-
+      activateMatrix(
+        object = object,
+        mtr_name = active_mtr,
+        assay_name = omic,
+        verbose = verbose
+      )
+
+  }
+
+  returnSpataObject(object)
+
+}
 
 # createN -----------------------------------------------------------------
 
@@ -2715,7 +2456,7 @@ createImageAnnotations <- function(object, ...){
 #'
 #' @param threshold Character value. Determines the method and/or the threshold
 #' by which the data points are filtered. Valid input options are *'kmeans_high'*,
-#' *'kmeans_low'* and *operator.value* combinations such as *'>0.75'* or *'<=0.5'*.
+#' *'kmeans_low'* and operator-value combinations such as *'>0.75'* or *'<=0.5'*.
 #' See details for more.
 #' @param tags_expand Logical value. If `TRUE`, the tags with which the image
 #' annotations are tagged are expanded by the unsuffixed `id`, the `variable`,
@@ -2787,25 +2528,31 @@ createImageAnnotations <- function(object, ...){
 #'
 #' @examples
 #'
-#'  library(patchwork)
+#' library(SPATA2)
+#' library(tidyverse)
+#' library(patchwork)
 #'
-#'  object <- downloadSpataObject("275_T")
+#' data("example_data")
 #'
-#'  # create an image annotation based on the segregated area of
-#'  # high expression in hypoxia signatures
+#' object <- example_data$object_UKF275T_diet
+#'
+#' # create an image annotation based on the segregated area of
+#' # high expression in hypoxia signatures
 #'  object <-
 #'    createNumericAnnotations(
 #'      object = object,
 #'      variable = "HM_HYPOXIA",
 #'      threshold = "kmeans_high",
-#'      id = "hypoxia"
-#'      )
+#'      id = "hypoxia",
+#'      tags = "hypoxic"
+#'    )
 #'
-#'   # visualize both
-#'   plotSurface(object, color_by = "HM_HYPOXIA") +
+#'  # visualize both
+#'  plotSurface(object, color_by = "HM_HYPOXIA") +
 #'    legendLeft() +
-#'   plotImage(object) +
-#'    ggpLayerSpatAnnOutline(object, tags = c("hypoxia", "createGroupAnnotations"))
+#'
+#'  plotImage(object) +
+#'    ggpLayerSpatAnnOutline(object, tags = c("hypoxic"))
 #'
 #' @export
 #'
@@ -2821,7 +2568,7 @@ createNumericAnnotations <- function(object,
                                      minPts = recDbscanMinPts(object),
                                      force1 = FALSE,
                                      fct_incr = 1,
-                                     min_size = nBarcodes(object)*0.01,
+                                     min_size = nObs(object)*0.01,
                                      concavity = 2,
                                      method_gs = NULL,
                                      transform_with = NULL,
@@ -2962,6 +2709,487 @@ createNumericAnnotations <- function(object,
 # createS -----------------------------------------------------------------
 
 
+#' @title Create an object of class `SpatialMethod`
+#'
+#' @description A simple wrapper to construct objects of class [`SpatialMethod`].
+#' Input is directly given to the basic constructer, but slot `@version` is set
+#' automatically.
+#'
+#' @param ... Input for the respective slots. Use `slotNames(SpatialMethod)` to
+#' have them printed in the console.
+#'
+#' @return An object of class `SpatialMethod`.
+#' @export
+#'
+createSpatialMethod <- function(...){
+
+  SpatialMethod(
+    ...,
+    version = current_spata2_version
+  )
+
+}
+
+#' @title Create an object of class `SpatialData`
+#'
+#' @description Official constructor function of the S4 class [`SpatialData`].
+#' Functions suffixed by the platform name are wrappers written for their
+#' standardized output folder.
+#'
+#' @param active Character value. Name of the `HistoImage` that is set
+#' to the active image. Defaults to the reference image.
+#' @param coordinates Data.frame of at least three variables:
+#'
+#'  \itemize{
+#'   \item{*barcodes*: }{Character variable with unique IDs for each observation.}
+#'   \item{*x_orig*: }{Numeric variable representing x-coordinates in a cartesian coordinate system.}
+#'   \item{*y_orig*: }{Numeric variable representing y-coordinates in a cartesian coordinate system.}
+#'   }
+#'
+#' Coordinates should align with the tissue outline of the reference `HistoImage` after being
+#' multiplied withe its coordinate scale factor in slot @@scale_factors$coords.
+#' @param dir The directory to the output folder of the platform.
+#' @param file_coords Character value or `NULL`. If character, specifies the filename
+#' **within** the directory `dir` that leads to the coordinates .csv file. If `NULL`
+#' the expected filename is tried:
+#'
+#'  \itemize{
+#'   \item{*MERFISH*:}{ File that contains *'cell_metadata'* and ends with *'.csv'*}
+#'   \item{*SlideSeqV1*:}{ File that ends with *'...MatchedBeadLocation.csv'*}
+#'   \item{*Visium*:}{ File named *'tissue_positions_list.csv'* or *'tissue_positions.csv'*}
+#'   \item{*Xenium*:}{ File named *'cells.csv.gz'*.}
+#'   }
+#'
+#' @param hist_img_ref The `SpatialData` serving as the \code{\link[=concept_images]{reference image}}.
+#' Should be created with `createHistoImage()`.
+#' @param hist_imgs List of additional `HistoImage` objects for slot @@images.
+#' @param img_ref,img_active
+#' Character values specifying which of the images to register and how to register
+#' them. Click \code{\link[=concept_images]{here}} for more information about the definitions
+#' of the reference image and the active image. Setting both arguments to the same
+#' value results in the function to register the specified image as the active
+#' as well as the reference image. Valid input options depend
+#' on the platform used:
+#'
+#' \itemize{
+#'  \item{*Visium*:}{ Either *'lowres'* or *'hires'*.}
+#' }
+#'
+#' @param meta List of meta data regarding the tissue.
+#' @param misc List of miscellaneous information.
+#' @param sample Character value. The sample name of the tissue.
+#'
+#' @inherit argument_dummy params
+#'
+#' @seealso [`registerImage()`] to register images afterwards.
+#'
+#' @return An object of class `SpatialData`
+#' @export
+#'
+createSpatialData <- function(sample,
+                              hist_img_ref = NULL,
+                              hist_imgs = list(),
+                              active = NULL,
+                              unload = TRUE,
+                              coordinates = tibble::tibble(),
+                              meta = list(),
+                              method = SpatialMethod(),
+                              scale_factors = list(),
+                              misc = list(),
+                              verbose = TRUE,
+                              ...){
+
+  confuns::is_value(x = sample, mode = "character")
+
+  # basic
+  object <- SpatialData()
+  object@sample <- sample
+  object@meta <- meta
+  object@method <- method
+  object@misc <- misc
+  object@scale_factors <- scale_factors
+  object@version <- current_spata2_version
+
+  # set registered images
+  object@images <-
+    purrr::keep(.x = hist_imgs, .p = ~ methods::is(.x, class2 = "HistoImage")) %>%
+    purrr::map(.x = ., .f = function(hist_img){
+
+      if(hist_img@sample != sample){
+
+        stop(glue::glue("HistoImage {hist_img@name} is from sample {hist_img@sample}."))
+
+      }
+
+      hist_img@active <- FALSE
+      hist_img@reference <- FALSE
+
+      return(hist_img)
+
+    }) %>%
+    purrr::set_names(x = ., nm = purrr::map_chr(.x = ., .f = ~ .x@name))
+
+  # set reference image
+  object@name_img_ref <- hist_img_ref@name
+  object@images[[hist_img_ref@name]] <- hist_img_ref
+
+  if(base::is.null(active)){
+
+    active <- hist_img_ref@name
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Active image: '{active}'."),
+    verbose = verbose
+  )
+
+  object <-
+    activateImage(
+      object = object,
+      img_name = active,
+      verbose = FALSE
+    )
+
+  # empty image slots
+  if(base::isTRUE(unload)){
+
+    object <- unloadImages(object, active = FALSE)
+
+  }
+
+  # coordinates
+  if(!purrr::is_empty(x = coordinates)){
+
+    confuns::check_data_frame(
+      df = coordinates,
+      var.class = purrr::set_names(
+        x = c("character", "numeric", "numeric"),
+        nm = c("barcodes", "x_orig", "y_orig")
+      )
+    )
+
+    confuns::is_key_variable(
+      df = coordinates,
+      key.name = "barcodes",
+      stop.if.false = TRUE
+    )
+
+    object@coordinates <- coordinates
+
+  }
+
+  return(object)
+
+}
+
+#' @rdname createSpatialData
+#' @export
+createSpatialDataMERFISH <- function(dir,
+                                     sample,
+                                     file_coords = NULL,
+                                     meta = list(),
+                                     misc = list(),
+                                     verbose = TRUE){
+
+  # read coordinates
+  if(!base::is.character(file_coords)){
+
+    file_coords <-
+      base::list.files(path = dir, full.names = TRUE) %>%
+      stringr::str_subset(pattern = "cell_metadata.*\\.csv$")
+
+    if(base::length(file_coords) == 0){
+
+      stop("Did not find coordinates. If not specified otherwise, directory
+           must contain one '~...cell_metadata...' .csv -file.")
+
+    } else if(base::length(file_coords) > 1){
+
+      stop("Found more than one potential barcode files. Please specify argument
+           `file_coords`.")
+
+    }
+
+  } else {
+
+    file_coords <- base::file.path(dir, file_coords)
+
+    if(!base::file.exists(file_coords)){
+
+      stop(glue::glue("Directory to coordinates '{file_coords}' does not exist."))
+
+    }
+
+  }
+
+  misc[["dirs"]][["coords"]] <- file_coords
+
+  confuns::give_feedback(
+    msg = glue::glue("Reading coordinates from: '{file_coords}'"),
+    verbose = verbose
+  )
+
+  coords_df <- read_coords_merfish(dir_coords = file_coords)
+
+  psf <- magrittr::set_attr(1, which = "unit", value = "um/px")
+
+  sp_data <-
+    SpatialData(
+      coordinates = coords_df,
+      meta = meta,
+      method = spatial_methods[["MERFISH"]],
+      misc = misc,
+      sample = sample,
+      scale_factors = list(pixel = psf),
+      version = current_spata2_version
+    )
+
+  return(sp_data)
+
+}
+
+
+#' @rdname createSpatialData
+#' @export
+createSpatialDataSlideSeqV1 <- function(dir,
+                                        sample,
+                                        file_coords = NULL,
+                                        meta = list(),
+                                        misc = list()){
+
+  # read coordinates
+  if(!base::is.character(file_coords)){
+
+    file_coords <-
+      base::list.files(path = dir, full.names = TRUE) %>%
+      stringr::str_subset(pattern = "MatchedBeadLocation\\.csv$")
+
+    if(base::length(file_coords) == 0){
+
+      stop("Did not find coordinates. If not specified otherwise, directory
+           must contain one '~...MatchedBeadLocation.csv' file.")
+
+    } else if(base::length(file_coords) > 1){
+
+      stop("Found more than one potential barcode files. Please specify argument
+           `file_coords`.")
+
+    }
+
+  } else {
+
+    file_coords <- base::file.path(dir, file_coords)
+
+    if(!base::file.exists(file_coords)){
+
+      stop(glue::glue("Directory to coordinates '{file_coords}' does not exist."))
+
+    }
+
+  }
+
+  misc[["misc"]][["coords"]] <- file_coords
+  coords_df <-  read_coords_slide_seq_v1(dir_coords = file_coords)
+
+  # create pseudo image
+  sp_data <-
+    SpatialData(
+      coordinates = coords_df,
+      meta = meta,
+      method = SlideSeqV1,
+      misc = misc,
+      sample = sample,
+      version = current_spata2_version
+    )
+
+  return(sp_data)
+
+}
+
+
+#' @rdname createSpatialData
+#' @export
+createSpatialDataVisium <- function(dir,
+                                    sample,
+                                    img_ref = "lowres",
+                                    img_active = "lowres",
+                                    meta = list(),
+                                    misc = list(),
+                                    verbose = TRUE){
+
+  # check input directory
+  isDirVisium(dir = dir, error = TRUE)
+
+  # get all files in folder and subfolders
+  files <- base::list.files(dir, full.names = TRUE, recursive = TRUE)
+
+  # check required image availability
+  req_images <- base::unique(c(img_ref, img_active))
+
+  confuns::check_one_of(
+    input = req_images,
+    against = c("lowres", "hires"),
+    ref.input = "required images"
+  )
+
+  lowres_path <- base::file.path(dir, "spatial", "tissue_lowres_image.png")
+  hires_path <- base::file.path(dir, "spatial", "tissue_hires_image.png")
+
+  if("lowres" %in% req_images){
+
+    if(!lowres_path %in% files){
+
+      stop(glue::glue("'{lowres_path}' is missing."))
+
+    }
+
+  }
+
+  if("hires" %in% req_images){
+
+    if(!hires_path %in% files){
+
+      stop(glue::glue("'{hires_path}' is missing."))
+
+    }
+
+  }
+
+  # load in data
+
+  # check and load tissue positions for different space ranger versions
+  v1_coords_path <- base::file.path(dir, "spatial", "tissue_positions_list.csv")
+  v2_coords_path <- base::file.path(dir, "spatial", "tissue_positions.csv")
+
+  if(v2_coords_path %in% files){
+
+    space_ranger_version <- 2
+    coords_df <- read_coords_visium(dir_coords = v2_coords_path)
+    misc[["dirs"]][["coords"]] <- v2_coords_path
+
+  } else if(v1_coords_path %in% files){
+
+    space_ranger_version <- 1
+    coords_df <- read_coords_visium(dir_coords = v1_coords_path)
+    misc[["dirs"]][["coords"]] <- v1_coords_path
+
+  }
+
+  if(base::nrow(coords_df) < 10000){
+
+    method <- spatial_methods[["VisiumSmall"]]
+
+  } else {
+
+    method <- spatial_methods[["VisiumLarge"]]
+
+  }
+
+  # load scalefactors
+  scale_factors <-
+    jsonlite::read_json(path = base::file.path(dir, "spatial", "scalefactors_json.json"))
+
+  # load images
+  # reference image
+  img_list <- list()
+
+  if("hires" %in% req_images){
+
+    img_list[["hires"]] <-
+      createHistoImage(
+        dir = hires_path,
+        sample = sample,
+        img_name ="hires",
+        scale_factors =
+          list(
+            image = scale_factors$tissue_hires_scalef
+          ),
+        reference = img_ref == "hires",
+        verbose = verbose
+      )
+
+  }
+
+  if("lowres" %in% req_images){
+
+    img_list[["lowres"]] <-
+      createHistoImage(
+        dir = lowres_path,
+        sample = sample,
+        img_name ="lowres",
+        scale_factors =
+          list(
+            image = scale_factors$tissue_lowres_scalef
+          ),
+        reference = img_ref == "lowres",
+        verbose = verbose
+      )
+  }
+
+  # compute spot size
+  spot_size <-
+    scale_factors$fiducial_diameter_fullres *
+    scale_factors[[stringr::str_c("tissue", img_ref, "scalef", sep = "_")]] /
+    base::max(getImageDims(img_list[[img_ref]]))*100
+
+  spot_scale_fct <- 1.15
+
+  method@method_specifics[["spot_size"]] <- spot_size * spot_scale_fct
+
+  # create output
+  object <-
+    createSpatialData(
+      sample = sample,
+      hist_img_ref = img_list[[img_ref]],
+      hist_imgs = img_list[req_images[req_images != img_ref]],
+      active = img_active,
+      unload = TRUE,
+      coordinates = coords_df,
+      method = method,
+      meta = meta,
+      misc = misc
+    )
+
+  # compute pixel scale factor
+  object <- computePixelScaleFactor(object, verbose = verbose)
+
+  return(object)
+
+}
+
+
+#' @rdname createSpatialData
+#' @export
+createSpatialDataXenium <- function(dir,
+                                    sample,
+                                    meta = list(),
+                                    misc = list()){
+
+  file_coords <- base::file.path(dir, "cells.csv.gz")
+
+  coords_df <- read_coords_xenium(dir_coords = file_coords)
+
+  # create pseudo image
+  psf <- magrittr::set_attr(x = 1, which = "unit", value = "um/px")
+
+  sp_data <-
+    SpatialData(
+      coordinates = coords_df,
+      meta = meta,
+      method = spatial_methods[["Xenium"]],
+      misc = misc,
+      scale_factors = list(pixel = psf),
+      sample = sample,
+      version = current_spata2_version
+    )
+
+  return(sp_data)
+
+}
+
+
+
 #' @title Interactive sample segmentation
 #'
 #' @description Gives access to an interactive user interface where data points
@@ -2989,8 +3217,22 @@ createNumericAnnotations <- function(object,
 #' [`registerImage()`] to register images of higher resolution for a better
 #' histological classification.
 #'
-#'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' if(FALSE){
+#'
+#'  object <- createSpatialSegmentation(object)
+#'
+#'  }
 #'
 createSpatialSegmentation <- function(object, height = 500, break_add = NULL, box_widths = c(4,4,4)){
 
@@ -4355,9 +4597,9 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 }
 
 
-#' @title Add spatial trajectories
+#' @title Create and add spatial trajectories
 #'
-#' @description Functions to add spatial trajectories to the `spata2`
+#' @description Functions to add spatial trajectories to the `SPATA2`
 #' object. For interactive drawing use `createSpatialTrajectories()`.
 #' To set them precisely with code use `addSpatialTrajectory()`.
 #'
@@ -4374,7 +4616,21 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #' @export
-
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' if(FALSE){
+#'
+#'  object <- createSpatialTrajectories(object)
+#'
+#'  }
+#'
 createSpatialTrajectories <- function(object){
 
   shiny::runApp(

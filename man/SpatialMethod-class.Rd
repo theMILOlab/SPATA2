@@ -23,13 +23,13 @@ one corner of the rectangle, and the second value represents the diagonally oppo
 \item{\code{info}}{list. List of miscellaneous meta data about the method.}
 
 \item{\code{method_specific}}{list. List method specific data. Depending on the
-method the following slot names are reserved. See section \emph{Method specifics:}
+method certain slot names are reserved. See section \emph{Method specifics:}
 for more information.}
 
 \item{\code{name}}{character. The name of the spatial method. (E.g. \emph{'Visium'})}
 
 \item{\code{observational_unit}}{character. Name with which to refer to
-the data points the method focuses on. (E.g. \emph{'barcode_spot'})}
+the data points the method focuses on. (E.g. \emph{'barcode_spot'}, or \emph{'cell'})}
 
 \item{\code{unit}}{character. The SI to be used by default.}
 }}

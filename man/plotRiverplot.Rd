@@ -67,3 +67,14 @@ For an explanation of the vocabulary and essentials of
 riverplots check out the website of the package \code{ggalluvial} at
 \emph{https://corybrunson.github.io/ggalluvial/articles/ggalluvial.html}.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotRiverplot(object, grouping_variables = c("seurat_clusters", "bayes_space"), fill_by = "bayes_space")
+
+
+}

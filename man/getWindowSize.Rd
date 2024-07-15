@@ -21,3 +21,4 @@ Numeric value.
 \description{
 Extracts the window size (max. dimension) of the image in pixel.
 }
+\keyword{internal}

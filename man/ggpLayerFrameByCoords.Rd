@@ -5,17 +5,15 @@
 \alias{ggpLayerFrameByImage}
 \title{Set plot limits}
 \usage{
-ggpLayerFrameByCoords(object = "object", opt = "ccs")
+ggpLayerFrameByCoords(object = "object", ...)
 
-ggpLayerFrameByImage(object = "object", opt = "ccs")
+ggpLayerFrameByImage(object = "object", ...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{opt}{Specifies the function with which the limits are set. If
-\emph{'scale'} (the default), \code{ggplot2::scale_x|y_continuous()} is used.
-If \emph{'ccs'}, \code{ggplot2::coord_cartesian()} is used.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
@@ -24,9 +22,24 @@ they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
 }
 \description{
-Sets the limits on the x- and y-axis of a ggplot based on the coordinate
-range or the image range.
+Sets the limits on the x- and y-axis of a surface plot based on
+the coordinate range of the objects \link[=concept_observations]{observations}
+or the image.
+
+Soft deprecated in favor of the arguments \code{xrange} and \code{yrange} in \code{\link[=plotSurface]{plotSurface()}}.
 }
-\note{
-If \emph{'scale'}, always adds \code{ggplot2::coord_equal()}.
+\examples{
+
+library(SPATA2)
+library(patchwork)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotImage(object) + plotSurface(object)
+
+(plotImage(object) + ggpLayerFrameByCoords(object)) + plotSurface(object)
+
+
 }

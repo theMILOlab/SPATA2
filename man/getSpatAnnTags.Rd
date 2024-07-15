@@ -8,20 +8,35 @@
 \usage{
 getSpatAnnTags(object, ...)
 
-\S4method{getSpatAnnTags}{SPATA2}(object)
+\S4method{getSpatAnnTags}{SPATA2}(object, simplify = TRUE)
 
-\S4method{getSpatAnnTags}{SpatialData}(object)
+\S4method{getSpatAnnTags}{SpatialData}(object, simplify = TRUE)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{simplify}{Logical value. If \code{TRUE}, the default, a character vector
+of unique tags is returned. If \code{FALSE}, a list of character vectors is returned
+named by the spatial annotation to which the tags belong.}
 }
 \value{
-Character vector.
+Character vector or named list of such.
 }
 \description{
 Extracts all unique tags with which spatial annotations
 have been tagged.
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+getSpatAnnTags(object, simplify = FALSE)
+getSpatAnnTags(object)
+
 }

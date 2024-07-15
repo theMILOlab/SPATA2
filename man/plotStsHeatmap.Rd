@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotN-S.R
 \name{plotStsHeatmap}
 \alias{plotStsHeatmap}
-\title{Plot trajectory expression dynamic in heatmap}
+\title{Plot STS heatmap}
 \usage{
 plotStsHeatmap(
   object,
@@ -32,6 +32,12 @@ are displayed in order to highlight patterns. Currently either \emph{'maxima'},
 \emph{'minima'} or \emph{'input'}. If \emph{'input'}, variables are displayed
 in the same order as they are provided in the argument \code{variables}.}
 
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
+input options.}
+
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
 
@@ -56,4 +62,22 @@ A ggplot.
 \description{
 Displays variable-expression values along a trajectory
 direction with a smoothed heatmap (from left to right).
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+object <- normalizeCounts(objcect, activate = TRUE)
+
+genes <- c("EGFR", "MBP", "MAG", "SNAP25")
+
+plotStsHeatmap(object, id = "horizontal_mid", variables = genes)
+
+plotStsLineplot(object, id = "horizontal_mid", variables = genes)
+
+plotStsRidgeplot(object, id = "horizontal_mid", variables = genes)
+
 }

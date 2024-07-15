@@ -192,3 +192,26 @@ reference input is of similiar structure regarding column names, rownames, etc.
 \note{
 \code{runCnvAnalysis()} has been deprecated in favor of \code{runCNV()}.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+# make sure that "/my_cnv_folder" exists
+dir.exists("my_cnv_folder")
+
+# this can take some time
+object <- runCNV(object, directory_cnv_folder = "my_cnv_folder")
+
+plotCnvHeatmap(object, across = "histology")
+
+# chromosomal alterations are immediately added to the objects
+# meta features
+
+getFeatureNames(object)
+
+plotSurface(object, color_by = "Chr7", pt_clrsp = "Reds 3")
+
+}

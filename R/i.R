@@ -70,7 +70,7 @@ identify_zero_inflated_variables <- function(df,
 }
 
 
-#' @title Identify Observations Inside a Polygon
+#' @title Identify observations inside a polygon
 #'
 #' @description This function determines whether points (observations) in a given data
 #' frame are located inside a specified polygon.
@@ -106,7 +106,6 @@ identify_zero_inflated_variables <- function(df,
 #' outside_points <- identify_obs_in_polygon(coords_df, polygon_df, strictly = TRUE, opt = "remove")
 #'
 #' @export
-#' @rdname identify_obs_in_polygon
 identify_obs_in_polygon <- function(coords_df,
                                     polygon_df,
                                     strictly,
@@ -240,7 +239,7 @@ identify_obs_in_spat_ann <- function(coords_df,
 #'
 #' @return Character value.
 #' @export
-#'
+#' @keywords internal
 
 idSA <- function(object, verbose = NULL){
 
@@ -294,32 +293,6 @@ idST <- function(object, verbose = NULL){
 
 }
 
-#' @rdname idSA
-#' @export
-idST <- function(object, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  id <- getSpatialTrajectoryIds(object)
-
-  if(base::length(id) == 0){
-
-    stop("No spatial trajectories found in this object.")
-
-  } else if(base::length(id) > 1){
-
-    stop("More than one spatial trajectories found in this object. Please specify argument `id`.")
-
-  }
-
-  confuns::give_feedback(
-    msg = glue::glue("Spatial trajectory: '{id}'"),
-    verbose = verbose
-  )
-
-  return(id)
-
-}
 
 #' @title Identifies the background color
 #'
@@ -331,6 +304,7 @@ idST <- function(object, verbose = NULL){
 #' @inherit update_dummy params
 #'
 #' @export
+#' @keywords internal
 #'
 setGeneric(name = "identifyBackgroundColor", def = function(object, ...){
 
@@ -574,8 +548,7 @@ setMethod(
 
     return(object)
 
-  }
-)
+  })
 
 #' @rdname identifyPixelContent
 #' @export
@@ -906,20 +879,20 @@ setMethod(
 
 #' @title Identify spatial outliers
 #'
-#' @description Assigns data points to the tissue sections or
-#' fragments they are located on or labels them as spatial outliers and saves
-#' the results in a new variable of the coordinates data.frame called *section*.
-#' See details for more.
+#' @description Labels data points as spatial outliers depending on certain
+#' criteria with a new meta variable called *sp_outlier*. See details for more.
 #'
-#' @param method Character vector. The method(s) to use. A combination of *'outline'*
-#' and/or *'dbscan'*. See details for more.
+#' Requires the results of [`identifyTissueOutline()`].
+#'
+#' @param method Character vector. The method(s) to use. A combination of *'obs'*
+#' and/or *'image'*. Defaults to *'obs'*. See details for more.
 #' @param img_name Character value. The name of the image whose tissue outline
-#' is used if `method` contains *'outline'*.
+#' is used if `method` contains *'image'*.
 #' @param buffer Numeric value. Expands the tissue outline to include observations
 #' that lie on the edge of the outline and are mistakenly removed.
 #' @param eps,minPts Given to the corresponding arguments of
-#' [`dbscan::dbscan()`] if `method` contains *'dbscan'*.
-#' @param test Character value. Only required if `method = c('dbscan', 'outline')`. If
+#' [`dbscan::dbscan()`] if `method` contains *'obs'*.
+#' @param test Character value. Only required if `method = c('obs', 'image')`. If
 #' *'any'*, spots are labeled as outliers if at least one method identifies them
 #' as outliers. If *'all'*, spots are labeled as outliers if both methods identify
 #' them as outliers.
@@ -931,48 +904,19 @@ setMethod(
 #' @inherit update_dummy return
 #'
 #' @details
-#' This function categorizes the data points of the object based on their spatial
-#' proximity, grouping those that are close enough to be deemed part of a single
-#' contiguous tissue section. Data points that are isolated and situated at a
-#' significant distance from others are identified as spatial outliers.
 #'
-#' The resulting classifications are saved in a *section* variable within the
-#' object's coordinates data.frame.
+#' In case of `method = 'obs'`, the results from `identifyTissueOutline(object, method = 'obs')`
+#' are directly transferred to the new meta feature *sp_outlier*, which declares
+#' whether an observation is a spatial outlier or not.
 #'
-#' This function identifies spatial outliers using a combination of two methods:
-#'
-#' Method *image*:
-#' The *image* method involves the image based tissue outline from the
-#' `identifyTissueOutline()` function. This function has created polygons that
+#' In case of `method = 'image'`, the image based tissue outline from the
+#' `identifyTissueOutline()` function is used. This function has created polygons that
 #' outline the tissue or tissue sections identified in the image. For each data point,
 #' the function checks which polygon it falls within and assigns it to the corresponding
 #' group. If an observation does not fall within any of the tissue polygons, it is
-#' considered a spatial outlier. This method requires an image in the `SPATA2` object.
+#' considered a spatial outlier.
 #'
-#' (This method is particularly useful if your sample contains artefact spots that
-#' falsely obtained some reads. This might happen, for instance, if fluid transgresses
-#' the border of the tissue carrying mRNA transcripts to adjacent spots that are
-#' actually not covered by the tissue.)
-#'
-#' Method *dbscan*:
-#' The *dbscan* method applies the DBSCAN algorithm to the data points. Please
-#' refer to the documentation of `dbscan::dbscan()` for a more detailed explanation.
-#' The `eps` and `minPts` arguments are passed directly to the
-#' corresponding arguments of the DBSCAN function. Data points that are not assigned
-#' to any spatial cluster, indicated by being assigned to cluster 0, are considered
-#' spatial outliers.
-#'
-#' For objects derived from the Visium platform with a fixed center to center
-#' distance, we recommend to set `eps = getCCD(object, unit = "px")*1.25`
-#' and `minPts = 3` which has worked well for us. For objects derived
-#' from platforms that do notrely on a fixed grid of data points (MERFISH, SlideSeq, etc.)
-#' we recommend the average minimal distance between the data points times 10 for
-#' `eps` and `minPts = 2`. The function
-#' defaults to these recommendations using [`recDbscanEps()`] and [`recDbscanMinPts()`]
-#' by default. This can, of course, be overwritten manually by the user by
-#' specifying the parameters otherwise!
-#'
-#' If `method = c('image', 'dbscan')`, both algorithms are applied. Whether a
+#' If `method = c('obs', 'image')`, the results of both methods are used Whether a
 #' data point is considered a spatial outlier depends on the `test` argument:
 #'
 #' \itemize{
@@ -982,16 +926,11 @@ setMethod(
 #'   only if both tests classify it as an outlier.
 #' }
 #'
-#' If `method = 'image'` or `method = 'dbscan'` only one of the two
-#' methods is applied. Note that for `method = 'image'` the results from the
-#' image processing pipeline must be available.
-#'
-#' The results can be visualized using `plotSurface(object, color_by = "section")`.
+#' The results can be visualized using `plotSurface(object, color_by = "sp_outlier")`.
 #' In case of bad results the function can be run over and over again with
 #' changing parameters as the results are simply overwritten.
 #'
-#' @seealso [`identifyTissueOutline()`], [`runImagePipeline()`],
-#' [`mergeTissueSections()`]
+#' @seealso [`identifyTissueOutline()`], [`mergeTissueSections()`]
 #'
 #' @export
 setGeneric(name = "identifySpatialOutliers", def = function(object, ...){
@@ -1006,7 +945,7 @@ setMethod(
   f = "identifySpatialOutliers",
   signature = "SPATA2",
   definition = function(object,
-                        method,
+                        method = "obs",
                         img_name = activeImage(object),
                         buffer = 0,
                         eps = recDbscanEps(object),
@@ -1017,41 +956,6 @@ setMethod(
 
     hlpr_assign_arguments(object)
 
-    sp_data <-
-      getSpatialData(object) %>%
-      identifySpatialOutliers(
-        object = .,
-        method = method,
-        img_name = img_name,
-        eps = eps,
-        minPts = minPts,
-        min_section = min_section,
-        test = test,
-        verbose = verbose
-      )
-
-    object <- setSpatialData(object, sp_data = sp_data)
-
-    returnSpataObject(object)
-
-  }
-)
-
-#' @rdname identifySpatialOutliers
-#' @export
-setMethod(
-  f = "identifySpatialOutliers",
-  signature = "SpatialData",
-  definition = function(object,
-                        method = c("outline", "dbscan"),
-                        img_name = activeImage(object),
-                        buffer = 0,
-                        eps = NULL,
-                        minPts = 3,
-                        min_section = 1,
-                        test = "any",
-                        verbose = TRUE){
-
     confuns::give_feedback(
       msg = "Identifying spatial outliers.",
       verbose = verbose
@@ -1059,17 +963,8 @@ setMethod(
 
     confuns::check_one_of(
       input = method,
-      against = c("outline", "dbscan", "image")
+      against = c("obs", "image")
     )
-
-    # method = outline is deprecated
-    if(method == "outline"){
-
-      method <- "image"
-
-      warning("Please use `method = 'image'` instead of `method = 'outline'`.")
-
-    }
 
     confuns::check_one_of(
       input = test,
@@ -1080,29 +975,17 @@ setMethod(
     active_image <- activeImage(object)
     object <- activateImageInt(object, img_name = img_name)
 
-    coords_df <-
-      getCoordsDf(object = object, img_name = img_name)
+    meta_df <- getMetaDf(object)
 
-    if("dbscan" %in% method){
+    if("obs" %in% method){
 
-      if(!is_dist(eps)){
+      if(!"tissue_section" %in% base::colnames(meta_df)){
 
-        eps <- getCCD(object, unit = "px")*2
-
-      } else {
-
-        eps <- as_pixel(input = eps, object = object)
+        stop("Need output of `identifyTissueSection(object, method = 'obs').`")
 
       }
 
-      coords_df <-
-        add_dbscan_variable(
-          coords_df = coords_df,
-          eps = eps,
-          minPts = minPts,
-          name = "section_dbscan",
-          min_cluster_size = min_section
-        )
+      meta_df$outlier_obs <- meta_df$tissue_section == "tissue_section_0"
 
     }
 
@@ -1119,6 +1002,7 @@ setMethod(
         )
 
       # declare all obs as artefacts
+      coords_df <- getCoordsDf(object)
       coords_df[["section_outline"]] <- "artefact"
 
       # then set actual section name
@@ -1147,108 +1031,70 @@ setMethod(
 
       }
 
+      # make sure is NULL
+      meta_df$section_outline <- NULL
+
+      meta_df <-
+        dplyr::left_join(x = meta_df, y = coords_df, by = "barcodes") %>%
+        dplyr::mutate(outlier_image = section_outline == "artefact")
+
     }
 
-    if(base::all(c("dbscan", "image") %in% method)){
+    if(base::all(c("obs", "image") %in% method)){
 
       if(test == "any"){
 
-        coords_df <-
+        meta_df <-
           dplyr::mutate(
-            .data = coords_df,
-            section = dplyr::case_when(
-              section_dbscan == "0" | section_outline == "artefact" ~ "outlier",
-              TRUE ~ section_outline
-            )
+            .data = meta_df,
+            sp_outlier = outlier_obs | outlier_image
           )
 
       } else if(test == "all") {
 
-        coords_df <-
+        meta_df <-
           dplyr::mutate(
-            .data = coords_df,
-            section = dplyr::case_when(
-              section_dbscan == "0" & section_outline == "artefact" ~ "outlier",
-              TRUE ~ section_outline
-            )
+            .data = meta_df,
+            sp_outlier = outlier_obs & outlier_image
           )
 
       }
 
-    } else if(method == "dbscan"){
+    } else if(method == "obs"){
 
-      coords_df <-
-        dplyr::mutate(
-          .data = coords_df,
-          section = dplyr::case_when(
-            section_dbscan == "0" ~ "outlier",
-            TRUE ~ stringr::str_c("tissue_section_", section_dbscan)
-          )
-        )
+      meta_df$sp_outlier <- meta_df$outlier_obs
 
     } else if(method == "image"){
 
-      coords_df <-
-        dplyr::mutate(
-          .data = coords_df,
-          section =
-            dplyr::if_else(
-              condition = section_outline == "artefact",
-              true = "outlier",
-              false = section_outline
-            )
-        )
+      meta_df$sp_outlier <- meta_df$outlier_image
 
     }
 
-    vars <- c("section", "section_outline", "section_dbscan")
-    vars <- vars[vars %in% base::colnames(coords_df)]
-
-    # order group names
-    sections <-
-      stringr::str_subset(coords_df$section, pattern = "^tissue_section") %>%
-      base::unique() %>%
-      base::sort()
-
-    fragments <-
-      stringr::str_subset(coords_df$section, pattern = "^tissue_fragment") %>%
-      base::unique() %>%
-      base::sort()
-
-    section_levels <- c(sections, fragments, "outlier")
-
-    coords_df$section <- base::factor(coords_df$section, levels = section_levels)
-
-    n_sections <- dplyr::n_distinct(sections)
-    n_fragments <- dplyr::n_distinct(fragments)
-    n_outliers <- base::sum(coords_df$section == "outlier")
+    n_outliers <- base::sum(meta_df$sp_outlier)
 
     confuns::give_feedback(
       msg = glue::glue("Spatial outliers: {n_outliers}"),
       verbose = verbose
     )
 
-    object <-
-      addVarToCoords(
-        object = object,
-        var_df = coords_df,
-        vars = vars,
-        overwrite = TRUE
-      )
+    object <- addFeatures(object, feature_df = meta_df, feature_names = "sp_outlier", overwrite = TRUE)
 
     # restore original active image
     object <- activateImageInt(object, img_name = active_image)
 
     return(object)
 
+    returnSpataObject(object)
+
   }
 )
 
+
 #' @title Identify tissue outline
 #'
-#' @description Identifies the spatial boundaries of the tissue. Using `method`,
-#' the origin of the outline can be determined. See the vignette
-#' on \link[=concept_tissue_outline]{tissue outlines} in SPATA2 for more information.
+#' @description Identifies and stores the spatial boundaries of the tissue section(s).
+#' Then it assigns \link[=concept_observations]{observations} to their respective section.
+#' See details for more.
 #'
 #' @param method Character value. Defines the origin based on which the outline
 #' is computed. Either *'image'* or *'obs'*.
@@ -1258,17 +1104,92 @@ setMethod(
 #' @inherit dbscan::dbscan params
 #' @inherit update_dummy return
 #'
-#' @details In case of `method = image` the object must contain an image named as
+#' @details
+#' In case of `method = obs`, DBSCAN is applied to categorize the data points
+#' of the object based on their spatial proximity, grouping those that are close
+#' enough to be deemed part of a single contiguous tissue section. Data points that
+#' are isolated and situated at a significant distance from others are identified
+#' as spatial outliers.The resulting classifications are saved in a *tissue_section*
+#' variable within the object's meta data.frame. Afterwards, polygons are created
+#' to outline the groups of data points which represent a tissue section.
+#' See example 'method = obs'.
+#'
+#' In case of `method = image` the object must contain an image named as
 #' indicated by the input of argument `img_name`. Furthermore, the results
 #' of [`identifyPixelContent()`] for that image are required. If `img_name` specifies
 #' multiple images, the function iterates over all of them. Since results of both methods
 #' are stored in different locations, the object can contain results of both methods.
 #' When extracting the tissue outline via [`getTissueOutlineDf()`] or [`ggpLayerTissueOutline()`]
 #' use argument `method` to decide on which results to use.
+#' See example 'method = image'.
 #'
-#' @seealso [`getTissueOutlineDf()`], [`ggpLayerTissueOutline()`]
+#' @section DBSCAN input:
+#' For objects derived from the Visium platform with a fixed center to center
+#' distance, we recommend to set `eps = getCCD(object, unit = "px")*1.25`
+#' and `minPts = 3` which has worked well for us. For objects derived
+#' from platforms that do not rely on a fixed grid of data points (MERFISH, SlideSeq, etc.)
+#' we recommend the average minimal distance between the data points times 10 for
+#' `eps` and `minPts = 2`. The function defaults to these recommendations using
+#' [`recDbscanEps()`] and [`recDbscanMinPts()`] by default. This can, of course,
+#' be overwritten manually by the user by specifying the parameters otherwise!
+#' Note that you can visualize the results with `plotSurface(object, color_by = 'tissue_section')`
+#' and repeat the process with different parameter input to overwrite the last
+#' results untill you are satisfied with the output.
+#'
+#' @seealso [`getTissueOutlineDf()`], [`ggpLayerTissueOutline()`], [`identifySpatialOutliers()`],
+#' [`useVarForTissueOutline()`]
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(ggplot2)
+#'
+#' data("example_data")
+#'
+#' obj1 <- example_data$object_UKF275T_diet
+#'
+#' obj2 <- example_data$object_lmu_mci_diet
+#'
+#'
+#' # example: 'method = obs'
+#' obj1 <- identifyTissueOutline(obj1, method = "obs")
+#'
+#' obj2 <- identifyTissueOutline(obj2, method = "obs")
+#'
+#' ## visualize the categorization of spots with the new meta variable 'tissue_section'
+#'
+#' plotSurface(obj1, color_by = "tissue_section") # one single contiguous section
+#'
+#' plotSurface(obj2, color_by = "tissue_section") # two contiguous sections
+#'
+#' ## visualize the outline
+#'
+#' df1_obs <- getTissueOutlineDf(obj1)
+#'
+#' ggplot(df1_obs, mapping = aes(x, y, group = section)) +
+#'  geom_polygon(fill = NA, color = "black")
+#'
+#' df2_obs <- getTissueOutlineDf(obj2)
+#'
+#' ggplot(df2_obs, mapping = aes(x, y, group = section)) +
+#'  geom_polygon(fill = NA, color = "black")
+#'
+#' # example 'method = image'
+#'
+#' activeImage(obj1)
+#'
+#' obj1 <- identifyPixelContent(obj1, img_name = "image1") # image processing needed
+#' obj1 <- identifyTissueOutline(obj1, method = "image", img_name = "image1")
+#'
+#' plotImage(obj1, outline = T)
+#'
+#' df1_img <- getTissueOutlineDf(obj1, method = "image")
+#'
+#' ggplot(mapping = aes(x, y, group = section)) +
+#'  geom_polygon(fill = NA, color = "black", data = df1_obs) +
+#'  geom_polygon(fill = NA, color = "red", data = df1_img)
 #'
 
 setGeneric(name = "identifyTissueOutline", def = function(object, ...){
@@ -1283,7 +1204,7 @@ setMethod(
   f = "identifyTissueOutline",
   signature = "SPATA2",
   definition = function(object,
-                        method,
+                        method = "obs",
                         minPts = recDbscanMinPts(object),
                         eps = recDbscanEps(object),
                         img_name = activeImage(object),
@@ -1301,9 +1222,21 @@ setMethod(
         minPts = minPts,
         eps = eps,
         img_name = img_name,
-        verbose = verbose,
-        ...
+        verbose = verbose
         )
+
+    if(method == "obs"){
+
+      # transfer tissue_section variable to meta data
+      coords_df <- getCoordsDf(sp_data, as_is = TRUE)
+
+      object <-
+        addFeatures(object, feature_df = coords_df, feature_name = "tissue_section", overwrite = TRUE)
+
+      coords_df$tissue_section <- NULL
+      sp_data <- setCoordsDf(sp_data, coords_df = coords_df, force = TRUE)
+
+    }
 
     object <- setSpatialData(object, sp_data = sp_data)
 
@@ -1332,6 +1265,10 @@ setMethod(
 
     # sets outline of slot @outline in the respective HistoImage
     if(method == "image"){
+
+      containsHistoImages(object, error = TRUE)
+
+      check_cran_packages(pkgs_req = c("OpenImageR", "SuperpixelImageSegmentation"))
 
       if(base::is.null(img_name)){
 
@@ -1378,17 +1315,38 @@ setMethod(
         add_dbscan_variable(
           eps = eps,
           minPts = minPts,
-          name = "section"
+          name = "ts"
         ) %>%
-        dplyr::filter(section != "0") %>%
-        dplyr::mutate(section = stringr::str_c("tissue_section", section, sep = "_"))
+        dplyr::mutate(ts = stringr::str_c("tissue_section", ts, sep = "_"))
+
+      sections_ordered <-
+        dplyr::filter(coords_df, ts != "tissue_section_0") %>%
+        dplyr::group_by(ts) %>%
+        dplyr::summarise(min_y = base::min(y, na.rm = TRUE)) %>%
+        dplyr::arrange(min_y) %>%
+        dplyr::pull(ts)
+
+      coords_df$tissue_section <- character(1)
+
+      for(i in seq_along(sections_ordered)){
+
+        section <- sections_ordered[i]
+
+        coords_df$tissue_section[coords_df$ts == section] <-
+          stringr::str_c("tissue_section", i, sep = "_")
+
+      }
+
+      coords_df_flt <- dplyr::filter(coords_df, ts != "tissue_section_0")
+
+      coords_df$ts <- NULL
 
       object@outline[["tissue_section"]] <-
         purrr::map_df(
-          .x = base::unique(coords_df[["section"]]),
+          .x = base::unique(coords_df_flt[["tissue_section"]]),
           .f = function(section){
 
-            dplyr::filter(coords_df, section == {{section}}) %>%
+            dplyr::filter(coords_df_flt, tissue_section == {{section}}) %>%
               dplyr::select(x = x_orig, y = y_orig) %>%
               #increase_n_data_points(fct = 10, cvars = c("x", "y")) %>%
               base::as.matrix() %>%
@@ -1400,6 +1358,16 @@ setMethod(
 
           }
         )
+
+      coords_df$tissue_section <- base::factor(coords_df$tissue_section)
+
+      # return coords_df! ; not coords_df_flt
+      object <-
+        setCoordsDf(
+          object = object,
+          coords_df = dplyr::select(coords_df, barcodes, x_orig, y_orig, tissue_section),
+          force = TRUE
+          )
 
     }
 
@@ -1515,66 +1483,6 @@ img_ann_highlight_group_button <- function(){
 }
 
 
-
-#' @title Convert spatial annotation to segmentation
-#'
-#' @description Converts one or more spatial annotations to a binary
-#' segmentation variable in the feature data.frame.
-#' @param ids Character vector. Specifies the spatial annotation(s) of interest.
-#' data points that fall into the area of these annotations are labeled
-#' with the input for argument \code{inside}.
-#' @param segmentation_name Character value. The name of the new segmentation variable.
-#' @param inside Character value. The group name for the data points that
-#' are located inside the area of the spatial annotation(s).
-#' @param outside Character value. The group name for the data points that
-#' are located outside the area of the spatial annotation(s).
-#' @param overwrite Logical. Set to TRUE to overwrite existing variables with
-#' the same name.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @export
-#'
-imageAnnotationToSegmentation <- function(object,
-                                          ids,
-                                          segmentation_name,
-                                          inside = "inside",
-                                          outside = "outside",
-                                          overwrite = FALSE){
-
-  confuns::are_values("inside", "outside", mode = "character")
-
-  confuns::check_none_of(
-    input = segmentation_name,
-    against = getFeatureNames(object),
-    ref.against = "names of the feature data",
-    overwrite = overwrite
-  )
-
-  bcsp_inside <- getSpatAnnBarcodes(object, ids = ids)
-
-  mdata <-
-    getMetaDf(object) %>%
-    dplyr::mutate(
-      {{segmentation_name}} := dplyr::case_when(
-        condition = barcodes %in% {{bcsp_inside}} ~ {{inside}},
-        TRUE ~ {{outside}}
-      ),
-      {{segmentation_name}} := base::factor(
-        x = !!rlang::sym(segmentation_name),
-        levels = c(inside, outside)
-      )
-    )
-
-  object <- setMetaDf(object, meta_df = mdata)
-
-  return(object)
-
-}
-
-
-
 # in ----------------------------------------------------------------------
 
 #' @title Include spatial extent of tissue sections in analysis
@@ -1599,7 +1507,7 @@ imageAnnotationToSegmentation <- function(object,
 #' the tissue outline is computed.
 #' @param buffer Distance measure with which to buffer the tissue outline data.frame.
 #' @return Filtered input data.frame.
-#' @export
+#' @keywords internal
 #'
 include_tissue_outline <- function(input_df,
                                    outline_df = NULL, # hull_df should be used by calling function!
@@ -1811,7 +1719,7 @@ include_tissue_outline <- function(input_df,
 #'
 #' @return A data frame with the increased number of data points.
 #'
-#' @export
+#' @keywords internal
 increase_n_data_points <- function(coords_df, fct = 10, cvars = c("x", "y")){
 
   confuns::is_value(fct, mode = "numeric")
@@ -1888,7 +1796,7 @@ increase_n_data_points <- function(coords_df, fct = 10, cvars = c("x", "y")){
 #' @examples
 #' denser_polygon <- increase_polygon_vertices(polygon_df, avg_dist = 10, skip = FALSE)
 #'
-#' @export
+#' @keywords internal
 increase_polygon_vertices <- function(polygon_df, avg_dist, skip = FALSE) {
 
   if(!base::isTRUE(skip)){
@@ -1950,7 +1858,6 @@ increase_polygon_vertices <- function(polygon_df, avg_dist, skip = FALSE) {
 }
 
 
-#' @export
 #' @keywords internal
 infer_gradient <- function(loess_model,
                            expr_est_pos,
@@ -2044,7 +1951,7 @@ interpolate_points_along_path <- function(data, max_distance = 1) {
 #' @inherit getBarcodesInPolygon params
 #'
 #' @return Logical vector of the same length as the number of rows in `a`.
-#' @export
+#' @keywords internal
 
 intersect_polygons <- function(a, b, strictly = FALSE){
 
@@ -2095,39 +2002,6 @@ intersect_polygons <- function(a, b, strictly = FALSE){
 #'
 #' @return Logical vector of the same length as input and/or an error if `verbose`
 #' is `TRUE`.
-#'
-#' @details Several functions in `SPATA2` have arguments that take *area input*.
-#' To specifically refer to an area the unit must be specified. There are
-#' three ways to create valid input for these arguments.
-#'
-#' **1. In pixel:**
-#'
-#' There are two valid input options to specify an area in pixel:
-#'
-#' \itemize{
-#'  \item{numeric:}{ Single numeric values, e.g. `arg_input = c(2, 3.554, 69, 100.67)`. If no unit
-#'  is specified the input will be interpreted as pixels.}
-#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
-#'  }
-#'
-#'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
-#'  refers to a distance the pixel side length is meant. If pixel refers to an area the
-#'  number of pixels is meant.
-#'
-#' **2. According to the Systeme international d`unites (SI):**
-#'
-#'  Specifying areas in SI units e.g. `arg_input = c('2mm2', '4mm2')` etc.
-#'  requires the input to be a character as the unit must be provided as suffix.
-#'  Between the numeric value and the unit must be no empty space! Valid suffixes
-#'  can be obtained using the function `validUnitsOfAreaSI()`.
-#'
-#'  **3. As vectors of class `unit`:**
-#'
-#' Behind the scenes `SPATA2` works with the `units` package. Input
-#' is converted into vectors of class `units`. Therefore, input can be directly
-#' provided this way: `arg_input = units::set_unit(x = c(2,4), value = 'mm2')`
-#' Note that *pixel* is not a valid unit in the `units` package. If you want
-#' to specify the input in pixel you have to use input option 1. In pixel.
 #'
 #' @examples
 #'
@@ -2386,13 +2260,13 @@ is_dist_si <- function(input, error = FALSE){
 
     test[1] <- base::length(unit_attr$numerator) == 1
 
-    test[2] <- base::all(unit_attr$numerator %in% validEuropeanUnitsOfLength())
+    test[2] <- base::all(unit_attr$numerator %in% validUnitsOfLengthSI())
 
     res <- base::all(test)
 
     if(base::isFALSE(res) & base::isTRUE(error)){
 
-      stop("Input is of class 'units' but can not be interpreted as a distance of European units of length.")
+      stop("Input is of class 'units' but can not be interpreted as a SI unit.")
 
     }
 
@@ -2503,7 +2377,7 @@ is_image_dir <- function(input, error = FALSE){
 #'
 #' @seealso [`sp::point.in.polygon()`]
 #'
-#' @export
+#' @keywords internal
 is_inside_plg <- function(point, polygon_df, strictly = TRUE){
 
   pos <-
@@ -2544,9 +2418,9 @@ is_numeric_input <- function(input){
 }
 
 
-#' Check for Outliers in a Numeric Vector
+#' @title Check for outliers in a numeric vector
 #'
-#' This function identifies outliers in a numeric vector `x`.
+#' @description This function identifies outliers in a numeric vector `x`.
 #'
 #' @param x A numeric vector for which outliers need to be identified.
 #' @param ... Additional arguments passed to `boxplot.stats`.
@@ -2665,6 +2539,7 @@ is_unit_dist <- function(input, error = FALSE){
 # isG ---------------------------------------------------------------------
 
 
+#' @keywords internal
 #' @export
 isGene <- function(object, gene){
 
@@ -2676,6 +2551,7 @@ isGene <- function(object, gene){
 
 }
 
+#' @keywords internal
 #' @export
 isGeneSet <- function(object, gene_set){
 
@@ -2692,7 +2568,7 @@ isGeneSet <- function(object, gene_set){
 # isF ---------------------------------------------------------------------
 
 
-
+#' @keywords internal
 #' @export
 isFeature <- function(object, feature){
 
@@ -2704,21 +2580,11 @@ isFeature <- function(object, feature){
 
 }
 
-#' @export
-isFlipped <- function(object, axis){
-
-  if(axis == "h"){ axis <- "horizontal"}
-  if(axis == "v"){ axis <- "vertical" }
-
-  out <- getImageInfo(object)$flipped[[axis]]
-
-  base::isTRUE(out)
-
-}
 
 
 # isN ---------------------------------------------------------------------
 
+#' @keywords internal
 #' @export
 isNumericVariable <- function(object, variable){
 
@@ -2740,6 +2606,7 @@ isNumericVariable <- function(object, variable){
 
 # isS ---------------------------------------------------------------------
 
+#' @export
 #' @keywords internal
 isSpatialTrajectory <- function(object){
 
@@ -2754,6 +2621,7 @@ isSpatialTrajectory <- function(object){
 
 # isT ---------------------------------------------------------------------
 
+#' @export
 #' @keywords internal
 isTrajectory <- function(object){
 

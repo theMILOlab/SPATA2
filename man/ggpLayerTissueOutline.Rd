@@ -24,7 +24,7 @@ ggpLayerTissueOutline(object, ...)
   smooth_with = "none",
   scale_fct = 1,
   outline_fct = c(1.75, 2.75),
-  expand_outline = recBinwidth(object, "px")/1.25,
+  expand_outline = recSgsRes(object, "px")/1.25,
   ...
 )
 
@@ -136,13 +136,18 @@ Adds a hull that outlines the tissue.
 }
 \examples{
 
-object <- download("MCD_LMU")
+library(SPATA2)
+library(tidyverse)
 
-plotImage(object, unit = "mm") +
- ggpLayerTissueOutline(object, incl_edge = TRUE)
+data("example_data")
 
-plotImage(object, unit = "mm") +
- ggpLayerTissueOutline(object, incl_edge = FALSE)
+object <- example_data$object_UKF275T_diet
+
+plotSurface(object, color_by = "HM_HYPOXIA", pt_clrsp = "Reds 3") +
+ ggpLayerTissueOutline(object)
+
+# alternative
+plotSurface(object, color_by = "HM_HYPOXIA", pt_clrsp = "Reds 3", outline = TRUE)
 
 }
 \seealso{
