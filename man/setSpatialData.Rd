@@ -16,3 +16,4 @@ objects of classes for which a method has been defined.}
 Sets the image container class \code{SpatialData}
 in the corresponding slot of the \code{SPATA2} object.
 }
+\keyword{internal}

@@ -10,6 +10,7 @@
 #'
 #' @return Character vectors or named lists of such.
 #' @export
+#' @keywords internal
 #'
 
 validActivationFunctions <- function(){
@@ -252,6 +253,7 @@ version_string <- function(v = current_spata2_version){
 #' }
 #'
 #' @export
+#' @keywords internal
 
 visiumSpotDistances <- function(type = c("small", "large"),
                                 bcs_o = NULL,

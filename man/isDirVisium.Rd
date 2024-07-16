@@ -17,3 +17,4 @@ Tests if input directories meet the requirements of specific
 functions specifically written for reading data from standardized output
 folders.
 }
+\keyword{internal}

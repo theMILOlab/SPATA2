@@ -36,3 +36,4 @@ A data frame containing the pairwise distances between the specified Visium spot
 This function calculates the pairwise distances between specified Visium spots
 based on their x and y coordinates.
 }
+\keyword{internal}

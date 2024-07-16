@@ -3010,6 +3010,7 @@ getSpatialTrajectories <- function(object, ids = NULL){
 #'
 #' @return Numeric value.
 #' @export
+#' @keywords internal
 #'
 setGeneric(name = "getSpotSize", def = function(object, ...){
 

@@ -13,3 +13,4 @@ A named list.
 Returns the argument input that was chosen to construct the
 neural network that generated the matrix denoted in \code{mtr_name}.
 }
+\keyword{internal}

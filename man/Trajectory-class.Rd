@@ -29,3 +29,4 @@ the trajectory. (Length of the rectangle corresponds to the length of
 the segment.)}
 }}
 
+\keyword{internal}

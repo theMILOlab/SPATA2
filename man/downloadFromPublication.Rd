@@ -36,3 +36,4 @@ From \emph{Kueckelhaus et al., 2024} with \code{pub = 'kueckelhaus_et_al_2024'}.
  objectT313 <- downloadFromPublication(pub = "kueckelhaus_et_al_2024", what = "UKF313T")
 
 }
+\keyword{internal}

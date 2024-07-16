@@ -24,3 +24,4 @@ The updated input object, containing the added, removed or computed results.
 Sets the \code{\link{SpatialMethod}} object containing information
 of the platform used.
 }
+\keyword{internal}

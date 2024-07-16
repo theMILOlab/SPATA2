@@ -24,3 +24,4 @@ area by default. You can override it but it is not recommended.
 \seealso{
 \code{\link[=getCaptureArea]{getCaptureArea()}}
 }
+\keyword{internal}

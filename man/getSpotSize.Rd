@@ -25,3 +25,4 @@ Numeric value.
 Extracts the spot size with which to display
 the barcoded spots in surface plots.
 }
+\keyword{internal}

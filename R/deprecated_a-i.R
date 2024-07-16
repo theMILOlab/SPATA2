@@ -467,6 +467,20 @@ getResultsVec <- function(...){
 }
 
 #' @title Deprecated
+#' @description
+#' Deprecated in favor of [`getTissueArea()`].
+#' @export
+#' @keywords internal
+#'
+getSampleAreaSize <- function(...){
+
+  deprecated(fn = T, ...)
+
+  getTissueArea(...)
+
+}
+
+#' @title Deprecated
 #' @description Deprecated in favor of [`getSgsResults()`].
 #' @export
 #' @keywords internal

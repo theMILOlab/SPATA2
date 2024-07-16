@@ -2,7 +2,7 @@
 % Please edit documentation in R/c.R
 \name{cropSpataObject}
 \alias{cropSpataObject}
-\title{Subset SPATA2 object}
+\title{Crop SPATA2 object}
 \usage{
 cropSpataObject(
   object,

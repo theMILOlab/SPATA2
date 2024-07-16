@@ -16,7 +16,7 @@
 #' @inherit update_dummy return
 #'
 #' @export
-#'
+#' @keywords internal
 setAssay <- function(object, assay){
 
   object@assays[[assay@omic]] <- assay
@@ -64,7 +64,7 @@ setBarcodes <- function(object, barcodes){
 #' @seealso [`getCaptureArea()`]
 #'
 #' @export
-
+#' @keywords internal
 setCaptureArea <- function(object, x = NULL, y = NULL){
 
   sm <- getSpatialMethod(object)
@@ -107,7 +107,7 @@ setCaptureArea <- function(object, x = NULL, y = NULL){
 #' @inheritSection section_dummy Distance measures
 #'
 #' @export
-#'
+#' @keywords internal
 setCCD <- function(object, ccd){
 
   is_dist_si(input = ccd, error = TRUE)
@@ -132,7 +132,7 @@ setCCD <- function(object, ccd){
 #'
 #' @inherit set_dummy params return details
 #' @export
-
+#' @keywords internal
 setCnvResults <- function(object, cnv_list, ...){
 
   deprecated(...)
@@ -154,7 +154,7 @@ setCnvResults <- function(object, cnv_list, ...){
 #'
 #' @inherit set_dummy params return details
 #' @export
-
+#' @keywords internal
 setGeneric(name = "setCoordsDf", def = function(object, ...){
 
   standardGeneric(f = "setCoordsDf")
@@ -248,7 +248,7 @@ setMethod(
 #' matrix.
 #'
 #' @export
-
+#' @keywords internal
 setCountMatrix <- function(object, count_mtr, assay_name = activeAssay(object), ...){
 
   deprecated(...)
@@ -265,6 +265,7 @@ setCountMatrix <- function(object, count_mtr, assay_name = activeAssay(object), 
 
 # setD --------------------------------------------------------------------
 
+#' @keywords internal
 #' @export
 setDeaResultsDf <- function(object,
                             dea_results,
@@ -318,7 +319,6 @@ setDeaResultsDf <- function(object,
 #' @inherit update_dummy return
 #'
 #' @export
-
 setDefault <- function(object, ...){
 
   named_list <-
@@ -365,7 +365,7 @@ setDefault <- function(object, ...){
 #' is overwritten.
 #'
 #' @export
-
+#' @keywords internal
 setDefaultInstructions <- function(object, instructions = NULL){
 
   if(base::is.null(instructions)){
@@ -403,7 +403,7 @@ setDirectoryInstructions <- function(object){
 
 # setF --------------------------------------------------------------------
 
-
+#' @keywords internal
 setFeatureDf <- function(...){
 
   deprecated(fn = TRUE)
@@ -420,7 +420,7 @@ setFeatureDf <- function(...){
 #'
 #' @return set_dummy return details
 #' @export
-#'
+#' @keywords internal
 setMetaDf <- function(object, meta_df){
 
   object@meta_obs <- meta_df
@@ -447,7 +447,7 @@ setMetaDf <- function(object, meta_df){
 #' @seealso [`registerHistoImage()`]
 #'
 #' @export
-
+#' @keywords internal
 setGeneric(name = "setHistoImage", def = function(object, ...){
 
   standardGeneric(f = "setHistoImage")
@@ -579,8 +579,8 @@ setMethod(
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
-#'
 #' @export
+#' @keywords internal
 setGeneric(name = "setImageTransformations", def = function(object, ...){
 
   standardGeneric(f = "setImageTransformations")
@@ -622,8 +622,8 @@ setMethod(
 #' @param lf_df The \link[=concept_logfile]{logfile data.frame}.
 #'
 #' @inherit set_dummy return details
-#'
 #' @export
+#' @keywords internal
 setLogfileDf <- function(object, lf_df){
 
   object@logfile <- lf_df
@@ -662,8 +662,7 @@ setLogfileDf <- function(object, lf_df){
 #'
 #' @inherit set_dummy params return details
 #' @export
-#'
-
+#' @keywords internal
 setPcaDf <- function(object, pca_df, fdb_fn = "stop"){
 
   check_object(object)
@@ -698,7 +697,7 @@ setPcaDf <- function(object, pca_df, fdb_fn = "stop"){
 }
 
 
-
+#' @keywords internal
 #' @rdname setCountMatrix
 #' @export
 setProcessedMatrix <- function(object, proc_mtr, name, assay_name = activeAssay(object), ...){
@@ -865,6 +864,7 @@ setSpataDir <- function(object, dir, add_wd = FALSE, ...){
 #' derivatives of the `SpatialAnnotation` class and are valid inputs, too!
 #'
 #' @export
+#' @keywords internal
 setGeneric(name = "setSpatialAnnotation", def = function(object, ...){
 
   standardGeneric(f = "setSpatialAnnotation")
@@ -924,7 +924,7 @@ setMethod(
 #' @inherit argument_dummy
 #'
 #' @export
-
+#' @keywords internal
 setSpatialData <- function(object, sp_data){
 
   object@spatial <- sp_data
@@ -943,7 +943,7 @@ setSpatialData <- function(object, sp_data){
 #'
 #' @inherit update_dummy return
 #' @export
-#'
+#' @keywords internal
 setGeneric(name = "setSpatialMethod", def = function(object, ...){
 
   standardGeneric(f = "setSpatialMethod")
@@ -987,7 +987,7 @@ setMethod(
 #' @inherit setSpatialMethod params return
 #'
 #' @export
-#'
+#' @keywords internal
 setSpatialMethodSlot <- function(object, slot, content){
 
   confuns::is_value(slot, mode = "character")
@@ -1013,7 +1013,7 @@ setSpatialMethodSlot <- function(object, slot, content){
 #' @param content The content to set.
 #'
 #' @export
-#'
+#' @keywords internal
 setSpatialMethodInfo <- function(object, slot, content){
 
   confuns::is_value(slot, mode = "character")
@@ -1054,7 +1054,7 @@ setSpatialMethodInfo <- function(object, slot, content){
 #' @inherit update_dummy return
 #'
 #' @export
-
+#' @keywords internal
 setSpatialTrajectory <- function(object, trajectory, overwrite = FALSE){
 
   if(nTrajectories(object) != 0 ){
@@ -1106,7 +1106,7 @@ setSpatialTrajectories <- function(object, trajectories, overwrite = FALSE){
 
 }
 
-
+#' @keywords internal
 #' @rdname setPcaDf
 #' @export
 setTsneDf <- function(object, tsne_df, ...){
@@ -1146,6 +1146,7 @@ setTsneDf <- function(object, tsne_df, ...){
 
 # setU --------------------------------------------------------------------
 
+#' @keywords internal
 #' @rdname setPcaDf
 #' @export
 setUmapDf <- function(object, umap_df, ...){

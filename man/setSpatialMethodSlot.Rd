@@ -21,3 +21,4 @@ The updated input object, containing the added, removed or computed results.
 Sets content of slot in the \code{SpatialMethod} object. Use with
 caution.
 }
+\keyword{internal}

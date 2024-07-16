@@ -2,7 +2,7 @@
 % Please edit documentation in R/adj-aZ.R
 \name{asGiotto}
 \alias{asGiotto}
-\title{Transform \code{SPATA2} object to \code{Giotto}}
+\title{Transform SPATA2 object to Giotto object}
 \usage{
 asGiotto(object, transfer_features = TRUE, verbose = NULL)
 }

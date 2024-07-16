@@ -34,3 +34,4 @@ adjustments.
 \code{\link{GroupAnnotation}}, \code{\link{NumericAnnotation}}, \code{\link{ImageAnnotation}} are
 derivatives of the \code{SpatialAnnotation} class and are valid inputs, too!
 }
+\keyword{internal}

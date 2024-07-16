@@ -245,6 +245,18 @@ setTrajectories <- function(...){
 
 }
 
+#' @title Deprecated
+#' @description Deprecated in favor of [`subsetSpataObject()`].
+#' @export
+#' @keywords internal
+subsetByBarcodes <- function(...){
+
+  deprecated(fn = TRUE)
+
+  subsetSpataObject(...)
+
+}
+
 # t -----------------------------------------------------------------------
 
 #' @keywords internal

@@ -1036,6 +1036,7 @@ smrd_projection_df_names <- c("trajectory_order", "proj_length_binned")
 
 #' @title List of summarizing formulas
 #' @export
+#' @keywords internal
 summarize_formulas <-
   list(
     "max" = ~ base::max(.x, na.rm = TRUE),

@@ -1320,6 +1320,7 @@ updateSpataObject <- function(object,
 #'
 #' @return An updated S4 object.
 #' @export
+#' @keywords internal
 #'
 setGeneric(name = "updateS4", def = function(object, ...){
 

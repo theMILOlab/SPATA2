@@ -36,10 +36,25 @@
 #'  }
 #'
 #'  @docType data
+#'  @usage data(example_data)
+#'
+"example_data"
+
+#' A data.frame necessary for cnv-analysis. Contains information about the gene positions
+#' on chromosomes. Contains the following variables:
+#'
+#'  \describe{
+#'    \item{\emph{ensembl_gene_id}:}{ Character. ENSEMBL encoding of gene names.}
+#'    \item{\emph{hgnc_symbol}:}{ Character. Gene names in HUGO format.}
+#'    \item{\emph{chromosome_name}:}{ Character. Name of the chromosome.}
+#'    \item{\emph{start_position}:}{ Integer. Starting position of the gene.}
+#'    \item{\emph{end_position}:}{ Integer. Ending positiong of the gene.}
+#'  }
+#'
+#'  @docType data
 #'  @usage data(gene_pos_df)
 #'
 "gene_pos_df"
-
 
 
 #' The default collection of frequently used signatures

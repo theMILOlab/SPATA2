@@ -1071,7 +1071,7 @@ crop_image <- function(image,
 
 }
 
-#' @title Subset SPATA2 object
+#' @title Crop SPATA2 object
 #'
 #' @description Creates a subset of the original `SPATA2` object
 #' based on x- and y-range. Data poitns that fall into the

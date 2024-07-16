@@ -561,6 +561,7 @@ runAutoencoderDenoising <- function(object,
 #' @return A data.frame containing the total variance measured by \code{irlba::prcomp_irlba()} after each
 #' combination of activations/bottlenecks.
 #' @export
+#' @keywords internal
 
 getAutoencoderAssessment <- function(object, ...){
 
@@ -593,6 +594,7 @@ getAutoencoderAssessment <- function(object, ...){
 #'
 #' @return A named list.
 #' @export
+#' @keywords internal
 
 getAutoencoderSetUp <- function(object, mtr_name, of_sample = NA){
 

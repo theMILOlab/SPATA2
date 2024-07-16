@@ -69,3 +69,4 @@ the top n of variables that are labeled. If NULL, ignored.}
 Assigns every numeric variable to the model it fitted best
 against and plots the p-value of the fit against the fit evaluation.
 }
+\keyword{internal}

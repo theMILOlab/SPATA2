@@ -29,3 +29,4 @@ Sets object of class \code{HistoImage}.
 \seealso{
 \code{\link[=registerHistoImage]{registerHistoImage()}}
 }
+\keyword{internal}

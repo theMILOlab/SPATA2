@@ -432,6 +432,7 @@ image_dummy <- function(image){}
 #' @title matrix_dummy
 #' @return A numeric matrix with rownames corresponding to molecule names and column
 #' names corresponding to barcodes.
+#' @keywords internal
 matrix_dummy <- function(){}
 
 #' @title method_hclust

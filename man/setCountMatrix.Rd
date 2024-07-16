@@ -52,3 +52,4 @@ with which they were processed. E.g. \emph{log_norm} if it was created by log no
 the counts. Or \emph{scaled} if it was created by subsequent \emph{scaling} of the \emph{log_norm}
 matrix.
 }
+\keyword{internal}

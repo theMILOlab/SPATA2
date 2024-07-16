@@ -2,7 +2,7 @@
 % Please edit documentation in R/create.R
 \name{createMolecularAssay}
 \alias{createMolecularAssay}
-\title{Add a molecular assay}
+\title{Create an object of class \code{\link{MolecularAssay}}}
 \usage{
 createMolecularAssay(
   object,

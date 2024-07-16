@@ -3056,12 +3056,12 @@ strongH5 <- function(text){
 #'  filter(bayes_sapce %in% c("3", "2", "1")) %>%
 #'  pull(barcodes)
 #'
-#' object_sub <- subsetByBarcodes(object, barcodes = barcodes_keep)
+#' object_sub <- subsetSpataObject(object, barcodes = barcodes_keep)
 #'
 #' plotSurface(object, color_by = "bayes_space") +
 #'  plotSurface(object_sub, color_by = "bayes_space")
 #'
-subsetByBarcodes <- function(object, barcodes, verbose = NULL){
+subsetSpataObject <- function(object, barcodes, verbose = NULL){
 
   hlpr_assign_arguments(object)
 

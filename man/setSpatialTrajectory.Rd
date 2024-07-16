@@ -25,3 +25,4 @@ The updated input object, containing the added, removed or computed results.
 \description{
 Sets trajectories in the correct slot.
 }
+\keyword{internal}

@@ -36,3 +36,4 @@ An updated S4 object.
 Methods for all S4 classes within \code{SPATA2} that keep S4 objects
 up to date.
 }
+\keyword{internal}

@@ -386,6 +386,7 @@ distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object))
 #'   # download the processed SPATA2 object from sample UKF313T from Kueckelhaus et al., 2024.
 #'  objectT313 <- downloadFromPublication(pub = "kueckelhaus_et_al_2024", what = "UKF313T")
 #'
+#' @keywords internal
 #' @export
 #'
 downloadFromPublication <- function(pub, id, raw = FALSE){

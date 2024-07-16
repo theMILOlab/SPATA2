@@ -97,6 +97,7 @@ getAssayNames <- function(object){
 #'
 #' @return Character value.
 #' @export
+#' @keywords internal
 #'
 setGeneric(name = "getBackgroundColor", def = function(object, ...){
 
@@ -326,7 +327,7 @@ getBarcodesInPolygonList <- function(object, polygon_list, strictly = TRUE){
 #' @return A data.frame in which each observation/row corresponds to a barcodes-spot ~
 #' barcode-spot pair.
 #'
-#' @export
+#' @keywords internal
 #'
 
 getBarcodeSpotDistances <- function(object,

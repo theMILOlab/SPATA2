@@ -460,6 +460,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
 #'
 #' @return Data.frame.
 #'
+#' @keywords internal
 #' @export
 create_model_df <- function(input,
                             var_order = NULL,
@@ -2295,7 +2296,7 @@ createImageAnnotations <- function(object, ...){
 
 # createM -----------------------------------------------------------------
 
-#' @title Add a molecular assay
+#' @title Create an object of class [`MolecularAssay`]
 #'
 #' @description Creates and adds an object of class [`MolecularAssay`]
 #' to the [`SPATA2`] object.

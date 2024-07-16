@@ -61,3 +61,4 @@ Character vectors or named lists of such.
 These function simply return valid input options
 for recurring arguments.
 }
+\keyword{internal}

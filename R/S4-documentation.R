@@ -260,6 +260,7 @@ SpatialData <- setClass(Class = "SpatialData",
 #' the trajectory. (Length of the rectangle corresponds to the length of
 #' the segment.)
 #'
+#' @keywords internal
 #' @export
 Trajectory <- setClass(Class = "Trajectory",
                        slots = list(
@@ -770,7 +771,7 @@ dim_red <- setClass("dim_red",
 #' @title The \code{HistologyImage} - Class
 #'
 #' @description Deprecated in favor of `HistoImage`.
-#'
+#' @keywords internal
 #' @export
 HistologyImage <- setClass(Class = "HistologyImage",
                            slots = list(

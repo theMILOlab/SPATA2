@@ -26,3 +26,4 @@ The vignette on distance measures in SPATA2 has been replaced. Click
 \code{\link[=concept_distance_measure]{here}} to read it.
 }
 
+\keyword{internal}
