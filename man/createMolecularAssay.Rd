@@ -2,11 +2,11 @@
 % Please edit documentation in R/create.R
 \name{createMolecularAssay}
 \alias{createMolecularAssay}
-\title{Add a molecular assay}
+\title{Create and add an object of class \link{MolecularAssay}}
 \usage{
 createMolecularAssay(
   object,
-  omic,
+  modality,
   active_mtr = NULL,
   mtr_counts = Matrix::Matrix(),
   mtr_proc = list(),
@@ -20,9 +20,10 @@ createMolecularAssay(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{omic}{Character value. Should best describe the molecular type of the count matrix.
-E.g. \emph{'transcriptomics'}, \emph{'proteomics'}, \emph{'metabolomics'}. Additionally, defines the
-\link[=MolecularAssay]{assay} name, that is created with the count matrix.}
+\item{modality}{Character value. Should best describe the molecular type of the count matrix.
+Additionally, it defines the \link[=MolecularAssay]{assay} name, that is created with the count matrix and further
+referred to via the argument \code{assay_name}. Read more on molecular modalities in
+SPATA2 \link[=concept_molecular_modalities]{here}.}
 
 \item{active_mtr}{Character value. The name of the matrix chosen as
 the \link[=concept_active]{active} matrix. If \code{mtr_proc} is an empty
@@ -56,4 +57,14 @@ Creating an assay only with processed matrices (\code{mtr_proc}) while not speci
 \code{mtr_counts} is possible. In that case, \code{mtr_counts} is populated with an empty
 matrix that contains all unique molecule names found in the matrices as rownames
 and barcodes as colnames.
+
+Generally speaking, the count matrix contains all molecule names! Processed matrices
+contain either identical molecule names or a subset of those found in the count
+matrix.
+}
+\note{
+The molecules of the added assay \strong{must not} already exist in the \code{SPATA2} object.
+Variables in SPATA2 are case sensitive! If you want to add a protein assay to t
+the \code{SPATA2} object that already contains genes, you can provide the protein names
+like this \emph{Ldh} while the gene names exist like this \emph{LDH}.
 }

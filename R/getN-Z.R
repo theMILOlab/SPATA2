@@ -660,7 +660,23 @@ getProjectionDf <- function(object,
 }
 
 
+#' @rdname getMolecules
+#' @export
+getProteins <- function(object,
+                        signatures = NULL,
+                        simplify = TRUE,
+                        ...){
 
+  deprecated(...)
+
+  getMolecules(
+    object = object,
+    signatures = signatures,
+    simplify = simplify,
+    assay_name = "protein"
+  )
+
+}
 
 
 
@@ -902,7 +918,7 @@ getSampleName <- function(object){
 getSasDf <- function(object,
                      ids,
                      distance = "dte",
-                     resolution = recSasRes(object),
+                     resolution = recSgsRes(object),
                      core = FALSE,
                      angle_span = c(0,360),
                      n_bins_angle = 1,
@@ -1031,7 +1047,7 @@ getSasDf <- function(object,
 getSasExprEst1D <- function(object,
                             id = idSA(object),
                             distance = distToEdge(object, id),
-                            resolution = recSasRes(object),
+                            resolution = recSgsRes(object),
                             core = FALSE,
                             unit = "px"){
 
@@ -3010,6 +3026,7 @@ getSpatialTrajectories <- function(object, ids = NULL){
 #'
 #' @return Numeric value.
 #' @export
+#' @keywords internal
 #'
 setGeneric(name = "getSpotSize", def = function(object, ...){
 
@@ -3059,17 +3076,23 @@ setMethod(
 getStsDf <- function(object,
                      variables,
                      id = idST(object),
-                     resolution = recSasRes(object),
+                     resolution = recSgsRes(object),
                      width = NULL,
                      unit = getDefaultUnit(object),
                      ro = c(0, 1),
                      bcs_exclude = NULL,
                      format = "wide",
-                     control = SPATA2::sgs_loess_control,
+                     control = NULL,
                      verbose = FALSE,
                      ...){
 
   deprecated(...)
+
+  if(!base::is.list(control)){
+
+    control <- sgs_loess_control
+
+  }
 
   # ensure that both values are of the same unit
   distance <- getTrajectoryLength(object, id = id, unit = unit)
@@ -3663,6 +3686,10 @@ getUmapDf <- function(object, ...){
 #' @inherit argument_dummy params
 #' @param protected Logical value. If `TRUE`, variable names that are protected
 #' in `SPATA2` are returned, too, regardless of being in use or not.
+#'
+#' @note Molecule names are picked from the currently active matrix of their assay.
+#' If the processed matrix does not contain some molecules the raw count matrix
+#' contains the do not appear.
 #'
 #' @return Character vector.
 #' @export

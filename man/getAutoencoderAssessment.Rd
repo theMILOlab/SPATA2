@@ -16,3 +16,4 @@ combination of activations/bottlenecks.
 \description{
 Extracts the results from \code{assessAutoencoderOptions()}.
 }
+\keyword{internal}

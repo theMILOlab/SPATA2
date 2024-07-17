@@ -23,7 +23,8 @@ objects of classes for which a method has been defined.}
 and the column names corresponding to the barcodes.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
-one assay: Denotes the assay of interest. Defaults to the active assay,
+one assay: Denotes the assay of interest (and thus the
+active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -52,3 +53,4 @@ with which they were processed. E.g. \emph{log_norm} if it was created by log no
 the counts. Or \emph{scaled} if it was created by subsequent \emph{scaling} of the \emph{log_norm}
 matrix.
 }
+\keyword{internal}

@@ -22,7 +22,8 @@
 #' to be included.
 #'
 #' @param assay_name Only relevant if the `SPATA2` object contains more than
-#' one assay: Denotes the assay of interest. Defaults to the active assay,
+#' one assay: Denotes the assay of interest (and thus the
+#' active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
 #' as set by [`activateAssay()`].
 #'
 #' @param bcsp_rm Character vector or `NULL.` If character, specifies barcode-spots that
@@ -140,6 +141,9 @@
 #' @param minPts Numeric value. Given to [`dbscan::dbscan()`]. Determines the
 #' number of minimum points required in the eps neighborhood for core points
 #' (including the point itself)
+#'
+#' @param modality Character value. The \link[=concept_molecular_modalities]{molecular modality}
+#' of interst.
 #'
 #' @param mtr_name Character value. The name of the matrix of interest. Defaults
 #' to the active matrix of the assay, as denoted by [`activateMatrix()`].
@@ -432,6 +436,7 @@ image_dummy <- function(image){}
 #' @title matrix_dummy
 #' @return A numeric matrix with rownames corresponding to molecule names and column
 #' names corresponding to barcodes.
+#' @keywords internal
 matrix_dummy <- function(){}
 
 #' @title method_hclust

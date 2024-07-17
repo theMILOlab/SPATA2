@@ -8,13 +8,13 @@ getStsDf(
   object,
   variables,
   id = idST(object),
-  resolution = recSasRes(object),
+  resolution = recSgsRes(object),
   width = NULL,
   unit = getDefaultUnit(object),
   ro = c(0, 1),
   bcs_exclude = NULL,
   format = "wide",
-  control = SPATA2::sgs_loess_control,
+  control = NULL,
   verbose = FALSE,
   ...
 )

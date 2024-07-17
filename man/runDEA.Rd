@@ -3,7 +3,7 @@
 \name{runDEA}
 \alias{runDEA}
 \alias{runDeAnalysis}
-\title{Find differently expressed genes}
+\title{Differential expression analysis (DEA)}
 \usage{
 runDEA(
   object,
@@ -36,7 +36,8 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
-one assay: Denotes the assay of interest. Defaults to the active assay,
+one assay: Denotes the assay of interest (and thus the
+active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{...}{Additional arguments given to \code{Seurat::FindAllMarkers()}}
@@ -47,8 +48,8 @@ as set by \code{\link[=activateAssay]{activateAssay()}}.}
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-This function makes use of \code{Seurat::FindAllMarkers()} to compute
-the differently expressed genes across the groups of
+This function makes use of \code{Seurat::FindAllMarkers()} to identify
+the differently expressed variables across the groups of
 the grouping variable denoted in the argument \code{across}.
 
 See details for more.

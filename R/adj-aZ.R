@@ -701,7 +701,7 @@ as_decimeter2 <- function(input, ...){
 
 
 
-#' @title Transform `SPATA2` object to \code{Giotto}
+#' @title Transform SPATA2 object to Giotto object
 #'
 #' @description Transforms an `SPATA2` object object to an object of class
 #'  \code{Giotto}. See details for more information.

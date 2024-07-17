@@ -554,16 +554,13 @@ setMethod(f = "show", signature = "SpatialMethod", definition = function(object)
 #' @export
 setMethod(f = "show", signature = "SPATA2", definition = function(object){
 
-  num_samples <- length(object@sample)
-  assay <- getAssayNames(object)
-  dims <- dim(getMatrix(object = object,
-                        mtr_name = activeMatrix(object),
-                        assay_name = activeAssay(object)
-                        ))
-  n_obs <- nrow(getCoordsDf(object)) # in case no matrix available
+  assays <- getAssayNames(object)
+  n_mols <- purrr::map_dbl(.x = assays, .f = ~ nMolecules(object, assay_name = .x))
+  n_obs <- nObs(object) # in case no matrix available
 
-  cat("SPATA2 object of size:", n_obs, "x", dims[1], "(observations x variables)\n")
-  cat("Contains", length(assay), ifelse(length(assay) > 1, "Assays:", "Assay:"), assay, "\n")
+  cat("SPATA2 object of size:", n_obs, "x", n_mols, "(observations x molecules)\n")
+  cat("Platform: ", object@platform, "\n")
+  cat("Contains", length(assays), ifelse(length(assays) > 1, "Assays:", "Assay:"), assays, "\n")
   cat("Active Assay:", activeAssay(object), ", Active Matrix:", activeMatrix(object), "\n")
   if (length(setdiff(colnames(getMetaDf(object)), "barcodes")) > 0) {
     cat("Metadata:", paste(setdiff(colnames(getMetaDf(object)), "barcodes"),
@@ -3056,12 +3053,12 @@ strongH5 <- function(text){
 #'  filter(bayes_sapce %in% c("3", "2", "1")) %>%
 #'  pull(barcodes)
 #'
-#' object_sub <- subsetByBarcodes(object, barcodes = barcodes_keep)
+#' object_sub <- subsetSpataObject(object, barcodes = barcodes_keep)
 #'
 #' plotSurface(object, color_by = "bayes_space") +
 #'  plotSurface(object_sub, color_by = "bayes_space")
 #'
-subsetByBarcodes <- function(object, barcodes, verbose = NULL){
+subsetSpataObject <- function(object, barcodes, verbose = NULL){
 
   hlpr_assign_arguments(object)
 

@@ -16,3 +16,4 @@ The updated input object, containing the added, removed or computed results.
 \description{
 Function to set a \code{\link{MolecularAssay}} object.
 }
+\keyword{internal}

@@ -26,7 +26,8 @@ runSPARKX(
 objects of classes for which a method has been defined.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
-one assay: Denotes the assay of interest. Defaults to the active assay,
+one assay: Denotes the assay of interest (and thus the
+active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{error}{Logical. If \code{TRUE} and the input is invalid the

@@ -17,3 +17,4 @@ A spata-object.
 \description{
 Set results of autoencoder assessment
 }
+\keyword{internal}

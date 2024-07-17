@@ -356,6 +356,7 @@ remove_stress_and_mt_genes <- function(mtr, verbose = TRUE){
 #'
 #' @return Logical value.
 #' @export
+#' @keywords internal
 #'
 isDirVisium <- function(dir, error = FALSE){
 

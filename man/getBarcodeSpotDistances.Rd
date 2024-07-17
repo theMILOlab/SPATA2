@@ -37,3 +37,4 @@ barcode-spot pair.
 \description{
 Obtain distances between barcodes
 }
+\keyword{internal}

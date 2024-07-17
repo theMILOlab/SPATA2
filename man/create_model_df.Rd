@@ -45,3 +45,4 @@ Data.frame.
 Creates the data.frame that contains the models
 for spatial gradient screening algorithms.
 }
+\keyword{internal}

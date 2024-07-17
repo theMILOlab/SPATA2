@@ -206,6 +206,94 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Molecular Modalities
+#'
+#' @description
+#' SPATA2 was developed with the Visium platform in mind which revolves around
+#' spatial gene expression. With SPATA2 v3.0.0 we aim to expand the package to
+#' include different platforms and more molecular modalities to analyze spatial
+#' distribution of proteins or metabolites, too. Hence, when creating  objects
+#' with \link[=MolecularAssay]{molecular assays} the modality must be specified.
+#'
+#' To ensure that inbuilt functions of SPATA2 like \link[=runGSEA]{gene set enrichment} or
+#' \link[=runCNV]{copy number variation} analysis work seamlessly, the modality must be
+#' specified *"correctly"*.
+#'
+#' SPATA2 knows three molecular modalities for which specific functions have been
+#' written like the ones linked above.
+#'
+#' \enumerate{
+#'  \item{Gene expression}{: Use `modality = 'gene'`}
+#'  \item{Protein expression}{: Use `modality = 'protein'`}
+#'  \item{Metabolites expression}{: Use `modality = 'metabolite'`}
+#'  }
+#'
+#' Depending on the modality of an assay, specific functions can be used or not.
+#' For instance, [`runCNV()`] only works if [`SPATA2`] object contains an assay
+#' of data modality *gene* (not *genes*, *rna*, *mRNA* or anything else). This
+#' extends to the inbuilt concept of \link[=concept_molecular_signature]{molecular signatures}.
+#' It is not forbidden, of course, to create molecular assays with modalities
+#' differing from the ones SPATA2 knows. It is just that you won't be able to
+#' use certain functions with the created assay.
+#'
+#' @note The molecular modality of an assay also defines its name! Hence, if you
+#' encounter the parameter `assay_name` it can be thought of defining the molecular
+#' modality of interest! And the output of [`activeAssay()`] can be thought of
+#' the output of *active molecular modality*.
+#'
+#' @seealso [`createMolecularAssay()`], [`containsModality()`], [`getAssayModalities()`]
+#'
+#' @name concept_molecular_modalities
+#' @aliases concept_molecular_modalities
+#'
+#' @keywords internal
+NULL
+
+#' @title Molecular Signatures
+#'
+#' @description
+#' Molecular signatures are sets of molecules (such as genes or proteins) that are
+#' associated with specific biological states, processes, or conditions. In SPATA2
+#' a molecular signature is represented as a vector in a named list, where the character
+#' values are the molecules of which the signature consists.
+#'
+#' @section SPATA2 inbuilt signatures:
+#'
+#' SPATA2 knows three molecular modalities.
+#'
+#' \enumerate{
+#'  \item{Gene expression}{: With `modality = 'gene'`}
+#'  \item{Protein expression}{: With `modality = 'protein'`}
+#'  \item{Metabolites expression}{: With `modality = 'metabolite'`}
+#'  }
+#'
+#' Included in the package is a list named [`signatures`], with corresponding
+#' slots `signatures$gene`, `signatures$protein`, `signatures$metabolite`. This list is where
+#' default signatures are stored for the respective data modality. Depending
+#' on how the [`SPATA2`] object is initiated, the created \link[MolecularAssay]{molecular assay(s)}
+#' already contain the respective signatures in slot @@signatures.
+#'
+#' @section Signature names:
+#'
+#' In SPATA2 a signature name corresponds of two parts:
+#'
+#' *class*_*biological function*
+#'
+#' For instance, the gene set *HM_HYPOXIA* is of class *HM* (short for Hallmark) and contains
+#' genes associated with increased presence of or response to hypoxic circumstances.
+#' The class indicates the source from where the signature derives and is separated
+#' from the biological function part with the **first** _. Underscores afterwards
+#' are ignored and interpreted as part of the biological function as in *RCTM_TCR_SIGNALING*
+#' (class = *RCTM*; biological function *TCR_SIGNALING*).
+#'
+#' @seealso [`addSignature()`], [`getSignature()`], [`getGeneSet()`]
+#'
+#' @name concept_molecular_signature
+#' @aliases concept_molecular_signature
+#'
+#' @keywords internal
+NULL
+
 
 #' @title Observations (Data points)
 #' @description In the context of SPATA2, the term *observations* refers to the

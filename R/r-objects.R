@@ -556,6 +556,7 @@ depr_info <-
       "linealpha" = "line_alpha",
       "linecolor" = "line_color",
       "linesize" = "line_size",
+      "omic" = "modality",
       "of_sample" = NA_character_,
       "trajectory_name" = "id"
     ),
@@ -881,14 +882,12 @@ protected_spatial_method_info_slots <- c("ccd")
 protected_variable_names <- c(
   "barcodes",
   "col",
-  "exclude",
   "imagecol", "imagerow",
-  "outlier",
-  "outline",
   "projection_length",
   "row",
   "sample",
-  "section",
+  "sp_outlier",
+  "tissue_section",
   "x",
   "y",
   "x_orig",
@@ -1036,6 +1035,7 @@ smrd_projection_df_names <- c("trajectory_order", "proj_length_binned")
 
 #' @title List of summarizing formulas
 #' @export
+#' @keywords internal
 summarize_formulas <-
   list(
     "max" = ~ base::max(.x, na.rm = TRUE),

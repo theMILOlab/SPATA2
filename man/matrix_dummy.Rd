@@ -13,3 +13,4 @@ names corresponding to barcodes.
 \description{
 matrix_dummy
 }
+\keyword{internal}

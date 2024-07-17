@@ -2,12 +2,9 @@
 % Please edit documentation in R/i.R
 \name{identifySpatialOutliers}
 \alias{identifySpatialOutliers}
-\alias{identifySpatialOutliers,SPATA2-method}
 \title{Identify spatial outliers}
 \usage{
-identifySpatialOutliers(object, ...)
-
-\S4method{identifySpatialOutliers}{SPATA2}(
+identifySpatialOutliers(
   object,
   method = "obs",
   img_name = activeImage(object),
@@ -22,8 +19,6 @@ identifySpatialOutliers(object, ...)
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
-
-\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{method}{Character vector. The method(s) to use. A combination of \emph{'obs'}
 and/or \emph{'image'}. Defaults to \emph{'obs'}. See details for more.}

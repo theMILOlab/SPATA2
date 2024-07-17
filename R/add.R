@@ -1300,9 +1300,9 @@ addSegmentationVariable <- function(object,
 
 }
 
-#' @title Add an spatial annotation manually
+#' @title Create and add a spatial annotation manually
 #'
-#' @description Adds spatial annotations using a polygon.
+#' @description Adds spatial annotations using polygon data.frames.
 #'
 #' @param area A named list of data.frames with the numeric variables *x* and *y* or *x_orig* and *y_orig*.
 #' Observations correspond to the vertices of the polygons that are needed to represent the
@@ -1534,8 +1534,25 @@ setMethod(
   })
 
 
-#' @rdname createSpatialTrajectories
+#' @title Create and add a spatial trajectory
+#'
+#' @description Adds a \link[=SpatialTrajectory]{spatial trajectory} using coordinate input.
+#'
+#' @param id Character value. The id of the spatial trajectory.
+#' @param width Distance measure. The width of the spatial trajectory.
+#' @param segment_df Data.frame with *x* and *y* as variables corresponding
+#' to the vertices of the trajectory. IN case of more than three rows the
+#' trajectory is assumed to have a curve.
+#' @param start,end Numeric vectors of length two. Can be provided instead of
+#' `segment_df`. If so, `start` corresponds to *x* and *y* and `end` corresponds to
+#' *xend* and *yend* of the segment.
+#' @param vertices List of numeric vectors of length two or `NULL`. If list,
+#' sets additional vertices along the trajectory.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
 #' @export
+#'
+#' @seealso [`createSpatialTrajectories()`]
 #'
 #' @examples
 #'

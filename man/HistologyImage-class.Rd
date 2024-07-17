@@ -8,3 +8,4 @@
 \description{
 Deprecated in favor of \code{HistoImage}.
 }
+\keyword{internal}

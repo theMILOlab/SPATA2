@@ -4,7 +4,7 @@
 \alias{addSpatialAnnotation}
 \alias{addSpatialAnnotation,SPATA2-method}
 \alias{addSpatialAnnotation,SpatialData-method}
-\title{Add an spatial annotation manually}
+\title{Create and add a spatial annotation manually}
 \usage{
 addSpatialAnnotation(object, ...)
 
@@ -53,7 +53,7 @@ the index the new annotation has in the list of all annotations.}
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Adds spatial annotations using a polygon.
+Adds spatial annotations using polygon data.frames.
 }
 \examples{
 

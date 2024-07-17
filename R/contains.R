@@ -16,12 +16,7 @@ containsAssay <- function(object, assay_name, error = FALSE){
 
   if(base::isTRUE(error) & base::isFALSE(out)){
 
-    confuns::check_one_of(
-      input = assay_name,
-      against = getAssayNames(object),
-      fdb.opt = 2,
-      ref.opt.2 = "molecular assays"
-    )
+    stop(glue::glue("This SPATA2 object does not contain an assay of molecular modality '{assay_name}'."))
 
   }
 
@@ -122,7 +117,7 @@ containsCNV <- function(object, error = FALSE){
   out <-
     base::tryCatch({
 
-      ma <- getAssay(object, assay_name = "transcriptomics")
+      ma <- getAssay(object, assay_name = "gene")
 
       cnv <- ma@analysis$cnv
 
@@ -336,6 +331,32 @@ setMethod(
 
   }
 )
+
+
+#' @title Check availability of molecular modality
+#'
+#' @description Tests if the input object contains a molecular assay
+#' of a certain modality.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#' @export
+containsModality <- function(object, modality, error = FALSE, ...){
+
+  confuns::is_value(modality, mode = "character")
+
+  out <- modality %in% base::names(object@assays)
+
+  if(base::isFALSE(out) & base::isTRUE(error)){
+
+    stop("SPATA2 object does not contain an assay of modality '{modality}'.")
+
+  }
+
+  return(out)
+
+}
 
 
 #' @title Check availability of specific methods

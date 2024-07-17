@@ -7,7 +7,7 @@
 \alias{getHistoImageRef}
 \alias{getHistoImageRef,SPATA2-method}
 \alias{getHistoImageRef,SpatialData-method}
-\title{Obtain object of class \code{HistoImage}}
+\title{Obtain HistoImage object}
 \usage{
 getHistoImage(object, ...)
 

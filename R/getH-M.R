@@ -4,7 +4,7 @@
 # getH --------------------------------------------------------------------
 
 
-#' @title Obtain object of class `HistoImage`
+#' @title Obtain HistoImage object
 #'
 #' @description Extracts the S4-containers of registered images. Note that
 #' slot @@image might be empty. Use `loadImage()` in that case.
@@ -102,7 +102,7 @@ setMethod(
 
 # getImage ----------------------------------------------------------------
 
-#' @title Obtain object of class `Image`
+#' @title Obtain image
 #'
 #' @description Extracts the image as an object of class `Image`
 #' as specified in the package `EBImage`.
@@ -1118,7 +1118,23 @@ setMethod(
   }
 )
 
+#' @rdname getMolecules
+#' @export
+getMetabolites <- function(object,
+                           signatures = NULL,
+                           simplify = TRUE,
+                           ...){
 
+  deprecated(...)
+
+  getMolecules(
+    object = object,
+    signatures = signatures,
+    simplify = simplify,
+    assay_name = "metabolite"
+  )
+
+}
 
 #' @title Obtain meta data.frame
 #'
@@ -1155,11 +1171,60 @@ getMethodSpecifics <- function(object){
 }
 
 
+#' @title Obatin molecular modality
+#'
+#' @description
+#' Extracts the molecular modality of chosen \link[=MolecularAssay]{molecular assay}.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#'
+#' @export
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' getModality(object)
+#'
+setGeneric(name = "getModality", def = function(object, ...){
 
+  standardGeneric(f = "getModality")
+
+})
+
+
+#' @rdname getModality
+#' @export
+setMethod(
+  f = "getModality",
+  signature = "SPATA2",
+  definition = function(object, assay_name = activeAssay(object), ...){
+
+    getAssay(object, assay_name = assay_name) %>%
+      getModality()
+
+  }
+)
+
+#' @rdname getModality
+#' @export
+setMethod(
+  f = "getModality",
+  signature = "MolecularAssay",
+  definition = function(object, ...){
+
+    object@modality
+
+  }
+)
 
 #' @title Obtain molecule names
 #'
-#' @description Retrieves the list of molecules present in the given object, optionally filtered by a specific signature.
+#' @description Retrieves the list of molecules present in the given object,
+#' optionally filtered by a specific signature.
 #'
 #' @inherit argument_dummy params
 #' @param signatures Character vector or `NULL`. If character, specifies the name of
@@ -1167,6 +1232,8 @@ getMethodSpecifics <- function(object){
 #' @param simplify Only relevant if `signatures` is not `NULL`. If `TRUE`, all molecule
 #' names are merged in to one character vector of unique molecule names. If `FALSE`,
 #' a named list of character vectors is returned (names correspond to signatures).
+#'
+#' @inherit getVariableNames note
 #'
 #' @return A character vector or a named list of character vectors.
 #'
@@ -1230,8 +1297,7 @@ getMolecules <- function(object,
 
 #' @title Obtain a list of molecules
 #'
-#' @description Retrieves a list of molecules sorted by molecular type as
-#'  present in the given object.
+#' @description Retrieves a list of molecules sorted by \link[=concept_molecular_modality]{molecular modality}.
 #'
 #' @inherit argument_dummy params
 #' @param molecules A character vector specifying the subset of molecules to include in the output.
@@ -1242,6 +1308,8 @@ getMolecules <- function(object,
 #' @details This function categorizes molecules into different types based on the provided object.
 #' If the 'molecules' argument is provided as a character vector, the function returns only the
 #' specified molecules categorized by type. Otherwise, it returns all molecules categorized by type.
+#'
+#' @seealso [`getAssayModalities()`]
 #'
 #' @examples
 #' # Get molecular type list for all molecules in the object

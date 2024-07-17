@@ -460,6 +460,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
 #'
 #' @return Data.frame.
 #'
+#' @keywords internal
 #' @export
 create_model_df <- function(input,
                             var_order = NULL,
@@ -1220,12 +1221,7 @@ createHistoImage <- function(img_name,
 #'
 #' object <- example_data$object_UKF275T_diet
 #'
-#' if(FALSE){ # diffuse
-#'
-#'  object <- createImageAnnotations(object)
-#'
-#' }
-#'
+#' object <- createImageAnnotations(object)
 #'
 createImageAnnotations <- function(object, ...){
 
@@ -2295,7 +2291,7 @@ createImageAnnotations <- function(object, ...){
 
 # createM -----------------------------------------------------------------
 
-#' @title Add a molecular assay
+#' @title Create and add an object of class [MolecularAssay]
 #'
 #' @description Creates and adds an object of class [`MolecularAssay`]
 #' to the [`SPATA2`] object.
@@ -2321,10 +2317,20 @@ createImageAnnotations <- function(object, ...){
 #' matrix that contains all unique molecule names found in the matrices as rownames
 #' and barcodes as colnames.
 #'
-#' @export
+#' Generally speaking, the count matrix contains all molecule names! Processed matrices
+#' contain either identical molecule names or a subset of those found in the count
+#' matrix.
 #'
+#' @note
+#' The molecules of the added assay **must not** already exist in the `SPATA2` object.
+#' Variables in SPATA2 are case sensitive! If you want to add a protein assay to t
+#' the `SPATA2` object that already contains genes, you can provide the protein names
+#' like this *Ldh* while the gene names exist like this *LDH*.
+#'
+#' @export
+
 createMolecularAssay <- function(object,
-                                 omic,
+                                 modality,
                                  active_mtr = NULL,
                                  mtr_counts = Matrix::Matrix(),
                                  mtr_proc = list(),
@@ -2333,29 +2339,53 @@ createMolecularAssay <- function(object,
                                  verbose = NULL,
                                  ...){
 
+  deprecated(...)
+
   hlpr_assign_arguments(object)
 
   # check validity
   confuns::check_none_of(
-    input = omic,
-    against = getAssayNames(object),
-    ref.against = "existing assays",
+    input = modality,
+    against = getAssayModalities(object),
+    ref.against = "existing assay modalities",
     overwrite = overwrite
   )
 
   # check validity
   if(!purrr::is_empty(mtr_proc)){
 
+    if(base::nrow(mtr_counts) != 0){
+
+      molecules <- base::rownames(mtr_counts)
+
+    }
+
     confuns::is_named(input = mtr_proc)
     mtr_proc <- confuns::discard_unnamed(input = mtr_proc)
 
     for(i in base::seq_along(mtr_proc)){
 
+      list_slot <- base::names(mtr_proc)[i]
+
       if(!base::is.matrix(mtr_proc[[i]]) & !methods::is(mtr_proc[[i]], class2 = "Matrix")){
 
-        list_slot <- base::names(mtr_proc)[i]
-
         stop(glue::glue("Slot '{list_slot}' of `mtr_proc` does not contain a matrix."))
+
+      } else {
+
+        proc_molecules <- base::rownames(mtr_proc[[i]])
+
+        if(base::nrow(mtr_counts) != 0){
+
+          missing_in_counts <- proc_molecules[!proc_molecules %in% molecules]
+
+          if(base::length(missing_in_counts) >= 1){
+
+            stop("There are molecules in processed matrix {list_slot} that are not in the raw count matrix.")
+
+          }
+
+        }
 
       }
 
@@ -2386,7 +2416,7 @@ createMolecularAssay <- function(object,
         data = 0L ,
         nrow = base::length(molecule_names),
         ncol = base::length(barcodes)
-        ) %>%
+      ) %>%
       magrittr::set_rownames(molecule_names) %>%
       magrittr::set_colnames(barcodes)
 
@@ -2409,10 +2439,26 @@ createMolecularAssay <- function(object,
     MolecularAssay(
       mtr_counts = mtr_counts,
       mtr_proc = mtr_proc,
-      omic = omic,
+      modality = modality,
       ...
     )
 
+  # prevent variable name overlap
+  all_molecules <- base::rownames(ma@mtr_counts)
+  vnames <- getVariableNames(object, protected = TRUE)
+
+  overlap <- all_molecules[all_molecules %in% vnames]
+
+  if(base::length(overlap) >= 1){
+
+    ref2 <- confuns::scollapse(overlap)
+    ref1 <- confuns::adapt_reference(overlap, "Variable")
+
+    stop(glue::glue("{ref1} '{ref2}' already exist in the SPATA2 object."))
+
+  }
+
+  # checks complete -> set assay
   object <- setAssay(object, assay = ma)
 
   if(base::isTRUE(activate)){
@@ -2420,7 +2466,7 @@ createMolecularAssay <- function(object,
     object <-
       activateAssay(
         object = object,
-        assay_name = omic,
+        assay_name = modality,
         verbose = verbose
       )
 
@@ -4596,26 +4642,19 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
 }
 
-
-#' @title Create and add spatial trajectories
+#' @title Create and add spatial trajectories interactively
 #'
-#' @description Functions to add spatial trajectories to the `SPATA2`
-#' object. For interactive drawing use `createSpatialTrajectories()`.
-#' To set them precisely with code use `addSpatialTrajectory()`.
+#' @description
+#' Opens an interface in which the user can interactively draw spatial trajectories
+#' on the surface of the sample.
 #'
-#' @param id Character value. The id of the spatial trajectory.
-#' @param width Distance measure. The width of the spatial trajectory.
-#' @param segment_df Data.frame with *x* and *y* as variables corresponding
-#' to the vertices of the trajectory. IN case of more than three rows the
-#' trajectory is assumed to have a curve.
-#' @param start,end Numeric vectors of length two. Can be provided instead of
-#' `segment_df`. If so, `start` corresponds to *x* and *y* and `end` corresponds to
-#' *xend* and *yend* of the segment.
-#' @param vertices List of numeric vectors of length two or `NULL`. If list,
-#' sets additional vertices along the trajectory.
 #' @inherit argument_dummy params
-#' @inherit update_dummy return
+#' @inherit update_dummy params
+#'
+#' @seealso [`addSpatialTrajectories()`]
+#'
 #' @export
+#'
 #' @examples
 #'
 #' library(SPATA2)
@@ -4625,11 +4664,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 #'
 #' object <- example_data$object_UKF275T_diet
 #'
-#' if(FALSE){
-#'
-#'  object <- createSpatialTrajectories(object)
-#'
-#'  }
+#' object <- createSpatialTrajectories(object)
 #'
 createSpatialTrajectories <- function(object){
 

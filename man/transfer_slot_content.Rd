@@ -4,12 +4,17 @@
 \alias{transfer_slot_content}
 \title{Transfer S4 slot content}
 \usage{
-transfer_slot_content(recipient, donor, skip = character(0), verbose = TRUE)
+transfer_slot_content(
+  donor,
+  recipient = NULL,
+  skip = character(0),
+  verbose = TRUE
+)
 }
 \arguments{
-\item{recipient}{Empty and new S4 object.}
-
 \item{donor}{Old S4 object.}
+
+\item{recipient}{Empty and new S4 object.}
 
 \item{skip}{Slot names whose content is not transferred.}
 }

@@ -9,6 +9,7 @@
 #' @inherit plotVolcano params
 #' @inherit argument_dummy params
 #'
+#' @keywords internal
 #' @export
 
 setGeneric(name = "plotOverview", def = function(object, ...){

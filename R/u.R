@@ -1320,6 +1320,7 @@ updateSpataObject <- function(object,
 #'
 #' @return An updated S4 object.
 #' @export
+#' @keywords internal
 #'
 setGeneric(name = "updateS4", def = function(object, ...){
 
@@ -1327,45 +1328,6 @@ setGeneric(name = "updateS4", def = function(object, ...){
 
 })
 
-#' @rdname updateS4
-#' @export
-setMethod(
-  f = "updateS4",
-  signature = "ImageAnnotation",
-  definition = function(object){
-
-    img_ann <- object
-
-    # version < 3.0.0
-    if(!containsVersion(img_ann)){
-
-      # overwrite info list
-      new_info <-
-        list(
-          sample = img_ann@info$parent_id
-        )
-
-      img_ann <-
-        transfer_slot_content(
-          recipient = ImageAnnotation(),
-          donor = img_ann,
-          verbose = FALSE
-        )
-
-      img_ann@version <- list(major = 3, minor = 0, patch = 0)
-
-      img_ann@info <-
-        c(
-          img_ann@info,
-          new_info
-        )
-
-    }
-
-    return(img_ann)
-
-  }
-)
 
 #' @rdname updateS4
 #' @export
@@ -1394,6 +1356,96 @@ setMethod(
   signature = "spata2",
   definition = updateSpataObject
 )
+
+#' @keywords internal
+update_s4_architecture_of_spata2_object <- function(object){
+
+  # SPATA2 object
+  exchange <- tryCatch({ object@platform; FALSE}, error = function(error){ TRUE })
+
+  if(exchange){
+
+    object <- transfer_slot_content(donor = object, verbose = FALSE)
+
+    object@platform <- object@spatial@method@name
+
+  }
+
+  ## assays
+  object@assays <-
+    purrr::map(
+      .x = object@assays,
+      .f = function(ma){
+
+        # @omic -> @modality (added 16.07.2024)
+        exchange <- tryCatch({ ma@omic; TRUE}, error = function(error){ FALSE })
+
+        if(exchange){
+
+          ma_new <-
+            transfer_slot_content(donor = ma, verbose = FALSE)
+
+          ma_new@modality <- ma@omic
+
+          if(ma_new@modality == "transcriptomics"){
+
+            ma_new@modality <- "gene"
+
+          }
+
+          ma <- ma_new
+
+        }
+
+        return(ma)
+
+      }
+    )
+
+  # temporary, can be deleted upon publication
+  mods <- purrr::map_chr(object@assays, .f = ~.x@modality)
+  nms <- base::names(object@assays)
+  if("transcriptomics" %in% c(mods, nms)){
+
+    object@obj_info$active$assay <- "gene"
+
+  }
+  base::names(object@assays)[nms == "transcriptomics" & mods == "gene"] <- "gene"
+
+  # spatial data
+  sp_data <- getSpatialData(object)
+
+  ## annotations
+  sp_data@annotations <-
+    purrr::map(
+      .x = sp_data@annotations,
+      .f = function(spat_ann){
+
+        return(spat_ann)
+
+      }
+    )
+
+  ## method
+  sp_data@method
+
+  ## trajectories
+  sp_data@trajectories <-
+    purrr::map(
+      .x = sp_data@trajectories,
+      .f = function(traj){
+
+        return(traj)
+
+      }
+    )
+
+  object <- setSpatialData(object, sp_data = sp_data)
+
+  # done
+  return(object)
+
+}
 
 
 

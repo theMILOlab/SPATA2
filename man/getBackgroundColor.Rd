@@ -33,3 +33,4 @@ Character value.
 \description{
 Extracts results of \code{\link[=identifyBackgroundColor]{identifyBackgroundColor()}}.
 }
+\keyword{internal}

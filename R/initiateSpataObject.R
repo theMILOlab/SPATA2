@@ -9,9 +9,11 @@
 #' @param sample_name Character value. The name with which to identify the `SPATA2` object.
 #' @param count_mtr A count matrix. Column names correspond to the barcodes of the \link[=concept_observations]{observations}.
 #' Rownames correspond to the names of the molecular features (genes, proteins, metabolites etc.).
-#' @param omic Character value. Should best describe the molecular type of the count matrix.
-#' E.g. *'transcriptomics'*, *'proteomics'*, *'metabolomics'*. Additionally, defines the
-#' \link[=MolecularAssay]{assay} name, that is created with the count matrix.
+#' @param modality Character value. Should best describe the molecular type of the count matrix.
+#' Additionally, it defines the \link[=MolecularAssay]{assay} name, that is created with the count matrix and further
+#' referred to via the argument `assay_name`. Read more on molecular modalities in
+#' SPATA2 \link[=concept_molecular_modalities]{here}.
+#'
 #' @param coords_df Data.frame with a variable called *barcodes* as well as the
 #' *x_orig* and *y_orig* or *x* and *y*.
 #' @param img The reference image. See details for more information on how or
@@ -36,7 +38,7 @@
 #' `SPATA2` allows to register multiple images with one object via file directories.
 #' This facilitates exchanging them during the analysis while they must not
 #' be loaded altogether in a `SPATA2` object, which saves storage space. By default,
-#' `SPATA2` takes a directory to the image you want to initiate your `SPATA2` object with,
+#' the function takes a directory to the image you want to initiate your `SPATA2` object with,
 #' then loads the image and saves the directory, too. If the image does not
 #' exist in a file on your device but only in the global environment you can
 #' use `img` directly. This way, no image directory is stored. In a scenario,
@@ -55,7 +57,7 @@
 #'
 initiateSpataObject <- function(sample_name,
                                 count_mtr,
-                                omic,
+                                modality,
                                 coords_df,
                                 img = NULL,
                                 img_dir = NULL,
@@ -183,24 +185,24 @@ initiateSpataObject <- function(sample_name,
   ma <-
     MolecularAssay(
       mtr_counts = count_mtr,
-      omic = omic
+      modality = modality
     )
 
-  if(!omic %in% base::names(signatures)){
+  if(!modality %in% base::names(signatures)){
 
     confuns::give_feedback(
-      msg = glue::glue("SPATA2 does not have signatures stored for omic '{omic}'. Set yourself with `setSignatures()`."),
+      msg = glue::glue("SPATA2 does not have signatures stored for modality '{modality}'. Set yourself with `setSignatures()`."),
       verbose = verbose
     )
 
   } else {
 
-    ma@signatures <- signatures[[omic]]
+    ma@signatures <- signatures[[modality]]
 
   }
 
   object <- setAssay(object, assa = ma)
-  object <- activateAssay(object, assay_name = omic, verbose = verbose)
+  object <- activateAssay(object, assay_name = modality, verbose = verbose)
   object <- activateMatrix(object, mtr_name = "counts", verbose = FALSE)
 
   # meta data.frame
@@ -367,12 +369,12 @@ initiateSpataObjectMERFISH <- function(sample_name,
   ma <-
     MolecularAssay(
       mtr_counts = count_mtr,
-      omic = "transcriptomics",
-      signatures = signatures$transcriptomics
+      modality = "gene",
+      signatures = signatures$gene
     )
 
   object <- setAssay(object, assay = ma)
-  object <- activateAssay(object, assay_name = "transcriptomics")
+  object <- activateAssay(object, assay_name = "gene")
   object <- activateMatrix(object, mtr_name = "counts")
 
   # meta
@@ -592,12 +594,12 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
   ma <-
     MolecularAssay(
       mtr_counts = count_mtr,
-      omic = "transcriptomics",
-      signatures = signatures$transcriptomics
+      modality = "gene",
+      signatures = signatures$gene
     )
 
   object <- setAssay(object, assay = ma)
-  object <- activateAssay(object, assay_name = "transcriptomics")
+  object <- activateAssay(object, assay_name = "gene")
   object <- activateMatrix(object, mtr_name = "counts")
 
   # meta df
@@ -742,12 +744,12 @@ initiateSpataObjectVisium <- function(sample_name,
   ma <-
     MolecularAssay(
       mtr_counts = count_mtr,
-      omic = "transcriptomics",
-      signatures = signatures$transcriptomics
+      modality = "gene",
+      signatures = signatures$gene
     )
 
   object <- setAssay(object, assay = ma)
-  object <- activateAssay(object, assay_name = "transcriptomics")
+  object <- activateAssay(object, assay_name = "gene")
   object <- activateMatrix(object, mtr_name = "counts")
 
   # meta
@@ -825,12 +827,12 @@ initiateSpataObjectXenium <- function(sample_name,
   ma <-
     MolecularAssay(
       mtr_counts = count_mtr,
-      omic = "transcriptomics",
-      signatures = signatures$transcriptomics
+      modality = "gene",
+      signatures = signatures$gene
     )
 
   object <- setAssay(object, assay = ma)
-  object <- activateAssay(object, assay_name = "transcriptomics")
+  object <- activateAssay(object, assay_name = "gene")
   object <- activateMatrix(object, mtr_name = "counts")
 
   # meta

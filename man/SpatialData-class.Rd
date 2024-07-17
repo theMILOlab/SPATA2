@@ -32,10 +32,11 @@ for images.}
 \item{\code{name_img_active}}{character. The name of the image that is currently active.}
 
 \item{\code{name_img_ref}}{character. The name of the image that is used as a reference for aligning
-every additional image in slot @images_registered.}
+every additional image in slot @images}
 
 \item{\code{outline}}{list. List of two data.frames in which each row corresponds to
-a vertice of the polygon required to outline all \link[=concept_observations]{observations}.
+a vertice of the polygon required to outline all \link[=concept_observations]{observations}
+marking the edge of tissue sections.
 
 \itemize{
 \item{\emph{tissue_whole}:}{ Data.frame of two variables \emph{x_orig} and \emph{y_orig}.}

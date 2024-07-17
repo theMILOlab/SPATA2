@@ -13,4 +13,4 @@ summarize_formulas
 \description{
 List of summarizing formulas
 }
-\keyword{datasets}
+\keyword{internal}

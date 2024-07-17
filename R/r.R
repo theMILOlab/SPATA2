@@ -296,7 +296,7 @@ recSgsRes <- function(object, unit = getDefaultUnit(object)){
 
 }
 
-#' @title Rename the object
+#' @title Rename SPATA2 object
 #'
 #' @description Renames the [`SPATA2`] object.
 #'

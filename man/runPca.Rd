@@ -25,7 +25,8 @@ objects of classes for which a method has been defined.}
 to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
-one assay: Denotes the assay of interest. Defaults to the active assay,
+one assay: Denotes the assay of interest (and thus the
+active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{...}{Additional arguments given to \code{irlba::prcomp_irlba()}.}
