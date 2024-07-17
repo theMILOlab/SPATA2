@@ -91,7 +91,7 @@ plotTrajectoryBarplot <- function(...){
 #' @keywords internal
 plotTrajectoryHeatmap <- function(...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   plotStsHeatmap(...)
 
@@ -103,7 +103,7 @@ plotTrajectoryHeatmap <- function(...){
 #' @keywords internal
 plotTrajectoryLineplot <- function(...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   plotStsLineplot(...)
 
@@ -118,7 +118,7 @@ plotTrajectoryLineplot <- function(...){
 #' @keywords internal
 relateToSpatialAnnotation <- function(object, input_df, ...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   getCoordsDfSA(object = object, coords_df = input_df, ...)
 
@@ -200,7 +200,7 @@ setImage <- function(object, image, of_sample = ""){
 #' @keywords internal
 setImageAnnotation <- function(object, img_ann, ...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   object <- setSpatialAnnotatoin(object, spat_ann = img_ann)
 
@@ -213,7 +213,7 @@ setImageAnnotation <- function(object, img_ann, ...){
 #' @export
 setImageAnnotations <- function(object, img_anns, ...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   object <- setSpatialAnnotations(object, spat_anns = img_anns)
 
@@ -284,7 +284,7 @@ transform_outline <- function(...){
 #' @keywords internal
 getTrajectoryObject <- function(...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   getSpatialTrajectory(...)
 

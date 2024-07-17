@@ -593,10 +593,16 @@ theme_void_custom <- function(){
 #'
 #' @return Updated S4 object.
 #' @keywords internal
-transfer_slot_content <- function(recipient,
-                                  donor,
+transfer_slot_content <- function(donor,
+                                  recipient = NULL,
                                   skip = character(0),
                                   verbose = TRUE){
+
+  if(base::is.null(recipient)){
+
+    recipient <- methods::new(Class = class(donor))
+
+  }
 
   snames_rec <- methods::slotNames(recipient)
   snames_don <- methods::slotNames(donor)

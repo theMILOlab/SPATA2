@@ -62,15 +62,25 @@ setMethod(
 getAssay <- function(object,
                      assay_name = activeAssay(object)){
 
+  if(assay_name == "transcriptomics"){
+
+    warning("transcripotmics is used as assay_name")
+    assay_name <- "gene"
+
+  }
+
   containsAssay(object, assay_name = assay_name, error = TRUE)
 
   object@assays[[assay_name]]
 
 }
 
-#' @title Obtain assay names
+#' @title Obtain assay names/modalites
 #'
-#' @description Retrieves the names of assays present in the provided object.
+#' @description Retrieves the names and modalities of assays present in the provided object.
+#'
+#' Since the name of an assay should be identical with its molecular modality both functions
+#' should return the same output. If they don't, something is wrong.
 #'
 #' @inherit argument_dummy params
 #'
@@ -78,6 +88,14 @@ getAssay <- function(object,
 #'
 #' @seealso [`getAssay()`]
 #'
+#' @export
+getAssayModalities <- function(object){
+
+  purrr::map(.x = object@assays, .f = ~ .x@modality)
+
+}
+
+#' @rdname getAssayModalities
 #' @export
 getAssayNames <- function(object){
 
@@ -626,7 +644,7 @@ getCnvResults <- function(object, ...){
 
   check_object(object)
 
-  ma <- getAssay(object, assay_name = "transcriptomics")
+  ma <- getAssay(object, assay_name = "gene")
 
   res_list <- ma@analysis$cnv
 
@@ -2228,7 +2246,7 @@ getGeneMetaData <- function(object, ...){
 
   deprecated(fn = TRUE, ...)
 
-  getAssay(object, assay_name = "transcriptomics")@meta_var
+  getAssay(object, assay_name = "gene")@meta_var
 
 }
 
@@ -2236,7 +2254,7 @@ getGeneMetaData <- function(object, ...){
 #' @export
 getGeneMetaDf <- function(object, ...){
 
-  getAssay(object, assay_name = "transcriptomics")@meta_var
+  getAssay(object, assay_name = "gene")@meta_var
 
 }
 
@@ -2272,7 +2290,6 @@ getGenePosDf <- function(object, keep = FALSE){
 
 }
 
-
 #' @rdname getMolecules
 #' @export
 getGenes <- function(object,
@@ -2282,10 +2299,14 @@ getGenes <- function(object,
 
   deprecated(...)
 
-  getMolecules(object, signatures = signatures, simplify = simplify, assay_name = "transcriptomics")
+  getMolecules(
+    object = object,
+    signatures = signatures,
+    simplify = simplify,
+    assay_name = "gene"
+    )
 
 }
-
 
 #' @title Obtain gene sets
 #'
@@ -2318,7 +2339,7 @@ getGeneSetDf <- function(object){
 #' @export
 getGeneSetList <- function(object){
 
-  getAssay(object, assay_name = "transcriptomics")@signatures
+  getAssay(object, assay_name = "gene")@signatures
 
 }
 

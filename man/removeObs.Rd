@@ -21,7 +21,8 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
-one assay: Denotes the assay of interest. Defaults to the active assay,
+one assay: Denotes the assay of interest (and thus the
+active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 }
 \value{

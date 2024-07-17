@@ -136,7 +136,7 @@ SpatialGradientScreening <-  setClass(Class = "SpatialGradientScreening",
 
 #' @title The \code{SpatialMethod} - Class
 #'
-#' @description Abstracts the concept of spatial biology experiments
+#' @description Abstracts the concept of spatial biology platforms
 #' such as \emph{Visium} or \emph{SlideSeq}.
 #'
 #' @slot capture_area list
@@ -144,7 +144,7 @@ SpatialGradientScreening <-  setClass(Class = "SpatialGradientScreening",
 #' This slot specifies the coordinates of the opposite corners of a rectangular area.
 #' The *x* element contains the x-coordinates and the *y* element contains the y-coordinates.
 #' These coordinates define the area within which data points are expected to be captured.
-#' Coordinates must be specified in SI units (meters). The first value in each vector represents
+#' Coordinates must be specified in SI units. The first value in each vector represents
 #' one corner of the rectangle, and the second value represents the diagonally opposite corner.
 #' @slot info list. List of miscellaneous meta data about the method.
 #' @slot method_specific list. List method specific data. Depending on the
@@ -208,9 +208,10 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
 #' @slot misc list. A flexible list for miscellaneous input.
 #' @slot name_img_active character. The name of the image that is currently active.
 #' @slot name_img_ref character. The name of the image that is used as a reference for aligning
-#' every additional image in slot @@images_registered.
+#' every additional image in slot @@images
 #' @slot outline list. List of two data.frames in which each row corresponds to
-#' a vertice of the polygon required to outline all \link[=concept_observations]{observations}.
+#' a vertice of the polygon required to outline all \link[=concept_observations]{observations}
+#' marking the edge of tissue sections.
 #'
 #' \itemize{
 #'  \item{*tissue_whole*:}{ Data.frame of two variables *x_orig* and *y_orig*.}
@@ -485,30 +486,30 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #' @description A class to represent molecular assay data, including analysis results, metrics, and
 #' statistical summaries. The `MolecularAssay` class encapsulates various components
 #' of assay data including raw and processed metrics, analytical results,
-#' and associated metadata like the assay name and omic type.
+#' and associated metadata like the assay name and molecular type.
 #'
-#' In further documentation the simpler term assay is used to refer to molecular
-#' assays.
+#' (In further documentation the shorter term assay is used to refer to molecular
+#' assays.)
 #'
 #' @slot active_mtr Character string indicating which matrix to extract and
 #' use by default.
 #' @slot analysis List of analysis results where each element can represent
 #' a different analysis aspect.
-#' @slot meta_var Data.frame of meta data for the molecules.
-#' @slot mtr_counts Matrix object storing raw counts metrics from the assay. Rownames
+#' @slot meta_var Data.frame of meta data for the variables of this assay - the molecules.
+#' @slot mtr_counts Matrix object storing raw counts from the assay. Rownames
 #' should corresponds to the molecule names. Colnames should correspond to the
 #' barcodes (IDs) of the observations to which the molecule counts were mapped.
-#' @slot mtr_proc List of processed metrics, potentially including normalized
-#' values or transformed data.
-#' @slot omic Character value. A string that best characterizes the type of molecular data
-#' the assay carries (e.g., "transcriptomics", "proteomics").
+#' @slot mtr_proc List of processed data matrices.
+#' @slot modality Character value. A string that best characterizes the type of molecular data
+#' the assay carries (e.g., "gene", "protein"). More on molecular modalities in SPATA2
+#' can be found \link[=concept_molecular_modalities]{here}.
 #' @slot signatures Named list of character vectors.
 #'
 #' Molecular signatures are sets of molecules (such as genes or proteins) that are
 #' associated with specific biological states, processes, or conditions. This slot stores the molecular
-#' signatures detected in the assay data. Each signature is represented as a vector in a named list, where
-#' the names corresponds to the signature the character values are the molecules
-#' of which the signature consists.
+#' signatures detected in the assay data. Each signature is represented as a vector of molecule names
+#' in a named list, where the names of the list slots correspond to the signature. Read more
+#' on molecular signatures \link[=concept_molecular_signature]{here}.
 #'
 #' @export
 
@@ -517,9 +518,9 @@ MolecularAssay <- setClass(Class = "MolecularAssay",
                              active_mtr = "character",
                              analysis = "list",
                              meta_var = "data.frame",
+                             modality = "character",
                              mtr_counts = "Matrix",
                              mtr_proc = "list",
-                             omic = "character",
                              signatures = "list"
                            ))
 
@@ -600,7 +601,7 @@ SDEGS <- methods::setClass(Class = "SDEGS",
 #' spatial method details, object information, sample identifiers, spatial data, and versioning details.
 #'
 #' @slot assays A named list of [`MolecularAssay`] objects containing molecular data. Names
-#' correspond to slot @@omic of the respective omic.
+#' correspond to slot @@modality of the respective \link[=concept_molecular_modalities]{molecular modality}.
 #' @slot compatibility A list for compatibility information and data.
 #' @slot data_add A list for additional data that has not yet a fixed slot in
 #' `SPATA2` architecture.
@@ -611,8 +612,7 @@ SDEGS <- methods::setClass(Class = "SDEGS",
 #' summary statistics, etc.
 #' @slot meta_sample A list providing additional information about the tissue and the tissue donor.
 #' @slot platform A character value. The name of the platform used (e.g. VisiumSmall, VisiumLarge, MERFISH, Xenium).
-#' Should be equal to the name of the [`SpatialMethod`] class of slot @@method in the [`SpatialData`] object
-#' in slot @@spatial of the `SPATA2` object.
+#' Should be equal to the name of the [`SpatialMethod`] class of slot @@method in the [`SpatialData`] object.
 #' @slot obj_info A list containing object information such as default instructions and
 #' directories.
 #' @slot sample A character value. The name of the sample and the `SPATA2` object.

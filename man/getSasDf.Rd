@@ -8,7 +8,7 @@ getSasDf(
   object,
   ids,
   distance = "dte",
-  resolution = recSasRes(object),
+  resolution = recSgsRes(object),
   core = FALSE,
   angle_span = c(0, 360),
   n_bins_angle = 1,

@@ -106,7 +106,6 @@ runBayesSpaceClustering <- function(object,
                                     verbose = NULL,
                                     ...){
 
-
   if(!"BayesSpace" %in% base::rownames(installed.packages())){
 
     install <- utils::askYesNo(msg = "BayesSpace is not installed. Do you want to install it?")
@@ -129,7 +128,7 @@ runBayesSpaceClustering <- function(object,
 
   hlpr_assign_arguments(object)
 
-  containsMethod(object, method_name = "Visium", error = TRUE)
+  containsMethod(object, method_name = c("VisiumSmall", "VisiumLarge"), error = TRUE)
 
   confuns::is_vec(x = burn.in, mode = "numeric", of.length = 2)
   confuns::is_vec(x = nrep, mode = "numeric", of.length = 2)
@@ -231,7 +230,7 @@ runBayesSpaceClustering <- function(object,
       verbose = verbose
     )
 
-    ma <- getAssay(object, assay_name = "transcriptomics")
+    ma <- getAssay(object, assay_name = "gene")
     ma@analysis$bayes_space <- list(logliks = logliks)
     object <- setAssay(object, assay = ma)
 
@@ -359,7 +358,7 @@ runCIN <- function(object,
   containsCNV(object, error = TRUE)
 
   object <-
-    activateAssay(object, assay_name = "transcriptomics", verbose = FALSE)
+    activateAssay(object, assay_name = "gene", verbose = FALSE)
 
   # SPATAwrappers -> Create.ref.bins()
 
@@ -721,7 +720,7 @@ runCNV <- function(object,
 
   hlpr_assign_arguments(object)
 
-  containsAssay(object, assay_name = "transcriptomics", error = TRUE)
+  containsModality(object, modality = "gene", error = TRUE)
 
   confuns::are_values(c("save_infercnv_object"), mode = "logical")
 
@@ -749,7 +748,7 @@ runCNV <- function(object,
   # 2. Data extraction ------------------------------------------------------
 
   # preparing object derived data
-  count_mtr <- getCountMatrix(object = object, assay_name = "transcriptomics")
+  count_mtr <- getCountMatrix(object = object, assay_name = "gene")
 
   obj_anno <-
     getMetaDf(object = object) %>%
@@ -770,13 +769,9 @@ runCNV <- function(object,
 
     confuns::give_feedback(msg = "Done.", verbose = verbose)
 
-  } else if(base::is.matrix(ref_mtr)){
-
-    ref_mtr <- ref_mtr
-
   } else {
 
-    base::stop("Input for argument 'ref_mtr' must either be a directory leading to an .RDS-file or a matrix.")
+    ref_mtr <- base::as.matrix(ref_mtr)
 
   }
 
@@ -1282,17 +1277,15 @@ runCnvAnalysis <- function(object, ...){
 
 # runD --------------------------------------------------------------------
 
-#' @title Find differently expressed genes
+#' @title Differential expression analysis (DEA)
 #'
-#' @description This function makes use of \code{Seurat::FindAllMarkers()} to compute
-#' the differently expressed genes across the groups of
+#' @description This function makes use of \code{Seurat::FindAllMarkers()} to identify
+#' the differently expressed variables across the groups of
 #' the grouping variable denoted in the argument \code{across}.
 #'
 #' See details for more.
 #'
 #' @inherit argument_dummy params
-#'
-#' @inherit check_sample params
 #' @inherit check_method params
 #' @param fc_name,base Given to corresponding arguments of \code{Seurat::FindAllMarkers()}.
 #' @param ... Additional arguments given to \code{Seurat::FindAllMarkers()}
@@ -1316,7 +1309,6 @@ runCnvAnalysis <- function(object, ...){
 #' @export
 #'
 #' @inherit plotDeaDotPlot examples
-#'
 
 runDEA <- function(object,
                    across,
@@ -1333,23 +1325,21 @@ runDEA <- function(object,
   valid_across <- check_features(object, features = across, valid_classes = "factor")
 
   # prepare seurat object
-  seurat_object <- Seurat::CreateSeuratObject(counts = getCountMatrix(object, assay_name = assay_name))
-
-  seurat_object <- Seurat::NormalizeData(object = seurat_object)
-
-  seurat_object <- Seurat::ScaleData(object = seurat_object)
+  seurat_object <-
+    Seurat::CreateSeuratObject(counts = getCountMatrix(object, assay_name = assay_name)) %>%
+    Seurat::NormalizeData(object = .) %>%
+    Seurat::ScaleData(object = seurat_object)
 
   seurat_object@meta.data <-
     getMetaDf(object) %>%
     tibble::column_to_rownames(var = "barcodes") %>%
     base::as.data.frame()
 
-
   for(across in valid_across){
 
     for(method in method_de){
 
-      if(base::isTRUE(verbose)){base::message(glue::glue("Calculating differently expressed genes across '{across}' with method '{method}'."))}
+      if(base::isTRUE(verbose)){base::message(glue::glue("Running DEA across '{across}' with method '{method}'."))}
 
       object <-
         base::tryCatch({
@@ -1367,13 +1357,9 @@ runDEA <- function(object,
 
           n_groups <- dplyr::n_distinct(groups)
 
-          if(n_groups >= 20){
+          if(n_groups < 2){
 
-            base::stop(glue::glue("The number of different groups is to high for DE-analysis. Is currently {n_groups}. Must be lower than 20. "))
-
-          } else if(n_groups < 2){
-
-            base::stop(glue::glue("There is only one unique group in the object's '{across}'-variable. runDeAnalysis() needs a minimum of two different groups."))
+            base::stop(glue::glue("There is only one unique group in the object's '{across}'-variable. runDEA() needs a minimum of two different groups."))
 
           } else {
 
@@ -1444,7 +1430,7 @@ runDeAnalysis <- function(...){
 #' @title Compute gene set enrichment
 #'
 #' @description Computes gene set enrichment based on the results of
-#' \code{runDeAnalysis()}. See details for more.
+#' [`runDEA()`]. See details for more.
 #'
 #' @param across Character vector. All grouping variables of interest.
 #' @param methods_de Character vector. All differential expression methods

@@ -933,161 +933,150 @@ setMethod(
 #' @seealso [`identifyTissueOutline()`], [`mergeTissueSections()`]
 #'
 #' @export
-setGeneric(name = "identifySpatialOutliers", def = function(object, ...){
 
-  standardGeneric(f = "identifySpatialOutliers")
+identifySpatialOutliers <- function(object,
+                                    method = "obs",
+                                    img_name = activeImage(object),
+                                    buffer = 0,
+                                    eps = recDbscanEps(object),
+                                    minPts = recDbscanMinPts(object),
+                                    min_section = nBarcodes(object)*0.05,
+                                    test = "any",
+                                    verbose = NULL){
 
-})
+  hlpr_assign_arguments(object)
 
-#' @rdname identifySpatialOutliers
-#' @export
-setMethod(
-  f = "identifySpatialOutliers",
-  signature = "SPATA2",
-  definition = function(object,
-                        method = "obs",
-                        img_name = activeImage(object),
-                        buffer = 0,
-                        eps = recDbscanEps(object),
-                        minPts = recDbscanMinPts(object),
-                        min_section = nBarcodes(object)*0.05,
-                        test = "any",
-                        verbose = NULL){
+  confuns::give_feedback(
+    msg = "Identifying spatial outliers.",
+    verbose = verbose
+  )
 
-    hlpr_assign_arguments(object)
+  confuns::check_one_of(
+    input = method,
+    against = c("obs", "image")
+  )
 
-    confuns::give_feedback(
-      msg = "Identifying spatial outliers.",
-      verbose = verbose
-    )
+  confuns::check_one_of(
+    input = test,
+    against = c("all", "any")
+  )
 
-    confuns::check_one_of(
-      input = method,
-      against = c("obs", "image")
-    )
+  # overwrite active image temporarily
+  active_image <- activeImage(object)
+  object <- activateImageInt(object, img_name = img_name)
 
-    confuns::check_one_of(
-      input = test,
-      against = c("all", "any")
-    )
+  meta_df <- getMetaDf(object)
 
-    # overwrite active image temporarily
-    active_image <- activeImage(object)
-    object <- activateImageInt(object, img_name = img_name)
+  if("obs" %in% method){
 
-    meta_df <- getMetaDf(object)
+    if(!"tissue_section" %in% base::colnames(meta_df)){
 
-    if("obs" %in% method){
-
-      if(!"tissue_section" %in% base::colnames(meta_df)){
-
-        stop("Need output of `identifyTissueSection(object, method = 'obs').`")
-
-      }
-
-      meta_df$outlier_obs <- meta_df$tissue_section == "tissue_section_0"
+      stop("Need output of `identifyTissueSection(object, method = 'obs').`")
 
     }
 
-    if("image" %in% method){
-
-      containsTissueOutline(object, img_name = img_name, error = TRUE)
-
-      outline_df <-
-        getTissueOutlineDf(
-          object = object,
-          img_name = img_name,
-          method = "image",
-          by_section = TRUE
-        )
-
-      # declare all obs as artefacts
-      coords_df <- getCoordsDf(object)
-      coords_df[["section_outline"]] <- "artefact"
-
-      # then set actual section name
-      for(section in base::unique(outline_df$section)){
-
-        section_df <-
-          dplyr::filter(outline_df, section == {{section}})
-
-        if(buffer != 0){
-
-          section_df <-
-            dplyr::select(section_df, x,y) %>%
-            buffer_area(buffer = buffer)
-
-        }
-
-        ob_in_section <-
-          identify_obs_in_polygon(
-            coords_df = coords_df,
-            polygon_df = section_df,
-            strictly = FALSE # may lie on edge of outline -> allow
-          ) %>%
-          dplyr::pull(barcodes)
-
-        coords_df[coords_df[["barcodes"]] %in% ob_in_section, "section_outline"] <- section
-
-      }
-
-      # make sure is NULL
-      meta_df$section_outline <- NULL
-
-      meta_df <-
-        dplyr::left_join(x = meta_df, y = coords_df, by = "barcodes") %>%
-        dplyr::mutate(outlier_image = section_outline == "artefact")
-
-    }
-
-    if(base::all(c("obs", "image") %in% method)){
-
-      if(test == "any"){
-
-        meta_df <-
-          dplyr::mutate(
-            .data = meta_df,
-            sp_outlier = outlier_obs | outlier_image
-          )
-
-      } else if(test == "all") {
-
-        meta_df <-
-          dplyr::mutate(
-            .data = meta_df,
-            sp_outlier = outlier_obs & outlier_image
-          )
-
-      }
-
-    } else if(method == "obs"){
-
-      meta_df$sp_outlier <- meta_df$outlier_obs
-
-    } else if(method == "image"){
-
-      meta_df$sp_outlier <- meta_df$outlier_image
-
-    }
-
-    n_outliers <- base::sum(meta_df$sp_outlier)
-
-    confuns::give_feedback(
-      msg = glue::glue("Spatial outliers: {n_outliers}"),
-      verbose = verbose
-    )
-
-    object <- addFeatures(object, feature_df = meta_df, feature_names = "sp_outlier", overwrite = TRUE)
-
-    # restore original active image
-    object <- activateImageInt(object, img_name = active_image)
-
-    return(object)
-
-    returnSpataObject(object)
+    meta_df$outlier_obs <- meta_df$tissue_section == "tissue_section_0"
 
   }
-)
+
+  if("image" %in% method){
+
+    containsTissueOutline(object, img_name = img_name, error = TRUE)
+
+    outline_df <-
+      getTissueOutlineDf(
+        object = object,
+        img_name = img_name,
+        method = "image",
+        by_section = TRUE
+      )
+
+    # declare all obs as artefacts
+    coords_df <- getCoordsDf(object)
+    coords_df[["section_outline"]] <- "artefact"
+
+    # then set actual section name
+    for(section in base::unique(outline_df$section)){
+
+      section_df <-
+        dplyr::filter(outline_df, section == {{section}})
+
+      if(buffer != 0){
+
+        section_df <-
+          dplyr::select(section_df, x,y) %>%
+          buffer_area(buffer = buffer)
+
+      }
+
+      ob_in_section <-
+        identify_obs_in_polygon(
+          coords_df = coords_df,
+          polygon_df = section_df,
+          strictly = FALSE # may lie on edge of outline -> allow
+        ) %>%
+        dplyr::pull(barcodes)
+
+      coords_df[coords_df[["barcodes"]] %in% ob_in_section, "section_outline"] <- section
+
+    }
+
+    # make sure is NULL
+    meta_df$section_outline <- NULL
+
+    meta_df <-
+      dplyr::left_join(x = meta_df, y = coords_df, by = "barcodes") %>%
+      dplyr::mutate(outlier_image = section_outline == "artefact")
+
+  }
+
+  if(base::all(c("obs", "image") %in% method)){
+
+    if(test == "any"){
+
+      meta_df <-
+        dplyr::mutate(
+          .data = meta_df,
+          sp_outlier = outlier_obs | outlier_image
+        )
+
+    } else if(test == "all") {
+
+      meta_df <-
+        dplyr::mutate(
+          .data = meta_df,
+          sp_outlier = outlier_obs & outlier_image
+        )
+
+    }
+
+  } else if(method == "obs"){
+
+    meta_df$sp_outlier <- meta_df$outlier_obs
+
+  } else if(method == "image"){
+
+    meta_df$sp_outlier <- meta_df$outlier_image
+
+  }
+
+  n_outliers <- base::sum(meta_df$sp_outlier)
+
+  confuns::give_feedback(
+    msg = glue::glue("Spatial outliers: {n_outliers}"),
+    verbose = verbose
+  )
+
+  object <- addFeatures(object, feature_df = meta_df, feature_names = "sp_outlier", overwrite = TRUE)
+
+  # restore original active image
+  object <- activateImageInt(object, img_name = active_image)
+
+  return(object)
+
+  returnSpataObject(object)
+
+}
 
 
 #' @title Identify tissue outline

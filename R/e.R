@@ -88,7 +88,7 @@ estimate_r2_for_sas_run <- function(object,
   object <-
     createMolecularAssay(
       object = object,
-      omic = "simR2",
+      modality = "simR2",
       active_mtr = "sim",
       mtr_proc = list(sim = sim_mtr),
       activate = TRUE,
@@ -265,7 +265,7 @@ estimate_r2_for_sts_run <- function(object,
   object <-
     createMolecularAssay(
       object = object,
-      omic = "simR2",
+      modality = "simR2",
       active_mtr = "sim",
       mtr_proc = list(sim = sim_mtr),
       activate = TRUE,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/r.R
 \name{renameSpataObject}
 \alias{renameSpataObject}
-\title{Rename the object}
+\title{Rename SPATA2 object}
 \usage{
 renameSpataObject(object, sample_name)
 }

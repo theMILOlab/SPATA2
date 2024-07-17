@@ -73,7 +73,7 @@
 #'   }
 #'
 #' @docType data
-#' @usage data(gsdf)
+#' @usage data(signatures)
 #'
 "signatures"
 

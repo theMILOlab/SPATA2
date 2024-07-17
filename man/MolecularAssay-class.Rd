@@ -9,10 +9,10 @@
 A class to represent molecular assay data, including analysis results, metrics, and
 statistical summaries. The \code{MolecularAssay} class encapsulates various components
 of assay data including raw and processed metrics, analytical results,
-and associated metadata like the assay name and omic type.
+and associated metadata like the assay name and molecular type.
 
-In further documentation the simpler term assay is used to refer to molecular
-assays.
+(In further documentation the shorter term assay is used to refer to molecular
+assays.)
 }
 \section{Slots}{
 
@@ -23,24 +23,24 @@ use by default.}
 \item{\code{analysis}}{List of analysis results where each element can represent
 a different analysis aspect.}
 
-\item{\code{meta_var}}{Data.frame of meta data for the molecules.}
+\item{\code{meta_var}}{Data.frame of meta data for the variables of this assay - the molecules.}
 
-\item{\code{mtr_counts}}{Matrix object storing raw counts metrics from the assay. Rownames
+\item{\code{mtr_counts}}{Matrix object storing raw counts from the assay. Rownames
 should corresponds to the molecule names. Colnames should correspond to the
 barcodes (IDs) of the observations to which the molecule counts were mapped.}
 
-\item{\code{mtr_proc}}{List of processed metrics, potentially including normalized
-values or transformed data.}
+\item{\code{mtr_proc}}{List of processed data matrices.}
 
-\item{\code{omic}}{Character value. A string that best characterizes the type of molecular data
-the assay carries (e.g., "transcriptomics", "proteomics").}
+\item{\code{modality}}{Character value. A string that best characterizes the type of molecular data
+the assay carries (e.g., "gene", "protein"). More on molecular modalities in SPATA2
+can be found \link[=concept_molecular_modalities]{here}.}
 
 \item{\code{signatures}}{Named list of character vectors.
 
 Molecular signatures are sets of molecules (such as genes or proteins) that are
 associated with specific biological states, processes, or conditions. This slot stores the molecular
-signatures detected in the assay data. Each signature is represented as a vector in a named list, where
-the names corresponds to the signature the character values are the molecules
-of which the signature consists.}
+signatures detected in the assay data. Each signature is represented as a vector of molecule names
+in a named list, where the names of the list slots correspond to the signature. Read more
+on molecular signatures \link[=concept_molecular_signature]{here}.}
 }}
 

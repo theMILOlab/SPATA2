@@ -2,14 +2,11 @@
 % Please edit documentation in R/u.R
 \name{updateS4}
 \alias{updateS4}
-\alias{updateS4,ImageAnnotation-method}
 \alias{updateS4,SpatialMethod-method}
 \alias{updateS4,spata2-method}
 \title{Update S4 objects}
 \usage{
 updateS4(object, ...)
-
-\S4method{updateS4}{ImageAnnotation}(object)
 
 \S4method{updateS4}{SpatialMethod}(object, method_name)
 

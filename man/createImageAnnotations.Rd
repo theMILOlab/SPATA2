@@ -30,12 +30,7 @@ data("example_data")
 
 object <- example_data$object_UKF275T_diet
 
-if(FALSE){ # diffuse
-
- object <- createImageAnnotations(object)
-
-}
-
+object <- createImageAnnotations(object)
 
 }
 \seealso{

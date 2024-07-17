@@ -71,7 +71,8 @@ grow the \code{SPATA2} object's size quickly!}
 \item{quiet}{Use true to suppress logs and warnings}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
-one assay: Denotes the assay of interest. Defaults to the active assay,
+one assay: Denotes the assay of interest (and thus the
+active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
@@ -90,7 +91,7 @@ The updated input object, containing the added, removed or computed results.
 }
 \description{
 Computes gene set enrichment based on the results of
-\code{runDeAnalysis()}. See details for more.
+\code{\link[=runDEA]{runDEA()}}. See details for more.
 }
 \details{
 Computes gene set enrichment analysis using \code{hypeR::hypeR()}.

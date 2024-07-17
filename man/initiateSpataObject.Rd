@@ -7,7 +7,7 @@
 initiateSpataObject(
   sample_name,
   count_mtr,
-  omic,
+  modality,
   coords_df,
   img = NULL,
   img_dir = NULL,
@@ -24,9 +24,10 @@ initiateSpataObject(
 \item{count_mtr}{A count matrix. Column names correspond to the barcodes of the \link[=concept_observations]{observations}.
 Rownames correspond to the names of the molecular features (genes, proteins, metabolites etc.).}
 
-\item{omic}{Character value. Should best describe the molecular type of the count matrix.
-E.g. \emph{'transcriptomics'}, \emph{'proteomics'}, \emph{'metabolomics'}. Additionally, defines the
-\link[=MolecularAssay]{assay} name, that is created with the count matrix.}
+\item{modality}{Character value. Should best describe the molecular type of the count matrix.
+Additionally, it defines the \link[=MolecularAssay]{assay} name, that is created with the count matrix and further
+referred to via the argument \code{assay_name}. Read more on molecular modalities in
+SPATA2 \link[=concept_molecular_modalities]{here}.}
 
 \item{coords_df}{Data.frame with a variable called \emph{barcodes} as well as the
 \emph{x_orig} and \emph{y_orig} or \emph{x} and \emph{y}.}
@@ -71,7 +72,7 @@ data.frame and a count matrix.
 \code{SPATA2} allows to register multiple images with one object via file directories.
 This facilitates exchanging them during the analysis while they must not
 be loaded altogether in a \code{SPATA2} object, which saves storage space. By default,
-\code{SPATA2} takes a directory to the image you want to initiate your \code{SPATA2} object with,
+the function takes a directory to the image you want to initiate your \code{SPATA2} object with,
 then loads the image and saves the directory, too. If the image does not
 exist in a file on your device but only in the global environment you can
 use \code{img} directly. This way, no image directory is stored. In a scenario,

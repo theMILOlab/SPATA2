@@ -19,7 +19,7 @@
 #' @keywords internal
 setAssay <- function(object, assay){
 
-  object@assays[[assay@omic]] <- assay
+  object@assays[[assay@modality]] <- assay
 
   returnSpataObject(object)
 

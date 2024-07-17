@@ -745,17 +745,9 @@ computeMetaFeatures <- function(object,
 
   count_mtr <- getCountMatrix(object, assay_name = assay_name)
 
-  mname <- molecule_names[[assay_name]]
-
-  if(base::is.null(mname)){
-
-    mname <- assay_name
-
-  }
-
-  name1 <- stringr::str_c("n_counts_", mname)
-  name2 <- stringr::str_c("n_distinct_", mname)
-  name3 <- stringr::str_c("avg_cpm_", mname)
+  name1 <- stringr::str_c("n_counts_", assay_name)
+  name2 <- stringr::str_c("n_distinct_", assay_name)
+  name3 <- stringr::str_c("avg_cpm_", assay_name)
 
   confuns::check_none_of(
     input = c(name1, name2),

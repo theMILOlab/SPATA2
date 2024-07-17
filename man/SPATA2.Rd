@@ -15,7 +15,7 @@ spatial method details, object information, sample identifiers, spatial data, an
 
 \describe{
 \item{\code{assays}}{A named list of \code{\link{MolecularAssay}} objects containing molecular data. Names
-correspond to slot @omic of the respective omic.}
+correspond to slot @modality of the respective \link[=concept_molecular_modalities]{molecular modality}.}
 
 \item{\code{compatibility}}{A list for compatibility information and data.}
 
@@ -33,8 +33,7 @@ summary statistics, etc.}
 \item{\code{meta_sample}}{A list providing additional information about the tissue and the tissue donor.}
 
 \item{\code{platform}}{A character value. The name of the platform used (e.g. VisiumSmall, VisiumLarge, MERFISH, Xenium).
-Should be equal to the name of the \code{\link{SpatialMethod}} class of slot @method in the \code{\link{SpatialData}} object
-in slot @spatial of the \code{SPATA2} object.}
+Should be equal to the name of the \code{\link{SpatialMethod}} class of slot @method in the \code{\link{SpatialData}} object.}
 
 \item{\code{obj_info}}{A list containing object information such as default instructions and
 directories.}

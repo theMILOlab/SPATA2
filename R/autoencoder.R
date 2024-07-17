@@ -622,6 +622,7 @@ getAutoencoderSetUp <- function(object, mtr_name, of_sample = NA){
 #' @param assessment_list Named list with slots \code{$df} and \code{$set_up}.
 #'
 #' @return A spata-object.
+#' @keywords internal
 
 setAutoencoderAssessment <- function(object, assessment_list, of_sample = ""){
 

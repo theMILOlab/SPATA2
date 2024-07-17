@@ -5,10 +5,10 @@
 \alias{signatures}
 \title{The default collection of frequently used signatures}
 \format{
-An object of class \code{list} of length 1.
+An object of class \code{list} of length 3.
 }
 \usage{
-data(gsdf)
+data(signatures)
 }
 \description{
 Number of different gene-sets: 11654

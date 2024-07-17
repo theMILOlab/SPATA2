@@ -8,7 +8,7 @@
 #' @keywords internal
 addImageAnnotation <- function(object, ...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   addSpatialAnnotation(object, ...)
 
@@ -127,7 +127,7 @@ getBarcodeSpotDistance <- function(...){
 #' @keywords internal
 getDefaultGrouping <- function(object, ...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   activeGrouping(object, ...)
 
@@ -141,7 +141,7 @@ getDefaultGrouping <- function(object, ...){
 getExpressionMatrix <- function(object,
                                 ...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   getProcessedMatrix(object = object, ...)
 
@@ -396,7 +396,7 @@ ggpLayerEncirclingGroups <- function(...){
 #' @keywords internal
 ggpLayerEncirclingSAS <- function(...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   ggpLayerExprEstimatesSAS(...)
 
@@ -500,7 +500,7 @@ getSmrdResultsDf <-  function(ias, ...){
 #' @keywords internal
 getTrajectory <- function(object, id, ...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   getSpatialTrajectory(object = object, id = id)
 
@@ -514,7 +514,7 @@ getTrajectory <- function(object, id, ...){
 #' @export
 getTrajectoryDf <- function(...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   getStsDf(...)
 
@@ -528,7 +528,7 @@ getTrajectoryDf <- function(...){
 #' @export
 getTrajectoryIds <- function(...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
   getSpatialTrajectoryIds(...)
 

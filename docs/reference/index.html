@@ -211,7 +211,7 @@
       </tr><tr><td>
           <p><code><a href="renameSpataObject.html">renameSpataObject()</a></code> </p>
         </td>
-        <td><p>Rename the object</p></td>
+        <td><p>Rename SPATA2 object</p></td>
       </tr><tr><td>
           <p><code><a href="splitSpataObject.html">splitSpataObject()</a></code> </p>
         </td>
@@ -243,7 +243,11 @@
       </tr><tr><td>
           <p><code><a href="addSpatialAnnotation.html">addSpatialAnnotation()</a></code> </p>
         </td>
-        <td><p>Add an spatial annotation manually</p></td>
+        <td><p>Create and add a spatial annotation manually</p></td>
+      </tr><tr><td>
+          <p><code><a href="addSpatialTrajectory.html">addSpatialTrajectory()</a></code> </p>
+        </td>
+        <td><p>Create and add a spatial trajectory</p></td>
       </tr><tr><td>
           <p><code><a href="add_dbscan_variable.html">add_dbscan_variable()</a></code> <code><a href="add_dbscan_variable.html">add_tissue_section_variable()</a></code> </p>
         </td>
@@ -256,10 +260,6 @@
           <p><code><a href="add_grid_variable.html">add_grid_variable()</a></code> </p>
         </td>
         <td><p>Add grid variable to coordinate data.rame</p></td>
-      </tr><tr><td>
-          <p><code><a href="createSpatialTrajectories.html">addSpatialTrajectory()</a></code> <code><a href="createSpatialTrajectories.html">createSpatialTrajectories()</a></code> </p>
-        </td>
-        <td><p>Create and add spatial trajectories</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h3 id="create-content">Create Content <a href="#create-content" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p>
@@ -271,7 +271,7 @@
       </tr><tr><td>
           <p><code><a href="createMolecularAssay.html">createMolecularAssay()</a></code> </p>
         </td>
-        <td><p>Create an object of class <code><a href="https://rdrr.io/pkg/SPATA2/man/MolecularAssay-class.html" class="external-link">MolecularAssay</a></code></p></td>
+        <td><p>Create and add an object of class MolecularAssay</p></td>
       </tr><tr><td>
           <p><code><a href="createSpatialData.html">createSpatialData()</a></code> <code><a href="createSpatialData.html">createSpatialDataMERFISH()</a></code> <code><a href="createSpatialData.html">createSpatialDataSlideSeqV1()</a></code> <code><a href="createSpatialData.html">createSpatialDataVisium()</a></code> <code><a href="createSpatialData.html">createSpatialDataXenium()</a></code> </p>
         </td>
@@ -285,9 +285,9 @@
         </td>
         <td><p>Interactive sample segmentation</p></td>
       </tr><tr><td>
-          <p><code><a href="createSpatialTrajectories.html">addSpatialTrajectory()</a></code> <code><a href="createSpatialTrajectories.html">createSpatialTrajectories()</a></code> </p>
+          <p><code><a href="createSpatialTrajectories.html">createSpatialTrajectories()</a></code> </p>
         </td>
-        <td><p>Create and add spatial trajectories</p></td>
+        <td><p>Create and add spatial trajectories interactively</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h3 id="process-content">Process Content <a href="#process-content" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p>
@@ -315,7 +315,7 @@
       </tr><tr><td>
           <p><code><a href="renameSpataObject.html">renameSpataObject()</a></code> </p>
         </td>
-        <td><p>Rename the object</p></td>
+        <td><p>Rename SPATA2 object</p></td>
       </tr><tr><td>
           <p><code><a href="renameSpatialAnnotation.html">renameSpatialAnnotation()</a></code> </p>
         </td>
@@ -329,10 +329,6 @@
           <p class="section-desc"></p><p>The set-functions let you set the content of specific slots.</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="setAutoencoderAssessment.html">setAutoencoderAssessment()</a></code> </p>
-        </td>
-        <td><p>Set results of autoencoder assessment</p></td>
-      </tr><tr><td>
           <p><code><a href="setDefault.html">setDefault()</a></code> </p>
         </td>
         <td><p>Set object specific default</p></td>
@@ -384,6 +380,10 @@
           <p><code><a href="containsMethod.html">containsMethod()</a></code> </p>
         </td>
         <td><p>Check availability of specific methods</p></td>
+      </tr><tr><td>
+          <p><code><a href="containsModality.html">containsModality()</a></code> </p>
+        </td>
+        <td><p>Check availability of molecular modality</p></td>
       </tr><tr><td>
           <p><code><a href="containsPixelContent.html">containsPixelContent()</a></code> </p>
         </td>
@@ -437,7 +437,7 @@
         </td>
         <td><p>A data.frame necessary for cnv-analysis. Contains information about the gene positions on chromosomes. Contains the following variables:</p></td>
       </tr><tr><td>
-          <p><code><a href="signatures.html">gsdf</a></code> </p>
+          <p><code><a href="signatures.html">signatures</a></code> </p>
         </td>
         <td><p>The default collection of frequently used signatures</p></td>
       </tr><tr><td>
@@ -525,9 +525,9 @@
         </td>
         <td><p>Obtain molecular assay</p></td>
       </tr><tr><td>
-          <p><code><a href="getAssayNames.html">getAssayNames()</a></code> </p>
+          <p><code><a href="getAssayModalities.html">getAssayModalities()</a></code> <code><a href="getAssayModalities.html">getAssayNames()</a></code> </p>
         </td>
-        <td><p>Obtain assay names</p></td>
+        <td><p>Obtain assay names/modalites</p></td>
       </tr><tr><td>
           <p><code><a href="getCountMatrix.html">getCountMatrix()</a></code> </p>
         </td>
@@ -549,11 +549,15 @@
         </td>
         <td><p>Obtain names of processed matrices</p></td>
       </tr><tr><td>
+          <p><code><a href="getModality.html">getModality()</a></code> </p>
+        </td>
+        <td><p>Obatin molecular modality</p></td>
+      </tr><tr><td>
           <p><code><a href="getMoleculeTypeList.html">getMoleculeTypeList()</a></code> </p>
         </td>
         <td><p>Obtain a list of molecules</p></td>
       </tr><tr><td>
-          <p><code><a href="getMolecules.html">getGenes()</a></code> <code><a href="getMolecules.html">getGenesInteractive()</a></code> <code><a href="getMolecules.html">getMolecules()</a></code> </p>
+          <p><code><a href="getMolecules.html">getGenes()</a></code> <code><a href="getMolecules.html">getGenesInteractive()</a></code> <code><a href="getMolecules.html">getMetabolites()</a></code> <code><a href="getMolecules.html">getMolecules()</a></code> <code><a href="getMolecules.html">getProteins()</a></code> </p>
         </td>
         <td><p>Obtain molecule names</p></td>
       </tr><tr><td>
@@ -669,7 +673,7 @@
         </td>
         <td><p>Obtain gene set names</p></td>
       </tr><tr><td>
-          <p><code><a href="getMolecules.html">getGenes()</a></code> <code><a href="getMolecules.html">getGenesInteractive()</a></code> <code><a href="getMolecules.html">getMolecules()</a></code> </p>
+          <p><code><a href="getMolecules.html">getGenes()</a></code> <code><a href="getMolecules.html">getGenesInteractive()</a></code> <code><a href="getMolecules.html">getMetabolites()</a></code> <code><a href="getMolecules.html">getMolecules()</a></code> <code><a href="getMolecules.html">getProteins()</a></code> </p>
         </td>
         <td><p>Obtain molecule names</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
@@ -983,7 +987,7 @@
       </tr></tbody><tbody><tr><td>
           <p><code><a href="addSpatialAnnotation.html">addSpatialAnnotation()</a></code> </p>
         </td>
-        <td><p>Add an spatial annotation manually</p></td>
+        <td><p>Create and add a spatial annotation manually</p></td>
       </tr><tr><td>
           <p><code><a href="barcodesToSpatialAnnotation.html">barcodesToSpatialAnnotation()</a></code> </p>
         </td>
@@ -1147,7 +1151,7 @@
       </tr><tr><td>
           <p><code><a href="runDEA.html">runDEA()</a></code> <code><a href="runDEA.html">runDeAnalysis()</a></code> </p>
         </td>
-        <td><p>Find differently expressed genes</p></td>
+        <td><p>Differential expression analysis (DEA)</p></td>
       </tr><tr><td>
           <p><code><a href="runGSEA.html">runGSEA()</a></code> </p>
         </td>

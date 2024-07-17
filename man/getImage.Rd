@@ -5,7 +5,7 @@
 \alias{getImage,SPATA2-method}
 \alias{getImage,SpatialData-method}
 \alias{getImage,HistoImage-method}
-\title{Obtain object of class \code{Image}}
+\title{Obtain image}
 \usage{
 getImage(object, ...)
 

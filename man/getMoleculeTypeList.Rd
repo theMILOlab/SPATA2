@@ -17,8 +17,7 @@ By default, all molecules are included.}
 A list containing the names of molecules categorized by type.
 }
 \description{
-Retrieves a list of molecules sorted by molecular type as
-present in the given object.
+Retrieves a list of molecules sorted by \link[=concept_molecular_modality]{molecular modality}.
 }
 \details{
 This function categorizes molecules into different types based on the provided object.
@@ -32,4 +31,7 @@ mol_types <- getMolTypeList(object)
 # Get molecular type list for specific molecules
 mol_types <- getMolTypeList(object, molecules = c("mol1", "mol2"))
 
+}
+\seealso{
+\code{\link[=getAssayModalities]{getAssayModalities()}}
 }

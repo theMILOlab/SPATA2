@@ -6,7 +6,7 @@
 \alias{SpatialMethod}
 \title{The \code{SpatialMethod} - Class}
 \description{
-Abstracts the concept of spatial biology experiments
+Abstracts the concept of spatial biology platforms
 such as \emph{Visium} or \emph{SlideSeq}.
 }
 \section{Slots}{
@@ -17,7 +17,7 @@ A list of length two, with elements named \emph{x} and \emph{y}. Each element is
 This slot specifies the coordinates of the opposite corners of a rectangular area.
 The \emph{x} element contains the x-coordinates and the \emph{y} element contains the y-coordinates.
 These coordinates define the area within which data points are expected to be captured.
-Coordinates must be specified in SI units (meters). The first value in each vector represents
+Coordinates must be specified in SI units. The first value in each vector represents
 one corner of the rectangle, and the second value represents the diagonally opposite corner.}
 
 \item{\code{info}}{list. List of miscellaneous meta data about the method.}
