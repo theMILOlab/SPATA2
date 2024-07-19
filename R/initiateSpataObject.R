@@ -338,7 +338,8 @@ initiateSpataObjectMERFISH <- function(sample_name,
         readr::read_csv(file = file_counts, col_types = "c", show_col_types = FALSE)
 
       }) %>%
-      dplyr::rename(barcodes = cell) %>% # keep original barcode names for metadata
+        dplyr::rename(cell = ifelse("...1" %in% colnames(.), "...1", "cell")) %>% # in case cell column is not named
+      dplyr::rename(barcodes = cell) %>% # keep original barcode names in metadata 
       dplyr::select(-dplyr::matches("^\\.")) %>%
       tibble::column_to_rownames("barcodes") %>%
       dplyr::select_if(.predicate = base::is.numeric) %>%

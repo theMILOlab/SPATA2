@@ -1208,8 +1208,6 @@ setMethod(
       identifyTissueOutline(
         object = sp_data,
         method = method,
-        minPts = minPts,
-        eps = eps,
         img_name = img_name,
         concavity = concavity,
         verbose = verbose

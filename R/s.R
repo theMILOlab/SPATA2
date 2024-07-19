@@ -828,7 +828,7 @@ simulate_complete_coords_sa <- function(object, id, distance){
       })
 
     tot_dist <-
-      as_pixel(distance, object = object, add_attr = F) %>%
+      as_pixel(distance, object = object, add_attr = FALSE) %>%
       ceiling()
 
     ccd <- getCCD(object, unit = "px")
