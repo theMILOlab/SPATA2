@@ -1198,7 +1198,8 @@ setMethod(
                         eps = recDbscanEps(object),
                         img_name = activeImage(object),
                         concavity = 2,
-                        verbose = NULL){
+                        verbose = NULL,
+                        ...){
 
     hlpr_assign_arguments(object)
 
@@ -1208,6 +1209,8 @@ setMethod(
       identifyTissueOutline(
         object = sp_data,
         method = method,
+        minPts = minPts,
+        eps = eps,
         img_name = img_name,
         concavity = concavity,
         verbose = verbose
@@ -1244,7 +1247,8 @@ setMethod(
                         eps = recDbscanEps(object),
                         minPts = recDbscanMinPts(object),
                         concavity = 2,
-                        verbose = TRUE){
+                        verbose = TRUE,
+                        ...){
 
     confuns::check_one_of(
       input = method,
