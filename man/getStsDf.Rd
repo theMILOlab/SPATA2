@@ -50,6 +50,9 @@ from the analysis.}
 is organized such that a column called \emph{variables} contains the variable names
 and a column called \emph{'values'} contains the values.}
 
+\item{control}{A list of arguments as taken from \code{\link[stats:loess.control]{stats::loess.control()}}.
+Default setting is stored in \code{SPATA2::sgs_loess_control}.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

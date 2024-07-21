@@ -7,7 +7,8 @@
 getSignatureTypeList(object, signatures = NULL)
 }
 \arguments{
-\item{object}{An object containing signature data.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{signatures}{A character vector specifying the subset of signatures to include in the output (default: NULL).}
 }

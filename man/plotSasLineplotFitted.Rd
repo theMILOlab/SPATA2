@@ -32,11 +32,6 @@ plotSasLineplotFitted(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value specifying the ID of the spatial annotation of interest.
-If there is only one spatial annotation in the object, the function
-will default to using it. However, if there are multiple annotations,
-this argument must be explicitly specified to identify the target annotation.}
-
 \item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
 of interest.}
 

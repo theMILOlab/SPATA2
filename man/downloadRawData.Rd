@@ -45,3 +45,4 @@ Downloads raw Visium10X output of samples as a .zip folder.
 \note{
 Imported from the package \code{SPATAData}.
 }
+\keyword{internal}

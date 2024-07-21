@@ -18,6 +18,7 @@ removeMolecules(
   molecules,
   show_warnings = FALSE,
   ref = "molecule",
+  assay_name = activeAssay(object),
   verbose = NULL
 )
 }
@@ -35,6 +36,11 @@ are suppressed.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest and thus the
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
 }
 \value{
 The updated input object, containing the added, removed or computed results.

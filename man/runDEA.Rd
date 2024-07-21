@@ -36,8 +36,8 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
-one assay: Denotes the assay of interest (and thus the
-active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
+one assay: Denotes the assay of interest and thus the
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{...}{Additional arguments given to \code{Seurat::FindAllMarkers()}}
@@ -70,15 +70,24 @@ stores the results in the respective slot. Then it does the same according to me
 The results are obtainable via \code{getDeaResults()}, \code{getDeaResultsDf()} and \code{getDeaGenes()}.
 }
 \examples{
+
 library(SPATA2)
 
 data("example_data")
-
 object <- example_data$object_UKF269T_diet
+
+getGroupingOptions(object)
+
+plotSurface(object, color_by = "histology")
 
 object <- runDEA(object, across = "histology")
 
-plotDeaDotplot(object, across = "histology")
-plotDeaDotplot(object, across = "histology", across_subset = c("tumor", "transition"))
+# extract best marker gene for each group by lowest p-value
+top_marker_genes <-
+  getDeaGenes(object, across = "histology", n_lowest_pval = 1)
+
+print(top_marker_genes)
+
+plotSurfaceComparison(object, color_by = top_marker_genes)
 
 }

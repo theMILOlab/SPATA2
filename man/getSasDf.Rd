@@ -42,7 +42,8 @@ See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 an angle span relative to the center of its closest spatial annotation.}
 
 \item{variables}{Character vector. The numeric variables to be included in
-the screening process.}
+the screening process. Makre sure that the correct matrix is active in the
+respective assays.}
 
 \item{unit}{Character value. Specifies the desired unit in
 which \link[=concept_distance_measure]{distance measures}

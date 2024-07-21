@@ -2,7 +2,7 @@
 % Please edit documentation in R/r.R
 \name{reduceSpataObject}
 \alias{reduceSpataObject}
-\title{Reduce SPATA2 object to minimal version}
+\title{Reduce SPATA2 object}
 \usage{
 reduceSpataObject(object)
 }

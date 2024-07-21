@@ -20,7 +20,7 @@ nCounts <- function(object, molecule, assay_name = activeAssay(object), ...){
 #' @export
 nGenes <- function(object){
 
-  nMolecules(object, assay_name = "transcriptomics")
+  nMolecules(object, assay_name = "gene")
 
 }
 
@@ -224,7 +224,7 @@ nSpatialTrajectories <- function(object){
 #' @export
 nTrajectories <- function(object){
 
-  getTrajectoryIds(object) %>%
+  getSpatialTrajectories(object) %>%
     base::length()
 
 }

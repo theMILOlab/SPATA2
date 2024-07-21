@@ -1426,6 +1426,18 @@ update_s4_architecture_of_spata2_object <- function(object){
       }
     )
 
+  coords_df <- sp_data@coordinates
+
+  if("exclude" %in% base::names(coords_df)){
+
+    coords_df <-
+      dplyr::filter(coords_df, !exclude) %>%
+      dplyr::select(-dplyr::any_of(c("exclude", "exclude_reason")))
+
+  }
+
+  sp_data@coordinates <- coords_df
+
   ## method
   sp_data@method
 
@@ -1478,9 +1490,13 @@ useVarForTissueOutline <- function(object,
   coords_df <- getCoordsDf(object)
   meta_df <- getMetaDf(object)
 
+  options <-
+    dplyr::select(meta_df, dplyr::where(is.character), dplyr::where(is.factor), -barcodes) %>%
+    base::names()
+
   confuns::check_one_of(
     input = var_name,
-    against = getGroupingOptions(object)
+    against = options
   )
 
   coords_df <-
@@ -1499,6 +1515,10 @@ useVarForTissueOutline <- function(object,
   for(i in seq_along(groups_ordered)){
 
     group <- groups_ordered[i]
+
+    n_obs <-
+      dplyr::filter(coords_df, !!rlang::sym(var_name) == {{group}}) %>%
+      base::nrow()
 
     if(n_obs >= min_obs){
 

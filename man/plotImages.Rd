@@ -62,20 +62,28 @@ objects of classes for which a method has been defined.}
 \item{img_names}{Character vector or \code{NULL}. If character, specifies the images
 by name. If \code{NULL}, all images are plotted.}
 
-\item{by_section}{Logical value. If \code{TRUE}, the outline is used which acknowledges
-the potential for multiple tissue sections. If \code{FALSE}, the outline is used which
-simply outlines everything with one single polygon.}
+\item{by_section}{Logical value. If \code{TRUE}, the default, the outline for every
+tissue section identified is used.}
+
+\item{outline}{Logical value. If \code{TRUE}, all images are plotted with the outline
+identified by \code{identifyTissueOutline(..., method = "image")}.}
+
+\item{outline_ref}{Logical value. If \code{TRUE}, all images plotted with
+the outline identified by \code{identifyTissueOutline(..., method = "image")} of the
+reference image.}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
-\item{line_color}{Character. Affects color of the main lines of the plot.}
+\item{line_color, line_color_ref}{Character value. The color for the outline if
+\code{outline = TRUE} and/or \code{outline_ref = TRUE}.}
 
-\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+\item{line_size, line_size_ref}{Character value. The linewidth for the outline if
+\code{outline = TRUE} and/or \code{outline_ref = TRUE}.}
 
-\item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
-spatial transformation instructions saved during image alignment of
-the image \code{img_name} are applied. Only relevant if there are any images registered
-in the \code{SPATA2} object.}
+\item{transform}{Logical value. Should the instructions for image transformation
+set with \code{\link[=alignImage]{alignImage()}} be applied?}
+
+\item{img_alpha}{Numeric value. Sets the transparency for the image.}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
@@ -88,7 +96,7 @@ the computational progress will be printed.
 A ggplot assembled with via \code{patchwork::wrap_plots()}.
 }
 \description{
-Reads in and plots all images known to the \code{SPATA2} object.
+Plots all images registered the \code{SPATA2} object.
 }
 \section{Distance measures}{
 
@@ -126,8 +134,7 @@ object <- example_data$object_UKF275T_diet
 
 plotImages(object)
 
-
 }
 \seealso{
-\code{\link[=getImageDirectories]{getImageDirectories()}}
+\code{\link[=getImageDirectories]{getImageDirectories()}}, \code{\link[=identifyPixelContent]{identifyPixelContent()}}, \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}
 }

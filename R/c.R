@@ -735,7 +735,8 @@ computeCnvByChrArm <- function(object,
 #'
 #' @details This function computes meta features such as the number of counts
 #' and the number of distinct molecules per observation. The computed meta
-#' features are added to the input object via [`addFeatures()`].
+#' features are added to the input object via [`addFeatures()`]. Features
+#' are suffixed with the data modality of the specified assay.
 #'
 #' @export
 #'

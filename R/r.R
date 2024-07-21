@@ -411,7 +411,7 @@ reduce_vec <- function(x, nth, start.with = 1){
 }
 
 
-#' @title Reduce SPATA2 object to minimal version
+#' @title Reduce SPATA2 object
 #'
 #' @description This function reduces a [`SPATA2`] object to a minimal version by
 #' removing analysis progress and other non-essential data.
@@ -1048,6 +1048,7 @@ removeMolecules <- function(object,
                             molecules,
                             show_warnings = FALSE,
                             ref = "molecule",
+                            assay_name = activeAssay(object),
                             verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -1055,7 +1056,7 @@ removeMolecules <- function(object,
   molecules_rm <- molecules
 
   # apply to count matrix
-  count_mtr <- getCountMatrix(object)
+  count_mtr <- getCountMatrix(object, assay_name = assay_name)
 
   molecules_count <- base::rownames(count_mtr)
 
@@ -1075,16 +1076,16 @@ removeMolecules <- function(object,
 
   count_mtr <- count_mtr[molecules_keep, ]
 
-  object <- setCountMatrix(object, count_mtr = count_mtr)
+  object <- setCountMatrix(object, count_mtr = count_mtr, assay_name = assay_name)
 
   # apply to other matrices
-  mtr_names <- getMatrixNames(object, only_proc = TRUE)
+  mtr_names <- getMatrixNames(object, assay_name = assay_name, only_proc = TRUE)
 
   if(base::length(mtr_names) >= 1){
 
     for(mn in mtr_names){
 
-      mtr <- getMatrix(object, mtr_name = mn)
+      mtr <- getMatrix(object, mtr_name = mn, assay_name = assay_name)
 
       molecules_mtr <- base::rownames(mtr)
 
@@ -1104,14 +1105,14 @@ removeMolecules <- function(object,
 
       mtr <- mtr[molecules_keep, ]
 
-      object <- setProcessedMatrix(object, proc_mtr = mtr, name = mn)
+      object <- setProcessedMatrix(object, proc_mtr = mtr, name = mn, assay_name = assay_name)
 
     }
 
   }
 
   confuns::give_feedback(
-    msg = glue::glue("Removed {base::length(molecules_rm)} {ref}(s)."),
+    msg = glue::glue("Removed {base::length(molecules_rm)} {ref}(s) from assay '{assay_name}'."),
     verbose = verbose
   )
 
@@ -1368,7 +1369,7 @@ removeSpatialOutliers <- function(object, verbose = NULL){
       verbose = verbose
     )
 
-    object <- subsetByBarcodes(object, barcodes = bcs_keep, verbose = verbose)
+    object <- subsetSpataObject(object, barcodes = bcs_keep, verbose = verbose)
 
   }
 
@@ -1495,6 +1496,110 @@ removeTissueFragments <- function(object,
 }
 
 
+#' @title Rename an image
+#'
+#' @description Renames an image.
+#'
+#' @param img_name Character value. The name of the image to be renamed.
+#' @param new_img_name Character value. The new name of the image.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' getImageNames(object)
+#'
+#' plotImage(object, img_name = "normres") # fails
+#'
+#' object <- renameImage(object, img_name = "normres", new_img_name = "normres")
+#'
+#' plotImage(object, img_name = "normres")
+#'
+setGeneric(name = "renameImage", def = function(object, ...){
+
+  standardGeneric(f = "renameImage")
+
+})
+
+#' @rdname renameImage
+#' @export
+setMethod(
+  f = "renameImage",
+  signature = "SPATA2",
+  definition = function(object, img_name, new_img_name, ...){
+
+    sp_data <- getSpatialData(object)
+
+    sp_data <- renameImage(sp_data, img_name = img_name, new_img_name = new_img_name)
+
+    object <- setSpatialData(object, sp_data = sp_data)
+
+    return(object)
+
+  }
+)
+
+#' @rdname renameImage
+#' @export
+setMethod(
+  f = "renameImage",
+  signature = "SpatialData",
+  definition = function(object, img_name, new_img_name, verbose = TRUE, ...){
+
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object)
+    )
+
+    confuns::check_none_of(
+      input = new_img_name,
+      against = getImageNames(object),
+      ref.against = "registered images",
+      ref.input = "argument `new_img_name`"
+    )
+
+    # rename image
+    hist_img <- object@images[[img_name]]
+
+    hist_img@name <- new_img_name
+
+    object@images[[new_img_name]] <- hist_img
+
+    # empty old slot
+    object@images[[img_name]] <- NULL
+
+    if(img_name == activeImage(object)){
+
+      object@name_img_active <- new_img_name
+
+      confuns::give_feedback(
+        msg = glue::glue("Active image was renamed to '{new_img_name}'."),
+        verbose = verbose
+      )
+
+    }
+
+    if(img_name == refImage(object)){
+
+      object@name_img_ref <- new_img_name
+
+      confuns::give_feedback(
+        msg = glue::glue("Reference image was renamed to '{new_img_name}'."),
+        verbose = verbose
+      )
+
+    }
+
+    return(object)
+
+  }
+)
 
 
 #' @title Rename features

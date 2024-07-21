@@ -18,7 +18,7 @@ spatial_gradient_screening(
   model_subset = NULL,
   model_add = NULL,
   model_remove = NULL,
-  control = SPATA2::sgs_loess_control,
+  control = NULL,
   seed = 123,
   verbose = TRUE
 )
@@ -39,7 +39,8 @@ in the screening process.}
 
 \item{sign_threshold}{The significance threshold. Defaults to 0.05.}
 
-\item{control}{A list given to \code{control} of \code{\link[stats:loess]{stats::loess()}}.}
+\item{control}{A list of arguments as taken from \code{\link[stats:loess.control]{stats::loess.control()}}.
+Default setting is stored in \code{SPATA2::sgs_loess_control}.}
 
 \item{seed}{Numeric value. Sets the random seed.}
 

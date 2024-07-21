@@ -31,12 +31,15 @@ It is not forbidden, of course, to create molecular assays with modalities
 differing from the ones SPATA2 knows. It is just that you won't be able to
 use certain functions with the created assay.
 }
-\note{
+\section{Molecular Modality == Assay Name!}{
+
+
 The molecular modality of an assay also defines its name! Hence, if you
 encounter the parameter \code{assay_name} it can be thought of defining the molecular
 modality of interest! And the output of \code{\link[=activeAssay]{activeAssay()}} can be thought of
 the output of \emph{active molecular modality}.
 }
+
 \seealso{
 \code{\link[=createMolecularAssay]{createMolecularAssay()}}, \code{\link[=containsModality]{containsModality()}}, \code{\link[=getAssayModalities]{getAssayModalities()}}
 }

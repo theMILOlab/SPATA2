@@ -33,6 +33,7 @@ plotSurface(object, ...)
   na_rm = FALSE,
   xrange = getCoordsRange(object)$x,
   yrange = getCoordsRange(object)$y,
+  img_name = NULL,
   verbose = NULL,
   ...
 )
@@ -65,6 +66,7 @@ plotSurface(object, ...)
   color_by = "rel_loc",
   line_color = "black",
   line_size = 1,
+  fill = ggplot2::alpha("lightgrey", 0.25),
   pt_clrp = "npg",
   ...
 )
@@ -115,6 +117,8 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
+\item{img_alpha}{Numeric value. Sets the transparency for the image.}
+
 \item{transform_with}{List or \code{NULL.} If list, can be used to transform continuous variables before usage.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
 E.g if the variable of interest is \emph{GFAP} gene expression, the following would work:
@@ -143,6 +147,10 @@ the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
 the two dimensional space being cropped from x-coordinate 200px up to
 x-coordinate 500px. If \code{NULL}, the original range is used.}
 
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -161,6 +169,9 @@ via \code{order_by} and/or \code{order}.}
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
 \item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{fill}{Character value or NA. If character, specifies the color with which
+the outline of the spatial annotation is filled.}
 
 \item{outline_width}{Numeric vector of length 2, specifying the factor with which
 the \code{pt_size} is multiplied to create the white layer (first value) and the

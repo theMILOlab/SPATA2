@@ -559,7 +559,7 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   n_obs <- nObs(object) # in case no matrix available
 
   cat("SPATA2 object of size:", n_obs, "x", n_mols, "(observations x molecules)\n")
-  cat("Platform: ", object@platform, "\n")
+  cat("Platform:", object@platform, "\n")
   cat("Contains", length(assays), ifelse(length(assays) > 1, "Assays:", "Assay:"), assays, "\n")
   cat("Active Assay:", activeAssay(object), ", Active Matrix:", activeMatrix(object), "\n")
   if (length(setdiff(colnames(getMetaDf(object)), "barcodes")) > 0) {
@@ -2152,13 +2152,15 @@ smoothSpatially <- function(coords_df,
 #' in the screening process.
 #' @param resolution Units value of the same unit of the *dist* variable in
 #' `coords_df`.
-#' @param control A list given to `control` of [`stats::loess()`].
+#' @param control A list of arguments as taken from [`stats::loess.control()`].
+#' Default setting is stored in `SPATA2::sgs_loess_control`.
 #' @param n_random Number of random permutations for the significance testing of step 2.
 #' @param sign_var Either *p_value* or *fdr*. Defaults to *fdr*.
 #' @param sign_threshold The significance threshold. Defaults to 0.05.
 #' @param seed Numeric value. Sets the random seed.
 #'
 #' @inherit argument_dummy params
+#' @inherit spatial_gradient_screening params
 #'
 #' @return A list of four slots:
 #'
@@ -2193,12 +2195,18 @@ spatial_gradient_screening <- function(coords_df,
                                        model_subset = NULL,
                                        model_add = NULL,
                                        model_remove = NULL,
-                                       control = SPATA2::sgs_loess_control,
+                                       control = NULL,
                                        seed = 123,
                                        verbose = TRUE){
 
 
   # Preparation -------------------------------------------------------------
+
+  if(base::is.null(control)){
+
+    control <- sgs_loess_control
+
+  }
 
   variables <- base::unique(variables)
 
@@ -2321,8 +2329,7 @@ spatial_gradient_screening <- function(coords_df,
           )
 
         gradient <-
-          stats::predict(loess_model, data.frame(dist = expr_est_pos)) %>%
-          confuns::normalize()
+          infer_gradient(loess_model = loess_model, expr_est_pos = expr_est_pos)
 
         list(
           loess_model = loess_model,
@@ -2330,7 +2337,7 @@ spatial_gradient_screening <- function(coords_df,
         )
 
       }
-    ) %>% set_names(nm = variables)
+    ) %>% purrr::set_names(nm = variables)
 
   gradient_df <-
     purrr::map_dfc(.x = loess_list, .f = ~ .x$gradient) %>%
@@ -2408,7 +2415,7 @@ spatial_gradient_screening <- function(coords_df,
         ) %>%
       dplyr::group_by(variables, models) %>%
       dplyr::summarise(
-        corr = compute_corr(gradient = values, model = values_model),
+        #corr = compute_corr(gradient = values, model = values_model),
         mae = compute_mae(gradient = values, model = values_model),
         rmse = compute_rmse(gradient = values, model = values_model),
         .groups = "drop"
@@ -2448,7 +2455,8 @@ spatial_gradient_screening <- function(coords_df,
 #'
 #' @param ids Character vector. Specifies the IDs of the spatial annotations of interest.
 #' @param variables Character vector. The numeric variables to be included in
-#' the screening process.
+#' the screening process. Makre sure that the correct matrix is active in the
+#' respective assays.
 #' @param distance \code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 #' the distance from the border of the spatial annotation to the \emph{horizon} in
 #' the periphery up to which the screening is conducted. Defaults to a distance
@@ -2461,7 +2469,7 @@ spatial_gradient_screening <- function(coords_df,
 #'
 #' @inherit add_models params
 #' @inherit argument_dummy params
-#' @inherit buffer_area params
+#' @inherit spatial_gradient_screening params
 #'
 #' @return An object of class [`SpatialAnnotationScreening`].
 #'
@@ -2695,8 +2703,9 @@ spatialAnnotationScreening <- function(object,
 #' @param width Distance measure. The width of the trajectory frame. Defaults
 #' to the trajectory length.
 #'
-#' @inherit add_models params
 #' @inherit argument_dummy params
+#' @inherit spatial_gradient_screening params
+
 #'
 #' @return An object of class \code{SpatialTrajectoryScreening}. See documentation
 #' with \code{?ImageAnnotationScreening} for more information.
@@ -2747,10 +2756,17 @@ spatialTrajectoryScreening <- function(object,
                                        rm_zero_infl = TRUE,
                                        n_random = 10000,
                                        seed = 123,
+                                       control = NULL,
                                        verbose = NULL,
                                        ...){
 
   hlpr_assign_arguments(object)
+
+  if(base::is.null(control)){
+
+    control <- sgs_loess_control
+
+  }
 
   if(base::isTRUE(estimate_R2)){
 
@@ -2764,7 +2780,8 @@ spatialTrajectoryScreening <- function(object,
         object = object,
         id = id,
         resolution = resolution,
-        width = width
+        width = width,
+        control = control
       )
 
     confuns::give_feedback(
@@ -2810,7 +2827,7 @@ spatialTrajectoryScreening <- function(object,
       model_subset = model_subset,
       model_remove = model_remove,
       rm_zero_infl = rm_zero_infl,
-      control = SPATA2::sgs_loess_control,
+      control = control,
       n_random = n_random,
       seed = seed
     )
@@ -3095,7 +3112,7 @@ subsetSpataObject <- function(object, barcodes, verbose = NULL){
 
     }
 
-    if(containsCNV(object) & ma@omic == "transcriptomics"){
+    if(containsCNV(object) & ma@modality == "gene"){
 
       bcs_keep_cnv <-
         bcs_keep[bcs_keep %in% base::colnames(ma@analysis$cnv$cnv_mtr)]

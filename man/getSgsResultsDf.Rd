@@ -2,34 +2,22 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSgsResultsDf}
 \alias{getSgsResultsDf}
-\alias{getSgsResultsDf,SpatialAnnotationScreening-method}
-\alias{getSgsResultsDf,SpatialTrajectoryScreening-method}
+\alias{getSgsResultsDf,SpatialGradientScreening-method}
 \title{Obtain spatial gradient screening results}
 \usage{
 getSgsResultsDf(object, ...)
 
-\S4method{getSgsResultsDf}{SpatialAnnotationScreening}(
+\S4method{getSgsResultsDf}{SpatialGradientScreening}(
   object,
   eval = "mae",
   pval = "fdr",
   arrange_by = eval,
-  threshold_eval = 1,
-  threshold_pval = 1,
+  threshold_eval = 0.25,
+  threshold_pval = 0.05,
   model_subset = NULL,
   model_remove = NULL,
-  best_only = FALSE
-)
-
-\S4method{getSgsResultsDf}{SpatialTrajectoryScreening}(
-  object,
-  eval = "mae",
-  pval = "fdr",
-  arrange_by = eval,
-  threshold_eval = 1,
-  threshold_pval = 1,
-  model_subset = NULL,
-  model_remove = NULL,
-  best_only = FALSE
+  best_only = TRUE,
+  as_is = FALSE
 )
 }
 \arguments{
@@ -47,6 +35,9 @@ scores range from 0-1 (with 1 being worst), the default includes everything.}
 
 \item{best_only}{Logical value. If \code{TRUE}, only the best gradient-model fit according
 to the chosen evaluation metric (\code{eval}) for each screened variable is kept.}
+
+\item{as_is}{Logical value. If \code{TRUE}, all parameters are ignored and the $significance
+and $model_fits data.frames are simply joined and return without any filtering.}
 }
 \value{
 A data.frame with results of the spatial gradient screening conducted.
@@ -58,8 +49,7 @@ Column names are:
 \item{mae}{ The mean absolute error of the gradient-model fit.}
 \item{rmse}{ The root mean squared error of the gradient-model fit.}
 \item{p_value}{ The p-value regarding the hypothesis whether such a gradient
-can be obtained under random circumstances (= the spatial reference feature
-has no impact on the spatial expression pattern.)
+can be obtained under random circumstances.
 }
 \item{fdr}{ The adjusted p-value using false discovery rate.}
 }

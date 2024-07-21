@@ -2291,7 +2291,7 @@ createImageAnnotations <- function(object, ...){
 
 # createM -----------------------------------------------------------------
 
-#' @title Create and add an object of class [MolecularAssay]
+#' @title Create and add an object of class `MolecularAssay`
 #'
 #' @description Creates and adds an object of class [`MolecularAssay`]
 #' to the [`SPATA2`] object.
@@ -2375,7 +2375,7 @@ createMolecularAssay <- function(object,
 
         proc_molecules <- base::rownames(mtr_proc[[i]])
 
-        if(base::nrow(mtr_counts) != 0){
+        if(!base::identical(mtr_counts, Matrix::Matrix())){
 
           missing_in_counts <- proc_molecules[!proc_molecules %in% molecules]
 
@@ -2439,8 +2439,7 @@ createMolecularAssay <- function(object,
     MolecularAssay(
       mtr_counts = mtr_counts,
       mtr_proc = mtr_proc,
-      modality = modality,
-      ...
+      modality = modality
     )
 
   # prevent variable name overlap
@@ -2482,7 +2481,7 @@ createMolecularAssay <- function(object,
       activateMatrix(
         object = object,
         mtr_name = active_mtr,
-        assay_name = omic,
+        assay_name = modality,
         verbose = verbose
       )
 
@@ -3711,7 +3710,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
             choices <-
               getGroupNames(
                 object = spata_object(),
-                grouping_variable = input$segm_var_name
+                grouping = input$segm_var_name
               ) %>%
               stringr::str_subset(pattern = "^unnamed$", negate = TRUE)
 
@@ -3756,7 +3755,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
             choices <-
               getGroupNames(
                 object = spata_object(),
-                grouping_variable = input$segm_var_name
+                grouping = input$segm_var_name
               ) %>%
               stringr::str_subset(pattern = "^unnamed$", negate = TRUE)
 
@@ -4087,7 +4086,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           segm_vars <- shiny::reactive({
 
-            getSegmentationNames(
+            getSpatSegmVarNames(
               object = spata_object(),
               verbose = FALSE
             )
@@ -4301,7 +4300,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
             rename_input <- purrr::set_names(x = input$segm_group, nm = "unnamed")
 
-            object <- renameGroups(object, grouping_variable = input$segm_var_name, rename_input)
+            object <- renameGroups(object, grouping = input$segm_var_name, rename_input)
 
             spata_object(object)
 
@@ -4350,7 +4349,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
             rename_input <- purrr::set_names(x = input$segm_group, nm = new_name)
 
-            object <- renameGroups(object, grouping_variable = input$segm_var_name, rename_input)
+            object <- renameGroups(object, grouping = input$segm_var_name, rename_input)
 
             spata_object(object)
 

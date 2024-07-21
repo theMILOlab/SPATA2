@@ -1268,7 +1268,7 @@ runCNV <- function(object,
 #' @export
 runCnvAnalysis <- function(object, ...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = T)
 
   runCNV(object = object, ...)
 
@@ -1309,6 +1309,28 @@ runCnvAnalysis <- function(object, ...){
 #' @export
 #'
 #' @inherit plotDeaDotPlot examples
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' data("example_data")
+#' object <- example_data$object_UKF269T_diet
+#'
+#' getGroupingOptions(object)
+#'
+#' plotSurface(object, color_by = "histology")
+#'
+#' object <- runDEA(object, across = "histology")
+#'
+#' # extract best marker gene for each group by lowest p-value
+#' top_marker_genes <-
+#'   getDeaGenes(object, across = "histology", n_lowest_pval = 1)
+#'
+#' print(top_marker_genes)
+#'
+#' plotSurfaceComparison(object, color_by = top_marker_genes)
+#'
 
 runDEA <- function(object,
                    across,
@@ -1328,7 +1350,7 @@ runDEA <- function(object,
   seurat_object <-
     Seurat::CreateSeuratObject(counts = getCountMatrix(object, assay_name = assay_name)) %>%
     Seurat::NormalizeData(object = .) %>%
-    Seurat::ScaleData(object = seurat_object)
+    Seurat::ScaleData(object = .)
 
   seurat_object@meta.data <-
     getMetaDf(object) %>%
@@ -1437,13 +1459,14 @@ runDeAnalysis <- function(...){
 #' of interest.
 #' @inherit runDeAnalysis params
 #' @inherit getDeaResultsDf params
-#' @inherit argument_dummy params
 #' @inherit hypeR::hypeR params
+#' @inherit argument_dummy params
 #' @param gene_set_list A named list of character vectors. Names of slots correspond to the
 #' gene set names. The slot contains the genes of the gene sets.Holds priority over
 #' \code{gene_set_names}.
 #' @param signatures Character vector of signature names that are taken
-#' from the assays stored signatures.
+#' from the assays stored signatures. Defaults to all signatures of
+#' the currently active assay.
 #' @param reduce Logical value. If set to TRUE (the default) the return value
 #' of \code{hypeR::hypeR()} is reduced to what is necessary for \code{SPATA2}s
 #' function to work. If `FALSE`, the complete objects are stored. This will
@@ -1456,10 +1479,6 @@ runDeAnalysis <- function(...){
 #' \code{methods_de}. Combinations for which no DE-results are found are silently
 #' skipped.
 #'
-#' If gene sets are provided via \code{gene_set_list} argument \code{gene_set_names}
-#' is ignored. Else the latter determines the gene sets used which are then taken
-#' from the `SPATA2` object's gene set data.frame.
-#'
 #' @export
 #'
 #' @examples
@@ -1470,10 +1489,11 @@ runDeAnalysis <- function(...){
 #' object <- example_data$object_UKF269T_diet
 #'
 #' # requires the results of runDEA(object, across = "histology")!
+#' object <- runDEA(object, across = "histology")
 #'
 #' object <- runGSEA(object, across = "histology")
 #'
-#' plotGseaDotplot(object, across = "histology")
+#' plotGseaDotplot(object, across = "histology", )
 #'
 
 runGSEA <- function(object,
@@ -1486,7 +1506,7 @@ runGSEA <- function(object,
                     signatures = NULL,
                     test = c("hypergeometric", "kstest"),
                     absolute = FALSE,
-                    background = NULL,
+                    background = 20000,
                     power = 1,
                     pval = 0.05,
                     fdr = 0.05,
@@ -1546,7 +1566,7 @@ runGSEA <- function(object,
   ma <- getAssay(object, assay_name = assay_name)
 
   # prepare gene set list
-  signature_list <- getSignatures(object, assay_name = assay_name)
+  signature_list <- getSignatureList(object, assay_name = assay_name)
 
   if(base::is.character(signatures)){
 
@@ -1585,7 +1605,7 @@ runGSEA <- function(object,
         msg <-
           glue::glue(
             "Calculating enrichment of signatures across '{across_value}' (n = {n_groups}). ",
-            "Based on results of method '{method_de}'."
+            "Based on DEA results of method '{method_de}'."
           )
 
         give_feedback(msg = msg, verbose = verbose)
@@ -1824,7 +1844,7 @@ runPCA <- function(object,
 #' @rdname runPCA
 runPca <- function(...){
 
-  deprecated(fn = T, ...)
+  deprecated(fn = T)
 
   runPCA(...)
 
@@ -2171,7 +2191,7 @@ runSPARKX <- function(object,
 #' @export
 runSparkx <- function(...){
 
-  deprecated(fn = T, ...)
+  deprecated(fn = T)
 
   runSPARKX(...)
 
@@ -2229,7 +2249,7 @@ runTSNE <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, ..
 #' @export
 runTsne <- function(...){
 
-  deprecated(fn = T, ...)
+  deprecated(fn = T)
 
   runTSNE(...)
 
@@ -2296,7 +2316,7 @@ runUMAP <- function(object, n_pcs = 20, ...){
 #' @export
 runUmap <- function(...){
 
-  deprecated(fn = T, ...)
+  deprecated(fn = T)
 
   runUMAP(...)
 

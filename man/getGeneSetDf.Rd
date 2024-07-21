@@ -2,12 +2,9 @@
 % Please edit documentation in R/getA-G.R
 \name{getGeneSetDf}
 \alias{getGeneSetDf}
-\alias{getGeneSetList}
 \title{Obtain gene sets}
 \usage{
 getGeneSetDf(object)
-
-getGeneSetList(object)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -19,3 +16,4 @@ Either a named list or a data.frame with variables \emph{ont} and \emph{gene}.
 Extracts the gene sets (gene signatures) stored in the transcriptomic
 assay.
 }
+\keyword{internal}

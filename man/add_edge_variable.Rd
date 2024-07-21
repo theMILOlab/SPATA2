@@ -2,7 +2,7 @@
 % Please edit documentation in R/add.R
 \name{add_edge_variable}
 \alias{add_edge_variable}
-\title{Add edge variable}
+\title{Add edge variable to coordinate data.frame}
 \usage{
 add_edge_variable(coords_df, id_var = "barcodes")
 }

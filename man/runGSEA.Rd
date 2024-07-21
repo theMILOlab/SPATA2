@@ -15,7 +15,7 @@ runGSEA(
   signatures = NULL,
   test = c("hypergeometric", "kstest"),
   absolute = FALSE,
-  background = NULL,
+  background = 20000,
   power = 1,
   pval = 0.05,
   fdr = 0.05,
@@ -47,11 +47,10 @@ with an average log fold change below that threshold are ignored.}
 \item{n_lowest_pval}{Numeric value. Affects the total number of genes that are kept. See details.}
 
 \item{signatures}{Character vector of signature names that are taken
-from the assays stored signatures.}
+from the assays stored signatures. Defaults to all signatures of
+the currently active assay.}
 
-\item{test}{Character value. One of \emph{c('any'. 'all', 'identical', 'not_identical', 'none')}.
-Specifies how input for \code{tags} is used to select spatial annotations.
-See section \emph{Selection of spatial annotations} for more information.}
+\item{test}{Choose an enrichment type e.g. c("hypergeometric", "kstest")}
 
 \item{absolute}{Takes max-min score rather than the max deviation from null (kstest only)}
 
@@ -71,8 +70,8 @@ grow the \code{SPATA2} object's size quickly!}
 \item{quiet}{Use true to suppress logs and warnings}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
-one assay: Denotes the assay of interest (and thus the
-active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
+one assay: Denotes the assay of interest and thus the
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
@@ -98,10 +97,6 @@ Computes gene set enrichment analysis using \code{hypeR::hypeR()}.
 It does so by iterating about all possible combinations of \code{across} and
 \code{methods_de}. Combinations for which no DE-results are found are silently
 skipped.
-
-If gene sets are provided via \code{gene_set_list} argument \code{gene_set_names}
-is ignored. Else the latter determines the gene sets used which are then taken
-from the \code{SPATA2} object's gene set data.frame.
 }
 \examples{
 library(SPATA2)
@@ -111,9 +106,10 @@ data("example_data")
 object <- example_data$object_UKF269T_diet
 
 # requires the results of runDEA(object, across = "histology")!
+object <- runDEA(object, across = "histology")
 
 object <- runGSEA(object, across = "histology")
 
-plotGseaDotplot(object, across = "histology")
+plotGseaDotplot(object, across = "histology", )
 
 }

@@ -232,7 +232,7 @@ add_noise_to_model <- function(model, random, nl){
 }
 
 
-#' @title Add edge variable
+#' @title Add edge variable to coordinate data.frame
 #'
 #' @description Adds a variable called *edge* to the input data.frame
 #' that tells if the observation belongs to the points that lie on the
@@ -294,7 +294,7 @@ add_edge_variable <- function(coords_df, id_var = "barcodes"){
 }
 
 
-#' @title Add tissue section variable
+#' @title Add tissue section variable to coordinate data.frame
 #'
 #' @description Leverages `dbscan::dbscan()` to identify tissue sections
 #' on the slide and to group barcode spots accordingly. Required to approximate
@@ -341,14 +341,14 @@ add_dbscan_variable <- function(coords_df,
                                 y = "y",
                                 min_cluster_size = 1,
                                 ...){
-
   base::set.seed(123)
 
   outline_res <-
     dbscan::dbscan(
       x = base::as.matrix(coords_df[, c(x, y)]),
       eps = eps,
-      minPts = minPts
+      minPts = minPts,
+      borderPoints = TRUE
     )
 
   coords_df[[name]] <- base::as.character(outline_res[["cluster"]])
@@ -726,8 +726,29 @@ addFeatures <- function(object,
 # addG --------------------------------------------------------------------
 
 
+#' @rdname addSignature
+#' @export
+addGeneSet <- function(object,
+                       class,
+                       name,
+                       genes,
+                       overwrite = FALSE,
+                       check = TRUE){
 
+  object <-
+    addSignature(
+      object = object,
+      class = class,
+      name = name,
+      molecules = genes,
+      overwrite = overwrite,
+      assay_name = "gene",
+      check = check
+    )
 
+  returnSpataObject(object)
+
+}
 
 
 # addH --------------------------------------------------------------------
@@ -962,6 +983,32 @@ setMethod(
 
 
 # addM --------------------------------------------------------------------
+
+
+#' @rdname addSignature
+#' @export
+addMetaboliteSet <- function(object,
+                             class,
+                             name,
+                             metabolites,
+                             overwrite = FALSE,
+                             check = TRUE){
+
+  object <-
+    addSignature(
+      object = object,
+      class = class,
+      name = name,
+      molecules = metabolites,
+      overwrite = overwrite,
+      assay_name = "gene",
+      check = check
+    )
+
+  returnSpataObject(object)
+
+}
+
 
 
 # addP --------------------------------------------------------------------
@@ -1232,7 +1279,29 @@ addProcessedMatrix <- function(object,
 
 }
 
+#' @rdname addSignature
+#' @export
+addProteinSet <- function(object,
+                         class,
+                         name,
+                         proteins,
+                         overwrite = FALSE,
+                         check = TRUE){
 
+  object <-
+    addSignature(
+      object = object,
+      class = class,
+      name = name,
+      molecules = genes,
+      overwrite = overwrite,
+      assay_name = "gene",
+      check = check
+    )
+
+  returnSpataObject(object)
+
+}
 
 # addS --------------------------------------------------------------------
 
@@ -1299,6 +1368,114 @@ addSegmentationVariable <- function(object,
   returnSpataObject(object)
 
 }
+
+
+#' @title Add molecular signature
+#'
+#' @description
+#' Adds a \link[=concept_molecular_signatures]{molecular signature} to the `SPATA2` object.
+#'
+#' @param class Character value. The class (heritage) of the signature. Must not
+#' contain a *_*.
+#' @param name Character value. The actual name of the signature.
+#' @param molecules,genes,proteins,metabolites Character vector. The molecules the signature consists of.
+#' @param check Logical value. If `TRUE`, the functions checkes whether the specified
+#' molecules exist in the raw count matrix of the assay and throw an error if some
+#' are not. Defaults to `TRUE`.
+#' @inherit argument_dummy params
+#'
+#' @inherit update_dummy return
+#'
+#' @details These functions allow to add molecular signatures to the provided object.
+#'
+#' \itemize{
+#'  \item{`addSignature()`}{: Adds a signature to the assay specified in `assay_name`.}
+#'  \item{`addGeneSet()`}{:  Adds a signature to the assay with @@modality = 'gene' (`assay_name = 'gene'`).}
+#'  \item{`addMetaboliteSet()`}{: Adds a signature to the assay with @@modality = 'metabolite' (`assay_name = 'metabolite'`).}
+#'  \item{`addProteinSet()`}{: Adds a signature to the assay with @@modality = 'protein' (`assay_name = 'protein'`).}
+#'  }
+#'
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' data("example_data")
+#' object <- example_data$object_UKF269T_diet
+#'
+#' genes <-
+#'  c('CYFIP1', 'SLC16A3', 'AKAP5', 'ADCY8', 'CALB2', 'GRIN1', 'NLGN4X', 'NLGN1',
+#'    'ITGA3', 'NLGN4Y', 'ELFN1', 'BSN', 'CNTN6', 'PDE4B', 'DGKI', 'LRRTM2', 'LRRTM1',
+#'    'SRPX2', 'SHANK1', 'SLC17A7')
+#'
+#' # both, opt1 and opt2, have the same effect (addSignature() just allows to specify the
+#' # assay of interest, which is fixed to 'gene' for `adGeneSet()`).
+#' # opt1
+#' object <- addSignature(object, name = "EXCITATORY_SYNAPSE", class = "HM", molecules = genes)
+#'
+#' # opt2
+#' # object <- addGeneSet(object, name = "EXCITATORY_SYNAPSE", class = "HM", genes = genes)
+#'
+#' gs <- "HM_EXCITATORY_SYNAPSE"
+#'
+#' # visualize signature expression
+#' plotSurface(object, color_by = gs)
+#'
+#' # extract genes of signature
+#' getGenes(object, signatures = gs)
+#'
+
+addSignature <- function(object,
+                         class,
+                         name,
+                         molecules,
+                         assay = activeAssay(object),
+                         overwrite = FALSE,
+                         check = TRUE){
+
+  confuns::is_vec(molecules, mode = "character")
+
+  confuns::is_value(class, mode = "character")
+
+  if(stringr::str_detect(string = class, pattern = "_")){
+
+    stop("Input for argument `class` must not contain _ .")
+
+  }
+
+  confuns::is_value(name, mode = "character")
+
+  signature_name <- stringr::str_c(class, name, sep = "_")
+
+  ma <- getAssay(object, assay_name = assay_name)
+
+  confuns::check_none_of(
+    input = signature_name,
+    against = base::names(ma@signatures),
+    ref.input = glue::glue("input signature name '{signature_name}'"),
+    overwrite = overwrite
+  )
+
+  if(base::isTRUE(check)){
+
+    confuns::check_one_of(
+      input = molecules,
+      against = base::rownames(ma@mtr_counts),
+      fdb.opt = 1,
+      ref.opt.2 = glue::glue("molecules in assay '{assa_name}'")
+    )
+
+  }
+
+  ma@signatures[[signature_name]] <- molecules
+
+  object <- setAssay(object, assay = ma)
+
+
+}
+
 
 #' @title Create and add a spatial annotation manually
 #'

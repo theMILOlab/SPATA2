@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObject}
 \alias{initiateSpataObject}
-\title{Initiate a \code{SPATA2} object}
+\title{Initiate an object of class \code{SPATA2}}
 \usage{
 initiateSpataObject(
   sample_name,
@@ -66,6 +66,9 @@ An object of class \code{SPATA2}.
 \description{
 Initiates a \code{\link{SPATA2}} object using the basic inputs: a coordinates
 data.frame and a count matrix.
+}
+\note{
+In contrast to \code{\link[=initiateSpataObjectVisium]{initiateSpataObjectVisium()}} or [ìnitiateSpataObjectMERFISH()\verb{], a }SPATA2\verb{ object with this function the output does not contain a tissue outline yet Run [}identifyTissueOutline()`] with your choice of parameters afterwards.
 }
 \section{Initiating the object with an image}{
 

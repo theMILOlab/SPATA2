@@ -38,7 +38,8 @@ objects of classes for which a method has been defined.}
 \item{ids}{Character vector. Specifies the IDs of the spatial annotations of interest.}
 
 \item{variables}{Character vector. The numeric variables to be included in
-the screening process.}
+the screening process. Makre sure that the correct matrix is active in the
+respective assays.}
 
 \item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
@@ -62,6 +63,10 @@ input options.}
 \item{bcs_exclude}{Character value containing the barcodes of observations to be excluded
 from the analysis.}
 
+\item{sign_var}{Either \emph{p_value} or \emph{fdr}. Defaults to \emph{fdr}.}
+
+\item{sign_threshold}{The significance threshold. Defaults to 0.05.}
+
 \item{model_add}{Named list. Every slot in the list must be either a formula
 containing a function that takes a numeric vector as input and returns a numeric
 vector with the same length as its input vector. Or a numeric vector with the
@@ -73,6 +78,13 @@ and \code{showModels()} to visualize them.}
 
 \item{model_remove}{Character value. Used as a regex to remove models
 are not supposed to be included.}
+
+\item{control}{A list of arguments as taken from \code{\link[stats:loess.control]{stats::loess.control()}}.
+Default setting is stored in \code{SPATA2::sgs_loess_control}.}
+
+\item{n_random}{Number of random permutations for the significance testing of step 2.}
+
+\item{seed}{Numeric value. Sets the random seed.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

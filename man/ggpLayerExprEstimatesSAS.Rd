@@ -17,7 +17,6 @@ ggpLayerExprEstimatesSAS(
   line_size = (line_size_core * 0.75),
   line_size_core = 1,
   incl_edge = TRUE,
-  direction = "outwards",
   method = "normal",
   verbose = NULL,
   ...

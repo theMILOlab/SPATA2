@@ -509,7 +509,7 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #' associated with specific biological states, processes, or conditions. This slot stores the molecular
 #' signatures detected in the assay data. Each signature is represented as a vector of molecule names
 #' in a named list, where the names of the list slots correspond to the signature. Read more
-#' on molecular signatures \link[=concept_molecular_signature]{here}.
+#' on molecular signatures \link[=concept_molecular_signatures]{here}.
 #'
 #' @export
 

@@ -4,7 +4,7 @@
 \alias{getImageNames}
 \alias{getImageNames,SPATA2-method}
 \alias{getImageNames,SpatialData-method}
-\title{Obtain names of registered \code{HistoImage} objects}
+\title{Obtain names of registered images}
 \usage{
 getImageNames(object, ...)
 
@@ -25,6 +25,6 @@ included.}
 Character vector.
 }
 \description{
-Extracts the names of the \code{HistoImage} objects currently
-registered in the object.
+Extracts the names of images (and their \code{\link{HistoImage}} container objects)
+currently registered in the object.
 }

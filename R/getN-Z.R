@@ -678,6 +678,22 @@ getProteins <- function(object,
 
 }
 
+#' @rdname getSignatureList
+#' @export
+getProteinSetList <- function(object, class = NULL){
+
+  getSignatureList(object, assay_name = "protein", class = class)
+
+}
+
+#' @rdname getSignatureNames
+#' @export
+getProteinSets <- function(object, class = NULL, ...){
+
+  getSignatureNames(object, class = class, assay_name = "protein")
+
+}
+
 
 
 # getR --------------------------------------------------------------------
@@ -699,6 +715,8 @@ getProteins <- function(object,
 #' scores range from 0-1 (with 1 being worst), the default includes everything.
 #' @param best_only Logical value. If `TRUE`, only the best gradient-model fit according
 #' to the chosen evaluation metric (`eval`) for each screened variable is kept.
+#' @param as_is Logical value. If `TRUE`, all parameters are ignored and the $significance
+#' and $model_fits data.frames are simply joined and return without any filtering.
 #'
 #' @return A data.frame with results of the spatial gradient screening conducted.
 #' Column names are:
@@ -709,8 +727,7 @@ getProteins <- function(object,
 #'    \item{mae}{ The mean absolute error of the gradient-model fit.}
 #'    \item{rmse}{ The root mean squared error of the gradient-model fit.}
 #'    \item{p_value}{ The p-value regarding the hypothesis whether such a gradient
-#'    can be obtained under random circumstances (= the spatial reference feature
-#'    has no impact on the spatial expression pattern.)
+#'    can be obtained under random circumstances.
 #'    }
 #'    \item{fdr}{ The adjusted p-value using false discovery rate.}
 #'    }
@@ -745,16 +762,25 @@ setGeneric(name = "getSgsResultsDf", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSgsResultsDf",
-  signature = "SpatialAnnotationScreening",
+  signature = "SpatialGradientScreening",
   definition = function(object,
                         eval = "mae",
                         pval = "fdr",
                         arrange_by = eval,
-                        threshold_eval = 1,
-                        threshold_pval = 1,
+                        threshold_eval = 0.25,
+                        threshold_pval = 0.05,
                         model_subset = NULL,
                         model_remove = NULL,
-                        best_only = FALSE){
+                        best_only = TRUE,
+                        as_is = FALSE){
+
+    if(base::isTRUE(as_is)){
+
+      threshold_pval = Inf
+      threshold_eval = Inf
+      best_only = FALSE
+
+    }
 
     rdf <-
       dplyr::left_join(x = object@results$model_fits, y = object@results$significance, by = "variables") %>%
@@ -773,46 +799,8 @@ setMethod(
         eval = eval,
         best_only = best_only
       ) %>%
-      dplyr::select(dplyr::everything(), dplyr::contains("_var"))
-
-    return(rdf)
-
-  }
-)
-
-#' @rdname getSgsResultsDf
-#' @export
-setMethod(
-  f = "getSgsResultsDf",
-  signature = "SpatialTrajectoryScreening",
-  definition = function(object,
-                        eval = "mae",
-                        pval = "fdr",
-                        arrange_by = eval,
-                        threshold_eval = 1,
-                        threshold_pval = 1,
-                        model_subset = NULL,
-                        model_remove = NULL,
-                        best_only = FALSE){
-
-    rdf <-
-      dplyr::left_join(x = object@results$model_fits, y = object@results$significance, by = "variables") %>%
-      filter_by_model(
-        df = .,
-        model_subset = model_subset,
-        model_remove = model_remove
-      ) %>%
-      filter_by_thresholds(
-        df = .,
-        eval = eval,
-        pval = pval,
-        threshold_eval = threshold_eval,
-        threshold_pval = threshold_pval
-      ) %>%
-      filter_by_best(
-        eval = eval,
-        best_only = best_only
-      )
+      dplyr::select(dplyr::everything(), dplyr::contains("_var")) %>%
+      dplyr::arrange(!!rlang::sym(arrange_by))
 
     return(rdf)
 
@@ -825,6 +813,8 @@ setMethod(
 #' @description Extracts results in form of character vectors.
 #'
 #' @inherit object_dummy params
+#' @param name_output If `TRUE`, the output vector is equipped with names
+#' that correspond to the model that fit best to the gradient.
 #'
 #' @return Named character vector. Values are the variable/gene names. Names
 #' correspond to the model that fitted best.
@@ -849,16 +839,18 @@ setMethod(
                         eval = "mae",
                         pval = "fdr",
                         arrange_by = eval,
-                        threshold_eval = 0.5,
+                        threshold_eval = 0.25,
                         threshold_pval = 0.05,
                         model_subset = NULL,
-                        model_remove = NULL){
+                        model_remove = NULL,
+                        name_output = FALSE){
 
     rdf <-
       getSgsResultsDf(
         object = object,
         pval = pval,
         eval = eval,
+        arrange_by = arrange_by,
         threshold_pval = threshold_pval,
         threshold_eval = threshold_eval,
         model_subset = model_subset,
@@ -868,7 +860,11 @@ setMethod(
 
     out <- rdf[["variables"]]
 
-    base::names(out) <- rdf[["models"]]
+    if(base::isTRUE(name_output)){
+
+      base::names(out) <- rdf[["models"]]
+
+    }
 
     return(out)
 
@@ -1166,7 +1162,7 @@ getExpansionsSA <- function(object,
   area_df <-
     getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = FALSE)
 
-  ccd <- getCCD(object, unit = "px")
+  ccd <- recSgsRes(object)
 
   expansion_list <-
     purrr::imap(
@@ -1184,7 +1180,7 @@ getExpansionsSA <- function(object,
         .x = expansion_list,
         .f = ~ include_tissue_outline(
           input_df = .x,
-          coords_df = getCoordsDf(object),
+          coords_df = joinWithVariables(object, variables = "tissue_section", spatad_df = getCoordsDf(object)),
           outline_df = getTissueOutlineDf(object),
           spat_ann_center = getSpatAnnCenter(object, id = id),
           outside_rm = outside_rm,
@@ -1413,25 +1409,74 @@ getSpatSegmVarNames <- function(object, fdb_fn = "message", ...){
 
 #' @title Obtain molecular signatures
 #'
-#' @description Retrieves the signatures present in the [`SPATA2`] object.
+#' @description Retrieves the list of \link[=concept_molecular_signatures]{molecular signatures}
+#' stored in a \link[=MolecularAssay]{molecular assay}. While `getSignatureList()` allows
+#' to extract signatures of all assays, `getGeneSetList()`, `getMetaboliteSetList()` and `getProteinSetList()`
+#' are quick wrappers. But they require assays of specific names/\link[=concept_molecular_modalities]{molecular modalities}.
 #'
-#' @param object An object containing molecular data.
-#' @param assay_name The name of the assay containing the molecular data (default: active assay in the object).
+#' @param class Character vector of signature classes with which to subset the output.
+#' @inherit argument_dummy params
 #'
-#' @return A list of character vectors.
+#' @return A named list of character vectors.
 #'
-#' @details This function retrieves the signatures from the provided object. It returns a list of signatures associated with the specified assay in the object.
+#' @details These functions retrieve the signatures from the provided object.
+#'
+#' \itemize{
+#'  \item{`getSignatureList()`}{: The list of signatures from the assay specified in `assay_name`.}
+#'  \item{`getGeneSetList()`}{:  The list of signatures from the assay with @@modality = 'gene' (`assay_name = 'gene'`).}
+#'  \item{`getMetaboliteSetList()`}{: The list of signatures from the assay with @@modality = 'metabolite' (`assay_name = 'metabolite'`).}
+#'  \item{`getProteinSetLit()`}{: The list of signatures the assay with @@modality = 'protein' (`assay_name = 'protein'`).}
+#'  }
 #'
 #' @seealso Documentation of slot @@signatures in the [`MolecularAssay`]-class.
+#' To extract character vectors of molecule names [`getMolecules()`] or [`getGenes()`], ...
+#' To extract character vectors of signature names [`getSignatureNames()`], [`getGeneSets()`], ...
+#' To add signatures [`addSignature()`] or [`addGeneSet()`], ...
 #'
 #' @examples
-#' # Get signatures from the object
-#' signatures <- getSignatures(object)
+#'
+#' library(SPATA2)
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' ## how the different functions work
+#' getAssayNames(object)
+#'
+#' # opt 1
+#' activeAssay(object)
+#' gene_sets <- getSignatureList(object)
+#'
+#' head(gene_sets)
+#'
+#' # opt 2 (equal to opt 1, cause active and only assay is 'gene')
+#' gene_sets <- getSignatureList(object, assay_name = "gene")
+#'
+#' head(gene_sets)
+#'
+#' # opt 3
+#' gene_sets <- getGeneSetList(object)
+#'
+#' head(gene_sets)
+#'
+#' # opt 4 - fails cause no 'protein' assay
+#' protein_sets <- getProteinSetList(object)
+#'
+#' ## using class argument
+#'
+#' hm_gene_sets <- getGeneSetList(object, class = "HM")
+#'
+#' head(hm_gene_sets)
+#' tail(hm_gene_sets)
+#'
+#' two_kinds_of_gene_sets <- getGeneSetList(object, class = c("HM", "RCTM"))
+#'
+#' head(two_kinds_of_gene_sets)
+#' tail(two_kinds_of_gene_sets)
 #'
 #' @export
-getSignatures <- function(object,
-                          assay_name = activeAssay(object),
-                          class = NULL){
+getSignatureList <- function(object,
+                             class = NULL,
+                             assay_name = activeAssay(object)){
 
   signatures <- getAssay(object, assay_name = assay_name)@signatures
 
@@ -1454,12 +1499,104 @@ getSignatures <- function(object,
 }
 
 
+#' @title Obtain molecular signature names
+#'
+#' @description
+#' Extracts a character vector of \link[=concept_molecular_signatures]{molecular signature}
+#' names.
+#'
+#' @param class `NULL` or a character vector indicating the classes from which to obtain
+#' the gene set names. (Which sisgnature classes currently exist can
+#' be obtained e.g. with \code{printSignatureOverview()}).
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#'
+#' @details These functions retrieve signature **names** from the provided object.
+#'
+#' \itemize{
+#'  \item{`getSignatureNames()`}{: The signature names from the assay specified in `assay_name`.}
+#'  \item{`getGeneSets()`}{:  The signature names from the assay with @@modality = 'gene' (`assay_name = 'gene'`).}
+#'  \item{`getMetaboliteSets()`}{: The signature names from the assay with @@modality = 'metabolite' (`assay_name = 'metabolite'`).}
+#'  \item{`getProteinSets()`}{: The signature names from the assay with @@modality = 'protein' (`assay_name = 'protein'`).}
+#'  }
+#'
+#' If 'signature' is `NULL`, it returns all molecules from the respective assay in the object.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' object <- normalizeCounts(example_data$object_UKF269T_diet)
+#'
+#' # only one assay exists...
+#' getAssayNames(object)
+#'
+#' # ... which is the default assay
+#' activeAssay(object)
+#'
+#' ## extraction
+#' # opt 1
+#' all_signatures <- getSignatureNames(object, assay_name = "gene")
+#'
+#' str(all_signatures)
+#'
+#' # whether you specify assay_name or not does not make a difference since
+#' # the object only contains one assay
+#' hallmark_signatures <- getSignatureNames(object, class = "HM")
+#'
+#' str(hallmark_signatures)
+#'
+#' # opt 2
+#' hallmark_signatures <- getGeneSets(object, class = "HM")
+#'
+#' str(hallmark_signatures)
+#'
+#' # opt 3 - failes cause no 'protein' assay
+#' protein_signatures <- getProteinSets(object, assay_name = "protein")
+#'
+#' ## usage as character vector for argument input
+#'
+#' set.seed(123)
+#' color_by <- sample(all_signature, size = 9)
+#'
+#' plotSurfaceComparison(object, color_by = color_by, outline = T, pt_clrsp = "Reds 3")
+#'
+#' coords_df <- getCoordsDf(object)
+#'
+#' print(coords_df)
+#'
+#' coords_df <- joinWithVariables(object, coords_df = coords_df, variables = hallmark_signatures)
+#'
+#' print(coords_df)
+#'
+
+getSignatureNames <- function(object,
+                              class = NULL,
+                              assay_name = activeAssay(object),
+                              ...){
+
+  deprecated(...)
+
+  getSignatureList(object, class = class, assay_name = assay_name) %>%
+    base::names()
+
+}
+
+
+
+
+
+
+
 #' @title Obtain a list of signatures
 #'
 #' @description Retrieves a list of signatures sorted by molecular type as
 #' present in the given object.
 #'
-#' @param object An object containing signature data.
+#' @inherit argument_dummy params
 #' @param signatures A character vector specifying the subset of signatures to include in the output (default: NULL).
 #'
 #' @return A list containing the names of signatures categorized by assay type.
@@ -2956,7 +3093,7 @@ getSpatialTrajectory <- function(object, id){
 
   confuns::check_one_of(
     input = id,
-    against = getTrajectoryIds(object)
+    against = getSpatialTrajectoryIds(object)
   )
 
   sp_data <- getSpatialData(object)
@@ -3678,6 +3815,45 @@ getUmapDf <- function(object, ...){
 
 # getV --------------------------------------------------------------------
 
+
+
+#' @title Obtain variable molecules
+#'
+#' @description
+#' Extracts results of [`identifyVariableMolecules()`].
+#'
+#' @param method The selection method of interest.
+#' @inherit argument_dummy params
+#'
+#' @inherit identifyVariableMolecules examples
+#'
+#' @return Character vector.
+#'
+#' @export
+#'
+getVariableMolecules <- function(object,
+                                 method,
+                                 assay_name = activeAssay(object)){
+
+  confuns::check_one_of(
+    input = method,
+    against = c("vst", "mean.var.plot", "dispersion")
+  )
+
+  ma <- getAssay(object)
+
+  out <- ma@analysis$variable_molecules[[method]]
+
+  check_availability(
+    test = !base::is.null(out),
+    ref_x = glue::glue("variable molecules for method '{method}' in assay '{assay_name}'"),
+    ref_fns = "`identifyVariableMolecules()`"
+  )
+
+  return(out)
+
+}
+
 #' @title Obtain variable names
 #'
 #' @description Extracts a character vector of variable names that are currently
@@ -3687,9 +3863,9 @@ getUmapDf <- function(object, ...){
 #' @param protected Logical value. If `TRUE`, variable names that are protected
 #' in `SPATA2` are returned, too, regardless of being in use or not.
 #'
-#' @note Molecule names are picked from the currently active matrix of their assay.
-#' If the processed matrix does not contain some molecules the raw count matrix
-#' contains the do not appear.
+#' @note Molecule names are picked from the currently active matrix of their assay!
+#' If a processed matrix is active and it does not contain some molecules the raw count matrix
+# because the processing steps have removed them, they do not appear in the results.
 #'
 #' @return Character vector.
 #' @export

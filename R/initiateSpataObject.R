@@ -1,7 +1,7 @@
 
 
 
-#' @title Initiate a `SPATA2` object
+#' @title Initiate an object of class `SPATA2`
 #'
 #' @description Initiates a [`SPATA2`] object using the basic inputs: a coordinates
 #' data.frame and a count matrix.
@@ -33,6 +33,10 @@
 #' no image is provided.
 #'
 #' @inherit argument_dummy params
+#'
+#' @note In contrast to [`initiateSpataObjectVisium()`] or [ìnitiateSpataObjectMERFISH()`],
+#' a `SPATA2` object with this function the output does not contain a tissue outline yet
+#' Run [`identifyTissueOutline()`] with your choice of parameters afterwards.
 #'
 #' @section Initiating the object with an image:
 #' `SPATA2` allows to register multiple images with one object via file directories.
@@ -212,9 +216,6 @@ initiateSpataObject <- function(sample_name,
   # spatial data
   object <- setSpatialData(object, sp_data = sp_data)
 
-  # default processing
-  object <- identifyTissueOutline(object)
-
   returnSpataObject(object)
 
 }
@@ -250,7 +251,7 @@ initiateSpataObjectEmpty <- function(sample_name, platform, verbose = TRUE){
 
 
 
-#' @title Initiate a `SPATA2` object from platform MERFISH
+#' @title Initiate an object of class `SPATA2` from platform MERFISH
 #'
 #' @description Wrapper function around the necessary content to create a
 #' `SPATA2` object from the standardized output of the MERFISH platform.
@@ -409,7 +410,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
 }
 
 
-#' @title Initiate a `SPATA2` object from platform SlideSeq
+#' @title Initiate an object of class `SPATA2` from platform SlideSeq
 #'
 #' @description Wrapper function around the necessary content to create a
 #' `SPATA2` object from the standardized output of the SlideSeq platform.
@@ -627,7 +628,7 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 
 }
 
-#' @title Initiate `SPATA2` object from platform Visium
+#' @title Initiate an object of class `SPATA2` from platform Visium
 #'
 #' @description Wrapper function around the necessary content to create a
 #' `SPATA2` object from standardized output of the Visium platform. See details
@@ -647,17 +648,17 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' following subdirectories exist:
 #'
 #'  \itemize{
-#'   \item{*spatial/*}{The folder in which image and coordinates are located.}
-#'   \item{*filtered_feature_bc_matrix.h5*}{The filtered count matrix.}
-#'   \item{*raw_feature_bc_matrix.h5*}{The filtered count matrix.}
+#'   \item{*spatial/*}{: The folder in which image and coordinates are located.}
+#'   \item{*filtered_feature_bc_matrix.h5*}{: The filtered count matrix.}
+#'   \item{*raw_feature_bc_matrix.h5*}{: The filtered count matrix.}
 #'   }
 #'
 #' Depending on the input for `mtr` only the requested file has to exist. Given
 #' the content and subsequent filenames, the function differentiates between
 #'
 #'  \itemize{
-#'   \item{VisiumSmall}{Visium data set with capture area of 6.5mm x 6.5mm.}
-#'   \item{VisiumLarge}{Visium data set with capture area of 11mm x 11m. }
+#'   \item{VisiumSmall}{ Visium data set with capture area of 6.5mm x 6.5mm.}
+#'   \item{VisiumLarge}{ Visium data set with capture area of 11mm x 11m. }
 #'   }
 #'
 #' In any case, the output is an object of class `SPATA2`.
@@ -775,7 +776,7 @@ initiateSpataObjectVisium <- function(sample_name,
 }
 
 
-#' @title Initiate `SPATA2` object from platform Xenium
+#' @title Initiate an object of class `SPATA2` from platform Xenium
 #'
 #' @description Wrapper function around the necessary content to create a
 #' `SPATA2` object from standardized output of the Xenium platform.

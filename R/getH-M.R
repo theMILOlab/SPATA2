@@ -781,10 +781,10 @@ setMethod(
 
 
 
-#' @title Obtain names of registered `HistoImage` objects
+#' @title Obtain names of registered images
 #'
-#' @description Extracts the names of the `HistoImage` objects currently
-#' registered in the object.
+#' @description Extracts the names of images (and their [`HistoImage`] container objects)
+#' currently registered in the object.
 #'
 #' @inherit argument_dummy params
 #' @param ref Logical value. If `FALSE`, name of the reference image is not
@@ -1136,6 +1136,23 @@ getMetabolites <- function(object,
 
 }
 
+
+#' @rdname getSignatureList
+#' @export
+getMetaboliteSetList <- function(object, class = NULL){
+
+  getSignatureList(object, assay_name = "metabolite", class = class)
+
+}
+
+#' @rdname getSignatureNames
+#' @export
+getMetaboliteSets <- function(object, class = NULL, ...){
+
+  getSignatureNames(object, class = class, assay_name = "metabolite")
+
+}
+
 #' @title Obtain meta data.frame
 #'
 #' @description Retrieves the meta data frame from the provided object which
@@ -1223,8 +1240,8 @@ setMethod(
 
 #' @title Obtain molecule names
 #'
-#' @description Retrieves the list of molecules present in the given object,
-#' optionally filtered by a specific signature.
+#' @description Retrieves the names of molecules present in the given object,
+#' optionally filtered by a specific \link[=concept_molecular_signatures]{signature}.
 #'
 #' @inherit argument_dummy params
 #' @param signatures Character vector or `NULL`. If character, specifies the name of
@@ -1237,19 +1254,66 @@ setMethod(
 #'
 #' @return A character vector or a named list of character vectors.
 #'
-#' @details This function retrieves the list of molecules from the provided object.
-#' If the `signatures` argument is provided, it filters the molecules based on the
-#' specified signatures. If 'signature' is `NULL`, it returns all molecules from the
-#' active assay in the object.
+#' @details These functions retrieve molecule names from the provided object.
+#'
+#' \itemize{
+#'  \item{`getMolecules()`}{: The molecules from the assay specified in `assay_name`.}
+#'  \item{`getGenes()`}{:  The molecules from the assay with @@modality = 'gene' (`assay_name = 'gene'`).}
+#'  \item{`getMetabolites()`}{: The molecules from the assay with @@modality = 'metabolite' (`assay_name = 'metabolite'`).}
+#'  \item{`getProteins()`}{: The molecules from the assay with @@modality = 'protein' (`assay_name = 'protein'`).}
+#'  }
+#'
+#' If 'signature' is `NULL`, it returns all molecules from the respective assay in the object.
 #'
 #' @seealso [`getMatrix()`], [`getSignatures()`]
 #'
 #' @examples
-#' # Get all molecules from the object
-#' all_molecules <- getMolecules(object)
 #'
-#' # Get molecules associated with a specific signature
-#' signature_molecules <- getMolecules(object, signature = "signature_name")
+#' library(SPATA2)
+#' object <- example_data$object_UKFT269_diet
+#'
+#' getAssayNames(object)
+#'
+#' ## no subsetting by signatures
+#' # opt 1
+#' genes <- getMolecules(object)
+#'
+#' str(genes)
+#'
+#' # opt 2
+#' genes <- getMolecules(object, assay_name = "gene")
+#'
+#' str(genes)
+#'
+#' # opt 3
+#' genes <- getGenes(object)
+#'
+#' # opt 4 - fails cause no 'protein' assay
+#'
+#' proteins <- getProteins(object)
+#'
+#' ## using signatures argument
+#' # character vector of molecules of specific signatures (simplify defaults to TRUE)
+#' genes_hyp <- getGenes(object, signatures = "HM_HYPOXIA")
+#'
+#' genes_hyp
+#'
+#' # list of gene sets
+#' tcr_gs <- c("RCTM_TCR_SIGNALING", "RCTM_DOWNSTREAM_SIGNALING")
+#'
+#' # simplify = TRUE (default) merges the output to a character vector of unique names
+#' tcr_genes_vec <- getGenes(object, signatures = tcr_gs, simplify = TRUE)
+#'
+#' str(tcr_genes_vec)
+#'
+#'# simplify = FALSE returns a list
+#' tcr_genes_lst <- getGenes(object, signatures = tcr_gs, simplify = FALSE)
+#'
+#' str(tcr_genes_lst)
+#'
+#' ## DEPRECATED: of_gene_sets
+#' tcr_genes <- getGenes(object, of_gene_sets = tcr_gs, simplify = FALSE)
+#'
 #'
 #' @export
 getMolecules <- function(object,
@@ -1263,7 +1327,7 @@ getMolecules <- function(object,
 
   if(base::is.character(signatures)){
 
-    all_signatures <- getSignatures(object, assay_name = assay_name)
+    all_signatures <- getSignatureList(object, assay_name = assay_name)
 
     confuns::check_one_of(
       input = signatures,

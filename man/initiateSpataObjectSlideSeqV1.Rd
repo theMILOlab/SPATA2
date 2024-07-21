@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectSlideSeqV1}
 \alias{initiateSpataObjectSlideSeqV1}
-\title{Initiate a \code{SPATA2} object from platform SlideSeq}
+\title{Initiate an object of class \code{SPATA2} from platform SlideSeq}
 \usage{
 initiateSpataObjectSlideSeqV1(
   sample_name,

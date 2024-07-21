@@ -353,6 +353,17 @@ getImgAnnTags <- function(...){
 
 }
 
+#' @title Deprecated
+#' @description Deprecated in favor of [`getSpatSegmVarNames()`].
+#' @export
+#' @keywords internal
+getSegmentationNames <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getSpatSegmVarNames(...)
+
+}
 
 #' @title Deprecated
 #' @description Deprecated in favor of [`getStsDf()`].
@@ -439,6 +450,18 @@ ggpLayerSampleMask <- function(...){
 }
 
 #' @title Deprecated
+#' @description Deprecated in favor of [`ggpLayerSpatialTrajectories()`].
+#' @export
+#' @keywords internal
+ggpLayerTrajectories <- function(...){
+
+  deprecated(fn = TRUE)
+
+  ggpLayerSpatialTrajectories(...)
+
+}
+
+#' @title Deprecated
 #' @description
 #' Deprecated in favor of [`getSgsResultsDf()`].
 #' @export
@@ -446,7 +469,7 @@ ggpLayerSampleMask <- function(...){
 #'
 getResultsDf <- function(...){
 
-  deprecated(fn = T, ...)
+  deprecated(fn = T)
 
   getSgsResultsDf(...)
 
@@ -460,7 +483,7 @@ getResultsDf <- function(...){
 #'
 getResultsVec <- function(...){
 
-  deprecated(fn = T, ...)
+  deprecated(fn = T)
 
   getSgsResultsVec(...)
 
@@ -474,7 +497,7 @@ getResultsVec <- function(...){
 #'
 getSampleAreaSize <- function(...){
 
-  deprecated(fn = T, ...)
+  deprecated(fn = T)
 
   getTissueArea(...)
 

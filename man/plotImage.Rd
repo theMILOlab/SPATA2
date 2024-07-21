@@ -43,6 +43,7 @@ plotImage(object, ...)
   scale_fct = 1,
   xrange = NULL,
   yrange = NULL,
+  unit = "px",
   ...
 )
 
@@ -94,6 +95,8 @@ spatial transformation instructions saved during image alignment of
 the image \code{img_name} are applied. Only relevant if there are any images registered
 in the \code{SPATA2} object.}
 
+\item{img_alpha}{Numeric value. Sets the transparency for the image.}
+
 \item{xrange, yrange}{\link[=concept_distance_measure]{Distance vector} of length
 two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
 the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
@@ -101,7 +104,9 @@ the two dimensional space being cropped from x-coordinate 200px up to
 x-coordinate 500px. If \code{NULL}, the original range is used.}
 
 \item{unit}{Character value. Units of x- and y-axes. Defaults
-to \emph{'px'}.}
+to \emph{'px'}. If a SI unit is specified, uses \code{\link[=ggpLayerAxesSI]{ggpLayerAxesSI()}} with
+default parameters. Add the layer manually with \code{+ ggpLayerAxesSI(...)} for
+more control.}
 }
 \value{
 A ggplot.

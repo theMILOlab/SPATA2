@@ -1186,12 +1186,14 @@ get_coords_df_sa <- function(object,
 
   if(distance > dte){
 
-    dte_ref <- stringr::str_c(extract_value(dte), extract_unit(dte))
-    distance_ref <- stringr::str_c(extract_value(distance), extract_unit(dte))
+    dte_wu <- as_unit(input = dte, object = object, unit = getDefaultUnit(object))
+
+    dte_ref <- stringr::str_c(extract_value(dte) %>% round(2), extract_unit(dte))
+    distance_ref <- stringr::str_c(extract_value(distance) %>% round(2), extract_unit(dte))
 
     warning(
       glue::glue(
-        "Parameter `distance` equals {distance_ref} and exceeds the distance from spatial annotation '{id}' to the edge of the tissue section its located on: {dte_ref}. The parameter was adjusted accordingly."
+        "Parameter `distance` equals ~{distance_ref} and exceeds the distance from spatial annotation '{id}' to the edge of tissue section '{ts}' where it is located on: {dte_ref}. The parameter was adjusted accordingly."
         )
     )
 
@@ -1291,16 +1293,6 @@ get_coords_df_sa <- function(object,
     if(dist_unit %in% validUnitsOfLengthSI()){
 
       # provide as numeric value cause dist is scaled down
-      if(!base::is.null(resolution)){
-
-        resolution  <- as_unit(resolution, unit = dist_unit, object = object)
-
-        resolution <-
-          as_unit(input = resolution, unit = dist_unit, object = object) %>%
-          extract_value()
-
-      }
-
       distance <-
         as_unit(input = distance, unit = dist_unit, object = object) %>%
         extract_value()
@@ -1312,6 +1304,10 @@ get_coords_df_sa <- function(object,
     }
 
   }
+
+  resolution <-
+    as_unit(input = resolution, unit = dist_unit, object = object) %>%
+    extract_value()
 
   coords_df$dist_unit <- dist_unit
 
@@ -2317,6 +2313,7 @@ getGenes <- function(object,
 #'
 #' @return Either a named list or a data.frame with variables *ont* and *gene*.
 #' @export
+#' @keywords internal
 
 getGeneSetDf <- function(object){
 
@@ -2335,11 +2332,11 @@ getGeneSetDf <- function(object){
 
 }
 
-#' @rdname getGeneSetDf
+#' @rdname getSignatureList
 #' @export
-getGeneSetList <- function(object){
+getGeneSetList <- function(object, class = NULL){
 
-  getAssay(object, assay_name = "gene")@signatures
+  getSignatureList(object, assay_name = "gene", class = class)
 
 }
 
@@ -2383,112 +2380,17 @@ getGeneSetOverview <- function(object){
 
 }
 
-#' @title Obtain gene set names
-#'
-#' @inherit argument_dummy params
-#' @inherit check_object params
-#' @param of_class A character vector indicating the classes from which to obtain
-#' the gene set names. (Which classes exist in the current gene set data.frame can
-#' be obtained e.g. with \code{printGeneSetOverview()}). If set to \emph{"all"} all
-#' gene sets are returned.
-#' @param index A regular expression according to which the gene set names to be returned
-#' are filtered again.
-#'
-#' @return A list named according to the input of argument \code{of_class}. Each element of
-#' the returned list is a character vector containing the names of gene sets of the specified classes.
-#' The list is coalesced to an unnamed vector if \code{simplify} is set to TRUE.
-#'
+
+#' @rdname getSignatureNames
 #' @export
+getGeneSets <- function(object, class = NULL, ...){
 
-getGeneSets <- function(object, of_class = "all", index = NULL, simplify = TRUE){
-
-  # 1. Control --------------------------------------------------------------
-
-  # lazy check
-  check_object(object)
-
-  confuns::is_vec(x = of_class, mode = "character")
-  confuns::is_value(x = index, mode = "character", skip.allow = TRUE, skip.val = NULL)
-
-  # -----
-
-  # 2. Main part ------------------------------------------------------------
-
-  gene_sets <- getGeneSetList(object) %>% base::names()
-
-  # 2.1 Extract gene sets according to 'of_class' ----------
-  if(base::length(of_class) == 1 && of_class == "all"){
-
-    res_list <- gene_sets
-
-  } else {
-
-    # get gene sets for all elements of 'of_class' in a list
-    res_list <-
-      base::lapply(X = of_class, FUN = function(i){
-
-        subset <-
-          stringr::str_subset(gene_sets, pattern = stringr::str_c("^", i, sep = "")) %>%
-          base::unique()
-
-        if(base::length(subset) == 0){
-
-          base::warning(stringr::str_c("Could not find any gene set of class:", i, sep = " "))
-
-          return(NULL)
-
-        } else {
-
-          return(subset)
-
-        }
-
-      })
-
-    base::names(res_list) <- of_class
-
-    # discard list elements if 'of_class' element wasn't found
-    res_list <-
-      purrr::discard(.x = res_list, .p = base::is.null)
-
-  }
-
-  # -----
-
-
-  # 2.2 Adjust output according to 'index' ----------
-
-  if(base::isTRUE(simplify)){
-
-    res_list <- base::unlist(res_list) %>% base::unname()
-
-  }
-
-
-  if(!base::is.null(index) && base::is.list(res_list)){
-
-    res_list <-
-      base::lapply(
-        X = res_list,
-        FUN = function(i){
-
-          i[stringr::str_detect(string = i, pattern = index)]
-
-        })
-
-  } else if(!base::is.null(index) && base::is.character(res_list)){
-
-    res_list <-
-      res_list[stringr::str_detect(string = res_list, pattern = index)]
-
-  }
-
-  return(res_list)
+  getSignatureNames(object, class = class, assay_name = "gene")
 
 }
 
-#' @rdname getGeneSets
-#' @export
+
+#' @keywords internal
 getGeneSetsInteractive <- function(object){
 
   check_object(object)
@@ -2555,8 +2457,7 @@ getGeneSetsInteractive <- function(object){
 }
 
 
-#' @rdname getMolecules
-#' @export
+#' @keywords internal
 getGenesInteractive <- function(object){
 
   check_object(object)
