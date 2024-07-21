@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotF-G.R
 \name{plotGseaDotPlot}
 \alias{plotGseaDotPlot}
-\title{Plot gene set enrichment}
+\title{Plot GSEA results via dot plots}
 \usage{
 plotGseaDotPlot(
   object,
@@ -150,3 +150,18 @@ Extensive tutorials for how to use this function can be found on our website
 \url{https://themilolab.github.io/SPATA2/} .
 }
 
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+# requires the results of runDEA(object, across = "histology")!
+object <- runDEA(object, across = "histology")
+
+object <- runGSEA(object, across = "histology")
+
+plotGseaDotplot(object, across = "histology", )
+
+}

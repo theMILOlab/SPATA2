@@ -10,7 +10,7 @@ plotSurfaceSAS(object, ...)
 
 \S4method{plotSurfaceSAS}{SPATA2}(
   object,
-  id,
+  ids,
   distance = distToEdge(object, id),
   resolution = recBinwidth(object),
   color_by = c("dist", "bins_dist", "angle", "bins_angle"),
@@ -19,7 +19,7 @@ plotSurfaceSAS(object, ...)
   color_outside = ggplot2::alpha("lightgrey", 0.25),
   show_plots = TRUE,
   ggpLayers = list(),
-  bcs_eclude = NULL,
+  bcs_exclude = NULL,
   verbose = NULL,
   ...
 )
@@ -40,10 +40,7 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{id}{Character value specifying the ID of the spatial annotation of interest.
-If there is only one spatial annotation in the object, the function
-will default to using it. However, if there are multiple annotations,
-this argument must be explicitly specified to identify the target annotation.}
+\item{ids}{Character vector. Specifies the IDs of the spatial annotations of interest.}
 
 \item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
@@ -72,6 +69,9 @@ plotted. If FALSE, only a list of plots is returned (invisibly).}
 
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
+
+\item{bcs_exclude}{Character value containing the barcodes of observations to be excluded
+from the analysis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

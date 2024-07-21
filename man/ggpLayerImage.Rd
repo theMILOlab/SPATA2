@@ -52,6 +52,8 @@ be one of \code{\link[=getImageNames]{getImageNames()}}.}
 spatial transformation instructions saved during image alignment of
 the image \code{img_name} are applied. Only relevant if there are any images registered
 in the \code{SPATA2} object.}
+
+\item{img_alpha}{Numeric value. Sets the transparency for the image.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

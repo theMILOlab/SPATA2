@@ -2,100 +2,11 @@
 
 # addGeneSet -> addSignature? ---------------------------------------------
 
-#' @title Add a new gene set
-#'
-#' @description Stores a new gene set in the `SPATA2` object.
-#'
-#' @inherit argument_dummy params
-#' @param class_name Character value. The class the gene set belongs to..
-#' @param gs_name Character value. The name of the new gene set.
-#'
-#' @inherit check_genes params
-#'
-#' @inherit update_dummy return
-#'
-#' @details Combines \code{class_name} and \code{gs_name} to the final gene set name.
-#' Gene set classes and gene set names are separated by '_' and handled like this
-#' in all additional gene set related functions which is why \code{class_name} must
-#' not contain any '_'.
-#'
-#' @export
-#'
-#' @examples
-#'
-#' # ----- prepare
-#' library(SPATA2)
-#' library(tidyverse)
-#'
-#' data("example_data")
-#'
-#' object <- example_data$object_UKF275T_diet
-
-addGeneSet <- function(object,
-                       class_name,
-                       gs_name,
-                       genes,
-                       overwrite = FALSE,
-                       check_genes = TRUE){
-
-  # lazy control
-  check_object(object)
-
-  gsl <- getGeneSetList(object)
-
-  if(base::isTRUE(check_genes)){
-
-    confuns::check_one_of(
-      input = genes,
-      against = getGenes(object)
-    )
-
-  }
-
-  if(base::any(!base::sapply(X = list(class_name, gs_name, genes), FUN = base::is.character))){
-
-    stop("Arguments 'class_name', 'gs_name' and 'genes' must be of class character.")
-
-  }
-
-  if(base::length(class_name) != 1 | base::length(gs_name) != 1){
-
-    stop("Arguments 'class_name' and 'gs_name' must be of length one.")
-
-  }
-
-  if(stringr::str_detect(string = class_name, pattern = "_")){
-
-    stop("Invalid input for argument 'class_name'. Must not contain '_'.")
-
-  }
-
-  name <- stringr::str_c(class_name, gs_name, sep = "_")
-
-  # make sure not to overwrite if overwrite == FALSE
-  if(name %in% base::names(gsl) && base::isFALSE(overwrite)){
-
-    stop(stringr::str_c("Gene set '", name, "' already exists.",
-                        " Set argument 'overwrite' to TRUE in order to overwrite existing gene set."))
-
-  } else if(name %in% base::names(gsl) && base::isTRUE(overwrite)) {
-
-    object <- discardGeneSets(object, gs_names = name)
-
-  }
-
-  ma <- getAssay(object, "transcriptomics")
-  ma@signatures[[name]] <- genes
-
-  object <- setAssay(object, assay = ma)
-
-  returnSpataObject(object)
-
-}
 
 
-#' @rdname addGeneSet
-#' @export
+
+
+#' @keywords internal
 addGeneSetsInteractive <- function(object){
 
   check_object(object)

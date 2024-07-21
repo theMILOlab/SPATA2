@@ -708,7 +708,6 @@ ggpLayerExprEstimatesSAS <- function(object,
                                      line_size = (line_size_core * 0.75),
                                      line_size_core = 1,
                                      incl_edge = TRUE,
-                                     direction = "outwards",
                                      method = "normal",
                                      verbose = NULL,
                                      ...){
@@ -716,7 +715,9 @@ ggpLayerExprEstimatesSAS <- function(object,
   deprecated(...)
   hlpr_assign_arguments(object)
 
-  if(length(ids) > 1 | method == "2D"){
+  direction <- "outwards"
+
+  if(method == "2D"){
 
     out_list <-
       ggpLayerScreeningDirectionSAS(
@@ -904,7 +905,7 @@ ggpLayerScreeningDirectionSAS <- function(object,
   crange <- getCoordsRange(object)
 
   coords_df_px <-
-    getCoordsDfSA(object, ids = ids, distance = distance, dist_unit = "px", core0 = TRUE)
+    getCoordsDfSA(object, ids = ids, distance = distance, core0 = TRUE)
 
   coords_df_px <-
     dplyr::filter(
@@ -1044,10 +1045,9 @@ ggpLayerFrameByCoords <- function(object = "object", ...){
   xlim <- getCoordsRange(object)$x
   ylim <- getCoordsRange(object)$y
 
-  ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
+  out <- ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
 
   return(out)
-
 
 }
 
@@ -2626,6 +2626,8 @@ ggpLayerScaleBarSI <- function(object,
 #' removed due to crossing the tissue edge.
 #' @param use_colors Logical value. If `TRUE`, the color aesthetic is used to display
 #' each outline in a different color while providing a legend.
+#' @param fill Character value or NA. If character, specifies the color with which
+#' the outline of the spatial annotation is filled.
 #'
 #' @inherit argument_dummy params
 #' @inherit getSpatialAnnotations params details

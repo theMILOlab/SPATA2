@@ -28,6 +28,7 @@
 #' black layer (second value).
 #'
 #' @inherit argument_dummy params
+#' @inherit ggpLayerSpatAnnOutline params
 #'
 #' @note The methods for `SpatialAnnotationScreening`- and `SpatialTrajectoryScreening`
 #' exist to quickly visualize the set up with which the screening was conducted. The ...
@@ -71,10 +72,17 @@ setMethod(
                         na_rm = FALSE,
                         xrange = getCoordsRange(object)$x,
                         yrange = getCoordsRange(object)$y,
+                        img_name = NULL,
                         verbose = NULL,
                         ...){
 
     hlpr_assign_arguments(object)
+
+    if(base::is.character(img_name)){
+
+      object <- activateImageInt(object, img_name = img_name)
+
+    }
 
     main_plot <-
       ggplot2::ggplot() +
@@ -263,6 +271,7 @@ setMethod(
                         color_by = "rel_loc",
                         line_color = "black",
                         line_size = 1,
+                        fill = ggplot2::alpha("lightgrey", 0.25),
                         pt_clrp = "npg",
                         ...){
 
@@ -273,18 +282,23 @@ setMethod(
 
           id <- spat_ann@id
 
-          df <-
-            purrr::imap_dfr(
-              .x = spat_ann@area,
-              .f = ~ dplyr::mutate(.x, border = .y, id = {{id}})
+          spat_ann_sf <-
+            sf::st_polygon(
+              x = purrr::map(
+                .x = spat_ann@area,
+                .f =
+                  ~ close_area_df(.x) %>%
+                  dplyr::select(x, y) %>%
+                  base::as.matrix()
               )
+            )
 
-          ggplot2::geom_polygon(
-            data = df,
-            mapping = ggplot2::aes(x = x, y = y, group = border),
-            fill = NA,
+          ggplot2::geom_sf(
+            data = spat_ann_sf,
+            linewidth = line_size,
             color = line_color,
-            linewidth = line_size
+            linetype = "solid",
+            fill = fill
           )
 
         }
@@ -1017,7 +1031,7 @@ setMethod(
   f = "plotSurfaceSAS",
   signature = "SPATA2",
   definition = function(object,
-                        id,
+                        ids,
                         distance = distToEdge(object, id),
                         resolution = recBinwidth(object),
                         color_by = c("dist", "bins_dist", "angle", "bins_angle"),
@@ -1026,7 +1040,7 @@ setMethod(
                         color_outside = ggplot2::alpha("lightgrey", 0.25),
                         show_plots = TRUE,
                         ggpLayers = list(),
-                        bcs_eclude = NULL,
+                        bcs_exclude = NULL,
                         verbose = NULL,
                         ...){
 
@@ -1036,11 +1050,9 @@ setMethod(
     sas_df <-
       getCoordsDfSA(
         object = object,
-        id = id,
+        ids = ids,
         distance = distance,
-        binwidth = binwidth,
-        n_bins_dist = n_bins_dist,
-        n_bins_angle = n_bins_angle,
+        resolution = resolution,
         angle_span = angle_span,
         dist_unit = unit,
         verbose = verbose

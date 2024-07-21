@@ -22,6 +22,7 @@ spatialTrajectoryScreening(
   rm_zero_infl = TRUE,
   n_random = 10000,
   seed = 123,
+  control = NULL,
   verbose = NULL,
   ...
 )
@@ -46,17 +47,16 @@ or  \link[=concept_area_measure]{area measures} are provided.
 Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
 input options.}
 
-\item{model_add}{Named list. Every slot in the list must be either a formula
-containing a function that takes a numeric vector as input and returns a numeric
-vector with the same length as its input vector. Or a numeric vector with the
-same length as the input vector. Test models with \code{showModels()}.}
+\item{sign_var}{Either \emph{p_value} or \emph{fdr}. Defaults to \emph{fdr}.}
 
-\item{model_subset}{Character value. Used as a regex to subset models.
-Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}
-and \code{showModels()} to visualize them.}
+\item{sign_threshold}{The significance threshold. Defaults to 0.05.}
 
-\item{model_remove}{Character value. Used as a regex to remove models
-are not supposed to be included.}
+\item{n_random}{Number of random permutations for the significance testing of step 2.}
+
+\item{seed}{Numeric value. Sets the random seed.}
+
+\item{control}{A list of arguments as taken from \code{\link[stats:loess.control]{stats::loess.control()}}.
+Default setting is stored in \code{SPATA2::sgs_loess_control}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

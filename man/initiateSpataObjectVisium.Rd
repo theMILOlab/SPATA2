@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectVisium}
 \alias{initiateSpataObjectVisium}
-\title{Initiate \code{SPATA2} object from platform Visium}
+\title{Initiate an object of class \code{SPATA2} from platform Visium}
 \usage{
 initiateSpataObjectVisium(
   sample_name,
@@ -50,17 +50,17 @@ This function expects \code{directory_visium} to lead to a folder in which the
 following subdirectories exist:
 
 \itemize{
-\item{\emph{spatial/}}{The folder in which image and coordinates are located.}
-\item{\emph{filtered_feature_bc_matrix.h5}}{The filtered count matrix.}
-\item{\emph{raw_feature_bc_matrix.h5}}{The filtered count matrix.}
+\item{\emph{spatial/}}{: The folder in which image and coordinates are located.}
+\item{\emph{filtered_feature_bc_matrix.h5}}{: The filtered count matrix.}
+\item{\emph{raw_feature_bc_matrix.h5}}{: The filtered count matrix.}
 }
 
 Depending on the input for \code{mtr} only the requested file has to exist. Given
 the content and subsequent filenames, the function differentiates between
 
 \itemize{
-\item{VisiumSmall}{Visium data set with capture area of 6.5mm x 6.5mm.}
-\item{VisiumLarge}{Visium data set with capture area of 11mm x 11m. }
+\item{VisiumSmall}{ Visium data set with capture area of 6.5mm x 6.5mm.}
+\item{VisiumLarge}{ Visium data set with capture area of 11mm x 11m. }
 }
 
 In any case, the output is an object of class \code{SPATA2}.

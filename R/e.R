@@ -225,9 +225,16 @@ estimate_r2_for_sts_run <- function(object,
                                     width,
                                     noise_levels = base::seq(from = 0, to = 100, length.out = 11),
                                     n_sim = 20,
+                                    control = NULL,
                                     verbose = NULL){
 
   hlpr_assign_arguments(object)
+
+  if(base::is.null(control)){
+
+    control <- sgs_loess_control
+
+  }
 
   simulations <-
     purrr::map(
@@ -358,7 +365,7 @@ estimate_r2_for_sts_run <- function(object,
       }
     )
 
-  out <- list(r2_df = r2_df, sas_df = sas_df)
+  out <- list(r2_df = r2_df, sts_df = sgs_df)
 
   return(out)
 

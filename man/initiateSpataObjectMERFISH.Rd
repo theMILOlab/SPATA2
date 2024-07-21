@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectMERFISH}
 \alias{initiateSpataObjectMERFISH}
-\title{Initiate a \code{SPATA2} object from platform MERFISH}
+\title{Initiate an object of class \code{SPATA2} from platform MERFISH}
 \usage{
 initiateSpataObjectMERFISH(
   sample_name,

@@ -74,3 +74,4 @@ object <- downloadSpataObject(sample_name = "275_T", folder = getwd())
 # only assign (default)
 object <- downloadSpataObject(sample_name = "275_T", file = NULL)
 }
+\keyword{internal}

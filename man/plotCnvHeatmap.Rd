@@ -180,7 +180,7 @@ the computational progress will be printed.
 A plot of class \code{aplot}.
 }
 \description{
-Plots the results of \code{runCnvAnalysis()} in form of a heatmap.
+Plots the results of \code{runCNV()} in form of a heatmap.
 Use arguments \code{across} and \code{across_subset} to visualize CNV differences
 between subgroups of cluster variables or other grouping variables (e.g. based on
 histology created with \code{createSpatialSegmentation()}).

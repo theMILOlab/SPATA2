@@ -112,6 +112,9 @@ axes text.}
 \item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
 \emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
+\item{fill}{Character value or NA. If character, specifies the color with which
+the outline of the spatial annotation is filled.}
+
 \item{sb_dist}{Distance measure or \code{FALSE}. If distance measure,
 defines the distance in SI units that a scale bar illustrates.
 Scale bar is plotted with \code{ggpLayerScaleBarSI()}. If \code{FALSE},

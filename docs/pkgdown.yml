@@ -13,13 +13,11 @@ articles:
   initiation-and-preprocessing-customized: initiation-and-preprocessing-customized.html
   initiation-and-preprocessing-visium: initiation-and-preprocessing-visium.html
   newslog: newslog.html
-  spata-v2-spatial-trajectories: spata-v2-spatial-trajectories.html
   spatial-annotation-screening: spatial-annotation-screening.html
   spatial-measures: spatial-measures.html
   spatial-segmentation: spatial-segmentation.html
   spatial-trajectory-screening: spatial-trajectory-screening.html
   surface-plotting: surface-plotting.html
   using-spatial-annotations: using-spatial-annotations.html
-  using-spatial-trajectories: using-spatial-trajectories.html
-last_built: 2024-07-07T16:11Z
+last_built: 2024-07-21T00:36Z
 

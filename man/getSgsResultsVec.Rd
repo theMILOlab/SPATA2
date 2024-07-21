@@ -12,14 +12,18 @@ getSgsResultsVec(object, ...)
   eval = "mae",
   pval = "fdr",
   arrange_by = eval,
-  threshold_eval = 0.5,
+  threshold_eval = 0.25,
   threshold_pval = 0.05,
   model_subset = NULL,
-  model_remove = NULL
+  model_remove = NULL,
+  name_output = FALSE
 )
 }
 \arguments{
 \item{object}{Any object for which a method has been defined.}
+
+\item{name_output}{If \code{TRUE}, the output vector is equipped with names
+that correspond to the model that fit best to the gradient.}
 }
 \value{
 Named character vector. Values are the variable/gene names. Names

@@ -571,6 +571,7 @@ depr_info <-
       "getGroupNames" = list("grouping_variable" = "grouping"),
       "getIasDf" = list("outer" = NA_character_, "inner" = NA_character_),
       "getSasDf" = list("id" = "ids"),
+      "getSignatures" = list("of_class" = "class"),
       "ggpLayerAxesSI" = list("expand" = NA_character_, "frame_by" = NA_character_, "xlim" = "xrange", "ylim" = "yrange"),
       "ggpLayerExprEstimatesSAS" = list("id" = "ids"),
       "imageAnnotationScreening" = list("outer" = NA_character_, "inner" = NA_character_),

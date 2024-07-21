@@ -31,7 +31,8 @@ plotSasHeatmap(
 objects of classes for which a method has been defined.}
 
 \item{variables}{Character vector. The numeric variables to be included in
-the screening process.}
+the screening process. Makre sure that the correct matrix is active in the
+respective assays.}
 
 \item{ids}{Character vector. Specifies the IDs of the spatial annotations of interest.}
 

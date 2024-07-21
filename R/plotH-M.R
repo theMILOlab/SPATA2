@@ -64,7 +64,9 @@ plotHistogram <- function(object,
 #' @description Plots the histology image with `ggplot2`.
 #'
 #' @param unit Character value. Units of x- and y-axes. Defaults
-#' to *'px'*.
+#' to *'px'*. If a SI unit is specified, uses [`ggpLayerAxesSI()`] with
+#' default parameters. Add the layer manually with `+ ggpLayerAxesSI(...)` for
+#' more control.
 #' @param ... Additional arguments given to `ggpLayerZoom()`.
 #'
 #' @inherit argument_dummy params
@@ -146,9 +148,11 @@ setMethod(
                         scale_fct = 1,
                         xrange = NULL,
                         yrange = NULL,
+                        unit = "px",
                         ...){
 
-    getHistoImage(object, img_name = img_name) %>%
+    out <-
+      getHistoImage(object, img_name = img_name) %>%
       plotImage(
         object = .,
         by_section = by_section,
@@ -165,6 +169,17 @@ setMethod(
         yrange = yrange,
         ...
       )
+
+
+    if(unit != "px"){
+
+      out <-
+        out +
+        ggpLayerAxesSI(object, unit = unit)
+
+    }
+
+    return(out)
 
   }
 )
@@ -564,20 +579,34 @@ setMethod(
 
 #' @title Plot histology images (ggplot2)
 #'
-#' @description Reads in and plots all images known to the `SPATA2` object.
+#' @description Plots all images registered the `SPATA2` object.
 #'
 #' @param img_names Character vector or `NULL`. If character, specifies the images
 #' by name. If `NULL`, all images are plotted.
+#' @param outline Logical value. If `TRUE`, all images are plotted with the outline
+#' identified by `identifyTissueOutline(..., method = "image")`.
+#' @param outline_ref Logical value. If `TRUE`, all images plotted with
+#' the outline identified by `identifyTissueOutline(..., method = "image")` of the
+#' reference image.
+#' @param by_section Logical value. If `TRUE`, the default, the outline for every
+#' tissue section identified is used.
+#' @param line_color,line_color_ref Character value. The transparency for the outline if
+#' `outline = TRUE` and/or `outline_ref = TRUE`.
+#' @param line_color,line_color_ref Character value. The color for the outline if
+#' `outline = TRUE` and/or `outline_ref = TRUE`.
+#' @param line_size,line_size_ref Character value. The linewidth for the outline if
+#' `outline = TRUE` and/or `outline_ref = TRUE`.
 #' @param ... Additional arguments given to `plotImage()`.
+#' @param transform Logical value. Should the instructions for image transformation
+#' set with [`alignImage()`] be applied?
+#' @inherit argument_dummy params
 #'
 #' @return A ggplot assembled with via `patchwork::wrap_plots()`.
-#'
-#' @inherit argument_dummy params
 #'
 #' @inheritSection section_dummy Distance measures
 #' @inheritSection section_dummy Image visualization with ggplot2
 #'
-#' @seealso [`getImageDirectories()`]
+#' @seealso [`getImageDirectories()`], [`identifyPixelContent()`], [`identifyTissueOutline()`]
 #'
 #' @examples
 #' library(SPATA2)
@@ -587,7 +616,6 @@ setMethod(
 #' object <- example_data$object_UKF275T_diet
 #'
 #' plotImages(object)
-#'
 #'
 #' @export
 
@@ -806,18 +834,28 @@ setMethod(
           if((base::isTRUE(outline) & name != ref_name) |
              (base::isTRUE(outline) & base::isFALSE(outline_ref) & name == ref_name)){
 
-            p <-
-              p +
-              ggpLayerTissueOutline(
-                object = hist_img,
-                by_section = by_section,
-                fragments = fragments,
-                line_alpha = line_alpha,
-                line_color = line_color,
-                line_size = line_size,
-                transform = transform_checked,
-                scale_fct = 1
-              )
+            if(containsTissueOutline(hist_img)){
+
+              p <-
+                p +
+                ggpLayerTissueOutline(
+                  object = hist_img,
+                  by_section = by_section,
+                  fragments = fragments,
+                  line_alpha = line_alpha,
+                  line_color = line_color,
+                  line_size = line_size,
+                  transform = transform_checked,
+                  scale_fct = 1
+                )
+
+            } else {
+
+              warning(glue::glue("No tissue outline identified for image '{hist_img@name}'."))
+
+            }
+
+
 
           }
 

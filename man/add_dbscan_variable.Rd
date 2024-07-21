@@ -3,7 +3,7 @@
 \name{add_dbscan_variable}
 \alias{add_dbscan_variable}
 \alias{add_tissue_section_variable}
-\title{Add tissue section variable}
+\title{Add tissue section variable to coordinate data.frame}
 \usage{
 add_dbscan_variable(
   coords_df,

@@ -236,7 +236,9 @@ NULL
 #' differing from the ones SPATA2 knows. It is just that you won't be able to
 #' use certain functions with the created assay.
 #'
-#' @note The molecular modality of an assay also defines its name! Hence, if you
+#' @section Molecular Modality == Assay Name!:
+#'
+#' The molecular modality of an assay also defines its name! Hence, if you
 #' encounter the parameter `assay_name` it can be thought of defining the molecular
 #' modality of interest! And the output of [`activeAssay()`] can be thought of
 #' the output of *active molecular modality*.
@@ -259,7 +261,7 @@ NULL
 #'
 #' @section SPATA2 inbuilt signatures:
 #'
-#' SPATA2 knows three molecular modalities.
+#' SPATA2 knows three \link[=concept_molecular_modalities]{molecular modalities}.
 #'
 #' \enumerate{
 #'  \item{Gene expression}{: With `modality = 'gene'`}
@@ -284,12 +286,12 @@ NULL
 #' The class indicates the source from where the signature derives and is separated
 #' from the biological function part with the **first** _. Underscores afterwards
 #' are ignored and interpreted as part of the biological function as in *RCTM_TCR_SIGNALING*
-#' (class = *RCTM*; biological function *TCR_SIGNALING*).
+#' (class: *RCTM*; biological function: *TCR_SIGNALING*).
 #'
-#' @seealso [`addSignature()`], [`getSignature()`], [`getGeneSet()`]
+#' @seealso [`addSignature()`], [`getSignature()`], [`addGeneSet()`], [`getGeneSet()`]
 #'
-#' @name concept_molecular_signature
-#' @aliases concept_molecular_signature
+#' @name concept_molecular_signatures
+#' @aliases concept_molecular_signatures
 #'
 #' @keywords internal
 NULL

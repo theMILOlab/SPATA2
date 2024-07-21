@@ -414,6 +414,7 @@ downloadFromPublication <- function(pub, id, raw = FALSE){
 #' @note Imported from the package `SPATAData`.
 #' @importFrom SPATAData downloadRawData
 #' @export
+#' @keywords internal
 downloadRawData <- SPATAData::downloadRawData
 
 #' @title Download `spata2` objects
@@ -421,10 +422,12 @@ downloadRawData <- SPATAData::downloadRawData
 #' @note Imported from the package `SPATAData`.
 #' @importFrom SPATAData downloadSpataObject
 #' @export
+#' @keywords internal
 downloadSpataObject <- SPATAData::downloadSpataObject
 
 #' @rdname downloadSpataObject
 #' @inherit SPATAData::downloadSpataObjects params
 #' @importFrom SPATAData downloadSpataObjects
 #' @export
+#' @keywords internal
 downloadSpataObjects <- SPATAData::downloadSpataObjects

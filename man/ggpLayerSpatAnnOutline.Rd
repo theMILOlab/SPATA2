@@ -35,6 +35,9 @@ selection. See section \emph{Selection of spatial annotations} for more informat
 Specifies how input for \code{tags} is used to select spatial annotations.
 See section \emph{Selection of spatial annotations} for more information.}
 
+\item{fill}{Character value or NA. If character, specifies the color with which
+the outline of the spatial annotation is filled.}
+
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}

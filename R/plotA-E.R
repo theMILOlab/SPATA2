@@ -447,7 +447,7 @@ plotCnvDotplot <- function(object,
 
 #' @title Plot CNV Heatmap
 #'
-#' @description Plots the results of \code{runCnvAnalysis()} in form of a heatmap.
+#' @description Plots the results of \code{runCNV()} in form of a heatmap.
 #' Use arguments \code{across} and \code{across_subset} to visualize CNV differences
 #' between subgroups of cluster variables or other grouping variables (e.g. based on
 #' histology created with \code{createSpatialSegmentation()}).
@@ -1284,7 +1284,7 @@ plotCnvHeatmap <- function(object,
 
 #' @title Plot CNV Lineplot
 #'
-#' @description Plots the results of \code{runCnvAnalysis()} in form of a lineplot.
+#' @description Plots the results of \code{runCNV()} in form of a lineplot.
 #' Use arguments \code{across} and \code{across_subset} to visualize CNV differences
 #' between subgroups of cluster variables or other grouping variables (e.g. based on
 #' histology created with \code{createSpatialSegmentation()}).
@@ -2670,7 +2670,7 @@ plotDensityplot <- function(object,
 # plotE -------------------------------------------------------------------
 
 
-#' @title Plot Expression as a function of distance to a spatial references
+#' @title Plot expression as a function of distance to a spatial references
 #'
 #' @description Generates a scatterplot to visualize the relationship between gene expression and
 #' the distance of data points to a spatial reference. Set `line_alpha` > 0 to visualize the

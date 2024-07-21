@@ -3,7 +3,7 @@
 \name{plotExprVsDistSA}
 \alias{plotExprVsDistSA}
 \alias{plotExprVsDistST}
-\title{Plot Expression as a function of distance to a spatial references}
+\title{Plot expression as a function of distance to a spatial references}
 \usage{
 plotExprVsDistSA(
   object,

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A Toolbox for Spatial Gene Expression Analysis • SPATA2</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -42,6 +42,12 @@
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="articles/installation.html">Installation</a>
+</li>
+<li>
+  <a href="articles/spata-data.html">SPATAData</a>
+</li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
@@ -49,62 +55,70 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li>
+<li class="dropdown-header">Initiating a SPATA2 object</li>
+    <li>
+      <a href="articles/initiation-and-preprocessing-customized.html">Initiation &amp; Preprocessing with individual data</a>
+    </li>
+    <li>
+      <a href="articles/initiation-and-preprocessing-merfish.html">Initiation &amp; Preprocessing with MERFISH data</a>
+    </li>
+    <li>
+      <a href="articles/initiation-and-preprocessing-visium.html">Initiation &amp; Preprocessing with Visium data</a>
+    </li>
+    <li class="dropdown-header">Basic Manipulation of a SPATA2 object</li>
+    <li>
       <a href="articles/adding-data.html">Adding Data to SPATA2 objects</a>
     </li>
     <li>
-      <a href="articles/clustering.html">Clustering</a>
+      <a href="articles/platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="articles/cnv.html">Copy Number Variations (CNV)</a>
-    </li>
-    <li>
-      <a href="articles/creating-spatial-annotations.html">Creating Spatial Annotations</a>
-    </li>
-    <li>
-      <a href="articles/creating-spatial-trajectories.html">Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="articles/dea.html">Differential Expression Analysis (DEA)</a>
-    </li>
-    <li>
-      <a href="articles/gsea.html">Gene Set Enrichment Analysis</a>
+      <a href="articles/genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
     <li>
       <a href="articles/image-handling.html">Image Handling</a>
     </li>
     <li>
-      <a href="articles/initiation-and-preprocessing-customized.html">Initiation of individual SPATA2 objects</a>
-    </li>
-    <li>
-      <a href="articles/initiation-and-preprocessing-visium.html">Initiation &amp; Processing: Visium</a>
-    </li>
-    <li>
-      <a href="articles/newslog.html">Newslog</a>
-    </li>
-    <li>
-      <a href="articles/spata-v2-spatial-trajectories.html">Creating Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="articles/spatial-annotation-screening.html">Spatial Annotation Screening</a>
-    </li>
-    <li>
-      <a href="articles/spatial-measures.html">Spatial measures</a>
-    </li>
-    <li>
       <a href="articles/spatial-segmentation.html">Spatial Segmentation</a>
     </li>
+    <li class="dropdown-header">Implemented Algorithms &amp; Concepts</li>
     <li>
-      <a href="articles/spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+      <a href="articles/cnv.html">Copy Number Variations</a>
     </li>
     <li>
-      <a href="articles/surface-plotting.html">Surface Plotting</a>
+      <a href="articles/clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="articles/dea.html">Differential Expression</a>
+    </li>
+    <li>
+      <a href="articles/gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li>
+      <a href="articles/spatial-measures.html">Spatial Measures</a>
+    </li>
+    <li class="dropdown-header">Spatial Gradient Screening</li>
+    <li>
+      <a href="articles/creating-spatial-annotations.html">Creating Spatial Annotations</a>
     </li>
     <li>
       <a href="articles/using-spatial-annotations.html">Using Spatial Annotations</a>
     </li>
     <li>
-      <a href="articles/using-spatial-trajectories.html">Spatial Trajectory Screening</a>
+      <a href="articles/spatial-annotation-screening.html">Spatial Annotation Screening</a>
+    </li>
+    <li>
+      <a href="articles/creating-spatial-trajectories.html">Creating Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="articles/spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li class="dropdown-header">Visualization</li>
+    <li>
+      <a href="articles/plotting-surface.html">Surface Plotting</a>
+    </li>
+    <li>
+      <a href="articles/plotting-misc.html">Miscellaneous</a>
     </li>
   </ul>
 </li>
@@ -141,7 +155,14 @@
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-    <div class="license">
+    <div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://themilolab.com/" class="external-link">Visit us</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="https://www.r-project.org/Licenses/GPL-3" class="external-link">GPL-3</a></li>

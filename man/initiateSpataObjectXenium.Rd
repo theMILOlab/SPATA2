@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectXenium}
 \alias{initiateSpataObjectXenium}
-\title{Initiate \code{SPATA2} object from platform Xenium}
+\title{Initiate an object of class \code{SPATA2} from platform Xenium}
 \usage{
 initiateSpataObjectXenium(sample_name, directory_xenium, verbose = TRUE)
 }

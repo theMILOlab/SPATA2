@@ -75,7 +75,8 @@ relation to the spatial annotation. Requires numeric variables named \emph{x} an
 pixel units.}
 
 \item{variables}{Character vector. The numeric variables to be included in
-the screening process.}
+the screening process. Makre sure that the correct matrix is active in the
+respective assays.}
 
 \item{format}{Character value. Either \emph{'long'} or \emph{'wide'}. Defaults to
 \emph{'wide'}. If \emph{'wide'} each variable gets a column.  If \emph{'long'}, the data.frame

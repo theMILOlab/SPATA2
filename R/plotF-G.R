@@ -5,7 +5,7 @@
 
 
 
-#' @title Plot gene set enrichment
+#' @title Plot GSEA results via dot plots
 #'
 #' @description Visualizes results of gene set enrichment analysis with
 #' dot plots.
@@ -30,6 +30,7 @@
 #' order within the groups.
 #'
 #' @inheritSection tutorial_hint_dummy Tutorials
+#' @inherit runGSEA examples
 #'
 #' @export
 plotGseaDotPlot <- function(object,

@@ -103,7 +103,7 @@ the computational progress will be printed.
 A ggplot.
 }
 \description{
-Plots the results of \code{runCnvAnalysis()} in form of a lineplot.
+Plots the results of \code{runCNV()} in form of a lineplot.
 Use arguments \code{across} and \code{across_subset} to visualize CNV differences
 between subgroups of cluster variables or other grouping variables (e.g. based on
 histology created with \code{createSpatialSegmentation()}).

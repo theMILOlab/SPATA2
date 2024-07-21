@@ -1288,7 +1288,6 @@ setMethod(
       # sets slot @outline of SpatialData object
     } else if(method == "obs"){
 
-      minPts <- as_pixel(minPts, object = object)
       eps = as_pixel(eps, object = object)
 
       # for complete tissue
@@ -1315,7 +1314,7 @@ setMethod(
         dplyr::arrange(min_y) %>%
         dplyr::pull(ts)
 
-      coords_df$tissue_section <- character(1)
+      coords_df$tissue_section <- "tissue_section_0"
 
       for(i in seq_along(sections_ordered)){
 
@@ -1438,6 +1437,71 @@ setMethod(
   }
 )
 
+
+
+#' @title Identify variable molecules
+#'
+#' @description
+#' Identfies molecules that are outliers on a mean-variability plot as proposed by
+#' `Seurat`.
+#'
+#' @param n_mol Numeric value. The number of molecules to be identified. Given
+#' to `nfeatures` of [`Seurat::FindVariableFeatures()`].
+#' @param method Character value. The identification method. One of *'vst'*,
+#' *'mean.var.plot'* or *'dispersion'*. Given to `selection.method` of
+#' [`Seurat::FindVariableFeatures()`].
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' object <- identifyVariableMolecules(object, n_mol = 2000)
+#' object <- identifyVariableMolecules(object, n_mol = 3000, method = "mean.var.plot")
+#'
+#' vars_vst <- getVariableMolecules(object, method = "vst")
+#' vars_mvp <- getVariableMolecules(object, method = "mean.var.plot")
+#'
+#' length(vars_vst)
+#' length(vars_mvp)
+#'
+identifyVariableMolecules <- function(object,
+                                      n_mol = 2500,
+                                      method = "vst",
+                                      assay_name = activeAssay(object),
+                                      ...){
+
+  confuns::check_one_of(
+    input = method,
+    against = c("vst", "mean.var.plot", "dispersion")
+  )
+
+  ma <- getAssay(object, assay_name = assay_name)
+
+  count_mtr <- ma@mtr_counts
+
+  vf <-
+    Seurat::CreateSeuratObject(counts = count_mtr) %>%
+    Seurat::NormalizeData() %>%
+    Seurat::ScaleData() %>%
+    Seurat::FindVariableFeatures(object = ., nfeatures = n_mol, selection.method = method, ...) %>%
+    Seurat::VariableFeatures()
+
+  ma@analysis$variable_molecules[[method]] <- vf
+
+  object <- setAssay(object, assay = ma)
+
+  returnSpataObject(object)
+
+}
+
 # if ----------------------------------------------------------------------
 
 if_null <- function(x, out){
@@ -1511,16 +1575,16 @@ include_tissue_outline <- function(input_df,
                                    ...){
 
   deprecated(...)
-  outline_var <- "section"
+  outline_var <- "tissue_section"
 
   # identify sections
   if(base::is.null(outline_df)){
 
     is_dist_pixel(input = ccd, error = TRUE)
 
-    if(!"section" %in% base::colnames(coords_df)){
+    if(!"tissue_section" %in% base::colnames(coords_df)){
 
-      coords_df <- add_tissue_section_variable(coords_df, ccd = ccd, name = "section")
+      coords_df <- add_tissue_section_variable(coords_df, ccd = ccd, name = "tissue_section")
 
       coords_df <- dplyr::filter(coords_df, section != "0")
 
@@ -1665,7 +1729,7 @@ include_tissue_outline <- function(input_df,
      base::is.numeric(spat_ann_center) &
      base::nrow(proc_df) != 0){
 
-    section_of_img_ann <-
+    section_of_spat_ann <-
       dplyr::group_by(.data = coords_df, barcodes) %>%
       dplyr::mutate(
         dist = compute_distance(starting_pos = c(x,y), final_pos = spat_ann_center)
@@ -1675,7 +1739,7 @@ include_tissue_outline <- function(input_df,
       dplyr::pull({{outline_var}}) %>%
       base::as.character()
 
-    proc_df <- dplyr::filter(proc_df, section == {{section_of_img_ann}})
+    proc_df <- dplyr::filter(proc_df, section == {{section_of_spat_ann}})
 
   } else {
 

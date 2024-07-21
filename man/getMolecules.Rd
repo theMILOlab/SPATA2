@@ -2,15 +2,12 @@
 % Please edit documentation in R/getA-G.R, R/getH-M.R, R/getN-Z.R
 \name{getGenes}
 \alias{getGenes}
-\alias{getGenesInteractive}
 \alias{getMetabolites}
 \alias{getMolecules}
 \alias{getProteins}
 \title{Obtain molecule names}
 \usage{
 getGenes(object, signatures = NULL, simplify = TRUE, ...)
-
-getGenesInteractive(object)
 
 getMetabolites(object, signatures = NULL, simplify = TRUE, ...)
 
@@ -37,34 +34,80 @@ a named list of character vectors is returned (names correspond to signatures).}
 \item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
-one assay: Denotes the assay of interest (and thus the
-active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
+one assay: Denotes the assay of interest and thus the
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 }
 \value{
 A character vector or a named list of character vectors.
 }
 \description{
-Retrieves the list of molecules present in the given object,
-optionally filtered by a specific signature.
+Retrieves the names of molecules present in the given object,
+optionally filtered by a specific \link[=concept_molecular_signatures]{signature}.
 }
 \details{
-This function retrieves the list of molecules from the provided object.
-If the \code{signatures} argument is provided, it filters the molecules based on the
-specified signatures. If 'signature' is \code{NULL}, it returns all molecules from the
-active assay in the object.
+These functions retrieve molecule names from the provided object.
+
+\itemize{
+\item{\code{getMolecules()}}{: The molecules from the assay specified in \code{assay_name}.}
+\item{\code{getGenes()}}{:  The molecules from the assay with @modality = 'gene' (\code{assay_name = 'gene'}).}
+\item{\code{getMetabolites()}}{: The molecules from the assay with @modality = 'metabolite' (\code{assay_name = 'metabolite'}).}
+\item{\code{getProteins()}}{: The molecules from the assay with @modality = 'protein' (\code{assay_name = 'protein'}).}
+}
+
+If 'signature' is \code{NULL}, it returns all molecules from the respective assay in the object.
 }
 \note{
-Molecule names are picked from the currently active matrix of their assay.
-If the processed matrix does not contain some molecules the raw count matrix
-contains the do not appear.
+Molecule names are picked from the currently active matrix of their assay!
+If a processed matrix is active and it does not contain some molecules the raw count matrix
 }
 \examples{
-# Get all molecules from the object
-all_molecules <- getMolecules(object)
 
-# Get molecules associated with a specific signature
-signature_molecules <- getMolecules(object, signature = "signature_name")
+library(SPATA2)
+object <- example_data$object_UKFT269_diet
+
+getAssayNames(object)
+
+## no subsetting by signatures
+# opt 1
+genes <- getMolecules(object)
+
+str(genes)
+
+# opt 2
+genes <- getMolecules(object, assay_name = "gene")
+
+str(genes)
+
+# opt 3
+genes <- getGenes(object)
+
+# opt 4 - fails cause no 'protein' assay
+
+proteins <- getProteins(object)
+
+## using signatures argument
+# character vector of molecules of specific signatures (simplify defaults to TRUE)
+genes_hyp <- getGenes(object, signatures = "HM_HYPOXIA")
+
+genes_hyp
+
+# list of gene sets
+tcr_gs <- c("RCTM_TCR_SIGNALING", "RCTM_DOWNSTREAM_SIGNALING")
+
+# simplify = TRUE (default) merges the output to a character vector of unique names
+tcr_genes_vec <- getGenes(object, signatures = tcr_gs, simplify = TRUE)
+
+str(tcr_genes_vec)
+
+# simplify = FALSE returns a list
+tcr_genes_lst <- getGenes(object, signatures = tcr_gs, simplify = FALSE)
+
+str(tcr_genes_lst)
+
+## DEPRECATED: of_gene_sets
+tcr_genes <- getGenes(object, of_gene_sets = tcr_gs, simplify = FALSE)
+
 
 }
 \seealso{

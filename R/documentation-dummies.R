@@ -22,8 +22,8 @@
 #' to be included.
 #'
 #' @param assay_name Only relevant if the `SPATA2` object contains more than
-#' one assay: Denotes the assay of interest (and thus the
-#' active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
+#' one assay: Denotes the assay of interest and thus the
+#' \link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
 #' as set by [`activateAssay()`].
 #'
 #' @param bcsp_rm Character vector or `NULL.` If character, specifies barcode-spots that
@@ -106,6 +106,8 @@
 #' @param hline_alpha,hline_color,hline_size,hline_type Parameters given to
 #' \code{ggplot2::geom_hline()} that control the appearance of vertical lines
 #' of the plot.
+#'
+#' @param img_alpha Numeric value. Sets the transparency for the image.
 #'
 #' @param img_name Character value. The name of the image of interest.
 #' If `NULL`, the \link[=concept_active]{active} image is chosen by default. Either way, must

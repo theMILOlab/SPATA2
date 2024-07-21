@@ -26,8 +26,8 @@ an observation might have when related to the center of the spatial annotation,
 to be included.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
-one assay: Denotes the assay of interest (and thus the
-active \link[=concept_molecular_modalities]{molecular modality}. Defaults to the active assay,
+one assay: Denotes the assay of interest and thus the
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
@@ -114,6 +114,8 @@ the dendrogom is cut.}
 \item{hline_alpha, hline_color, hline_size, hline_type}{Parameters given to
 \code{ggplot2::geom_hline()} that control the appearance of vertical lines
 of the plot.}
+
+\item{img_alpha}{Numeric value. Sets the transparency for the image.}
 
 \item{img_name}{Character value. The name of the image of interest.
 If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
