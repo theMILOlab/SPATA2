@@ -58,8 +58,7 @@ These functions retrieve molecule names from the provided object.
 If 'signature' is \code{NULL}, it returns all molecules from the respective assay in the object.
 }
 \note{
-Molecule names are picked from the currently active matrix of their assay!
-If a processed matrix is active and it does not contain some molecules the raw count matrix
+Molecule names are picked from the raw count matrix the assay.
 }
 \examples{
 

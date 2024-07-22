@@ -46,28 +46,22 @@ library(patchwork)
 
 data("example_data")
 
-object <- example_data$object_UKF275T_diet
+object <- example_data$object_UKF313T_diet
+
+ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "all")
+
+plotSpatialAnnotations(object, ids = ids)
 
 object <-
- createNumericAnnotations(
-   object = object,
-   variable = "HM_HYPOXIA",
-   threshold = "kmeans_high",
-   id = "hypoxia_ann",
-   inner_borders = FALSE,
-   force1 = TRUE
-   )
+  spatialAnnotationToGrouping(
+    object = object,
+    ids = ids,
+    grouping_name = "histology",
+    inside = "necrotic",
+    outside = "vivid"
+    )
 
+plotSurface(object, color_by = "histology", clrp_adjust = c("necrotic" = "black", "vivid" = "forest_green"))
 
- object <-
-   spatialAnnotationToGrouping(
-     object = object,
-     ids = "hypoxia_ann",
-     grouping_name = "hyp_group"
-     )
-
- plotSurface(object, "hyp_group")
-
- plotBoxplot(object, variables = "HM_HYPOXIA", group_by = "hyp_group")
 
 }

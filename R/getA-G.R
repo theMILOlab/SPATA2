@@ -2380,6 +2380,16 @@ getGeneSetOverview <- function(object){
 
 }
 
+#' @rdname getGeneSet
+#' @export
+getGeneSet <- function(object, gene_set, ...){
+
+  deprecated(...)
+
+  getSignature(object, signature = gene_set, assay_name = "gene")
+
+}
+
 
 #' @rdname getSignatureNames
 #' @export

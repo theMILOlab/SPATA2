@@ -21,6 +21,5 @@ Extracts a character vector of variable names that are currently
 known to the \code{SPATA2} object.
 }
 \note{
-Molecule names are picked from the currently active matrix of their assay!
-If a processed matrix is active and it does not contain some molecules the raw count matrix
+Molecule names are picked from the raw count matrix the assay.
 }

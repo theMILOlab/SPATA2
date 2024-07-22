@@ -678,6 +678,17 @@ getProteins <- function(object,
 
 }
 
+
+#' @rdname getProteinSet
+#' @export
+getProteinSet <- function(object, protein_set, ...){
+
+  deprecated(...)
+
+  getSignature(object, signature = protein_set, assay_name = "protein")
+
+}
+
 #' @rdname getSignatureList
 #' @export
 getProteinSetList <- function(object, class = NULL){
@@ -1405,6 +1416,40 @@ getSpatSegmVarNames <- function(object, fdb_fn = "message", ...){
 
 }
 
+
+#' @title Obtain molecular signature
+#' @description
+#' Extracts a character vector of molecule names making up a molecular signature.
+#'
+#' @param signature Character value. The signature of interest.
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#'
+#' @details These functions retrieve molecule names of single signatures.
+#'
+#' \itemize{
+#'  \item{`getSignature()`}{: A character vector of molecule names from the signature specified.}
+#'  \item{`getGeneSet()`}{:  A character vector of gene names from the gene set specified.}
+#'  \item{`getMetaboliteSet()`}{: A character vector metabolite names from the metabolite set specified.}
+#'  \item{`getProteinSet()`}{: A character vector of protein names from the protein set specified.}
+#'  }
+#'
+#' @export
+getSignature <- function(object,
+                         signature,
+                         assay_name = activeAssay(object)){
+
+ slist <-  getSignatureList(object, assay_name = assay_name)
+
+ confuns::check_one_of(
+   input = signature,
+   against = base::names(slist)
+ )
+
+ slist[[signature]]
+
+}
 
 
 #' @title Obtain molecular signatures
@@ -3863,9 +3908,7 @@ getVariableMolecules <- function(object,
 #' @param protected Logical value. If `TRUE`, variable names that are protected
 #' in `SPATA2` are returned, too, regardless of being in use or not.
 #'
-#' @note Molecule names are picked from the currently active matrix of their assay!
-#' If a processed matrix is active and it does not contain some molecules the raw count matrix
-# because the processing steps have removed them, they do not appear in the results.
+#' @note Molecule names are picked from the raw count matrix the assay.
 #'
 #' @return Character vector.
 #' @export

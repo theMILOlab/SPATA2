@@ -1147,12 +1147,12 @@ ggpLayerGroupOutline <- function(object,
   # for coordinates
   if(plot_type %in% c("coords", "surface")){
 
-
     groups_df <-
       getMetaDf(object) %>%
       confuns::check_across_subset(
         across = grouping,
-        across.subset = group_subset
+        across.subset = group_subset,
+        relevel = TRUE
       )
 
     groups <- base::levels(groups_df[[grouping]])
