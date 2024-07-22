@@ -1136,6 +1136,16 @@ getMetabolites <- function(object,
 
 }
 
+#' @rdname getMetaboliteSet
+#' @export
+getMetaboliteSet <- function(object, metabolite_set, ...){
+
+  deprecated(...)
+
+  getSignature(object, signature = metabolite_set, assay_name = "metabolite")
+
+}
+
 
 #' @rdname getSignatureList
 #' @export
@@ -1322,7 +1332,7 @@ getMolecules <- function(object,
                          assay_name = activeAssay(object)){
 
   molecules <-
-    getMatrix(object, mtr_name = activeMatrix(object, assay_name), assay_name = assay_name) %>%
+    getCountMatrix(object, assay_name = assay_name) %>%
     base::rownames()
 
   if(base::is.character(signatures)){

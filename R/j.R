@@ -348,12 +348,26 @@ joinWithVariables <- function(object,
 
       molecules <- molecule_list[[assay_name]]
 
+      mtr_name <- activeMatrix(object, assay_name = assay_name)
+
       mtr <-
         getMatrix(
           object = object,
-          mtr_name = activeMatrix(object, assay_name = assay_name),
+          mtr_name = mtr_name,
           assay_name = assay_name
         )
+
+      # prevent errors in case of molecule mismatch in processed matrices
+      not_found <- molecules[!molecules %in% base::rownames(mtr)]
+      molecules <- molecules[molecules %in% base::rownames(mtr)]
+
+      if(base::length(not_found) != 0){
+
+        not_found_ref <- confuns::scollapse(not_found)
+
+        warning(glue::glue("Molecules of assay '{assay_name}' exist in count matrix but were not found in active matrix '{mtr_name}': '{not_found_ref}'."))
+
+      }
 
       if(base::length(molecules) == 1){
 

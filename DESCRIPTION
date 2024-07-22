@@ -46,6 +46,7 @@ Imports:
     readr,
     reticulate,
     scattermore,
+    Seurat,
     shiny,
     shinyWidgets,
     shinybusy,

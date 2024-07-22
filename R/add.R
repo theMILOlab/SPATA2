@@ -729,9 +729,9 @@ addFeatures <- function(object,
 #' @rdname addSignature
 #' @export
 addGeneSet <- function(object,
-                       class,
-                       name,
                        genes,
+                       name,
+                       class = "UD",
                        overwrite = FALSE,
                        check = TRUE){
 
@@ -988,9 +988,9 @@ setMethod(
 #' @rdname addSignature
 #' @export
 addMetaboliteSet <- function(object,
-                             class,
-                             name,
                              metabolites,
+                             name,
+                             class = "UD",
                              overwrite = FALSE,
                              check = TRUE){
 
@@ -1282,11 +1282,11 @@ addProcessedMatrix <- function(object,
 #' @rdname addSignature
 #' @export
 addProteinSet <- function(object,
-                         class,
-                         name,
-                         proteins,
-                         overwrite = FALSE,
-                         check = TRUE){
+                          proteins,
+                          name,
+                          class = "UD",
+                          overwrite = FALSE,
+                          check = TRUE){
 
   object <-
     addSignature(
@@ -1376,7 +1376,7 @@ addSegmentationVariable <- function(object,
 #' Adds a \link[=concept_molecular_signatures]{molecular signature} to the `SPATA2` object.
 #'
 #' @param class Character value. The class (heritage) of the signature. Must not
-#' contain a *_*.
+#' contain a *_*. Defaults to *'UD'*, short for user defined.
 #' @param name Character value. The actual name of the signature.
 #' @param molecules,genes,proteins,metabolites Character vector. The molecules the signature consists of.
 #' @param check Logical value. If `TRUE`, the functions checkes whether the specified
@@ -1405,20 +1405,21 @@ addSegmentationVariable <- function(object,
 #' data("example_data")
 #' object <- example_data$object_UKF269T_diet
 #'
+#' # example genes of an hypothetical gene signature (gene set)
 #' genes <-
 #'  c('CYFIP1', 'SLC16A3', 'AKAP5', 'ADCY8', 'CALB2', 'GRIN1', 'NLGN4X', 'NLGN1',
 #'    'ITGA3', 'NLGN4Y', 'ELFN1', 'BSN', 'CNTN6', 'PDE4B', 'DGKI', 'LRRTM2', 'LRRTM1',
 #'    'SRPX2', 'SHANK1', 'SLC17A7')
 #'
 #' # both, opt1 and opt2, have the same effect (addSignature() just allows to specify the
-#' # assay of interest, which is fixed to 'gene' for `adGeneSet()`).
+#' # assay of interest, which is fixed to 'gene' for addGeneSet()).
 #' # opt1
-#' object <- addSignature(object, name = "EXCITATORY_SYNAPSE", class = "HM", molecules = genes)
+#' object <- addSignature(object, name = "EXCITATORY_SYNAPSE", class = "Custom", molecules = genes)
 #'
 #' # opt2
-#' # object <- addGeneSet(object, name = "EXCITATORY_SYNAPSE", class = "HM", genes = genes)
+#' # object <- addGeneSet(object, name = "EXCITATORY_SYNAPSE", class = "Custom", genes = genes)
 #'
-#' gs <- "HM_EXCITATORY_SYNAPSE"
+#' gs <- "Custom_EXCITATORY_SYNAPSE"
 #'
 #' # visualize signature expression
 #' plotSurface(object, color_by = gs)
@@ -1428,10 +1429,10 @@ addSegmentationVariable <- function(object,
 #'
 
 addSignature <- function(object,
-                         class,
-                         name,
                          molecules,
-                         assay = activeAssay(object),
+                         name,
+                         class = "UD",
+                         assay_name = activeAssay(object),
                          overwrite = FALSE,
                          check = TRUE){
 

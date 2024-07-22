@@ -7,25 +7,32 @@
 \alias{addSignature}
 \title{Add molecular signature}
 \usage{
-addGeneSet(object, class, name, genes, overwrite = FALSE, check = TRUE)
+addGeneSet(object, genes, name, class = "UD", overwrite = FALSE, check = TRUE)
 
 addMetaboliteSet(
   object,
-  class,
-  name,
   metabolites,
+  name,
+  class = "UD",
   overwrite = FALSE,
   check = TRUE
 )
 
-addProteinSet(object, class, name, proteins, overwrite = FALSE, check = TRUE)
+addProteinSet(
+  object,
+  proteins,
+  name,
+  class = "UD",
+  overwrite = FALSE,
+  check = TRUE
+)
 
 addSignature(
   object,
-  class,
-  name,
   molecules,
-  assay = activeAssay(object),
+  name,
+  class = "UD",
+  assay_name = activeAssay(object),
   overwrite = FALSE,
   check = TRUE
 )
@@ -34,10 +41,10 @@ addSignature(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{class}{Character value. The class (heritage) of the signature. Must not
-contain a \emph{_}.}
-
 \item{name}{Character value. The actual name of the signature.}
+
+\item{class}{Character value. The class (heritage) of the signature. Must not
+contain a \emph{_}. Defaults to \emph{'UD'}, short for user defined.}
 
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 
@@ -46,6 +53,11 @@ molecules exist in the raw count matrix of the assay and throw an error if some
 are not. Defaults to \code{TRUE}.}
 
 \item{molecules, genes, proteins, metabolites}{Character vector. The molecules the signature consists of.}
+
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest and thus the
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
 }
 \value{
 The updated input object, containing the added, removed or computed results.
@@ -70,20 +82,21 @@ library(SPATA2)
 data("example_data")
 object <- example_data$object_UKF269T_diet
 
+# example genes of an hypothetical gene signature (gene set)
 genes <-
  c('CYFIP1', 'SLC16A3', 'AKAP5', 'ADCY8', 'CALB2', 'GRIN1', 'NLGN4X', 'NLGN1',
    'ITGA3', 'NLGN4Y', 'ELFN1', 'BSN', 'CNTN6', 'PDE4B', 'DGKI', 'LRRTM2', 'LRRTM1',
    'SRPX2', 'SHANK1', 'SLC17A7')
 
 # both, opt1 and opt2, have the same effect (addSignature() just allows to specify the
-# assay of interest, which is fixed to 'gene' for `adGeneSet()`).
+# assay of interest, which is fixed to 'gene' for addGeneSet()).
 # opt1
-object <- addSignature(object, name = "EXCITATORY_SYNAPSE", class = "HM", molecules = genes)
+object <- addSignature(object, name = "EXCITATORY_SYNAPSE", class = "Custom", molecules = genes)
 
 # opt2
-# object <- addGeneSet(object, name = "EXCITATORY_SYNAPSE", class = "HM", genes = genes)
+# object <- addGeneSet(object, name = "EXCITATORY_SYNAPSE", class = "Custom", genes = genes)
 
-gs <- "HM_EXCITATORY_SYNAPSE"
+gs <- "Custom_EXCITATORY_SYNAPSE"
 
 # visualize signature expression
 plotSurface(object, color_by = gs)
