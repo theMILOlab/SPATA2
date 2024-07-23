@@ -136,8 +136,8 @@ SpatialGradientScreening <-  setClass(Class = "SpatialGradientScreening",
 
 #' @title The \code{SpatialMethod} - Class
 #'
-#' @description Abstracts the concept of spatial biology platforms
-#' such as \emph{Visium} or \emph{SlideSeq}.
+#' @description Defines the core features of spatial biology platforms 
+#' like \emph{Visium} and \emph{SlideSeq}.
 #'
 #' @slot capture_area list
 #' A list of length two, with elements named *x* and *y*. Each element is a vector of length two.

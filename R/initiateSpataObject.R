@@ -339,13 +339,13 @@ initiateSpataObjectMERFISH <- function(sample_name,
 
       }) %>%
         dplyr::rename(cell = ifelse("...1" %in% colnames(.), "...1", "cell")) %>% # in case cell column is not named
-      dplyr::rename(barcodes = cell) %>% # keep original barcode names in metadata 
-      dplyr::select(-dplyr::matches("^\\.")) %>%
-      tibble::column_to_rownames("barcodes") %>%
-      dplyr::select_if(.predicate = base::is.numeric) %>%
-      base::as.matrix() %>%
-      base::t() %>%
-      Matrix::Matrix()
+        dplyr::rename(barcodes = cell) %>% # keep original barcode names in metadata 
+        dplyr::select(-dplyr::matches("^\\.")) %>%
+        tibble::column_to_rownames("barcodes") %>%
+        dplyr::select_if(.predicate = base::is.numeric) %>%
+        base::as.matrix() %>%
+        base::t() %>%
+        Matrix::Matrix()
 
     original_barcodes <- colnames(count_mtr) # keep original barcode names for metadata
     colnames(count_mtr) <- stringr::str_c("cell", 1:base::length(colnames(count_mtr)), sep = "_")

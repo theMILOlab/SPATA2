@@ -678,7 +678,7 @@ setMethod(
 
       if(opt == "add"){
 
-        new_angle <- transformations$angle + angle
+        new_angle <- transformations$angle - angle
 
       } else {
 

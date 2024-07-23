@@ -207,9 +207,9 @@ setMethod(
       }
 
       if(base::ncol(object@coordinates) != base::ncol(coords_df)){
-
+      
         stop("Different number of columns.")
-
+      
       }
 
       object@coordinates <- coords_df
