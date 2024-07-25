@@ -726,6 +726,8 @@ asGiotto <- function(object,
                      transfer_features = TRUE,
                      verbose = NULL){
 
+  warning("This is a legacy function. If you experience any issues, please raise an issue on GitHub.")
+
   hlpr_assign_arguments(object)
 
   # prepare coordinates
@@ -1065,6 +1067,8 @@ setMethod(
                         verbose = TRUE,
                         ...){
 
+    warning("This is a legacy function. If you experience any issues, please raise an issue on GitHub.")
+
     confuns::is_value(x = sample_name, mode = "character")
 
     # check meta features before hand in case of invalid input
@@ -1179,21 +1183,32 @@ setMethod(
   signature = "Seurat",
   definition = function(object,
                         sample_name,
-                        spatial_method,
-                        assay_name = "Spatial",
-                        image_name = "slice1",
+                        platform = "Undefined",
+                        assay_name = NULL, # Seurat assay that contains the matrices of interest. If NULL, Seurat's default assay is used.
+                        image_name = NULL,
+                        image_dir = NULL,
                         transfer_meta_data = TRUE,
                         transfer_dim_red = TRUE,
                         count_mtr_name = "counts",
-                        scaled_mtr_name = "scale.data",
+                        proc_mtr_name = "scale.data",
+                        modality = "gene",
+                        scale_with = "lowres",
                         verbose = TRUE){
 
-    # create empty spata object
+    confuns::check_one_of(
+          input = platform,
+          against = names(spatial_methods)
+    )
+
+    if(platform == "Undefined"){ warning("Platform is set to 'Undefined', which is not compatible with some SPATA2 functions. Ideally choose a known platform from ``SPATA2::spatial_methods`` and define in ``platform``.") }
+
+    # create empty SPATA2 object
     spata_object <-
-      initiateSpataObject_Empty(
+      initiateSpataObjectEmpty(
         sample_name = sample_name,
-        spatial_method = spatial_method
-        )
+        platform = platform,
+        verbose = verbose
+      )
 
     confuns::give_feedback(
       msg = "Transferring data.",
@@ -1203,106 +1218,130 @@ setMethod(
     # check assays
     assay_names <- base::names(object@assays)
 
-    if(base::length(assay_names) >= 1){
-
-      confuns::check_one_of(
-        input = assay_name,
-        against = assay_names,
-        ref.opt.2 = "assays in Seurat object",
-        fdb.opt = 2
-      )
-
-    } else {
+    if(base::length(assay_names) == 0){
 
       stop("Seurat object contains no assays.")
 
     }
 
-    # check and transfer image
-    if(base::is.character(image_name)){
+    if(!is.null(assay_name)){
 
-      image_names <- base::names(object@images)
-
-      if(base::length(image_names) >= 1){
+      if(base::length(assay_names) >= 1){
 
         confuns::check_one_of(
-          input = image_name,
-          against = image_names,
-          ref.opt.2 = "images in Seurat object",
+          input = assay_name,
+          against = assay_names,
+          ref.opt.2 = "assays in Seurat object",
           fdb.opt = 2
         )
 
-        image_obj <-
-          asHistologyImaging(
-            object = object@images[[image_name]],
-            id = sample_name
-            )
+      } 
+      
+    }
 
-        spata_object <- setImageObject(spata_object, image_object = image_obj)
+    # check and transfer image
+    image_names <- base::names(object@images)
 
-        # !!! decide where to store the coordinates
-        spata_object <- setCoordsDf(spata_object, coords_df = image_obj@coordinates)
+    if(base::is.null(image_name)){
 
-      } else {
+      if(length(image_names) == 0){stop("Seurat object contains no image(s).")}
 
-        confuns::give_feedback(
-          msg = "Seurat object contains no images.",
-          verbose = verbose
-        )
+      else if(length(image_names) > 1) {
+          stop(paste("Seurat object contains multiple images, please specify which one to import using image_names. Available images:", paste(image_names, collapse = ", ")))
+      }
 
-        image_obj <- NULL
-
+      else if(length(image_names) == 1) {
+          image_name = image_names[1]
       }
 
     }
 
-    # transfer cell metadata
-    feature_df <-
+    confuns::check_one_of(
+      input = image_name,
+      against = image_names,
+      ref.opt.2 = "images in Seurat object",
+      fdb.opt = 2
+    )
+
+    scale_factors <- base::unclass(object@images[[image_name]]@scale.factors)
+    scale_factors["image"] = scale_factors[scale_with] # image scale factor
+
+    histo_image <- createHistoImage(
+      img_name = image_name,
+      sample = sample_name,
+      dir = image_dir,
+      img = object@images[[image_name]]@image, # currently ignoring molecules and boundaries
+      scale_factors = scale_factors,
+      verbose = verbose
+    )
+
+    scale_factors$image <- NULL
+
+    sp_data <- createSpatialData(
+      sample = sample_name,
+      hist_img_ref = histo_image,
+      method = spatial_methods[[platform]],
+      hist_imgs = NULL,
+      coordinates = object %>% GetTissueCoordinates() %>% dplyr::rename(barcodes = cell, x_orig=x, y_orig=y), # should work without , x_orig=x, y_orig=y once setCoordsDf is updated
+      scale_factors = scale_factors,
+      )
+
+    spata_object <- setSpatialData(spata_object, sp_data = sp_data)
+
+    if(containsCCD(spata_object)){
+
+      spata_object <- computePixelScaleFactor(spata_object)
+
+    }
+
+    spata_object <- rotateAll(spata_object, angle = 90)
+
+    # transfer obs metadata
+    meta_df <-
       tibble::rownames_to_column(object@meta.data, var = "barcodes") %>%
       tibble::as_tibble()
 
     if(base::isFALSE(transfer_meta_data)){
 
-      feature_df <- dplyr::select(feature_df, barcodes)
+      meta_df <- dplyr::select(meta_df, barcodes)
 
     }
 
-    spata_object <- setFeatureDf(spata_object, feature_df = feature_df)
-
-    # transfer gene metadata
-    if (!length(object[[assay_name]][[]])==0){
-      spata_object@gdata[[sample_name]] <- object[[assay_name]][[]]
-    }
+    spata_object <- setMetaDf(spata_object, meta_df = meta_df)
 
     # transfer matrices
-    assay <- object@assays[[assay_name]]
-
     count_mtr <-
       getFromSeurat(
-        return_value = assay[count_mtr_name],
+        return_value = Seurat::GetAssayData(object = object, layer = count_mtr_name), # selects Seurat's default assay
         error_handling = "stop",
         error_ref = "count matrix"
       )
 
-    spata_object <-
-      setCountMatrix(
-        object = spata_object,
-        count_mtr = count_mtr[base::rowSums(base::as.matrix(count_mtr)) != 0, ]
-        )
+    meta_var <- as.data.frame(Seurat::GetAssay(object)@var.features)
+    names(meta_var)[1] <- "barcodes"
 
-    scaled_mtr <-
+    spata_object <- createMolecularAssay(
+      spata_object, 
+      modality = modality, 
+      mtr_counts = count_mtr, 
+      meta_var = meta_var, 
+      activate = TRUE
+    )
+
+    proc_mtr <-
       getFromSeurat(
-        return_value = assay[scaled_mtr_name],
+        return_value = Seurat::GetAssayData(object = object, layer = proc_mtr_name), # selects Seurat's default assay
         error_handling = "stop",
         error_ref = "scaled matrix",
         error_value = NULL
       )
 
     spata_object <-
-      setScaledMatrix(
+      setProcessedMatrix(
         object = spata_object,
-        scaled_mtr = scaled_mtr[base::rowSums(base::as.matrix(scaled_mtr)) != 0, ]
-        )
+        proc_mtr = proc_mtr,
+        name = proc_mtr_name
+      )
 
     # transfer dim red data
     if(base::isTRUE(transfer_dim_red)){
@@ -1393,25 +1432,21 @@ setMethod(
     } else {
 
       confuns::give_feedback(
-        msg = "`transfer_dim_red = FALSE`: Skip transferring dimensional reduction data.",
+        msg = "`transfer_dim_red = FALSE`: Skip transferring dimensionality reduction data.",
         verbose = verbose
       )
 
     }
 
     # conclude
-    spata_object <- setBarcodes(spata_object, barcodes = base::colnames(count_mtr))
-
-    spata_object <- setInitiationInfo(spata_object)
-
-    spata_object <- setActiveMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
+    spata_object <- setBarcodes(spata_object, barcodes = getBarcodes(spata_object))
 
     confuns::give_feedback(
       msg = "Done.",
       verbose = verbose
     )
 
-    return(spata_object)
+    returnSpataObject(spata_object)
 
   }
 )
@@ -1430,16 +1465,27 @@ if (requireNamespace("anndata", quietly = TRUE)) {
     signature = "AnnDataR6",
     definition = function(object,
                           sample_name,
+                          platform = "Undefined",
+                          scale_with = "lowres", # located in adata$uns[["spatial"]][[library_id]]$scalefactors
                           count_mtr_name = "counts",
                           normalized_mtr_name = "normalized",
                           scaled_mtr_name = "scaled",
                           transfer_meta_data = TRUE,
                           transfer_dim_red = TRUE,
                           image_name = NULL,
+                          image_dir = NULL,
+                          spatial_key = "spatial",
+                          modality = "gene",
                           verbose = TRUE){
 
-      # check anndata object
+      confuns::check_one_of(
+          input = platform,
+          against = names(spatial_methods)
+      )
 
+      if(platform == "Undefined"){ warning("Platform is set to 'Undefined', which is not compatible with some SPATA2 functions. Ideally choose a known platform from ``SPATA2::spatial_methods`` and define in ``platform``.") }
+
+      # check anndata object
       if(nrow(object) == 0 | ncol(object) == 0){
         stop("AnnData object is empty.")
       }
@@ -1450,9 +1496,13 @@ if (requireNamespace("anndata", quietly = TRUE)) {
              ". Currently not compatible with SPATA2; please subset the object and load again.")
       }
 
-      # create empty spata object
-
-      spata_object <- initiateSpataObject_Empty(sample_name = sample_name)
+      # create empty SPATA2 object
+      spata_object <-
+        initiateSpataObjectEmpty(
+          sample_name = sample_name,
+          platform = platform,
+          verbose = verbose
+        )
 
       confuns::give_feedback(
         msg = "Transferring data.",
@@ -1461,8 +1511,8 @@ if (requireNamespace("anndata", quietly = TRUE)) {
 
       # extract library_id and spatial dataframe
 
-      # run only if object$uns[["spatial"]] is not NULL
-      if(!is.null(object$uns[["spatial"]])){
+      # run only if object$uns[[spatial_key]] is not NULL
+      if(!is.null(object$uns[[spatial_key]])){
 
         library_id <- check_spatial_data(object$uns, library_id = image_name)[[1]]
         spatial_data <- check_spatial_data(object$uns, library_id = image_name)[[2]]
@@ -1474,10 +1524,9 @@ if (requireNamespace("anndata", quietly = TRUE)) {
       }
 
       # check and transfer image
-
       if(is.character(library_id)){ # library_id == image_name
 
-        image_names <- base::names(object$uns[["spatial"]])
+        image_names <- base::names(object$uns[[spatial_key]])
 
         if(base::length(image_names) >= 1){
 
@@ -1488,20 +1537,47 @@ if (requireNamespace("anndata", quietly = TRUE)) {
             fdb.opt = 2
           )
 
-          image_obj <-
-            asHistologyImaging(
-              object = object,
-              id = sample_name,
-              library_id = library_id,
-              verbose = verbose
-            )
+          scale_fct <- object$uns[[spatial_key]][[library_id]]$scalefactors[[paste0('tissue_',scale_with,'_scalef')]]
 
-          spata_object <- setImageObject(spata_object, image_object = image_obj)
+          coords <- as.data.frame(object$obsm[[spatial_key]])
+          rownames(coords) <- object$obs_names
+          colnames(coords) <- c("y_orig", "x_orig")
+          coordinates <-
+            tibble::rownames_to_column(coords, var = "barcodes") %>%
+            dplyr::select(barcodes, x_orig, y_orig, dplyr::everything()) %>%
+            tibble::as_tibble()
 
-          spata_object <- setCoordsDf(spata_object,
-                                      coords_df = image_obj@coordinates)
+          image <-
+            EBImage::Image(object$uns[[spatial_key]][[library_id]]$images[[scale_with]]/255,
+              colormode = "Color") %>% # convert RGB 0-255 ints to 0-1 float
+            EBImage::transpose()
 
-          spata_object <- rotateCoordinates(spata_object, angle=90)
+          scale_factors <- list(scale_fct)
+          scale_factors["image"] = scale_factors[scale_with] # image scale factor
+
+          histo_image <- createHistoImage(
+            img_name = library_id,
+            sample = sample_name,
+            dir = image_dir,
+            img = image,
+            scale_factors = scale_factors,
+            verbose = verbose
+          )
+
+          scale_factors$image <- NULL
+
+          sp_data <- createSpatialData(
+            sample = sample_name,
+            method = spatial_methods[[platform]],
+            hist_img_ref = histo_image,
+            hist_imgs = NULL,
+            coordinates = coordinates,
+            scale_factors = scale_factors
+          )
+
+          spata_object <- setSpatialData(spata_object, sp_data = sp_data)
+
+          spata_object <- rotateCoordinates(spata_object, angle = 90)
 
         } else {
 
@@ -1515,56 +1591,54 @@ if (requireNamespace("anndata", quietly = TRUE)) {
         }
       }
 
-      # transfer barcode metadata
-
-      obs_df <- tibble::rownames_to_column(as.data.frame(object$obs), var = "barcodes") %>%
-        tibble::as_tibble()
+      # transfer obs metadata
+      meta_df <- tibble::rownames_to_column(as.data.frame(object$obs), var = "barcodes") %>%
+      tibble::as_tibble()
 
       if(base::isFALSE(transfer_meta_data)){
 
-        obs_df <- dplyr::select(obs_df, barcodes)
+        meta_df <- dplyr::select(meta_df, barcodes)
 
       }
 
-      spata_object <- setFeatureDf(spata_object, feature_df = obs_df)
+      spata_object <- setMetaDf(spata_object, meta_df = meta_df)
 
+      # get var metadata
 
-      # transfer feature (gene) metadata
-
-      var_df <- suppressWarnings(as.data.frame(object$var, row.names=NULL))
-      var_df$feature <- object$var_names
-      var_df <- dplyr::select(var_df, feature, everything()) %>%  tibble::as_tibble()
-
-      of_sample <- check_sample(object = spata_object, of_sample = "", desired_length = 1)
-      spata_object@gdata[[of_sample]] <- var_df
-
+      meta_var <- suppressWarnings(as.data.frame(object$var, row.names=NULL))
+      meta_var$feature <- object$var_names
+      meta_var <- dplyr::select(meta_var, feature, everything()) %>%  tibble::as_tibble()
 
       # transfer matrices
 
-      mtrs <- load_adata_matrix(adata=object, count_mtr_name=count_mtr_name,
-                                normalized_mtr_name=normalized_mtr_name, scaled_mtr_name=scaled_mtr_name, verbose=verbose)
+      mtrs <- load_adata_matrix(
+        adata = object, 
+        count_mtr_name = count_mtr_name,
+        normalized_mtr_name = normalized_mtr_name, 
+        scaled_mtr_name = scaled_mtr_name, 
+        verbose = verbose)
+
+      spata_object <- createMolecularAssay(
+        spata_object, 
+        modality = modality, 
+        mtr_counts = mtrs$count_mtr, 
+        meta_var = meta_var, 
+        activate = TRUE
+      )
 
       spata_object <-
-        setCountMatrix(
+        setProcessedMatrix(
           object = spata_object,
-          count_mtr = mtrs$count_mtr
-          #count_mtr = mtrs$count_mtr[rowSums(as.matrix(mtrs$count_mtr)) != 0, ] # --------------- why excluding empty genes?
-          # also code is not efficient because as.matrix() converts sparse into dense matirx
-          # plus currently not compatible in case of empty matrix
+          proc_mtr = mtrs$normalized_mtr,
+          name = normalized_mtr_name
         )
 
       spata_object <-
-        setNormalizedMatrix(
+        setProcessedMatrix(
           object = spata_object,
-          normalized_mtr = mtrs$normalized_mtr
+          proc_mtr = mtrs$scaled_mtr,
+          name = scaled_mtr_name
         )
-
-      spata_object <-
-        setScaledMatrix(
-          object = spata_object,
-          scaled_mtr = mtrs$scaled_mtr
-        )
-
 
       # transfer dim red data
 
@@ -1709,26 +1783,23 @@ if (requireNamespace("anndata", quietly = TRUE)) {
 
       # conclude
 
+      spata_object <- rotateAll(spata_object, angle = 90)
+
       spata_object <- setBarcodes(spata_object, barcodes = object$obs_names)
-
-      spata_object <- setInitiationInfo(spata_object)
-
-      spata_object <-
-        setActiveMatrix(spata_object, mtr_name = "normalized", verbose = FALSE)
 
       confuns::give_feedback(
         msg = "Done.",
         verbose = verbose
       )
 
-      return(spata_object)
+      returnSpataObject(spata_object)
 
     }
   )
 
 } else {
-
-  message("Package 'anndata' is required but not installed. Please see https://cran.r-project.org/web/packages/anndata/index.html.")
+  
+  message("R Package 'anndata' is required for compatibility with h5ad files, but not installed.")
 
 }
 
@@ -1799,5 +1870,3 @@ attachUnit <- function(input){
   return(out)
 
 }
-
-
