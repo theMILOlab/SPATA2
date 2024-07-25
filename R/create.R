@@ -2204,18 +2204,62 @@ createImageAnnotations <- function(object, ...){
               # for every image annotation in case of drawing mode = Multiple
               for(ia in base::seq_along(img_ann_list)){
 
-                # all polygons of the image annotation
+                # all polygons of the image annotation of this iteration
                 polygons <- img_ann_list[[ia]]
 
                 if(!purrr::is_empty(polygons)){
 
-                  graphics::polypath(
-                    x = concatenate_polypaths(polygons, axis = "x"),
-                    y = concatenate_polypaths(polygons, axis = "y"),
-                    col = col,
-                    lwd = input$linesize,
-                    lty = "solid"
-                  )
+                  if(base::length(polygons) == 1){ # contains only outer outline
+
+                    graphics::polypath(
+                      x = concatenate_polypaths(polygons, axis = "x"),
+                      y = concatenate_polypaths(polygons, axis = "y"),
+                      col = col,
+                      lwd = input$linesize,
+                      lty = "solid"
+                    )
+
+                  } else { # contains holes
+
+                    polygons <- purrr::map(polygons, .f = close_area_df)
+
+                    outer_sf <-
+                      sf::st_polygon(list(as.matrix(polygons[["outer"]]))) %>%
+                      sf::st_sfc() %>%
+                      sf::st_sf()
+
+                    # plot outer outline
+                    plot(sf::st_geometry(outer_sf), border = "black", lwd = input$linesize, add = TRUE)
+
+                    # iterate over inner outlines
+                    for(i in 2:length(polygons)){
+
+                      inner_sf <-
+                        sf::st_polygon(list(as.matrix(polygons[[i]]))) %>%
+                        sf::st_sfc() %>%
+                        sf::st_sf()
+
+                      if(i == 2){ # initiate
+
+                        filled_area <-
+                          sf::st_difference(x = outer_sf, y = inner_sf)
+
+                      } else { # grow filled_area continuously
+
+                        filled_area <-
+                          sf::st_difference(x = filled_area, y = inner_sf)
+
+                      }
+
+                      # plots holes
+                      plot(sf::st_geometry(inner_sf), col = ggplot2::alpha("white", 0), lwd = input$linesize, add = TRUE)
+
+                    }
+
+                    # fills area
+                    plot(sf::st_geometry(filled_area), col = col, border = "black", lwd = input$linesize, add = TRUE)
+
+                  }
 
                 }
 
