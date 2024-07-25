@@ -679,7 +679,7 @@ getProteins <- function(object,
 }
 
 
-#' @rdname getProteinSet
+#' @rdname getSignature
 #' @export
 getProteinSet <- function(object, protein_set, ...){
 

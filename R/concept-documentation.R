@@ -231,7 +231,7 @@ NULL
 #' Depending on the modality of an assay, specific functions can be used or not.
 #' For instance, [`runCNV()`] only works if [`SPATA2`] object contains an assay
 #' of data modality *gene* (not *genes*, *rna*, *mRNA* or anything else). This
-#' extends to the inbuilt concept of \link[=concept_molecular_signature]{molecular signatures}.
+#' extends to the inbuilt concept of \link[=concept_molecular_signatures]{molecular signatures}.
 #' It is not forbidden, of course, to create molecular assays with modalities
 #' differing from the ones SPATA2 knows. It is just that you won't be able to
 #' use certain functions with the created assay.

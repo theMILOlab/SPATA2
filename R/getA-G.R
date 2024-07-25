@@ -2380,7 +2380,7 @@ getGeneSetOverview <- function(object){
 
 }
 
-#' @rdname getGeneSet
+#' @rdname getSignature
 #' @export
 getGeneSet <- function(object, gene_set, ...){
 

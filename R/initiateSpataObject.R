@@ -34,7 +34,7 @@
 #'
 #' @inherit argument_dummy params
 #'
-#' @note In contrast to [`initiateSpataObjectVisium()`] or [ìnitiateSpataObjectMERFISH()`],
+#' @note In contrast to [`initiateSpataObjectVisium()`] or [`nitiateSpataObjectMERFISH()`],
 #' a `SPATA2` object with this function the output does not contain a tissue outline yet
 #' Run [`identifyTissueOutline()`] with your choice of parameters afterwards.
 #'

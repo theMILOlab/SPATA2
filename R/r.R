@@ -153,7 +153,7 @@ read_coords_visium <- function(dir_coords){
     coords_df <-
       readr::read_csv(file = dir_coords, col_names = TRUE, show_col_types = FALSE) %>%
       tibble::as_tibble() %>%
-      dplyr::filter(in_tissue = 1) %>%
+      dplyr::filter(in_tissue == 1) %>%
       dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres, row = array_row, col = array_col) %>%
       dplyr::select(barcodes = barcode, x_orig, y_orig, row, col)
 

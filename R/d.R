@@ -409,14 +409,6 @@ downloadFromPublication <- function(pub, id, raw = FALSE){
 }
 
 
-#' @title Download raw Visium output
-#' @inherit SPATAData::downloadRawData title description params return examples
-#' @note Imported from the package `SPATAData`.
-#' @importFrom SPATAData downloadRawData
-#' @export
-#' @keywords internal
-downloadRawData <- SPATAData::downloadRawData
-
 #' @title Download `spata2` objects
 #' @inherit SPATAData::downloadSpataObject title description params return examples
 #' @note Imported from the package `SPATAData`.

@@ -79,12 +79,12 @@ saveSpataObject <- function(object,
 
     base::tryCatch({
 
-      base::saveRDS(object = object, file = directory_spata)
+      base::saveRDS(object = object, file = dir)
 
 
     }, error = function(error){
 
-      base::warning(glue::glue("Attempting to save the `SPATA2` object under {directory_spata} resulted in the following error: {error} "))
+      base::warning(glue::glue("Attempting to save the `SPATA2` object under {dir} resulted in the following error: {error} "))
 
     })
 

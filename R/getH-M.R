@@ -1136,7 +1136,7 @@ getMetabolites <- function(object,
 
 }
 
-#' @rdname getMetaboliteSet
+#' @rdname getSignature
 #' @export
 getMetaboliteSet <- function(object, metabolite_set, ...){
 

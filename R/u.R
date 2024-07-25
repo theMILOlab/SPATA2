@@ -276,7 +276,7 @@ update_spata2v2_to_spata2v3 <- function(object, method = NULL, verbose = TRUE){
       sample_name = sample_name,
       count_mtr = count_mtr,
       coords_df = coords_df[coords_df$barcodes %in% base::colnames(count_mtr),],
-      omic = "transcriptomics",
+      modality = "gene",
       img = image,
       img_name = img_name,
       scale_factors = scale_factors,
@@ -1052,7 +1052,6 @@ updateSpataObject <- function(object,
   if(object@version$major == 1 && object@version$minor == 12){
 
     object@version <- list(major = 1, minor = 13, patch = 0)
-
 
     # retroperspective changes required due to v3.0.0
     coords_df <- getCoordsDf(object)

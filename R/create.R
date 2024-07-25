@@ -1172,7 +1172,10 @@ createHistoImage <- function(img_name,
 
     } else {
 
-      warning("No directory was specified to store the image. Unloading won't be possible. Set with `setImageDir()`.")
+      confuns::give_feedback(
+        msg = "No directory was specified to store the image. Unloading won't be possible. Set with `setImageDir()`.",
+        verbose = verbose
+        )
 
     }
 
@@ -2323,7 +2326,7 @@ createImageAnnotations <- function(object, ...){
 #'
 #' @note
 #' The molecules of the added assay **must not** already exist in the `SPATA2` object.
-#' Variables in SPATA2 are case sensitive! If you want to add a protein assay to t
+#' Variables in SPATA2 are case sensitive! If you want to add, for instance, a protein assay to
 #' the `SPATA2` object that already contains genes, you can provide the protein names
 #' like this *Ldh* while the gene names exist like this *LDH*.
 #'
