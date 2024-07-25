@@ -220,11 +220,17 @@ recDbscanMinPts <- function(object){
 
     out <- 4
 
+  } else if(containsMethod(object, method = "MERFISH")){
+
+    out <- 25
+
+    warning(paste0("minPts is set to ", out, ". May require adjustments for optimal performance."))
+
   } else {
 
-    warning("Recommendation might be suboptimal.")
-
     out <- 12
+
+    warning(paste0("minPts is set to ", out, ". May require adjustments for optimal performance."))
 
   }
 
@@ -2371,7 +2377,9 @@ rotate_coords_df <- function(df,
                              angle,
                              clockwise = TRUE,
                              coord_vars = list(pair1 = c("x", "y"),
-                                               pair2 = c("xend", "yend")),
+                                               pair2 = c("xend", "yend"),
+                                               pair3 = c("x_orig", "y_orig")
+                                              ),
                              verbose = FALSE,
                              error = FALSE,
                              center = c(0,0),
@@ -2582,23 +2590,31 @@ rotateCoordsDf <- function(object,
 
   coords_df <- getCoordsDf(object, as_is = TRUE)
 
+  # define center depending on scale factor
+  if(containsHistoImages(object)){
+    
+    center <- getImageCenter(object)
+
+    isf <- getScaleFactor(object, fct_name = "image")
+
+    center <- center/isf
+
+  } else if(!containsHistoImages(object)){
+
+    center <- getCoordsCenter(object)
+
+  }
+  
   coords_df_rotated <-
     rotate_coords_df(
       df = coords_df,
       angle = angle,
-      center = getImageCenter(object),
+      center = center,
       clockwise = clockwise,
       verbose = FALSE
     )
 
-  coords_df_final <-
-    dplyr::left_join(
-      x = dplyr::select(coords_df, -x, -y),
-      y = coords_df_rotated,
-      by = "barcodes"
-    )
-
-  object <- setCoordsDf(object, coords_df = coords_df_final)
+  object <- setCoordsDf(object, coords_df = coords_df_rotated)
 
   returnSpataObject(object)
 

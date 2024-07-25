@@ -1723,7 +1723,7 @@ getSparkxResults <- function(object,
     check_availability(
       test = base::is.list(out) & !purrr::is_empty(out),
       ref_x = "SPARK-X results",
-      ref_fns = "`runSPARKX()`"
+      ref_fns = "`runSparkx()`"
     )
 
   }
@@ -2538,9 +2538,14 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, id, expand = 0, scale_fct = 1, ...){
 
-    getSpatialData(object) %>%
-      getSpatAnnRange(object = ., id = id, scale_fct = scale_fct) %>%
-      process_ranges(ranges = ., expand = expand, opt = 2, persp = "ccs", object = object)
+    ranges <- getSpatialData(object) %>%
+      getSpatAnnRange(object = ., id = id, scale_fct = scale_fct)
+
+    if (containsImage(object)) {
+      ranges <- process_ranges(ranges = ranges, expand = expand, opt = 2, persp = "ccs", object = object)
+    }
+
+    return(ranges)
 
   }
 )

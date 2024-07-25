@@ -555,8 +555,9 @@ setMethod(f = "show", signature = "SpatialMethod", definition = function(object)
 setMethod(f = "show", signature = "SPATA2", definition = function(object){
 
   assays <- getAssayNames(object)
+  if (is.null(assays)){ stop("No assays available.") }
   n_mols <- purrr::map_dbl(.x = assays, .f = ~ nMolecules(object, assay_name = .x))
-  n_obs <- nObs(object) # in case no matrix available
+  n_obs <- length(getBarcodes(object)) # also in case no matrix available
 
   cat("SPATA2 object of size:", n_obs, "x", n_mols, "(observations x molecules)\n")
   cat("Platform:", object@platform, "\n")
@@ -828,7 +829,7 @@ simulate_complete_coords_sa <- function(object, id, distance){
       })
 
     tot_dist <-
-      as_pixel(distance, object = object, add_attr = F) %>%
+      as_pixel(distance, object = object, add_attr = FALSE) %>%
       ceiling()
 
     ccd <- getCCD(object, unit = "px")

@@ -139,7 +139,7 @@ normalizeCounts <- function(object,
 }
 
 
-#' @title Number of observations
+#' @title Number of observations (e.g. cells)
 #'
 #' @description Returns the number of \link[=concept_observations]{observations}
 #' in the sample.

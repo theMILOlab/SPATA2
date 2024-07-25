@@ -2446,18 +2446,22 @@ createMolecularAssay <- function(object,
     )
 
   # prevent variable name overlap
-  all_molecules <- base::rownames(ma@mtr_counts)
-  vnames <- getVariableNames(object, protected = TRUE)
+  if (!is.null(getAssayNames(object))){ # only if not empty
 
-  overlap <- all_molecules[all_molecules %in% vnames]
+    all_molecules <- base::rownames(ma@mtr_counts)
 
-  if(base::length(overlap) >= 1){
+    vnames <- getVariableNames(object, protected = TRUE)
 
-    ref2 <- confuns::scollapse(overlap)
-    ref1 <- confuns::adapt_reference(overlap, "Variable")
+    overlap <- all_molecules[all_molecules %in% vnames]
 
-    stop(glue::glue("{ref1} '{ref2}' already exist in the SPATA2 object."))
+    if(base::length(overlap) >= 1){
 
+      ref2 <- confuns::scollapse(overlap)
+      ref1 <- confuns::adapt_reference(overlap, "Variable")
+
+      stop(glue::glue("{ref1} '{ref2}' already exist in the SPATA2 object."))
+
+    }
   }
 
   # checks complete -> set assay
@@ -2778,7 +2782,7 @@ createSpatialMethod <- function(...){
 
 }
 
-#' @title Create an object of class `SpatialData`
+#' @title Create an object of class `SpatialData` from raw output
 #'
 #' @description Official constructor function of the S4 class [`SpatialData`].
 #' Functions suffixed by the platform name are wrappers written for their
@@ -2803,7 +2807,7 @@ createSpatialMethod <- function(...){
 #'
 #'  \itemize{
 #'   \item{*MERFISH*:}{ File that contains *'cell_metadata'* and ends with *'.csv'*}
-#'   \item{*SlideSeqV1*:}{ File that ends with *'...MatchedBeadLocation.csv'*}
+#'   \item{*SlideSeqV1*:}{ File that ends with *'MatchedBeadLocation.csv'*}
 #'   \item{*Visium*:}{ File named *'tissue_positions_list.csv'* or *'tissue_positions.csv'*}
 #'   \item{*Xenium*:}{ File named *'cells.csv.gz'*.}
 #'   }
