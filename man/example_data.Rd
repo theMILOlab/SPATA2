@@ -6,7 +6,7 @@
 \title{A data.frame necessary for cnv-analysis. Contains information about the gene positions
 on chromosomes. Contains the following variables:}
 \format{
-An object of class \code{list} of length 9.
+An object of class \code{list} of length 11.
 }
 \usage{
 example_data

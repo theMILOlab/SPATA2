@@ -108,43 +108,20 @@ setMethod(
 plotPCA <- function(object,
                     color_by = NULL,
                     n_pcs = NULL,
-                    method_gs = NULL,
-                    pt_size = NULL,
-                    pt_alpha = NULL,
+                    pt_alpha = 0.9,
+                    pt_clr = "lightgrey",
+                    pt_size = 1,
                     pt_clrp = NULL,
                     pt_clrsp = NULL,
-                    pt_clr = NULL,
-                    normalize = NULL,
+                    nrow = NULL,
+                    ncol = NULL,
                     verbose = NULL,
                     ...){
 
-  # 1. Control --------------------------------------------------------------
-
-  confuns::make_available(..., verbose = verbose)
-
-  # check input
   hlpr_assign_arguments(object)
 
-  if(!base::is.null(color_by)){
-
-    color_by <-
-      check_color_to(
-        color_to = color_by,
-        all_features = getFeatureNames(object),
-        all_genes = getGenes(object),
-        all_gene_sets = getGeneSets(object)
-      )
-
-  } else {
-
-    color_by <- list("color" = pt_clr)
-  }
-
   # get data
-  pca_df <- getPcaDf(object)
-
-  # check principal component input
-  confuns::is_value(x = n_pcs, mode = "numeric")
+  pca_df <- getPcaDf(object, n_pcs = n_pcs)
 
   n_pcs <- 1:n_pcs
   total_pcs <- (base::ncol(pca_df)-2)
@@ -163,14 +140,11 @@ plotPCA <- function(object,
   uneven_pcs <- stringr::str_c("PC", n_pcs[n_pcs %% 2 != 0], sep = "")
   even_pcs <- stringr::str_c("PC", n_pcs[n_pcs %% 2 == 0], sep = "")
 
-  # -----
-
-
-  # 2. Data wrangling ------------------------------------------------------
 
   selected_df <-
-    dplyr::select(.data= pca_df,
-                  barcodes, sample, dplyr::all_of(x = c(even_pcs, uneven_pcs))
+    dplyr::select(
+      .data= pca_df,
+      barcodes, sample, dplyr::all_of(x = c(even_pcs, uneven_pcs))
     )
 
   even_df <-
@@ -213,27 +187,28 @@ plotPCA <- function(object,
       pc_pairs = base::factor(pc_pairs, levels = unique_pc_pairs)
       )
 
-  # -----
 
-  plot_list <-
-    hlpr_scatterplot(
-      object = object,
-      spata_df = dim_red_df,
-      color_to = color_by,
-      pt_size = pt_size,
-      pt_alpha = pt_alpha,
-      pt_clrp = pt_clrp,
-      pt_clrsp = pt_clrsp,
-      method_gs = method_gs,
-      normalize = normalize,
-      verbose = verbose
-    )
+  if(base::is.character(color_by)){
 
-  ggplot2::ggplot(data = plot_list$data, mapping = ggplot2::aes(x = x, y = y)) +
-    plot_list$add_on +
-    confuns::call_flexibly(fn = "facet_wrap", fn.ns = "ggplot2", verbose = verbose, v.fail = ggplot2::facet_wrap(facets = . ~ pc_pairs),
-                           default = list(facets = stats::as.formula(. ~ pc_pairs))) +
+    plot_df <- joinWithVariables(object, spata_df = dim_red_df, variables = color_by)
+
+    point_add_on <-
+      ggplot2::geom_point(data = plot_df, mapping = ggplot2::aes(color = .data[[color_by]]), size = pt_size, alpha = pt_alpha)
+
+  } else {
+
+    plot_df <- dim_red_df
+
+    point_add_on <-
+      ggplot2::geom_point(data = plot_df, color = pt_clr, size = pt_size, alpha = pt_alpha)
+
+  }
+
+  ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = x, y = y)) +
+    point_add_on +
+    ggplot2::facet_wrap(facets = . ~ pc_pairs, nrow = nrow, ncol = ncol) +
     ggplot2::theme_classic() +
+    scale_color_add_on(variable = plot_df[[color_by]], clrp = pt_clrp, clrsp = pt_clrsp, ...) +
     ggplot2::theme(
       strip.background = ggplot2::element_blank(),
       axis.title = ggplot2::element_blank()

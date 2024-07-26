@@ -24,7 +24,9 @@ should be one of \code{base::names(spatial_methods)}.}
 
 \item{sample_name}{Character value. The name of the input object.}
 
-\item{n_pcs}{Numeric value. Denotes the number of principal components to be computed.}
+\item{n_pcs}{Numeric value or \code{NULL}. If numeric, specifies the number of
+principal components to use. If \code{NULL}, all principal components are used
+(as computed with \code{\link[=runPCA]{runPCA()}}).}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

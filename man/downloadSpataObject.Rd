@@ -2,24 +2,12 @@
 % Please edit documentation in R/d.R
 \name{downloadSpataObject}
 \alias{downloadSpataObject}
-\alias{downloadSpataObjects}
-\title{Download \code{spata2} objects}
+\title{Download a SPATA2 object}
 \usage{
 downloadSpataObject(
   sample_name,
   overwrite = FALSE,
   file = FALSE,
-  in_shiny = FALSE,
-  verbose = TRUE,
-  ...
-)
-
-downloadSpataObjects(
-  sample_names,
-  files = NULL,
-  folder = base::getwd(),
-  overwrite = FALSE,
-  in_shiny = FALSE,
   verbose = TRUE,
   ...
 )
@@ -37,23 +25,16 @@ as a character. If \code{NULL}, the function saves the object
 under the sample name with an \emph{'.RDS'} suffix. If \code{FALSE}, the saving
 is skipped and the object is simply returned.}
 
-\item{sample_names}{Character vector. The sample names of the \code{SPATA2} objects
-to be downloaded. Use \code{validSampleNames()} to obtain all valid input options.}
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
 
-\item{files}{Character vector or NULL. Specifies the file names under which the
-\code{SPATA2} objects are saved. If character, the input must be of the same length
-as the input for argument \code{sample_names}. If NULL, the files are named
-according to the sample name.}
-
-\item{folder}{Character value. If character, specifies the output
-folder in which the \code{SPATA2} object is saved. Defaults to the working directory.}
+(Warning messages will always be printed.)}
 }
 \value{
 The downloaded \code{SPATA2} object.
 }
 \description{
-Downloads a \code{SPATA2} object and returns it. For convenient
-downloads of multiple \code{SPATA2} objects check out \code{downloadSpataObjects()}.
+Downloads a single \code{SPATA2} object and returns it.
 }
 \note{
 Imported from the package \code{SPATAData}.
@@ -67,6 +48,9 @@ object <- downloadSpataObject(sample_name = "UKF275T")
 object <- downloadSpataObject(sample_name = "UKF275T", file = TRUE)
 
 # download, assign and save on disk in a specified directory
-object <- downloadSpataObject(sample_name = "UKF275T", file = "my/path/spata_object.RDS")
+object <- downloadSpataObject(sample_name = "UKF275T", file = "my/path/to/spata_object.RDS")
 }
-\keyword{internal}
+\seealso{
+For convenient downloads of multiple \code{SPATA2} objects
+check out \code{\link[SPATAData:downloadSpataObjects]{downloadSpataObjects()}}.
+}

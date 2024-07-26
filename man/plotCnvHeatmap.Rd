@@ -151,8 +151,11 @@ represent the group.}
 \item{clrsp}{Character vector. The colorspectrum with which the tiles of the heatmap
 are colored. Should be one of \code{validColorSpectra()[[\emph{'Diverging'}]]}.}
 
-\item{limits}{Numeric vector of length two or NULL, If numeric, sets the limits
+\item{limits}{Numeric vector of length two or \code{NULL}. If numeric, sets the limits
 of the colorscale (\code{oob} is set to \code{scales::squish}).}
+
+\item{meta_vars}{Character vector or \code{NULL}. If character, the variables to display
+o}
 
 \item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
 
@@ -180,10 +183,10 @@ the computational progress will be printed.
 A plot of class \code{aplot}.
 }
 \description{
-Plots the results of \code{runCNV()} in form of a heatmap.
+Plots the results of  \code{\link[=runCNV]{runCNV()}} in form of a heatmap.
 Use arguments \code{across} and \code{across_subset} to visualize CNV differences
 between subgroups of cluster variables or other grouping variables (e.g. based on
-histology created with \code{createSpatialSegmentation()}).
+histology created with \code{\link[=createSpatialSegmentation]{createSpatialSegmentation()}}.
 }
 \details{
 The output plot of this function consists of several elements - each element being

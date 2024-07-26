@@ -372,7 +372,7 @@ distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object))
 #'
 #' @details The following data can be downloaded.
 #'
-#' From *Kueckelhaus et al., 2024* with `pub = 'kueckelhaus_et_al_2024'`.
+#' From *Kueckelhaus et al., 2024* with `pub = 'Kueckelhaus_et_al_2024'`.
 #'
 #' \itemize{
 #'  \item{id = 'UKF313T'}{An object of class `SPATA2` containing human glioblastoma Visium data.}
@@ -387,9 +387,8 @@ distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object))
 #'  objectT313 <- downloadFromPublication(pub = "kueckelhaus_et_al_2024", what = "UKF313T")
 #'
 #' @keywords internal
-#' @export
 #'
-downloadFromPublication <- function(pub, id, raw = FALSE){
+downloadFromPublication <- function(pub, sample_name){
 
   confuns::check_one_of(
     input = pub,
@@ -409,17 +408,13 @@ downloadFromPublication <- function(pub, id, raw = FALSE){
 }
 
 
-#' @title Download `spata2` objects
-#' @inherit SPATAData::downloadSpataObject title description params return examples
+#' @inherit SPATAData::downloadSpataObject title description params return examples seealso
 #' @note Imported from the package `SPATAData`.
 #' @importFrom SPATAData downloadSpataObject
 #' @export
-#' @keywords internal
 downloadSpataObject <- SPATAData::downloadSpataObject
 
-#' @rdname downloadSpataObject
-#' @inherit SPATAData::downloadSpataObjects params
+#' @inherit SPATAData::downloadSpataObjects title description params return examples
 #' @importFrom SPATAData downloadSpataObjects
 #' @export
-#' @keywords internal
 downloadSpataObjects <- SPATAData::downloadSpataObjects

@@ -13,7 +13,6 @@ runCNV(
   gene_pos_df = SPATA2::gene_pos_df,
   directory_cnv_folder = "data-development/cnv-results",
   directory_regions_df = NA,
-  n_pcs = 30,
   cnv_prefix = "Chr",
   save_infercnv_object = TRUE,
   verbose = NULL,

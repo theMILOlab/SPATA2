@@ -2,7 +2,7 @@
 % Please edit documentation in R/n.R
 \name{nObs}
 \alias{nObs}
-\title{Number of observations}
+\title{Number of observations (e.g. cells)}
 \usage{
 nObs(object)
 }

@@ -6,7 +6,7 @@
 \alias{createSpatialDataSlideSeqV1}
 \alias{createSpatialDataVisium}
 \alias{createSpatialDataXenium}
-\title{Create an object of class \code{SpatialData}}
+\title{Create an object of class \code{SpatialData} from raw output}
 \usage{
 createSpatialData(
   sample,
@@ -93,7 +93,7 @@ the expected filename is tried:
 
 \itemize{
 \item{\emph{MERFISH}:}{ File that contains \emph{'cell_metadata'} and ends with \emph{'.csv'}}
-\item{\emph{SlideSeqV1}:}{ File that ends with \emph{'...MatchedBeadLocation.csv'}}
+\item{\emph{SlideSeqV1}:}{ File that ends with \emph{'MatchedBeadLocation.csv'}}
 \item{\emph{Visium}:}{ File named \emph{'tissue_positions_list.csv'} or \emph{'tissue_positions.csv'}}
 \item{\emph{Xenium}:}{ File named \emph{'cells.csv.gz'}.}
 }}

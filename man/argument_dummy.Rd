@@ -174,6 +174,10 @@ The first \code{n_gsets} are included starting with the one with the lowest sign
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
+\item{n_pcs}{Numeric value or \code{NULL}. If numeric, specifies the number of
+principal components to use. If \code{NULL}, all principal components are used
+(as computed with \code{\link[=runPCA]{runPCA()}}).}
+
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}

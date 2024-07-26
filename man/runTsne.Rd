@@ -5,21 +5,19 @@
 \alias{runTsne}
 \title{Run t-Stochastic Neighbour Embedding}
 \usage{
-runTSNE(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, ...)
+runTSNE(object, n_pcs = NULL, tsne_perplexity = 30, ...)
 
 runTsne(...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{n_pcs}{Numeric value. Denotes the number of principal components used. Must be
 smaller or equal to the number of principal components the pca data.frame contains.}
 
 \item{tsne_perplexity}{Numeric value. Given to argument \code{perplexity} of
 \code{Rtsne::Rtsne()}.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 
 \item{...}{Additional arguments given to \code{Rtsne::Rtsne()}.}
 }
@@ -45,4 +43,7 @@ plotPCA(object, color_by = "histology")
 plotTSNE(object, color_by = "histology")
 plotUMAP(object, color_by = "histology")
 
+}
+\seealso{
+\code{\link[=runPCA]{runPCA()}}, \code{\link[=getPcaDf]{getPcaDf()}}, \code{\link[=getTsneDf]{getTsneDf()}}, \code{\link[=getUmapDf]{getUmapDf()}}
 }

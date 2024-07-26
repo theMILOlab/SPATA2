@@ -16,6 +16,10 @@ joinWithUmap(object, spata_df, verbose = NULL, force = FALSE, ...)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{n_pcs}{Numeric value or \code{NULL}. If numeric, specifies the number of
+principal components to use. If \code{NULL}, all principal components are used
+(as computed with \code{\link[=runPCA]{runPCA()}}).}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

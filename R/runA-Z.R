@@ -676,7 +676,6 @@ runCNV <- function(object,
                    gene_pos_df = SPATA2::gene_pos_df,
                    directory_cnv_folder = "data-development/cnv-results", # output folder
                    directory_regions_df = NA, # deprecated (chromosome positions)
-                   n_pcs = 30,
                    cnv_prefix = "Chr",
                    save_infercnv_object = TRUE,
                    verbose = NULL,
@@ -1750,7 +1749,7 @@ runKmeansClustering <- function(object,
                                 methods_kmeans = "Hartigan-Wong",
                                 prefix = "K",
                                 naming = "{method_kmeans}_k{k}",
-                                n_pcs = 30,
+                                n_pcs = NULL,
                                 overwrite = TRUE,
                                 ...){
 
@@ -1788,15 +1787,20 @@ runKmeansClustering <- function(object,
 
 #' @title Run Principal Component Analysis
 #'
-#' @description Takes the expression matrix of choice and passes it to
+#' @description Takes the data matrix of choice and passes it to
 #' \code{irlba::prcomp_irlba()}.
 #'
+#' @param variables Character vector or `NULL`. If character, subsets the data matrix
+#' by variable/molecule names such that only the specified ones are used for dimensional reduction.
+#' If `NULL`, the unsubstted matrix denoted in `mtr_name` is used.
 #' @param n_pcs Numeric value. Denotes the number of principal components to be computed.
 #' @param ... Additional arguments given to \code{irlba::prcomp_irlba()}.
 #'
 #' @inherit argument_dummy params
 #'
 #' @inherit update_dummy return
+#'
+#' @seealso [`identifyVariableMolecules()`], [`plotPcaElbow()`]
 #'
 #' @export
 #'
@@ -1818,15 +1822,25 @@ runKmeansClustering <- function(object,
 
 runPCA <- function(object,
                    n_pcs = 30,
+                   variables = NULL,
                    mtr_name = activeMatrix(object),
                    assay_name = activeAssay(object),
                    ...){
 
-  check_object(object)
-
   expr_mtr <-
     getMatrix(object, mtr_name = mtr_name, assay_name = assay_name) %>%
     base::as.matrix()
+
+  if(base::is.character(variables)){
+
+    confuns::check_one_of(
+      input = variables,
+      against = base::rownames(expr_mtr)
+    )
+
+    expr_mtr <- expr_mtr[variables, ]
+
+  }
 
   pca_res <- irlba::prcomp_irlba(x = base::t(expr_mtr), n = n_pcs, ...)
 
@@ -2204,44 +2218,45 @@ runSparkx <- function(...){
 #' @description Takes the pca-data of the object up to the principal component denoted
 #' in argument \code{n_pcs} and performs tSNE with it.
 #'
-#' @inherit check_sample params
 #' @param n_pcs Numeric value. Denotes the number of principal components used. Must be
 #' smaller or equal to the number of principal components the pca data.frame contains.
 #' @param tsne_perplexity Numeric value. Given to argument \code{perplexity} of
 #' \code{Rtsne::Rtsne()}.
 #' @param ... Additional arguments given to \code{Rtsne::Rtsne()}.
 #'
+#' @inherit argument_dummy params
 #' @inherit update_dummy return
+#'
+#' @seealso [`runPCA()`], [`getPcaDf()`], [`getTsneDf()`], [`getUmapDf()`]
 #'
 #' @export
 #'
 #' @inherit runPCA examples
 #'
 
-runTSNE <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, ...){
+runTSNE <- function(object, n_pcs = NULL, tsne_perplexity = 30, ...){
 
-  check_object(object)
+  hlpr_assign_arguments(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+  tsne_res <-
+    runTsne2(
+      object = object,
+      tsne_perplexity = tsne_perplexity,
+      ...
+    )
 
-  confuns::are_values(c("n_pcs", "tsne_perplexity"), mode = "numeric")
-
-  tsne_res <- runTsne2(object = object,
-                       of_sample = of_sample,
-                       tsne_perplexity = tsne_perplexity,
-                       ...)
-
-  pca_mtr <- getPcaMtr(object = object, of_sample = of_sample, n_pcs = n_pcs)
+  pca_mtr <- getPcaMtr(object = object, n_pcs = n_pcs)
 
   tsne_df <-
     base::data.frame(
       barcodes = base::rownames(pca_mtr),
-      sample = of_sample,
       tsne1 = tsne_res$Y[,1],
       tsne2 = tsne_res$Y[,2]
     )
 
-  object <- setTsneDf(object = object, tsne_df = tsne_df, of_sample = of_sample)
+  object <- setTsneDf(object = object, tsne_df = tsne_df)
+
+  returnSpataObject(object)
 
 }
 
@@ -2256,13 +2271,11 @@ runTsne <- function(...){
 }
 
 #' @keywords internal
-runTsne2 <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, ...){
+runTsne2 <- function(object, n_pcs = 20, tsne_perplexity = 30, ...){
 
   check_object(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  pca_mtr <- getPcaMtr(object = object, of_sample = of_sample, n_pcs = n_pcs)
+  pca_mtr <- getPcaMtr(object = object, n_pcs = n_pcs)
 
   tsne_res <- Rtsne::Rtsne(pca_mtr, perplexity = tsne_perplexity, ...)
 
@@ -2274,30 +2287,32 @@ runTsne2 <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, .
 
 # runU --------------------------------------------------------------------
 
-#' @title Run UMAP
+#' @title Run Uniform Manifold Approximation and Projection
 #'
 #' @description Takes the pca data of the object up to the principal component denoted
 #' in argument \code{n_pcs} and performs UMAP with it.
 #'
-#' @inherit check_sample params
 #' @inherit runTsne params
 #' @param ... Additional arguments given to \code{umap::umap()}.
+#' @inherit argument_dummy params
 #'
 #' @inherit update_dummy return
 #'
 #' @export
 #'
+#' @seealso [`runPCA()`]
+#'
 #' @inherit runPCA examples
 #'
 
-runUMAP <- function(object, n_pcs = 20, ...){
+runUMAP <- function(object, n_pcs = NULL, ...){
 
   check_object(object)
 
   umap_res <-
     runUmap2(object = object, n_pcs = n_pcs, ...)
 
-  pca_mtr <- getPcaMtr(object = object)
+  pca_mtr <- getPcaMtr(object = object, n_pcs = n_pcs)
 
   umap_df <-
     tibble::tibble(
@@ -2329,7 +2344,7 @@ runUmap2 <- function(object, n_pcs = 20, ...){
 
   check_object(object)
 
-  pca_mtr <- getPcaMtr(object = object)
+  pca_mtr <- getPcaMtr(object = object, n_pcs = n_pcs)
 
   umap_res <- umap::umap(d = pca_mtr, ...)
 

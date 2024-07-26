@@ -4,7 +4,7 @@
 \alias{downloadFromPublication}
 \title{Download data from publications}
 \usage{
-downloadFromPublication(pub, id, raw = FALSE)
+downloadFromPublication(pub, sample_name)
 }
 \arguments{
 \item{pub}{Character value. The publication of interest.}
@@ -21,7 +21,7 @@ around SPATA2. See details for valid input options.
 \details{
 The following data can be downloaded.
 
-From \emph{Kueckelhaus et al., 2024} with \code{pub = 'kueckelhaus_et_al_2024'}.
+From \emph{Kueckelhaus et al., 2024} with \code{pub = 'Kueckelhaus_et_al_2024'}.
 
 \itemize{
 \item{id = 'UKF313T'}{An object of class \code{SPATA2} containing human glioblastoma Visium data.}

@@ -1035,11 +1035,52 @@ asSummarizedExperiment <- function(object, ...){
 
 
 
-#' @title Transform objects to SPATA2 object
+#' Transform miscellaneous objects to SPATA2 objects
 #'
-#' @description Transforms input object to object of class `SPATA2` object.
+#' This S4 generic converts miscellaneous objects into a `SPATA2` object,
+#'  transferring relevant data and metadata.
 #'
-#' @return An object of class [`SPATA2`].
+#' @param object Objects of classes for which a method has been defined.
+#' @param sample_name Character. The name of the sample.
+#' @param platform Character. The platform used for the experiment. Should be one
+#' of `names(spatial_methods)`.
+#' @param assay_name Character. The name of the Seurat assay containing the matrices of interest.
+#'  If NULL, Seurat's default assay is used.
+#' @param image_name Character. The name of the image in the Seurat object to be transferred.
+#' If NULL, the function will attempt to use the only available image or throw an error if multiple images are found.
+#' @param image_dir Character. The directory where the image is stored. Default is NULL.
+#' @param transfer_meta_data Logical. If TRUE, the metadata will be transferred. Default is TRUE.
+#' @param transfer_dim_red Logical. If TRUE, dimensionality reduction data (PCA, t-SNE, UMAP) will be transferred. Default is TRUE.
+#' @param count_mtr_name Character. The name of the count matrix layer in the Seurat object. Default is "counts".
+#' @param proc_mtr_name Character. The name of the processed matrix layer in the Seurat object. Default is "scale.data".
+#' @param modality Character. The modality of the data (e.g., "gene"). Default is "gene".
+#' @param scale_with Character. The scale factor to use for image scaling. Default is "lowres".
+#' @param verbose Logical. If TRUE, progress messages will be printed. Default is TRUE.
+#'
+#' @return A `SPATA2` object containing the converted data.
+#'
+#' @examples
+#'
+#' # ----- example for Seurat conversion
+#' library(SPATA2)
+#' library(Seurat)
+#'
+#' seurat_object <- example_data$seurat_object
+#'
+#' spata_object <-
+#'  asSPATA2(
+#'   object = seurat_object,
+#'     sample_name = "gbm",
+#'     image_name = "slice1",
+#'     platform = "VisiumSmall",
+#'    modality = "gene"
+#'   )
+#'
+#' # with Seurat
+#' SpatialFeaturePlot(seurat_object, "nCounts_Spatial")
+#'
+#' # with SPATA2
+#' plotSurface(spata_object, "nCounts_Spatial")
 #'
 #' @export
 
@@ -1105,72 +1146,6 @@ setMethod(
 
     count_mtr <- object@raw_exprs
 
-    # initiate object
-    spata_obj <-
-      initiateSpataObject_Empty(
-        sample_name = sample_name,
-        spatial_method = spatial_method
-      )
-
-    spata_obj <-
-      setCountMatrix(
-        object = spata_obj,
-        count_mtr = object@raw_exprs
-      )
-
-    spata_obj <- setCoordsDf(spata_obj, coords_df = coords_df)
-
-    # transfer image
-
-    if(!base::is.null(image)){
-
-      confuns::give_feedback(
-        msg = "Transferring image.",
-        verbose = verbose
-      )
-
-      image_object <-
-        createImageObject(
-          image = image_ebi,
-          image_class = "HistologyImage",
-          coordinates = coordinates
-        )
-
-      spata_obj <-
-        setImageObject(
-          object = spata_obj,
-          image_object = image_object
-        )
-
-    } else {
-
-      confuns::give_feedback(
-        msg = "No image found to transfer.",
-        verbse = verbose
-      )
-
-
-    }
-
-    # transfer meta_data
-    if((transfer_meta_data)){
-
-      confuns::give_feedback(
-        msg = "Transferring meta data",
-        verbse = verbose
-      )
-
-      spata_obj <-
-        setFeatureDf(
-          object = spata_obj,
-          feature_df = cell_meta_data,
-          of_sample = sample_name
-        )
-
-    }
-
-    spata_obj <- setActiveMatrix(spata_obj, mtr_name = "counts")
-
     return(spata_obj)
 
   }
@@ -1196,8 +1171,8 @@ setMethod(
                         verbose = TRUE){
 
     confuns::check_one_of(
-          input = platform,
-          against = names(spatial_methods)
+      input = platform,
+      against = names(spatial_methods)
     )
 
     if(platform == "Undefined"){ warning("Platform is set to 'Undefined', which is not compatible with some SPATA2 functions. Ideally choose a known platform from ``SPATA2::spatial_methods`` and define in ``platform``.") }
@@ -1235,8 +1210,8 @@ setMethod(
           fdb.opt = 2
         )
 
-      } 
-      
+      }
+
     }
 
     # check and transfer image
@@ -1317,16 +1292,17 @@ setMethod(
         error_ref = "count matrix"
       )
 
-    meta_var <- as.data.frame(Seurat::GetAssay(object)@var.features)
+    meta_var <- as.data.frame(Seurat::GetAssay(object)@features)
     names(meta_var)[1] <- "barcodes"
 
-    spata_object <- createMolecularAssay(
-      spata_object, 
-      modality = modality, 
-      mtr_counts = count_mtr, 
-      meta_var = meta_var, 
-      activate = TRUE
-    )
+    spata_object <-
+      createMolecularAssay(
+        spata_object,
+        modality = modality,
+        mtr_counts = count_mtr,
+        meta_var = meta_var,
+        activate = TRUE
+      )
 
     proc_mtr <-
       getFromSeurat(
@@ -1612,17 +1588,17 @@ if (requireNamespace("anndata", quietly = TRUE)) {
       # transfer matrices
 
       mtrs <- load_adata_matrix(
-        adata = object, 
+        adata = object,
         count_mtr_name = count_mtr_name,
-        normalized_mtr_name = normalized_mtr_name, 
-        scaled_mtr_name = scaled_mtr_name, 
+        normalized_mtr_name = normalized_mtr_name,
+        scaled_mtr_name = scaled_mtr_name,
         verbose = verbose)
 
       spata_object <- createMolecularAssay(
-        spata_object, 
-        modality = modality, 
-        mtr_counts = mtrs$count_mtr, 
-        meta_var = meta_var, 
+        spata_object,
+        modality = modality,
+        mtr_counts = mtrs$count_mtr,
+        meta_var = meta_var,
         activate = TRUE
       )
 
@@ -1798,7 +1774,7 @@ if (requireNamespace("anndata", quietly = TRUE)) {
   )
 
 } else {
-  
+
   message("R Package 'anndata' is required for compatibility with h5ad files, but not installed.")
 
 }

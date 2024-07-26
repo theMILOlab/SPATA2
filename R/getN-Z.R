@@ -11,12 +11,10 @@
 #' @rdname getDimRedDf
 #' @export
 getPcaDf <- function(object,
-                     n_pcs = 30,
+                     n_pcs = NULL,
                      ...){
 
   deprecated(...)
-
-  confuns::is_value(x = n_pcs, mode = "numeric")
 
   pca_df <-
     getDimRedDf(
@@ -24,22 +22,24 @@ getPcaDf <- function(object,
       method_dr = "pca"
     )
 
-  subset_pcs <- stringr::str_c("PC", 1:n_pcs, sep = "")
+  if(base::is.numeric(n_pcs)){
 
-  subsetted_pca_df <-
-    dplyr::select(pca_df, barcodes, sample, dplyr::all_of(subset_pcs))
+    subset_pcs <- stringr::str_c("PC", 1:n_pcs, sep = "")
 
-  return(subsetted_pca_df)
+    pca_df <-
+      dplyr::select(pca_df, barcodes, sample, dplyr::all_of(subset_pcs))
+
+  }
+
+  return(pca_df)
 
 }
 
 #' @rdname getDimRedDf
 #' @export
 getPcaMtr <- function(object,
-                      n_pcs = 30,
+                      n_pcs = NULL,
                       ...){
-
-  confuns::is_value(x = n_pcs, mode = "numeric")
 
   getPcaDf(object = object, n_pcs = n_pcs) %>%
     tibble::column_to_rownames(var = "barcodes") %>%

@@ -13,9 +13,12 @@ loadSpataObject(directory_spata, verbose = TRUE, update = TRUE)
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{update}{Logical value. If \code{TRUE}, calls \code{\link[=updateSpataObject]{updateSpataObject()}} after loading to check whether
+the loaded object is up to date.}
 }
 \value{
-The load object of interest.
+The loaded object. If not of class \code{\link{SPATA2}}, a warning is printed.
 }
 \description{
 Reads an .RDS file, checks if it is an object of class \code{\link{SPATA2}}
@@ -23,7 +26,5 @@ and checks whether it must be updated.
 }
 \details{
 \code{loadSpataObject()} is a wrapper around \code{base::readRDS()} with which
-you could load your [\verb{SPATA2'] object as well. The other two functions take the [}SPATA2'] object
-and use \code{getDirectoryInstructions()} to extract the directories of the corresponding object to be loaded under which
-they were saved the last time \code{saveCorresponding*()} was used.
+you could load your \code{\link{SPATA2}} object as well.
 }

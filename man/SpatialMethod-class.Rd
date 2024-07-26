@@ -6,8 +6,8 @@
 \alias{SpatialMethod}
 \title{The \code{SpatialMethod} - Class}
 \description{
-Abstracts the concept of spatial biology platforms
-such as \emph{Visium} or \emph{SlideSeq}.
+Defines the core features of spatial biology platforms
+like \emph{Visium} and \emph{SlideSeq}.
 }
 \section{Slots}{
 

@@ -165,6 +165,10 @@
 #'
 #' Hint: Variables that are uniformly expressed can not be scaled and are discarded.
 #'
+#' @param n_pcs Numeric value or `NULL`. If numeric, specifies the number of
+#' principal components to use. If `NULL`, all principal components are used
+#' (as computed with [`runPCA()`]).
+#'
 #' @param nrow,ncol Numeric values or NULL. Used to arrange multiple plots.
 #'
 #' @param line_alpha Numeric. Affects alpha of main lines of the plot.

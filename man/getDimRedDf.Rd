@@ -10,9 +10,9 @@
 \usage{
 getDimRedDf(object, method_dr = c("pca", "tsne", "umap"), ...)
 
-getPcaDf(object, n_pcs = 30, ...)
+getPcaDf(object, n_pcs = NULL, ...)
 
-getPcaMtr(object, n_pcs = 30, ...)
+getPcaMtr(object, n_pcs = NULL, ...)
 
 getTsneDf(object, ...)
 

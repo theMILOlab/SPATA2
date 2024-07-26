@@ -4,7 +4,7 @@
 \alias{asSPATA2}
 \alias{asSPATA2,giotto-method}
 \alias{asSPATA2,Seurat-method}
-\title{Transform objects to SPATA2 object}
+\title{Transform miscellaneous objects to SPATA2 objects}
 \usage{
 asSPATA2(object, ...)
 
@@ -22,19 +22,77 @@ asSPATA2(object, ...)
 \S4method{asSPATA2}{Seurat}(
   object,
   sample_name,
-  spatial_method,
-  assay_name = "Spatial",
-  image_name = "slice1",
+  platform = "Undefined",
+  assay_name = NULL,
+  image_name = NULL,
+  image_dir = NULL,
   transfer_meta_data = TRUE,
   transfer_dim_red = TRUE,
   count_mtr_name = "counts",
-  scaled_mtr_name = "scale.data",
+  proc_mtr_name = "scale.data",
+  modality = "gene",
+  scale_with = "lowres",
   verbose = TRUE
 )
 }
+\arguments{
+\item{object}{Objects of classes for which a method has been defined.}
+
+\item{sample_name}{Character. The name of the sample.}
+
+\item{transfer_meta_data}{Logical. If TRUE, the metadata will be transferred. Default is TRUE.}
+
+\item{verbose}{Logical. If TRUE, progress messages will be printed. Default is TRUE.}
+
+\item{platform}{Character. The platform used for the experiment. Should be one
+of \code{names(spatial_methods)}.}
+
+\item{assay_name}{Character. The name of the Seurat assay containing the matrices of interest.
+If NULL, Seurat's default assay is used.}
+
+\item{image_name}{Character. The name of the image in the Seurat object to be transferred.
+If NULL, the function will attempt to use the only available image or throw an error if multiple images are found.}
+
+\item{image_dir}{Character. The directory where the image is stored. Default is NULL.}
+
+\item{transfer_dim_red}{Logical. If TRUE, dimensionality reduction data (PCA, t-SNE, UMAP) will be transferred. Default is TRUE.}
+
+\item{count_mtr_name}{Character. The name of the count matrix layer in the Seurat object. Default is "counts".}
+
+\item{proc_mtr_name}{Character. The name of the processed matrix layer in the Seurat object. Default is "scale.data".}
+
+\item{modality}{Character. The modality of the data (e.g., "gene"). Default is "gene".}
+
+\item{scale_with}{Character. The scale factor to use for image scaling. Default is "lowres".}
+}
 \value{
-An object of class \code{\link{SPATA2}}.
+A \code{SPATA2} object containing the converted data.
 }
 \description{
-Transforms input object to object of class \code{SPATA2} object.
+This S4 generic converts miscellaneous objects into a \code{SPATA2} object,
+transferring relevant data and metadata.
+}
+\examples{
+
+# ----- example for Seurat conversion
+library(SPATA2)
+library(Seurat)
+
+seurat_object <- example_data$seurat_object
+
+spata_object <-
+ asSPATA2(
+  object = seurat_object,
+    sample_name = "gbm",
+    image_name = "slice1",
+    platform = "VisiumSmall",
+   modality = "gene"
+  )
+
+# with Seurat
+SpatialFeaturePlot(seurat_object, "nCounts_Spatial")
+
+# with SPATA2
+plotSurface(spata_object, "nCounts_Spatial")
+
 }

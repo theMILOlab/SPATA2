@@ -447,10 +447,10 @@ plotCnvDotplot <- function(object,
 
 #' @title Plot CNV Heatmap
 #'
-#' @description Plots the results of \code{runCNV()} in form of a heatmap.
+#' @description Plots the results of  [`runCNV()`] in form of a heatmap.
 #' Use arguments \code{across} and \code{across_subset} to visualize CNV differences
 #' between subgroups of cluster variables or other grouping variables (e.g. based on
-#' histology created with \code{createSpatialSegmentation()}).
+#' histology created with [`createSpatialSegmentation()`].
 #'
 #' @param arm_subset Character vector. A combination of \emph{'p'} and/or \emph{'q'}.
 #' Denotes which chromosome arms are included. Defaults to both.
@@ -489,7 +489,7 @@ plotCnvDotplot <- function(object,
 #' @param annotation_size_top,annotation_size_side Numeric values. Used to adjust
 #' the size of the row/column annotation of the heatmap.
 #' @param pretty_name Logical. If TRUE makes legend names pretty.
-#' @param limits Numeric vector of length two or NULL, If numeric, sets the limits
+#' @param limits Numeric vector of length two or `NULL`. If numeric, sets the limits
 #' of the colorscale (\code{oob} is set to \code{scales::squish}).
 #' @param display_border Logical value. If TRUE, a border is drawn around the heatmap
 #' and each annotation. Can be provided as a named vector to adress single parts
@@ -499,6 +499,9 @@ plotCnvDotplot <- function(object,
 #' is TRUE.
 #' @param ggpLayers A list of additional \code{gg} elements to customize the
 #' output plot. See details for more.
+#'
+#' @param meta_vars Character vector or `NULL`. If character, the variables to display
+#' o
 #'
 #' @inherit argument_dummy params
 #'
@@ -2670,6 +2673,49 @@ plotDensityplot <- function(object,
 # plotE -------------------------------------------------------------------
 
 
+#' @title Plot PCA Elbow Plot
+#'
+#' @description This function generates an elbow plot for the principal
+#' component analysis (PCA) of the given object.
+#'
+#' @inherit argument_dummy params
+#' @param elbow Logical. If TRUE, a vertical line is added to the plot indicating the elbow point.
+#'
+#' @inherit ggplot_dummy return
+#'
+#' @details This function calculates the standard deviation of each principal component and plots them.
+#' If the `elbow` parameter is set to TRUE, a vertical line is added at the elbow point,
+#' which is calculated using a helper function [`find_elbow_point()`].
+#'
+#' @export
+plotPcaElbow <- function(object, elbow = FALSE){
+
+  pca_mtr <- getPcaMtr(object)
+
+  st_devs <- base::apply(X = pca_mtr, MARGIN = 2, FUN = stats::sd)
+
+  df <- tibble::tibble(x = base::seq_along(st_devs), y = st_devs)
+
+  if(base::isTRUE(elbow)){
+
+    elbow_add_on <- ggplot2::geom_vline(xintercept = find_elbow_point(df))
+
+  } else {
+
+    elbow_add_on <- NULL
+
+  }
+
+  ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+    elbow_add_on +
+    ggplot2::geom_path() +
+    ggplot2::geom_point() +
+    ggplot2::theme_minimal() +
+    ggplot2::scale_x_continuous(breaks = df$x) +
+    ggplot2::labs(x = "Principal Components", y = "Standard Deviation")
+
+}
+
 #' @title Plot expression as a function of distance to a spatial references
 #'
 #' @description Generates a scatterplot to visualize the relationship between gene expression and
@@ -2951,6 +2997,7 @@ plotExprVsDistST <- function(object,
     )
 
 }
+
 
 
 

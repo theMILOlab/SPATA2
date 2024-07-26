@@ -20,6 +20,10 @@ findNearestNeighbourClusters(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{n_pcs}{Numeric value or \code{NULL}. If numeric, specifies the number of
+principal components to use. If \code{NULL}, all principal components are used
+(as computed with \code{\link[=runPCA]{runPCA()}}).}
+
 \item{k}{The maximum number of nearest neighbours to compute. The default value
 is set to the smaller of the number of columnns in data.}
 
