@@ -212,7 +212,7 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #'  containsPixelScaleFactor(object) # must be TRUE
 #'
@@ -535,7 +535,7 @@ ggpLayerAxesSI <- function(object,
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' plotImage(object) +
 #'  ggpLayerCaptureArea(object, opt = "rect")
@@ -680,7 +680,7 @@ ggpLayerColorGroupScale <- function(object,
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' object <-
 #'  createNumericAnnotations(
@@ -1029,7 +1029,7 @@ ggpLayerFixFrame <- function(object){
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' plotImage(object) + plotSurface(object)
 #'
@@ -1097,10 +1097,10 @@ ggpLayerFrameByImage <- function(object = "object", ...){
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T", meta = TRUE)
 #'
 #' plotSurface(object, color_by = "bayes_space") +
-#'  ggpLayerGroupOutline(object, grouping = "bayes_space", group_subset = c("1", "2"))
+#'  ggpLayerGroupOutline(object, grouping = "bayes_space", group_subset = c("B1", "B2"))
 #'
 #'
 ggpLayerGroupOutline <- function(object,
@@ -1348,9 +1348,7 @@ ggpLayerGroupOutline <- function(object,
 #' library(SPATA2)
 #' library(tidyverse)
 #'
-#' data("example_data")
-#'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' object <-
 #'  createNumericAnnotations(
@@ -1449,7 +1447,7 @@ ggpLayerHorizonSAS <- function(object,
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' ggplot() +
 #'  ggpLayerImage(object)
@@ -1642,7 +1640,7 @@ setMethod(
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' ggplot() +
 #'  ggpLayerPoints(object, color_by = "HM_HYPOXIA")
@@ -2081,9 +2079,7 @@ setMethod(
 #' library(SPATA2)
 #' library(patchwork)
 #'
-#' data("example_data")
-#'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' object <-
 #'  createNumericAnnotations(
@@ -2641,6 +2637,8 @@ ggpLayerScaleBarSI <- function(object,
 #'
 #' @export
 #'
+#' @seealso [`ggpLayerSpatAnnPointer()`]
+#'
 #' @inherit ggpLayerRect examples
 #'
 ggpLayerSpatAnnOutline <- function(object,
@@ -2654,6 +2652,8 @@ ggpLayerSpatAnnOutline <- function(object,
                                    line_size = 1,
                                    line_type = "solid",
                                    use_colors = FALSE,
+                                   clrp = NULL,
+                                   clrp_adjust = NULL,
                                    inner = TRUE,
                                    incl_edge = FALSE,
                                    merge_edge = FALSE,
@@ -2699,8 +2699,7 @@ ggpLayerSpatAnnOutline <- function(object,
                 size = line_size,
                 linetype = line_type,
                 alpha = alpha,
-                mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids),
-                ...
+                mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids)
               )
 
           } else {
@@ -2788,8 +2787,7 @@ ggpLayerSpatAnnOutline <- function(object,
                   linetype = line_type,
                   alpha = alpha,
                   fill = fill,
-                  mapping = ggplot2::aes(x = x, y = y),
-                  ...
+                  mapping = ggplot2::aes(x = x, y = y)
                 )
 
             }
@@ -2817,6 +2815,13 @@ ggpLayerSpatAnnOutline <- function(object,
       }
     ) %>%
     purrr::set_names(nm = ids)
+
+  if(base::isTRUE(use_colors)){
+
+    out_list$spat_ann_colors <-
+      scale_color_add_on(aes = "fill", variable = ids, clrp = clrp, clrp.adjust = clrp_adjust)
+
+  }
 
   return(out_list)
 
@@ -3156,7 +3161,7 @@ ggpLayerSpatAnnRect <- function(object, ids, expand = "25%", ...){
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' plotSurface(object) + ggpLayerThemeCoords()
 #'
@@ -3210,7 +3215,7 @@ ggpLayerThemeCoords <- function(unit = NULL){
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' plotSurface(object, color_by = "HM_HYPOXIA", pt_clrsp = "Reds 3") +
 #'  ggpLayerTissueOutline(object)
@@ -3891,8 +3896,6 @@ ggpLayerTrajectoryBins <- function(object,
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #' @param expand_x,expand_y Given to `expand` of `ggplot2::scale_x/y_continuous()`.
-#'
-#' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
 #'
 #' @export
 #' @inherit ggpLayerRect examples

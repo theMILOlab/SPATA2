@@ -535,7 +535,6 @@ merge_cnv_bins <- function(chr, start_pos, end_pos, ref_bins, verbose = TRUE){
 #' sub_poly <- data.frame(x = c(0.5, 1.5, 1.5, 0.5), y = c(0.5, 0.5, 1.5, 1.5))
 #' merge_intersecting_polygon(main_poly, sub_poly)
 #'
-#' @keywords internal
 #' @export
 merge_intersecting_polygons <- function(main_poly,
                                         sub_poly,
@@ -771,17 +770,15 @@ merge_intersecting_polygons <- function(main_poly,
 #' library(SPATA2)
 #' library(tidyverse)
 #'
-#' data("example_data")
-#'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T", meta = TRUE)
 #'
 #' object <-
 #'   mergeGroups(
 #'     object = object,
 #'     grouping = "bayes_space",
 #'     grouping_new = "bayes_space_merged",
-#'     merge = c("2", "4"),
-#'     new_group = "2.4.merged"
+#'     merge = c("B1", "B6"),
+#'     new_group = "B1B6_merged"
 #'    )
 #'
 #' plotSurface(object, color_by = "bayes_space")
@@ -837,9 +834,7 @@ mergeGroups <- function(object,
 #' library(SPATA2)
 #' library(tidyverse)
 #'
-#' data("example_data")
-#'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' r <- getSpatAnnRange(object, id = "img_ann_1")
 #'
@@ -958,7 +953,7 @@ mergeSpatialAnnotations <- function(object,
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF313T_diet
+#' object <- loadExampleObject("UKF313T")
 #'
 #' if(!containsTissueOutline(object)){
 #'
@@ -1014,63 +1009,52 @@ mergeWithTissueOutline <- function(object,
 #' @description Merges tissue sections that have been mistakenly identified
 #' as two non-contiguous sections.
 #'
+#' @param sections Character vector. The names of the tissue sections to be merged.
+#' @param section_new Character value. The name of the resulting tissue section.
 #' @inherit argument_dummy params
-#' @param ... Collection of vectors that carry the names of the sections
-#' to be merged.
-#'
 #' @inherit update_dummy return
 #'
-#' @seealso [`identifyTissueSections()`]
+#' @seealso [`identifyTissueSections()`], [`getTissueSections()`]
 #'
 #' @export
 #'
-#' @examples
-#'
-#' # in this fictional example the algorithm identified 6 tissue sections
-#' # this call merges sections 1,2,3 to section 1_2_3 and sections 4,5,6 to
-#' # 4_5_6
-#' \dontrun{ object <- mergeTissueSections(object, c(1,2,3), c(4,5,6)) }
-#'
-#'
-mergeTissueSections <- function(object, sep = "_", ...){
+mergeTissueSections <- function(object, sections, section_new, verbose = NULL){
+
+  hlpr_assign_arguments(object)
 
   containsTissueOutline(object)
 
-  merge_input <- purrr::keep(.x = list(...), .p = base::is.numeric)
+  if(!(base::length(getTissueSections(object)) >= 2)){
+
+    stop("Total number of tissue sections must be two or higher in order to merge two tissue sections.")
+
+  }
+
+  confuns::is_value(section_new, mode = "character")
+  confuns::is_vec(sections, mode = "character", min.length = 2)
 
   meta_df <- getMetaDf(object)
 
-  # check input
-  sections_to_merge <-
-    purrr::map(.x = merge_input, .f = base::as.character) %>%
-    purrr::flatten_chr()
-
   confuns::check_one_of(
-    input = sections_to_merge,
-    against = base::unique(meta_df[["section"]]),
-    ref.input = "sections to merge"
+    input = sections,
+    against = base::levels(meta_df[["tissue_section"]]),
+    ref.input = "identified tissue sections"
   )
 
-  if(dplyr::n_distinct(sections_to_merge) != base::length(sections_to_merge)){
+  confuns::check_none_of(
+    against = base::unique(meta_df$tissue_section[!meta_df$tissue_section %in% sections]),
+    input = section_new,
+    ref.against = "tissue section names"
+  )
 
-    stop("Section names to be merged can only appear one time in the input.")
-
-  }
-
-  for(sections in merge_input){
-
-    sections <- base::sort(sections)
-
-    meta_df[["tissue_section"]] <-
-      stringr::str_replace_all(
-        string = meta_df[["tissue_section"]],
-        pattern = stringr::str_c(sections, collapse = "|"),
-        replacement = stringr::str_c(sections, collapse = sep)
-      )
-
-  }
-
-  object <- setMetaDf(object, meta_df = meta_df)
+  object <-
+    mergeGroups(
+      object = object,
+      grouping = "tissue_section",
+      grouping_new = NULL,
+      merge = sections,
+      new_group = section_new
+    )
 
   returnSpataObject(object)
 

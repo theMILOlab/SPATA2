@@ -34,6 +34,8 @@
 #'
 #' @inherit argument_dummy params
 #'
+#' @inherit tutorial_hint_dummy sections
+#'
 #' @note In contrast to [`initiateSpataObjectVisium()`] or [`nitiateSpataObjectMERFISH()`],
 #' a `SPATA2` object with this function the output does not contain a tissue outline yet
 #' Run [`identifyTissueOutline()`] with your choice of parameters afterwards.
@@ -339,7 +341,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
 
       }) %>%
         dplyr::rename(cell = ifelse("...1" %in% colnames(.), "...1", "cell")) %>% # in case cell column is not named
-        dplyr::rename(barcodes = cell) %>% # keep original barcode names in metadata 
+        dplyr::rename(barcodes = cell) %>% # keep original barcode names in metadata
         dplyr::select(-dplyr::matches("^\\.")) %>%
         tibble::column_to_rownames("barcodes") %>%
         dplyr::select_if(.predicate = base::is.numeric) %>%

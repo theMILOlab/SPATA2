@@ -32,9 +32,7 @@ ggplot2 basic manipulation
 library(SPATA2)
 library(tidyverse)
 
-data("example_data")
-
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
 plotSurface(object, color_by = "HM_HYPOXIA")
 plotSurface(object, color_by = "HM_HYPOXIA") + legendBottom()

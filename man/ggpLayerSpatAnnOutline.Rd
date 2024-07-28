@@ -16,6 +16,8 @@ ggpLayerSpatAnnOutline(
   line_size = 1,
   line_type = "solid",
   use_colors = FALSE,
+  clrp = NULL,
+  clrp_adjust = NULL,
   inner = TRUE,
   incl_edge = FALSE,
   merge_edge = FALSE,
@@ -49,6 +51,15 @@ the outline of the spatial annotation is filled.}
 
 \item{use_colors}{Logical value. If \code{TRUE}, the color aesthetic is used to display
 each outline in a different color while providing a legend.}
+
+\item{clrp}{Character value. Specifies the color palette to be used to represent
+groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
+input options.}
+
+\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
+color palette that is used to represent the groups. Names of the input vector must refer
+to the group and the respective named element denotes the color with which to
+represent the group.}
 
 \item{inner}{Logical value. If \code{FALSE}, only outer borders of the annotation
 are displayed.}
@@ -91,9 +102,7 @@ does not contain any inner borders).
 library(SPATA2)
 library(patchwork)
 
-data("example_data")
-
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
 object <-
  createNumericAnnotations(
@@ -123,4 +132,7 @@ p_zoomed <-
 
 p_rect + p_zoomed
 
+}
+\seealso{
+\code{\link[=ggpLayerSpatAnnPointer]{ggpLayerSpatAnnPointer()}}
 }

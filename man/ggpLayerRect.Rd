@@ -54,9 +54,7 @@ Adds a rectangular to the plot.
 library(SPATA2)
 library(patchwork)
 
-data("example_data")
-
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
 object <-
  createNumericAnnotations(

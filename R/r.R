@@ -1128,13 +1128,19 @@ removeMolecules <- function(object,
 
 #' @title Remove observations
 #'
-#' @description `removeObsNoCounts()` dentifies and removes observations with no molecule counts
-#' from the `SPATA2` object. `removeObs()` allows to specify the observations to remove
-#' manually.
+#' @description Remove unwanted \link[=concept_observations]{observations} from the object.
+#'
+#'  \itemize{
+#'    \item{`removeObs()`}{: Allows to specify the observations to remove manually.}
+#'    \item{`removeObsNoCounts()`}{: Identifies and removes observations with no molecule counts from the `SPATA2` object.}
+#'  }
 #'
 #' @param barcodes Character vector or barcodes that are **removed**.
+#' @inherit subsetSpataObject
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
+#'
+#' @seealso [`subsetSpataObject()`]
 #'
 #' @export
 #'
@@ -1142,14 +1148,16 @@ removeMolecules <- function(object,
 #' library(SPATA2)
 #'
 #' data("example_data")
-#'
 #' object <- example_data$object_UKF269T_diet
 #'
 #' # the function tells you if / how many observations were removed
 #' object <- removeObsNoCounts(object, verbose = TRUE)
 #'
 
-removeObs <- function(object, barcodes, verbose = NULL){
+removeObs <- function(object,
+                      barcodes,
+                      spatial_proc = TRUE,
+                      verbose = NULL){
 
   confuns::is_vec(x = "barcodes", mode = "character")
 
@@ -1157,7 +1165,7 @@ removeObs <- function(object, barcodes, verbose = NULL){
 
   barcodes_keep <- barcodes_all[!barcodes_all %in% barcodes]
 
-  object <- subsetByBarcodes(object, barcodes = barcodes_keep, verbose = verbose)
+  object <- subsetByBarcodes(object, barcodes = barcodes_keep, spatial_proc = spatial_proc, verbose = verbose)
 
   returnSpataObject(object)
 
@@ -1166,6 +1174,7 @@ removeObs <- function(object, barcodes, verbose = NULL){
 #' @rdname removeObs
 #' @export
 removeObsNoCounts <- function(object,
+                              spatial_proc = TRUE,
                               assay_name = activeAssay(object),
                               verbose = NULL){
 
@@ -1197,7 +1206,7 @@ removeObsNoCounts <- function(object,
       verbose = verbose
     )
 
-    object <- subsetByBarcodes(object, barcodes = keep)
+    object <- subsetByBarcodes(object, spatial_proc = spatial_proc, barcodes = keep, verbose = verbose)
 
   }
 
@@ -2592,7 +2601,7 @@ rotateCoordsDf <- function(object,
 
   # define center depending on scale factor
   if(containsHistoImages(object)){
-    
+
     center <- getImageCenter(object)
 
     isf <- getScaleFactor(object, fct_name = "image")
@@ -2604,7 +2613,7 @@ rotateCoordsDf <- function(object,
     center <- getCoordsCenter(object)
 
   }
-  
+
   coords_df_rotated <-
     rotate_coords_df(
       df = coords_df,

@@ -1783,6 +1783,123 @@ runKmeansClustering <- function(object,
 
 }
 
+
+
+# runN --------------------------------------------------------------------
+
+#' @title Clustering with nearest neighbor search
+#'
+#' @description
+#' A wrapper around the [`RANN::nn2()`] function - nearest neighbor clustering.
+#'
+#'
+#' @param k The maximum number of nearest neighbours to compute. The default value
+#'  is set to the smaller of the number of columnns in data.
+#' @param treetype Character vector. Character vector specifying the standard
+#'  \emph{'kd'} tree or a \emph{'bd'} (box-decomposition, AMNSW98) tree which
+#'   may perform better for larger point sets.
+#' @param searchtypes Character value. Either \emph{'priority', 'standard'} or \emph{'radius '}. See details for more.
+#' @param naming Character value. A glue expression for the new cluster variable name.
+#' @inherit RANN::nn2 params
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @note Requires the `RANN` packge.
+#'
+#' @details
+#'
+#' Search types: priority visits cells in increasing order of distance from the
+#' query point, and hence, should converge more rapidly on the true nearest neighbour,
+#' but standard is usually faster for exact searches. radius only searches for neighbours
+#' within a specified radius of the point. If there are no neighbours then nn.idx will
+#' contain 0 and nn.dists will contain 1.340781e+154 for that point.
+#'
+runNearestNeighborClustering <- function(object,
+                                         n_pcs = NULL,
+                                         k = 50,
+                                         naming = "nn2_{priority}_{treetype}",
+                                         searchtype = "priority",
+                                         treetype = "bd",
+                                         radius = 0,
+                                         eps = 0,
+                                         overwrite = FALSE,
+                                         verbose = TRUE){
+
+
+  check_cran_packages("RANN")
+
+  confuns::check_one_of(
+    input = searchtype,
+    against = c("standard", "priority", "radius"),
+    fdb.fn = "stop",
+    ref.input = "input for argument 'searchtype'",
+    ref.against = "valid searchtypes"
+  )
+
+  confuns::check_one_of(
+    input = treetype,
+    against = c("kd", "bd"),
+    fdb.fn = "stop",
+    ref.input = "input for argument 'treetype'",
+    ref.against = "valid treetypes"
+  )
+
+  cluster_name <- glue::glue(naming)
+
+  confuns::check_none_of(
+    against = getFeatureNames(object),
+    input = cluster_name,
+    overwrite = overwrite
+  )
+
+  # 2. Data extraction and for loop -----------------------------------------
+
+  pca_mtr <- getPcaMtr(object, n_pcs = n_pcs)
+
+  cluster_df <- tibble::tibble(barcodes = base::rownames(pca_mtr))
+
+  confuns::give_feedback(msg = msg, verbose = verbose)
+
+  nearest <-
+    RANN::nn2(
+      data = pca_mtr,
+      k = k,
+      treetype = treetype,
+      searchtype = searchtype,
+      radius = radius,
+      eps = eps
+    )
+
+  edges <-
+    reshape::melt(base::t(nearest$nn.idx[, 1:k])) %>%
+    dplyr::select(A = X2, B = value) %>%
+    dplyr::mutate(C = 1)
+
+  edges <-
+    base::transform(edges, A = base::pmin(A, B), B = base::pmax(A, B)) %>%
+    base::unique() %>%
+    dplyr::rename(V1 = A, V2 = B, weight = C)
+
+  edges$V1 <- base::rownames(pca_mtr)[edges$V1]
+  edges$V2 <- base::rownames(pca_mtr)[edges$V2]
+
+  g_df <- igraph::graph.data.frame(edges, directed = FALSE)
+
+  graph_out <- igraph::cluster_louvain(g_df)
+
+  clust_assign <-
+    base::factor(x = graph_out$membership, levels = base::sort(base::unique(graph_out$membership)))
+
+  cluster_df <-
+    dplyr::mutate(.data = cluster_df, cluster_var = base::factor(clust_assign)) %>%
+    dplyr::rename({{cluster_name}} := cluster_var)
+
+  object <- addFeatures(object, feature_df = cluster_df, overwrite = TRUE)
+
+  returnSpataObject(object)
+
+}
+
 # runP --------------------------------------------------------------------
 
 #' @title Run Principal Component Analysis

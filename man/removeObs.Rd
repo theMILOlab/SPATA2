@@ -5,15 +5,29 @@
 \alias{removeObsNoCounts}
 \title{Remove observations}
 \usage{
-removeObs(object, barcodes, verbose = NULL)
+removeObs(object, barcodes, spatial_proc = TRUE, verbose = NULL)
 
-removeObsNoCounts(object, assay_name = activeAssay(object), verbose = NULL)
+removeObsNoCounts(
+  object,
+  spatial_proc = TRUE,
+  assay_name = activeAssay(object),
+  verbose = NULL
+)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{barcodes}{Character vector or barcodes that are \strong{removed}.}
+
+\item{spatial_proc}{Logical value. Indicates whether the new sub-object is
+processed spatially. If \code{TRUE}, a new tissue outline is identified based
+on the remaining observations via \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}. Then,
+spatial annotations are tested on being located on either of the remaining
+tissue sections. If they are not, they are removed. If \code{FALSE}, these processing
+steps are skipped.
+
+Not recommended. Only set to \code{TRUE}, if you know what you're doing.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -22,25 +36,33 @@ the computational progress will be printed.
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest and thus the
-\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 }
 \value{
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-\code{removeObsNoCounts()} dentifies and removes observations with no molecule counts
-from the \code{SPATA2} object. \code{removeObs()} allows to specify the observations to remove
-manually.
+Remove unwanted \link[=concept_observations]{observations} from the object.
+
+\itemize{
+\item{\code{removeObs()}}{: Allows to specify the observations to remove manually.}
+\item{\code{removeObsNoCounts()}}{: Identifies and removes observations with no molecule counts from the \code{SPATA2} object.}
+}
+}
+\details{
+Unused levels of factor variables in the feature data.frame are dropped.
 }
 \examples{
 library(SPATA2)
 
 data("example_data")
-
 object <- example_data$object_UKF269T_diet
 
 # the function tells you if / how many observations were removed
 object <- removeObsNoCounts(object, verbose = TRUE)
 
+}
+\seealso{
+\code{\link[=subsetSpataObject]{subsetSpataObject()}}
 }

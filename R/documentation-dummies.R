@@ -23,7 +23,7 @@
 #'
 #' @param assay_name Only relevant if the `SPATA2` object contains more than
 #' one assay: Denotes the assay of interest and thus the
-#' \link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
+#' \link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay
 #' as set by [`activateAssay()`].
 #'
 #' @param bcsp_rm Character vector or `NULL.` If character, specifies barcode-spots that
@@ -232,6 +232,9 @@
 #' @param sgmt_alpha,sgmt_color,sgmt_size,sgmt_type Parameters given to
 #' \code{ggplot2::geom_segment()} that control the appearance of segments
 #' of the plot.
+#'
+#' @param section_subset Character vector or `NULL`. If character, specifies
+#' the tissue sections of interest and filters the output accordingly.
 #'
 #' @param signif_var Character value. Determines what to be considered while checking
 #' for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).

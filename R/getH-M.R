@@ -1212,7 +1212,7 @@ getMethodSpecifics <- function(object){
 #'
 #' library(SPATA2)
 #'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' getModality(object)
 #'
@@ -1280,7 +1280,7 @@ setMethod(
 #' @examples
 #'
 #' library(SPATA2)
-#' object <- example_data$object_UKFT269_diet
+#' object <- loadExampleObject("UKF313T")
 #'
 #' getAssayNames(object)
 #'
@@ -1384,13 +1384,6 @@ getMolecules <- function(object,
 #' specified molecules categorized by type. Otherwise, it returns all molecules categorized by type.
 #'
 #' @seealso [`getAssayModalities()`]
-#'
-#' @examples
-#' # Get molecular type list for all molecules in the object
-#' mol_types <- getMolTypeList(object)
-#'
-#' # Get molecular type list for specific molecules
-#' mol_types <- getMolTypeList(object, molecules = c("mol1", "mol2"))
 #'
 #' @export
 getMoleculeTypeList <- function(object, molecules = NULL){

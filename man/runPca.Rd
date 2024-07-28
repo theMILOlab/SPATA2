@@ -31,7 +31,7 @@ to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{ac
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest and thus the
-\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{...}{Additional arguments given to \code{irlba::prcomp_irlba()}.}

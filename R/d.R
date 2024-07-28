@@ -223,17 +223,43 @@ discardExpressionMatrix <- function(...){
 #' 6. If `grouping_new` is provided, a new grouping variable is created; otherwise, the original grouping variable is updated.
 #'
 #' @examples
-#' \dontrun{
-#'   # Assuming `spata_obj` is a SPATA2 object with grouping variable 'histology'
-#'   # created via createSpatialSegmentation() with a small subset of spots that
-#'   # left unnamed since the manual outline did not include them by accident
-#'   spata_obj <- dissolveGroups(
-#'     object = spata_obj,
-#'     grouping = 'histology',
+#'
+#' library(SPATA2)
+#' library(ggplot2)
+#' library(patchwork)
+#'
+#' object <- loadExampleObject("UKF313T")
+#'
+#' # add example grouping
+#' # this is a random grouping variable solely created for demonstrating the
+#' # purpose of dissolveGroups()! It is not of any analytical value!
+#' object <- addFeatures(object, feature_df = example_data$dissolve_groups)
+#'
+#' # note the many spots of class 'unnamed' surrounded by actual groups
+#' plot_before <-
+#'  plotSurface(object, color_by = "histo_bad", pt_clrp = "uc", clrp_adjust = c("unnamed" = "black"))
+#'
+#' # show plot
+#' plot_before
+#'
+#' # dissolve the group "unnamed"
+#' object <-
+#'  dissolveGroups(
+#'    object = object,
+#'    grouping = "histo_bad",
 #'     groups_dissolve = "unnamed",
-#'     grouping_new = 'histology_complete'
-#'   )
-#' }
+#'     grouping_new = "histo_better"
+#'     )
+#'
+#' # spots of group 'unnamed' have been dissolved into their respective neighbor group
+#' # use alpha (transparency) to highlight spots that used to of group "unnamed"
+#' plot_afterwards <-
+#'  plotSurface(object, color_by = "histo_better", pt_clrp = "uc", alpha_by = "histo_alpha") +
+#'  scale_alpha_identity()
+#'
+#' # show plots
+#' plot_before + plot_afterwards
+#'
 
 #' @export
 dissolveGroups <- function(object,

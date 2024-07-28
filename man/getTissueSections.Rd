@@ -18,7 +18,15 @@ Extracts unique tissue sections from the metadata of the given object.
 }
 \examples{
 
+library(SPATA2)
+
+object <- loadExampleObject("LMU_MCI", process = TRUE)
+
 tissue_sections <- getTissueSections(object)
+
+print(tissue_sections)
+
+plotSurface(object, color_by = "tissue_section")
 
 }
 \seealso{

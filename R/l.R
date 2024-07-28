@@ -45,9 +45,7 @@ lastSpatialAnnotation <- function(object){
 #' library(SPATA2)
 #' library(tidyverse)
 #'
-#' data("example_data")
-#'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' plotSurface(object, color_by = "HM_HYPOXIA")
 #' plotSurface(object, color_by = "HM_HYPOXIA") + legendBottom()
@@ -512,13 +510,15 @@ lump_groups <- function(df,
 
   }
 
+  ref1 <- confuns::scollapse(lump.drop)
+
   groups <-
     df_new[[naming]] %>%
     base::levels() %>%
-    scollapse()
+    confuns::scollapse()
 
   give_feedback(
-    msg = glue::glue("{ref} variable '{naming}'. Group names: '{groups}'.")
+    msg = glue::glue("{ref} variable '{naming}'. Merged '{ref1}' into new group '{groups}'.")
   )
 
   return(df_new)

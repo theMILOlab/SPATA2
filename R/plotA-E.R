@@ -2458,7 +2458,6 @@ plotDeaVolcano1v1 <- function(object,
     label_add_on +
     scale_x_add_on
 
-
 }
 
 

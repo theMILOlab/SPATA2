@@ -42,9 +42,9 @@ plotImage(object, outline = TRUE) +
 getTissueArea(object, unit = "mm")
 
 ## Example 2 - coordinates based
-object <- example_data$object_lmu_mci_diet
+object <- loadExampleObject("UKF313T")
 
-object <- identifyTissueOutline(object)
+object <- identifyTissueOutline(object, method = "obs")
 
 plotSurface(object, color_by = "tissue_section") +
  ggpLayerTissueOutline(object)

@@ -112,10 +112,9 @@ library(ggplot2)
 
 data("example_data")
 
-obj1 <- example_data$object_UKF275T_diet
+obj1 <- loadExampleObject("UKF275T")
 
-obj2 <- example_data$object_lmu_mci_diet
-
+obj2 <- loadExampleObject("LMU_MCI")
 
 # example: 'method = obs'
 obj1 <- identifyTissueOutline(obj1, method = "obs")

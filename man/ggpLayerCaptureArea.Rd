@@ -22,9 +22,7 @@ objects of classes for which a method has been defined.}
 
 \item{opt}{Combination of \emph{'rect'} and/or \emph{'crop'}.}
 
-\item{expand_x, expand_y}{Given to \code{expand} of \code{ggplot2::scale_x/y_continuous()}.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+\item{expand_x, expand_y}{Given to \code{expand} of \code{ggplot2::scale_x/y_continuous()}.}
 }
 \value{
 List of ggpLayer outputs.
@@ -39,7 +37,7 @@ library(SPATA2)
 
 data("example_data")
 
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
 plotImage(object) +
  ggpLayerCaptureArea(object, opt = "rect")

@@ -4,14 +4,20 @@
 \alias{mergeTissueSections}
 \title{Merge tissue sections}
 \usage{
-mergeTissueSections(object, sep = "_", ...)
+mergeTissueSections(object, sections, section_new, verbose = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{...}{Collection of vectors that carry the names of the sections
-to be merged.}
+\item{sections}{Character vector. The names of the tissue sections to be merged.}
+
+\item{section_new}{Character value. The name of the resulting tissue section.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 The updated input object, containing the added, removed or computed results.
@@ -20,15 +26,6 @@ The updated input object, containing the added, removed or computed results.
 Merges tissue sections that have been mistakenly identified
 as two non-contiguous sections.
 }
-\examples{
-
-# in this fictional example the algorithm identified 6 tissue sections
-# this call merges sections 1,2,3 to section 1_2_3 and sections 4,5,6 to
-# 4_5_6
-\dontrun{ object <- mergeTissueSections(object, c(1,2,3), c(4,5,6)) }
-
-
-}
 \seealso{
-\code{\link[=identifyTissueSections]{identifyTissueSections()}}
+\code{\link[=identifyTissueSections]{identifyTissueSections()}}, \code{\link[=getTissueSections]{getTissueSections()}}
 }

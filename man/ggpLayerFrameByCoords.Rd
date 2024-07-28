@@ -35,7 +35,7 @@ library(patchwork)
 
 data("example_data")
 
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
 plotImage(object) + plotSurface(object)
 

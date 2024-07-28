@@ -1780,6 +1780,23 @@ if (requireNamespace("anndata", quietly = TRUE)) {
 }
 
 
+#' @title Transform to `SpatialTrajectory`
+#'
+#' @description Transforms old spatial trajectory class to new one.
+#'
+#' @keywords internal
+asSpatialTrajectory <- function(object, ...){
+
+  SpatialTrajectory(
+    comment = object@comment,
+    id = object@name,
+    projection = object@compiled_trajectory_df,
+    sample = object@sample,
+    segment = object@segment_trajectory_df
+  )
+
+}
+
 # attach ------------------------------------------------------------------
 
 #' @title Attach unit to distance

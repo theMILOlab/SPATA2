@@ -1072,34 +1072,21 @@ crop_image <- function(image,
 #'
 #' @param adjust_capture_area Logical. If `TRUE`, the capture area is adjusted
 #' to the input of `xrange` and `yrange`. If `FALSE`, it stays as is. Defaults to `TRUE`.
+#' @inherit subsetSpataObject params
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @seealso [`ggpLayerRect()`] to visualize the rectangle based on which
-#' the subsetting is done.
+#' the subsetting is done. [`subsetSpataObject()`] is the working horse behind
+#' this function.
 #'
 #' @export
 #'
-#' @examples
-#' library(SPATA2)
-#' library(tidyverse)
-#'
-#' data("example_data")
-#'
-#' object <- example_data$object_UKF275T_diet
-#'
-#' orig_frame <- ggpLayerFrameByCoords(object)
-#'
-#' plotSurface(object, color_by = "bayes_space")
-#'
-#' object_cropped <-
-#'  cropSpataObject(object, xrange = c("2mm", "4mm"), yrange = c("2mm", "4mm"))
-#'
-#' plotSurface(object_cropped, color_by = "bayes_space") + orig_frame
-#'
+#' @inherit subsetSpataObject examples
 cropSpataObject <- function(object,
                             xrange,
                             yrange,
+                            spatial_proc = TRUE,
                             adjust_capture_area = TRUE,
                             verbose = NULL){
 
@@ -1118,7 +1105,7 @@ cropSpataObject <- function(object,
     ) %>%
     dplyr::pull(barcodes)
 
-  object_cropped <- subsetByBarcodes(object, barcodes = barcodes, verbose = verbose)
+  object_cropped <- subsetSpataObject(object, barcodes = barcodes, spatial_proc = spatial_proc, verbose = verbose)
 
   object_cropped@obj_info$cropped <- list(xrange = xrange, yrange = yrange)
 
@@ -1137,76 +1124,6 @@ cropSpataObject <- function(object,
 
 }
 
-
-#' @title Split SPATA2 object
-#'
-#' @description This function splits a [`SPATA2`] object into multiple sub-objects based on a
-#' specified grouping variable.
-#'
-#' @inherit argument_dummy params
-#' @param reduce A logical value indicating whether to reduce the `SPATA2` sub-objects after splitting.
-#' Default is `FALSE`.
-#'
-#' @return A named list of `SPATA2` sub-objects split by the specified grouping.
-#'
-#' @export
-#'
-#' @examples
-#'
-#' library(SPATA2)
-#'
-#' object <- example_data$object_lmu_mci_object
-#'
-#' object <- identifyTissueOutline(object)
-#'
-#' plotSurface(object, color_by = "tissue_section")
-#'
-#' obj_list <- splitSpataObject(object, grouping = "tissue_section")
-#'
-#' purrr::map(obj_list, .f = ~ .x)
-#'
-splitSpataObject <- function(object,
-                             grouping,
-                             reduce = FALSE,
-                             verbose = NULL){
-
-  confuns::is_value(x = grouping, mode = "character")
-
-  confuns::check_one_of(
-    input = grouping,
-    against = getGroupingOptions(object)
-  )
-
-  groups <- getGroupNames(object, grouping = grouping)
-
-  out <-
-    purrr::map(
-      .x = groups,
-      .f = function(g){
-
-        barcodes_keep <-
-          getMetaDf(object) %>%
-          dplyr::filter(!!rlang::sym(grouping) == {{g}}) %>%
-          dplyr::pull(barcodes)
-
-        object_sub <-
-          subsetByBarcodes(object, barcode = barcodes_keep, verbose = FALSE) %>%
-          renameSpataObject(sample_name = stringr::str_c(object@sample, g, sep = "_"))
-
-        if(base::isTRUE(reduce)){
-
-          object_sub <- reduceSpataObject(object_sub)
-
-        }
-
-        return(object_sub)
-
-      }
-    ) %>% purrr::set_names(nm = groups)
-
-  return(out)
-
-}
 
 
 # cu ----------------------------------------------------------------------

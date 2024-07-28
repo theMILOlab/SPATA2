@@ -1137,10 +1137,9 @@ identifySpatialOutliers <- function(object,
 #'
 #' data("example_data")
 #'
-#' obj1 <- example_data$object_UKF275T_diet
+#' obj1 <- loadExampleObject("UKF275T")
 #'
-#' obj2 <- example_data$object_lmu_mci_diet
-#'
+#' obj2 <- loadExampleObject("LMU_MCI")
 #'
 #' # example: 'method = obs'
 #' obj1 <- identifyTissueOutline(obj1, method = "obs")
@@ -1464,7 +1463,7 @@ setMethod(
 #' library(SPATA2)
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF269T_diet
+#' object <- loadExampleObject("UKF269T")
 #'
 #' object <- identifyVariableMolecules(object, n_mol = 2000)
 #' object <- identifyVariableMolecules(object, n_mol = 3000, method = "mean.var.plot")
@@ -1848,9 +1847,6 @@ increase_n_data_points <- function(coords_df, fct = 10, cvars = c("x", "y")){
 #' @param skip Logical; if TRUE, the function skips the interpolation process and returns the original polygon.
 #'
 #' @return A data frame representing the polygon with increased vertex density.
-#'
-#' @examples
-#' denser_polygon <- increase_polygon_vertices(polygon_df, avg_dist = 10, skip = FALSE)
 #'
 #' @keywords internal
 increase_polygon_vertices <- function(polygon_df, avg_dist, skip = FALSE) {

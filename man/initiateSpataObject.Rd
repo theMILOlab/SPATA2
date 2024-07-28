@@ -92,3 +92,9 @@ Lastly, if \code{img} and \code{img_dir} is specified the image is saved under
 this directory as a .png file and the image is registered normally.
 }
 
+\section{Tutorials}{
+
+Extensive tutorials for how to use this function can be found on our website
+\url{https://themilolab.github.io/SPATA2/} .
+}
+

@@ -40,4 +40,3 @@ sub_poly <- data.frame(x = c(0.5, 1.5, 1.5, 0.5), y = c(0.5, 0.5, 1.5, 1.5))
 merge_intersecting_polygon(main_poly, sub_poly)
 
 }
-\keyword{internal}

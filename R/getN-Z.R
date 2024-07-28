@@ -1482,7 +1482,7 @@ getSignature <- function(object,
 #'
 #' library(SPATA2)
 #'
-#' object <- example_data$object_UKF269T_diet
+#' object <- loadSpataObject("UKF269T")
 #'
 #' ## how the different functions work
 #' getAssayNames(object)
@@ -1574,7 +1574,7 @@ getSignatureList <- function(object,
 #'
 #' library(SPATA2)
 #'
-#' object <- normalizeCounts(example_data$object_UKF269T_diet)
+#' object <- loadExampleObject("UKF269T", process = TRUE)
 #'
 #' # only one assay exists...
 #' getAssayNames(object)
@@ -1605,7 +1605,7 @@ getSignatureList <- function(object,
 #' ## usage as character vector for argument input
 #'
 #' set.seed(123)
-#' color_by <- sample(all_signature, size = 9)
+#' color_by <- sample(all_signatures, size = 9)
 #'
 #' plotSurfaceComparison(object, color_by = color_by, outline = T, pt_clrsp = "Reds 3")
 #'
@@ -1651,13 +1651,6 @@ getSignatureNames <- function(object,
 #' signatures categorized by assay type. Otherwise, it returns all signatures categorized by type.
 #'
 #' @seealso Documentation of slot @@signatures in the [`MolecularAssay`]-class.
-#'
-#' @examples
-#' # Get signature type list for all signatures in the object
-#' signature_types <- getSignatureTypeList(object)
-#'
-#' # Get signature type list for specific signatures
-#' signature_types <- getSignatureTypeList(object, signatures = c("sig1", "sig2"))
 #'
 #' @export
 getSignatureTypeList <- function(object, signatures = NULL){
@@ -1759,7 +1752,7 @@ getSparkxResults <- function(object,
 #'
 #' library(SPATA2)
 #'
-#' object <- example_data$object_UKF313T_diet
+#' object <- loadExampleObject("UKF313T")
 #'
 #' ids <- c("necrotic_edge2", "necrotic_edge2_transgr")
 #'
@@ -1953,7 +1946,7 @@ getSpatAnnBarcodes <- function(object,
 }
 
 
-#' @title Obtain center of an spatial annotation
+#' @title Obtain center of a spatial annotation
 #'
 #' @description \code{getSpatAnnCenter()} computes the
 #' x- and y- coordinates of the center of the outer border, returns
@@ -1966,6 +1959,17 @@ getSpatAnnBarcodes <- function(object,
 #' @return Numeric vector of length two or a list of these. Values are named *x* and *y*.
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' object <- loadExampleObject("LMU_MCI")
+#'
+#' plotSpatialAnnotations(object, unit = "px")
+#'
+#' getSpatAnnCenter(object, id = "inj1")
+#'
 
 setGeneric(name = "getSpatAnnCenter", def = function(object, ...){
 
@@ -2627,7 +2631,7 @@ getSpatAnnSf <- function(object, id, img_name = activeImage(object)){
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF313T_diet
+#' object <- loadExampleObject("LMU_MCI")
 #'
 #' getSpatAnnTags(object, simplify = FALSE)
 #' getSpatAnnTags(object)
@@ -3387,9 +3391,9 @@ getStsDf <- function(object,
 #' getTissueArea(object, unit = "mm")
 #'
 #' ## Example 2 - coordinates based
-#' object <- example_data$object_lmu_mci_diet
+#' object <- loadExampleObject("UKF313T")
 #'
-#' object <- identifyTissueOutline(object)
+#' object <- identifyTissueOutline(object, method = "obs")
 #'
 #' plotSurface(object, color_by = "tissue_section") +
 #'  ggpLayerTissueOutline(object)
@@ -3529,6 +3533,7 @@ setMethod(
                         method = NULL,
                         img_name = activeImage(object),
                         by_section = TRUE,
+                        section_subset = NULL,
                         transform = TRUE,
                         ...){
 
@@ -3538,6 +3543,7 @@ setMethod(
         method = method,
         img_name = img_name,
         by_section = by_section,
+        section_subset = section_subset,
         transform = transform
       )
 
@@ -3553,6 +3559,7 @@ setMethod(
                         method = NULL,
                         img_name = activeImage(object),
                         by_section = TRUE,
+                        section_subset = NULL,
                         transform = TRUE){
 
     if(base::is.null(method)){
@@ -3605,6 +3612,17 @@ setMethod(
 
     }
 
+    if(base::isTRUE(by_section) && base::is.character(section_subset)){
+
+      confuns::check_one_of(
+        input = section_subset,
+        against = base::unique(out_df$section)
+      )
+
+      out_df <- dplyr::filter(out_df, section %in% {{section_subset}})
+
+    }
+
     return(out_df)
 
   }
@@ -3617,6 +3635,7 @@ setMethod(
   signature = "HistoImage",
   definition = function(object,
                         by_section = TRUE,
+                        section_subset = NULL,
                         transform = TRUE){
 
     if(purrr::is_empty(object@outline)){
@@ -3658,6 +3677,17 @@ setMethod(
     df$x_orig <- df$x / isf
     df$y_orig <- df$y / isf
 
+    if(base::isTRUE(by_section) && base::is.character(section_subset)){
+
+      confuns::check_one_of(
+        input = section_subset,
+        against = base::unique(out_df$section)
+      )
+
+      out_df <- dplyr::filter(out_df, section %in% {{section_subset}})
+
+    }
+
     return(df)
 
   }
@@ -3678,7 +3708,15 @@ setMethod(
 #'
 #' @examples
 #'
+#' library(SPATA2)
+#'
+#' object <- loadExampleObject("LMU_MCI", process = TRUE)
+#'
 #' tissue_sections <- getTissueSections(object)
+#'
+#' print(tissue_sections)
+#'
+#' plotSurface(object, color_by = "tissue_section")
 #'
 getTissueSections <- function(object){
 
@@ -3977,13 +4015,6 @@ getVariableNames <- function(object, protected = FALSE){
 #' Otherwise, it returns all variables categorized by type.
 #'
 #' @seealso `getCoordsDf()`, `getMetaDf()`
-#'
-#' @examples
-#' # Get variable type list for all variables in the object
-#' var_types <- getVarTypeList(object)
-#'
-#' # Get variable type list for specific variables
-#' var_types <- getVarTypeList(object, variables = c("var1", "var2"))
 #'
 #' @export
 getVarTypeList <- function(object, variables = NULL){

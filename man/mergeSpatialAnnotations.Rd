@@ -52,9 +52,7 @@ into one.
 library(SPATA2)
 library(tidyverse)
 
-data("example_data")
-
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
 r <- getSpatAnnRange(object, id = "img_ann_1")
 

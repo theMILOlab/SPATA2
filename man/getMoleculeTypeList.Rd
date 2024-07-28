@@ -24,14 +24,6 @@ This function categorizes molecules into different types based on the provided o
 If the 'molecules' argument is provided as a character vector, the function returns only the
 specified molecules categorized by type. Otherwise, it returns all molecules categorized by type.
 }
-\examples{
-# Get molecular type list for all molecules in the object
-mol_types <- getMolTypeList(object)
-
-# Get molecular type list for specific molecules
-mol_types <- getMolTypeList(object, molecules = c("mol1", "mol2"))
-
-}
 \seealso{
 \code{\link[=getAssayModalities]{getAssayModalities()}}
 }
