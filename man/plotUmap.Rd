@@ -26,20 +26,7 @@ plotPCA(
   ...
 )
 
-plotPca(
-  object,
-  color_by = NULL,
-  n_pcs = NULL,
-  pt_alpha = 0.9,
-  pt_clr = "lightgrey",
-  pt_size = 1,
-  pt_clrp = NULL,
-  pt_clrsp = NULL,
-  nrow = NULL,
-  ncol = NULL,
-  verbose = NULL,
-  ...
-)
+plotPca(...)
 
 plotTSNE(
   object,

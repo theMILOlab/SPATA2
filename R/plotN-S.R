@@ -218,7 +218,13 @@ plotPCA <- function(object,
 
 #' @rdname plotUMAP
 #' @export
-plotPca <- plotPCA
+plotPca <- function(...){
+
+  deprecated(fn = TRUE)
+
+  plotUMAP(...)
+
+}
 
 
 #' @title Plot PCA Variation

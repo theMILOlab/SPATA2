@@ -2372,7 +2372,8 @@ createImageAnnotations <- function(object, ...){
 #' The molecules of the added assay **must not** already exist in the `SPATA2` object.
 #' Variables in SPATA2 are case sensitive! If you want to add, for instance, a protein assay to
 #' the `SPATA2` object that already contains genes, you can provide the protein names
-#' like this *Ldh* while the gene names exist like this *LDH*.
+#' like this *Ldh* while the gene names exist like this *LDH*. See [`stringr::str_to_title()`] and
+#' related functions.
 #'
 #' @export
 
@@ -2482,6 +2483,23 @@ createMolecularAssay <- function(object,
 
   }
 
+  # duplicated names?
+  dupl_rows <- any(table(rownames(mtr_counts)) == 2)
+
+  if(dupl_rows){
+
+    stop("Every matrix must have unique rownames. Duplicated molecule names are not allowed.")
+
+  }
+
+  dupl_cols <- any(table(rownames(mtr_counts)) == 2)
+
+  if(dupl_cols){
+
+    stop("Every matrix must have unique column names. Duplicated barcodes are not allowed.")
+
+  }
+
   ma <-
     MolecularAssay(
       mtr_counts = mtr_counts,
@@ -2500,10 +2518,9 @@ createMolecularAssay <- function(object,
 
     if(base::length(overlap) >= 1){
 
-      ref2 <- confuns::scollapse(overlap)
-      ref1 <- confuns::adapt_reference(overlap, "Variable")
+      lo <- base::length(overlap)
 
-      stop(glue::glue("{ref1} '{ref2}' already exist in the SPATA2 object."))
+      stop(glue::glue("All variables in the SPATA2 object must have unique names. {lo} variables of the input assay already exist in the SPATA2 object."))
 
     }
   }

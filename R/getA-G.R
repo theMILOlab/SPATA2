@@ -91,7 +91,8 @@ getAssay <- function(object,
 #' @export
 getAssayModalities <- function(object){
 
-  purrr::map(.x = object@assays, .f = ~ .x@modality)
+  purrr::map(.x = object@assays, .f = ~ .x@modality) %>%
+    purrr::flatten_chr()
 
 }
 

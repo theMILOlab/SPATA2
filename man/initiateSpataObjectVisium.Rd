@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectVisium}
 \alias{initiateSpataObjectVisium}
-\title{Initiate an object of class \code{SPATA2} from platform Visium}
+\title{Initiate an object of class \code{SPATA2} from the Visium platform}
 \usage{
 initiateSpataObjectVisium(
   sample_name,
@@ -14,49 +14,21 @@ initiateSpataObjectVisium(
 )
 }
 \arguments{
-\item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
+\item{sample_name}{Character. The name of the sample.}
 
-\item{directory_visium}{Character value. Directory to a visium folder. Should contain
-the subdirectory \emph{'.../spatial'}.}
+\item{directory_visium}{Character. The directory containing the Visium output files.}
 
-\item{mtr}{The matrix to load. One of \code{c("filtered", "raw")}.}
+\item{mtr}{Character. Specifies which matrix to use, either "filtered" or "raw". Default is "filtered".}
 
-\item{img_ref, img_active}{Character values specifying which of the images to register and how to register
-them. Click \code{\link[=concept_images]{here}} for more information about the definitions
-of the reference image and the active image. Setting both arguments to the same
-value results in the function to register the specified image as the active
-as well as the reference image. Valid input options depend
-on the platform used:
+\item{img_active}{Character. The active image to use, either "lowres" or "hires". Default is "lowres".}
 
-\itemize{
-\item{\emph{Visium}:}{ Either \emph{'lowres'} or \emph{'hires'}.}
-}}
+\item{img_ref}{Character. The reference image to use, either "lowres" or "hires". Default is "lowres".}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
+\item{verbose}{Logical. If TRUE, progress messages are printed. Default is TRUE.}
 }
 \value{
-An object of class \code{SPATA2}.
-}
-\description{
-Wrapper function around the necessary content to create a
-\code{SPATA2} object from standardized output of the Visium platform. See details
-section for more.
-}
-\details{
-This function expects \code{directory_visium} to lead to a folder in which the
-following subdirectories exist:
-
-\itemize{
-\item{\emph{spatial/}}{: The folder in which image and coordinates are located.}
-\item{\emph{filtered_feature_bc_matrix.h5}}{: The filtered count matrix.}
-\item{\emph{raw_feature_bc_matrix.h5}}{: The filtered count matrix.}
-}
-
-Depending on the input for \code{mtr} only the requested file has to exist. Given
-the content and subsequent filenames, the function differentiates between
+A \code{SPATA2} object containing the processed data from the Visium platform. More precise,
+depending on the set up used to create the raw data it is of either spatial method:
 
 \itemize{
 \item{VisiumSmall}{ Visium data set with capture area of 6.5mm x 6.5mm.}
@@ -65,6 +37,39 @@ the content and subsequent filenames, the function differentiates between
 
 In any case, the output is an object of class \code{SPATA2}.
 }
-\seealso{
-\code{\link[=createSpatialDataVisium]{createSpatialDataVisium()}}
+\description{
+This function initiates a \code{\link{SPATA2}} object for data generated using the 10x Genomics Visium platform.
 }
+\details{
+The function requires a directory containing the output files from a 10x Genomics Visium experiment. The directory must include the following files:
+\itemize{
+\item \emph{filtered_feature_bc_matrix.h5} or \emph{raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
+\item \emph{spatial/tissue_lowres_image.png} or \emph{spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
+\item \emph{spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
+\item \emph{spatial/tissue_positions_list.csv} or \emph{spatial/tissue_positions.csv}: A CSV file containing the tissue positions and spatial coordinates.
+}
+The function will check for these files and process them to create a \code{SPATA2} object. It reads the count matrix, loads the spatial data,
+and initializes the \code{SPATA2} object with the necessary metadata and settings.
+}
+\section{Gene and Protein Expression}{
+
+This function also supports reading coupled gene expression and protein expression data. It expects the input directory to contain an HDF5
+file that includes separate datasets for gene expression and protein expression. The function uses \code{\link[Seurat:Read10X_h5]{Seurat::Read10X_h5()}} to read in
+data and, if the result is a list, it assumes that it contains gene and protein expression. This scenario is handled as follows:
+
+\itemize{
+\item Gene expression data is extracted from the "Gene Expression" dataset in the HDF5 file.
+\item Protein expression data is extracted from the "Antibody Capture" dataset in the HDF5 file.
+}
+
+The function ensures that molecule names do not overlap by normalizing the names:
+
+\itemize{
+\item Gene expression molecule names are forced to uppercase.
+\item Protein expression molecule names are forced to lowercase.
+}
+
+This naming convention prevents any overlap and ensures that each molecule type is uniquely
+identified in the resulting \code{SPATA2} object.
+}
+

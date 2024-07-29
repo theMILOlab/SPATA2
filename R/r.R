@@ -239,6 +239,54 @@ recDbscanMinPts <- function(object){
 }
 
 
+#' Read Matrix from Folder
+#'
+#' This function reads a matrix, barcodes, and features from a specified directory
+#' and returns the matrix with appropriate row and column names.
+#'
+#' @param dir Character. The directory containing the matrix, barcodes, and features files.
+#'
+#' @return A sparse matrix with barcodes as column names and features as row names.
+#'
+#' @details The specified directory must contain the following files:
+#' \itemize{
+#'   \item{Matrix file}: A file with the extension `.mtx.gz` or `.mtx`. This file contains the count matrix in Matrix Market format.
+#'   \item{Barcodes file}: A file with the name `barcodes.tsv.gz` or `barcodes.tsv`. This file contains the barcodes for the columns of the matrix.
+#'   \item{Features file}: A file with the name `features.tsv.gz` or `features.tsv`. This file contains the features (e.g., gene names) for the rows of the matrix.
+#' }
+#'
+#' The function will search for these files in the specified directory and read them using appropriate functions. The matrix will be returned with barcodes as column names and features as row names.
+#'
+#' @examples
+#' \dontrun{
+#'   matrix_dir <- "path/to/matrix/folder"
+#'   matrix <- read_matrix_from_folder(matrix_dir)
+#'   print(matrix)
+#' }
+#'
+#' @importFrom Matrix readMM
+#' @importFrom readr read_tsv
+#' @importFrom stringr str_subset
+#' @export
+read_matrix_from_folder <- function(dir){
+
+  all_files <- base::list.files(dir, full.names = T)
+
+  dir_mtr <- stringr::str_subset(all_files, ".mtx.gz$|.mtx$")
+  dir_bcs <- stringr::str_subset(all_files, "barcodes.tsv.gz|barcodes.tsv$")
+  dir_features <- stringr::str_subset(all_files, "features.tsv.gz$|features.tsv$")
+
+  mtr <- Matrix::readMM(dir_mtr)
+  bcs <- readr::read_tsv(dir_bcs, col_names = FALSE)
+  feats <- readr::read_tsv(dir_features, col_names = FALSE)
+
+  colnames(mtr) <- as.character(bcs[[1]])
+  rownames(mtr) <- as.character(feats[[2]])
+
+  return(mtr)
+
+}
+
 #' @title Platform dependent input recommendations
 #'
 #' @description A collection of functions that return the recommended default input
