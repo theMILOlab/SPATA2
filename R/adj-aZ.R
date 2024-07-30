@@ -877,10 +877,6 @@ asSeurat <- function(object,
 #' @param bayes_space Logical. If `TRUE`, the function creates an object
 #' fitted to the requirements for the BayesSpace pipeline.
 #' @inherit argument_dummy params
-#' @param ... The features to be renamed specified according to
-#' the following syntax: 'new_feature_name' = 'old_feature_name'. This applies
-#' to coordinates, too. E.g. ... ~ *'image_col' = 'x', 'image_row' = 'y'*
-#' renames the coordinate variables to *'image_col'* and *'image_row'*.
 #'
 #' @details Output object contains the count matrix in slot @@assays and
 #' feature data.frame combined with coordinates
@@ -911,20 +907,25 @@ asSingleCellExperiment <- function(object,
 
   if(base::isTRUE(bayes_space)){
 
+    containsMethod(object, "Visium", error = TRUE)
+
     count_mtr <- getCountMatrix(object)
 
     keep <- Matrix::colSums(count_mtr, na.rm = TRUE) > 0
+
+    spot_df <- visium_spots[[object@platform]][,c("barcode", "row", "col")]
 
     colD <-
       getCoordsDf(object) %>%
       dplyr::transmute(
         spot = barcodes,
         in_tissue = 1L,
-        row = row,
-        col = col,
+        #row = row,
+        #col = col,
         imagerow = y_orig,
         imagecol = x_orig
       ) %>%
+      dplyr::left_join(x = ., y = spot_df, by = c("spot" = "barcode")) %>%
       base::as.data.frame()
 
     base::rownames(colD) <- colD$spot
