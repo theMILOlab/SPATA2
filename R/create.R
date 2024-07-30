@@ -2379,9 +2379,9 @@ createImageAnnotations <- function(object, ...){
 
 createMolecularAssay <- function(object,
                                  modality,
-                                 active_mtr = NULL,
                                  mtr_counts = Matrix::Matrix(),
                                  mtr_proc = list(),
+                                 active_mtr = NULL,
                                  overwrite = FALSE,
                                  activate = FALSE,
                                  verbose = NULL,
@@ -2869,7 +2869,8 @@ createSpatialMethod <- function(...){
 #'  \itemize{
 #'   \item{*MERFISH*:}{ File that contains *'cell_metadata'* and ends with *'.csv'*}
 #'   \item{*SlideSeqV1*:}{ File that ends with *'MatchedBeadLocation.csv'*}
-#'   \item{*Visium*:}{ File named *'tissue_positions_list.csv'* or *'tissue_positions.csv'*}
+#'   \item{*VisiumSmall/VisiumLarge*:}{ File named *'tissue_positions_list.csv'* or *'tissue_positions.csv'*}
+#'   \item{*VisiumHD*:}{ File named *'tissue_positions.parquet'*}
 #'   \item{*Xenium*:}{ File named *'cells.csv.gz'*.}
 #'   }
 #'
@@ -3268,6 +3269,132 @@ createSpatialDataVisium <- function(dir,
   object <- computePixelScaleFactor(object, verbose = verbose)
 
   return(object)
+
+}
+
+#' @rdname createSpatialData
+#' @export
+createSpatialDataVisiumHD <- function(dir,
+                                      sample,
+                                      img_ref = "lowres",
+                                      img_active = "lowres",
+                                      meta = list(),
+                                      misc = list(),
+                                      verbose = TRUE){
+
+  # get all files in folder and subfolders
+  files <- base::list.files(dir, full.names = TRUE, recursive = TRUE)
+
+  method <- VisiumHD
+
+  # check required image availability
+  req_images <- base::unique(c(img_ref, img_active))
+
+  confuns::check_one_of(
+    input = req_images,
+    against = c("lowres", "hires"),
+    ref.input = "required images"
+  )
+
+  lowres_path <- base::file.path(dir, "spatial", "tissue_lowres_image.png")
+  hires_path <- base::file.path(dir, "spatial", "tissue_hires_image.png")
+
+  if("lowres" %in% req_images){
+
+    if(!lowres_path %in% files){
+
+      stop(glue::glue("'{lowres_path}' is missing."))
+
+    }
+
+  }
+
+  if("hires" %in% req_images){
+
+    if(!hires_path %in% files){
+
+      stop(glue::glue("'{hires_path}' is missing."))
+
+    }
+
+  }
+
+  dir_coords <- file.path(dir, "spatial", "tissue_positions.parquet")
+
+  coords_df <- read_coords_visium(dir_coords)
+
+  # load scalefactors
+  scale_factors <-
+    jsonlite::read_json(path = base::file.path(dir, "spatial", "scalefactors_json.json"))
+
+  # load images
+  # reference image
+  img_list <- list()
+
+  if("hires" %in% req_images){
+
+    # scale factors
+    isf <- scale_factors$tissue_hires_scalef # image
+
+    psf <- scale_factors$microns_per_pixel / isf # pixel
+    attr(psf, which = "unit") <- "um/px"
+
+    img_list[["hires"]] <-
+      createHistoImage(
+        dir = hires_path,
+        sample = sample,
+        img_name ="hires",
+        scale_factors = list(image = isf, pixel = psf),
+        reference = img_ref == "hires",
+        verbose = verbose
+      )
+
+  }
+
+  if("lowres" %in% req_images){
+
+    # scale factors
+    isf <- scale_factors$tissue_lowres_scalef # image
+
+    psf <- scale_factors$microns_per_pixel / isf # pixel
+    attr(psf, which = "unit") <- "um/px"
+
+    img_list[["lowres"]] <-
+      createHistoImage(
+        dir = lowres_path,
+        sample = sample,
+        img_name ="lowres",
+        scale_factors = list(image = isf, pixel = psf),
+        reference = img_ref == "lowres",
+        verbose = verbose
+      )
+  }
+
+  # compute spot size
+  spot_size <-
+    scale_factors$fiducial_diameter_fullres *
+    scale_factors[[stringr::str_c("tissue", img_ref, "scalef", sep = "_")]] /
+    base::max(getImageDims(img_list[[img_ref]]))*100
+
+  spot_scale_fct <- 1.15
+
+  method@method_specifics[["spot_size"]] <- spot_size * spot_scale_fct
+
+  # create output
+  sp_data <-
+    createSpatialData(
+      sample = sample,
+      hist_img_ref = img_list[[img_ref]],
+      hist_imgs = img_list[req_images[req_images != img_ref]],
+      active = img_active,
+      unload = TRUE,
+      coordinates = coords_df,
+      method = method,
+      meta = meta,
+      misc = misc
+    )
+
+  return(sp_data)
 
 }
 
@@ -4065,8 +4192,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
               ggplot2::theme(
                 plot.margin = ggplot2::unit(x = mai_vec, units = "inches")
               ) +
-              ggplot2::scale_x_continuous(limits = default_ranges()$x) +
-              ggplot2::scale_y_continuous(limits = default_ranges()$y)
+              ggplot2::coord_fixed(xlim = default_ranges()$x, ylim = default_ranges()$y)
 
           })
 
@@ -4176,8 +4302,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
               clrp_adjust =  c("unnamed" = "grey"),
               verbose = FALSE
             ) +
-              ggplot2::scale_x_continuous(limits = default_ranges()$x) +
-              ggplot2::scale_y_continuous(limits = default_ranges()$y) +
+              ggplot2::coord_fixed(xlim = default_ranges()$x, ylim = default_ranges()$y) +
               ggplot2::theme(
                 plot.margin = ggplot2::unit(x = mai_vec, units = "inches")
               )

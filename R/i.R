@@ -1381,7 +1381,7 @@ setMethod(
       object <-
         setCoordsDf(
           object = object,
-          coords_df = dplyr::select(coords_df, barcodes, x_orig, y_orig, tissue_section),
+          coords_df = dplyr::select(coords_df, -x, -y),
           force = TRUE
           )
 
@@ -1467,7 +1467,7 @@ setMethod(
 
 
 
-#' @title Identify variable molecules
+#' @title Identify molecules of high variability
 #'
 #' @description
 #' Identfies molecules that are outliers on a mean-variability plot as proposed by
@@ -1491,10 +1491,18 @@ setMethod(
 #'
 #' object <- loadExampleObject("UKF269T")
 #'
+#' # default is method = 'vst'
 #' object <- identifyVariableMolecules(object, n_mol = 2000)
+#'
+#' # multiple results can be stored simultaneously
 #' object <- identifyVariableMolecules(object, n_mol = 3000, method = "mean.var.plot")
 #'
-#' vars_vst <- getVariableMolecules(object, method = "vst")
+#'# fails, cause results for two methods are stored and method = NULL
+#' vars_vst <- getVariableMolecules(object)
+#'
+#' vars_vst <- getVariableMoleculs(object, method = "vst") # works
+#'
+#' # should work
 #' vars_mvp <- getVariableMolecules(object, method = "mean.var.plot")
 #'
 #' length(vars_vst)

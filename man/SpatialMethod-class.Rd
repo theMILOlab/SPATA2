@@ -26,7 +26,8 @@ one corner of the rectangle, and the second value represents the diagonally oppo
 method certain slot names are reserved. See section \emph{Method specifics:}
 for more information.}
 
-\item{\code{name}}{character. The name of the spatial method. (E.g. \emph{'Visium'})}
+\item{\code{name}}{character. The name of the spatial method. (E.g. \emph{'VisiumSmall'}, \emph{'VisiumHD'}, \emph{'MERFISH'}, ...).
+Should be one of \code{validSpatialMethods()}.}
 
 \item{\code{observational_unit}}{character. Name with which to refer to
 the data points the method focuses on. (E.g. \emph{'barcode_spot'}, or \emph{'cell'})}

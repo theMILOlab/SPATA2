@@ -73,6 +73,7 @@ setMethod(
                         xrange = getCoordsRange(object)$x,
                         yrange = getCoordsRange(object)$y,
                         img_name = NULL,
+                        geom = "point",
                         verbose = NULL,
                         ...){
 
@@ -118,6 +119,7 @@ setMethod(
         bcs_rm = bcs_rm,
         na_rm = na_rm,
         use_scattermore = use_scattermore,
+        geom = geom,
         verbose = verbose,
         ...
       )

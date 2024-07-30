@@ -16,7 +16,7 @@ nCounts <- function(object, molecule, assay_name = activeAssay(object), ...){
 
 }
 
-#' @keywords internal
+#' @rdname nMolecules
 #' @export
 nGenes <- function(object){
 
@@ -26,12 +26,19 @@ nGenes <- function(object){
 
 
 
+
 #' @title Number of molecules
 #'
-#' @description Returns the number of genes in raw count matrix of the chosen
+#' @description Returns the number of molecules in the raw count matrix of the chosen
 #' assay.
 #'
 #' @inherit argument_dummy params
+#'
+#' @details
+#' The functions `nGenes()`, `nProteins()`, `nMetabolites()` are wrappers for
+#' objects that contain the corresponding \link[=concept_molecular_modalities]{molecular modality}
+#' and do not have an `assay_name` argument.
+#'
 #'
 #' @return Numeric value.
 #'
@@ -43,7 +50,13 @@ nMolecules <- function(object, assay_name = activeAssay(object)){
 
 }
 
+#' @rdname nMolecules
+#' @export
+nMetabolites <- function(object){
 
+  nMetabolites(object, assay_name = "metabolite")
+
+}
 
 
 #' @title Normalize raw counts
@@ -139,7 +152,7 @@ normalizeCounts <- function(object,
 }
 
 
-#' @title Number of observations (e.g. cells)
+#' @title Number of observations
 #'
 #' @description Returns the number of \link[=concept_observations]{observations}
 #' in the sample.
@@ -153,6 +166,14 @@ nObs <- function(object){
 
   getCoordsDf(object) %>%
     base::nrow()
+
+}
+
+#' @rdname nMolecules
+#' @export
+nProteins <- function(object){
+
+  nMolecules(object, assay_name = "protein")
 
 }
 

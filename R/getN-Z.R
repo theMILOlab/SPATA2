@@ -473,6 +473,59 @@ setMethod(
 )
 
 
+#' @title Obtain platform name
+#'
+#' @description Generic function to retrieve the platform information from the
+#' object - the name of it's \link[=SpatialMethod]{spatial method}.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A character string representing the platform information.
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' # VisiumSmall
+#' object <- loadExampleData("UKF313T")
+#' getPlatform(object)
+#'
+#' # VisiumLarge
+#' object <- downloadSpataObject("HumanKidneyVL")
+#' getPlatform(object)
+#'
+#' @export
+setGeneric(name = "getPlatform", def = function(object, ...){
+
+  standardGeneric("getPlatform")
+
+})
+
+#' @rdname getPlatform
+#' @export
+setMethod(
+  f = "getPlatform",
+  signature = "SPATA2",
+  definition = function(object, ...){
+
+    object@platform
+
+  }
+)
+
+#' @rdname getPlatform
+#' @export
+setMethod(
+  f = "getPlatform",
+  signature = "SpatialData",
+  definition = function(object, ...){
+
+    object@method@name
+
+  }
+)
+
 
 #' @keywords internal
 getPointSize <- function(object,
@@ -3905,7 +3958,7 @@ getUmapDf <- function(object, ...){
 
 
 
-#' @title Obtain variable molecules
+#' @title Obtain molecules of high variability
 #'
 #' @description
 #' Extracts results of [`identifyVariableMolecules()`].
@@ -3914,13 +3967,16 @@ getUmapDf <- function(object, ...){
 #' @inherit argument_dummy params
 #'
 #' @inherit identifyVariableMolecules examples
+#' @param method Character value or `NULL`. If `NULL` and there are only
+#' variable features stored for one method these results are returned, else
+#' the method must be specified.
 #'
 #' @return Character vector.
 #'
 #' @export
 #'
 getVariableMolecules <- function(object,
-                                 method,
+                                 method = NULL,
                                  assay_name = activeAssay(object)){
 
   confuns::check_one_of(

@@ -1,6 +1,39 @@
 
 
 
+# default* ----------------------------------------------------------------
+
+#' @title Default observations geometry
+#'
+#' @description
+#' Extracts the default ggplot2 geometry to visualize \link[=concept_observations]{observations}
+#' in 2D space on surface plots.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#'
+defaultGeomObs <- function(object){
+
+  platform <- getPlatform(object)
+
+  if(platform == "VisiumHD"){
+
+    out <- "tile"
+
+  } else {
+
+    out <- "point"
+
+  }
+
+  return(out)
+
+}
+
+
+
+
 # deprecated --------------------------------------------------------------
 
 

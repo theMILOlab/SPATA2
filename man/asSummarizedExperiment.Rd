@@ -10,10 +10,7 @@ asSummarizedExperiment(object, ...)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{...}{The features to be renamed specified according to
-the following syntax: 'new_feature_name' = 'old_feature_name'. This applies
-to coordinates, too. E.g. ... ~ \emph{'image_col' = 'x', 'image_row' = 'y'}
-renames the coordinate variables to \emph{'image_col'} and \emph{'image_row'}.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 An object of class \code{SummarizedExperiment}.

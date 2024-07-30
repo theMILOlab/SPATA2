@@ -34,6 +34,7 @@ plotSurface(object, ...)
   xrange = getCoordsRange(object)$x,
   yrange = getCoordsRange(object)$y,
   img_name = NULL,
+  geom = "point",
   verbose = NULL,
   ...
 )

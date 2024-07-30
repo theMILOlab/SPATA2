@@ -11,7 +11,7 @@ identifySpatialOutliers(
   buffer = 0,
   eps = recDbscanEps(object),
   minPts = recDbscanMinPts(object),
-  min_section = nBarcodes(object) * 0.05,
+  min_section = nObs(object) * 0.05,
   test = "any",
   verbose = NULL
 )

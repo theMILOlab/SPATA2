@@ -2,15 +2,17 @@
 % Please edit documentation in R/getN-Z.R
 \name{getVariableMolecules}
 \alias{getVariableMolecules}
-\title{Obtain variable molecules}
+\title{Obtain molecules of high variability}
 \usage{
-getVariableMolecules(object, method, assay_name = activeAssay(object))
+getVariableMolecules(object, method = NULL, assay_name = activeAssay(object))
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{method}{The selection method of interest.}
+\item{method}{Character value or \code{NULL}. If \code{NULL} and there are only
+variable features stored for one method these results are returned, else
+the method must be specified.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest and thus the
@@ -30,10 +32,18 @@ data("example_data")
 
 object <- loadExampleObject("UKF269T")
 
+# default is method = 'vst'
 object <- identifyVariableMolecules(object, n_mol = 2000)
+
+# multiple results can be stored simultaneously
 object <- identifyVariableMolecules(object, n_mol = 3000, method = "mean.var.plot")
 
-vars_vst <- getVariableMolecules(object, method = "vst")
+# fails, cause results for two methods are stored and method = NULL
+vars_vst <- getVariableMolecules(object)
+
+vars_vst <- getVariableMoleculs(object, method = "vst") # works
+
+# should work
 vars_mvp <- getVariableMolecules(object, method = "mean.var.plot")
 
 length(vars_vst)
