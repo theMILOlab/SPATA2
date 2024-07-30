@@ -2617,6 +2617,14 @@ rotateCoordinates <- function(object, angle, clockwise = TRUE, verbose = NULL){
     )
 
   object <-
+    rotateTissueOutlineDf(
+      object = object,
+      angle = angle,
+      clockwise = clockwise,
+      verbose = verbose
+    )
+
+  object <-
     rotateSpatialTrajectories(
       object = object,
       angle = angle,
@@ -2677,6 +2685,46 @@ rotateCoordsDf <- function(object,
 
 }
 
+#' @rdname rotateAll
+#' @export
+rotateTissueOutlineDf <- function(object,
+                                  angle,
+                                  clockwise = TRUE,
+                                  verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  outline_df <- getTissueOutlineDf(object, as_is = TRUE)
+
+  # define center depending on scale factor
+  if(containsHistoImages(object)){
+
+    center <- getImageCenter(object)
+
+    isf <- getScaleFactor(object, fct_name = "image")
+
+    center <- center/isf
+
+  } else if(!containsHistoImages(object)){
+
+    center <- getCoordsCenter(object)
+
+  }
+
+  outline_df_rotated <-
+    rotate_coords_df(
+      df = outline_df,
+      angle = angle,
+      center = center,
+      clockwise = clockwise,
+      verbose = FALSE
+    )
+
+  object@spatial@outline$tissue_section <- outline_df_rotated
+
+  returnSpataObject(object)
+
+}
 
 #' @title Rotate the outline of a spatial annotation
 #'

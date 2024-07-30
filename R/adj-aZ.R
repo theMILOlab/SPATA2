@@ -1428,13 +1428,10 @@ setMethod(
   }
 )
 
-# Register Class to prevent warnings when loading SPATA
-setOldClass("AnnDataR6")
-
 #' @export
 if (requireNamespace("anndata", quietly = TRUE)) {
 
-  # Register AnnDataR6 class
+  # Register AnnDataR6 class to prevent warnings when loading SPATA
   setOldClass("AnnDataR6")
 
   setMethod(
