@@ -1618,8 +1618,8 @@ setMethod(
 
 #' @title Add the observations to the surface plot
 #'
-#' @description Adds the data points (beads, cells, spots, etc.) of the object
-#' to the plot. (The working horse of [`plotSurface()`]).
+#' @description Adds the \link[=concept_observations]{data points} (beads, cells, spots, etc.) of the object
+#' to the plot. This function is actually the working horse of [`plotSurface()`].
 #'
 #' @param ... Additional arguments given to `scale_color_add_on()`.
 #'
@@ -1683,6 +1683,7 @@ setMethod(
                         add_labs = FALSE,
                         bcs_rm = NULL,
                         na_rm = FALSE,
+                        geom = "point",
                         verbose = NULL,
                         ...){
 
@@ -1740,6 +1741,7 @@ setMethod(
       scale_fct = scale_fct,
       use_scattermore = use_scattermore,
       add_labs = add_labs,
+      geom = geom,
       na_rm = na_rm,
       ...
     )
@@ -1776,6 +1778,7 @@ setMethod(
                         scale_fct = 1,
                         use_scattermore = FALSE,
                         add_labs = FALSE,
+                        geom = "point",
                         ...){
 
     coords_df <- getCoordsDf(object)
@@ -1897,7 +1900,7 @@ setMethod(
 
 
     # use method for data.frame
-    out[["spots"]] <-
+    out[["obs"]] <-
       ggpLayerPoints(
         object = coords_df,
         alpha_by = alpha_by,
@@ -1908,7 +1911,8 @@ setMethod(
         scale_fct = scale_fct,
         use_scattermore = use_scattermore,
         bcs_rm = bcs_rm,
-        na_rm = na_rm
+        na_rm = na_rm,
+        geom = geom
       )
 
     out[["coord_equal"]] <-
@@ -1936,9 +1940,11 @@ setMethod(
 
     if(base::is.character(color_by)){
 
+      aes <- base::ifelse(geom == "point", yes = "color", no = "fill")
+
       out[["color_scale"]] <-
         scale_color_add_on(
-          aes = "color",
+          aes = aes,
           variable = coords_df[[color_by]],
           clrp = clrp,
           clrp.adjust = clrp_adjust,
@@ -1967,6 +1973,7 @@ setMethod(
                         scale_fct = 1,
                         use_scattermore = FALSE,
                         bcs_rm = NULL,
+                        geom = "point",
                         na_rm = FALSE){
 
     pt_color <- pt_clr
@@ -1980,19 +1987,51 @@ setMethod(
     # create mapping
     if(base::is.character(color_by) & base::is.character(alpha_by)){
 
-      mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]], alpha = .data[[alpha_by]])
+      if(geom == "point"){
+
+        mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]], alpha = .data[[alpha_by]])
+
+      } else if(geom == "tile"){
+
+        mapping <- ggplot2::aes(x = col, y = row, fill = .data[[color_by]], alpha = .data[[alpha_by]])
+
+      }
 
     } else if(base::is.character(color_by)){
 
-      mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]])
+      if(geom == "point"){
+
+        mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]])
+
+      } else if(geom == "tile"){
+
+        mapping <- ggplot2::aes(x = col, y = row, fill = .data[[color_by]])
+
+      }
 
     } else if(base::is.character(alpha_by)){
 
-      mapping <- ggplot2::aes(x = x, y = y, alpha = .data[[alpha_by]])
+      if(geom == "point"){
+
+        mapping <- ggplot2::aes(x = x, y = y, alpha = .data[[color_by]])
+
+      } else if(geom == "tile"){
+
+        mapping <- ggplot2::aes(x = col, y = row, alpha = .data[[color_by]])
+
+      }
 
     } else {
 
-      mapping <- ggplot2::aes(x = x, y = y)
+      if(geom == "point"){
+
+        mapping <- ggplot2::aes(x = x, y = y)
+
+      } else if(geom == "tile"){
+
+        mapping <- ggplot2::aes(x = col, y = row)
+
+      }
 
     }
 
@@ -2001,7 +2040,6 @@ setMethod(
       object <- dplyr::filter(object, !barcodes %in% {{bcs_rm}})
 
     }
-
 
     df <-
       dplyr::mutate(
@@ -2018,35 +2056,51 @@ setMethod(
 
     }
 
-    if(base::isTRUE(use_scattermore)){
+    if(geom == "point"){
+
+      if(base::isTRUE(use_scattermore)){
+
+        layer_out <-
+          confuns::make_scattermore_add_on(
+            data = df,
+            mapping = mapping,
+            pt.alpha = pt_alpha,
+            pt.color = pt_color,
+            pt.size = pt_size,
+            alpha.by = alpha_by,
+            color.by = color_by,
+            sctm.interpolate = FALSE,
+            sctm.pixels = c(2024, 2024),
+            na.rm = na_rm
+          )
+
+      } else {
+
+        # return layer
+        layer_out <-
+          geom_point_fixed(
+            params,
+            data = df,
+            mapping = mapping
+          )
+
+      }
+
+    } else if(geom == "tile"){
+
+      params$fill <- params$color
+      params$color <- NULL
 
       layer_out <-
-        confuns::make_scattermore_add_on(
-          data = df,
-          mapping = mapping,
-          pt.alpha = pt_alpha,
-          pt.color = pt_color,
-          pt.size = pt_size,
-          alpha.by = alpha_by,
-          color.by = color_by,
-          sctm.interpolate = FALSE,
-          sctm.pixels = c(2024, 2024),
-          na.rm = na_rm
-        )
-
-    } else {
-
-      # return layer
-      layer_out <-
-        geom_point_fixed(
-          params,
+        ggplot2::geom_tile(
+          #params,
           data = df,
           mapping = mapping
         )
 
     }
 
-
+    return(layer_out)
 
   }
 )

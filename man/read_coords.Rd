@@ -25,10 +25,10 @@ read_coords_xenium(dir_coords)
 Data.frame of at least five columns:
 \itemize{
 \item{\emph{barcodes}:}{ Character. Unique identifier of each observation.}
-\item{\emph{exclude}:}{ Logical. Indicates whether to exclude the observation by default.}
-\item{\emph{exclude_reason}:}{ Character. The reason for why to exclude the observation.}
 \item{\emph{x_orig}:}{ Numeric. x-coordinates of the original input.}
 \item{\emph{y_orig}:}{ Numeric. y-coordinates of the original input.}
+\item{\emph{col}:}{ Integer. Column index.}
+\item{\emph{row}:}{ Integer. Row index.}
 }
 }
 \description{

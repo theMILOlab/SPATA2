@@ -225,6 +225,10 @@ loadExampleObject <- function(sample_name,
 
   object <- example_data[[stringr::str_c("object_", sample_name, "_diet")]]
 
+  # remove late
+  object@spatial@coordinates <-
+    dplyr::left_join(object@spatial@coordinates, dplyr::rename(visium_spots$VisiumSmall[,c("barcode", "row", "col")], barcodes = barcode), by = "barcodes")
+
   if(base::isTRUE(process)){
 
     object <- identifyTissueOutline(object)

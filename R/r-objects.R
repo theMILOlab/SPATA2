@@ -757,6 +757,19 @@ invalid_img_ann_tests <-
 
 # m -----------------------------------------------------------------------
 
+#' MERFISH Spatial Method
+#'
+#' This object abstracts the MERFISH (Multiplexed Error-Robust Fluorescence In Situ Hybridization) spatial method, which focuses on cell-level observations.
+#'
+#' @details
+#' The `MERFISH` object is based on the `SpatialMethod` class and contains the following specifications:
+#' \itemize{
+#'   \item \code{name}: The name of the spatial method, which is "MERFISH".
+#'   \item \code{observational_unit}: The unit of observation, which is "cell".
+#'   \item \code{unit}: The SI unit used, which is "mm".
+#'   \item \code{version}: The version of the SPATA2 package being used.
+#' }
+#'
 #' @export
 MERFISH <-
   SpatialMethod(
@@ -765,6 +778,7 @@ MERFISH <-
     unit = "mm",
     version = current_spata2_version
   )
+
 
 #' @export
 model_formulas <-
@@ -1021,6 +1035,23 @@ sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc"))
 si_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6, "nm" = 1/10^9)
 
 
+#' SlideSeqV1 Spatial Method
+#'
+#' This object abstracts the SlideSeqV1 spatial method, which focuses on bead-level observations.
+#'
+#' @details
+#' The `SlideSeqV1` object is based on the `SpatialMethod` class and contains the following specifications:
+#' \itemize{
+#'   \item \code{method_specifics}: A list with the following element:
+#'   \itemize{
+#'     \item \code{diameter}: Diameter of each bead is "10um".
+#'   }
+#'   \item \code{name}: The name of the spatial method, which is "SlideSeqV1".
+#'   \item \code{observational_unit}: The unit of observation, which is "bead".
+#'   \item \code{unit}: The SI unit used, which is "mm".
+#'   \item \code{version}: The version of the SPATA2 package being used.
+#' }
+#'
 #' @export
 SlideSeqV1 <-
   SpatialMethod(
@@ -1030,6 +1061,7 @@ SlideSeqV1 <-
     unit = "mm",
     version = current_spata2_version
   )
+
 
 smrd_projection_df_names <- c("trajectory_order", "proj_length_binned")
 
@@ -1077,22 +1109,63 @@ threshold_scattermore <- 100000
 
 # V -----------------------------------------------------------------------
 
+
+#' VisiumHD Spatial Method
+#'
+#' This object abstracts the VisiumHD spatial method, which is a high-density version of the Visium platform.
+#'
+#' @details
+#' The `VisiumHD` object is based on the `SpatialMethod` class and contains the following specifications:
+#' \itemize{
+#'   \item \code{method_specifics}: A list with the following elements:
+#'   \itemize{
+#'     \item \code{ccd}: Center to center distance of "16um".
+#'     \item \code{square_res}: Square resolution of "16um".
+#'   }
+#'   \item \code{observational_unit}: The unit of observation, which is "spot".
+#'   \item \code{unit}: The SI unit used, which is "mm".
+#'   \item \code{version}: The version of the SPATA2 package being used.
+#'   \item \code{name}: The name of the spatial method, which is "VisiumHD".
+#' }
+#'
 #' @export
-VisiumSmall <-
+VisiumHD <-
   SpatialMethod(
-    capture_area = list(x = c("0.75mm", "7.25mm"), y = c("0.75mm", "7.25mm")),
-    method_specifics =
-      list(
-        ccd = "100um",
-        diameter = "55um",
-        fiducial_frame = list(x = c("0mm", "8mm"), y = c("0mm", "8mm"))
-        ),
-    name = "VisiumSmall",
+    method_specifics = list(ccd = "16um", square_res = "16um"),
     observational_unit = "spot",
     unit = "mm",
-    version = current_spata2_version
+    version = current_spata2_version,
+    name = "VisiumHD"
   )
 
+#' VisiumLarge Spatial Method
+#'
+#' This object abstracts the VisiumLarge spatial method, which covers a larger capture area compared to other Visium methods.
+#'
+#' @details
+#' The `VisiumLarge` object is based on the `SpatialMethod` class and contains the following specifications:
+#' \itemize{
+#'   \item \code{capture_area}: A list specifying the coordinates of the capture area:
+#'   \itemize{
+#'     \item \code{x}: A vector with coordinates "0.75mm" and "11.75mm".
+#'     \item \code{y}: A vector with coordinates "0.75mm" and "11.75mm".
+#'   }
+#'   \item \code{method_specifics}: A list with the following elements:
+#'   \itemize{
+#'     \item \code{ccd}: Center to center distance of "100um".
+#'     \item \code{diameter}: Diameter of each spot is "55um".
+#'     \item \code{fiducial_frame}: A list with the following elements:
+#'     \itemize{
+#'       \item \code{x}: A vector with coordinates "0mm" and "12.5mm".
+#'       \item \code{y}: A vector with coordinates "0mm" and "12.5mm".
+#'     }
+#'   }
+#'   \item \code{observational_unit}: The unit of observation, which is "spot".
+#'   \item \code{unit}: The SI unit used, which is "mm".
+#'   \item \code{version}: The version of the SPATA2 package being used.
+#'   \item \code{name}: The name of the spatial method, which is "VisiumLarge".
+#' }
+#'
 #' @export
 VisiumLarge <-
   SpatialMethod(
@@ -1102,16 +1175,74 @@ VisiumLarge <-
         ccd = "100um",
         diameter = "55um",
         fiducial_frame = list(x = c("0mm", "12.5mm"), y = c("0mm", "12.5mm"))
-        ),
+      ),
     name = "VisiumLarge",
     observational_unit = "spot",
     unit = "mm",
     version = current_spata2_version
   )
 
+#' VisiumSmall Spatial Method
+#'
+#' This object abstracts the VisiumSmall spatial method, which is designed for smaller capture areas compared to other Visium methods.
+#'
+#' @details
+#' The `VisiumSmall` object is based on the `SpatialMethod` class and contains the following specifications:
+#' \itemize{
+#'   \item \code{capture_area}: A list specifying the coordinates of the capture area:
+#'   \itemize{
+#'     \item \code{x}: A vector with coordinates "0.75mm" and "7.25mm".
+#'     \item \code{y}: A vector with coordinates "0.75mm" and "7.25mm".
+#'   }
+#'   \item \code{method_specifics}: A list with the following elements:
+#'   \itemize{
+#'     \item \code{ccd}: Center to center distance of "100um".
+#'     \item \code{diameter}: Diameter of each spot is "55um".
+#'     \item \code{fiducial_frame}: A list with the following elements:
+#'     \itemize{
+#'       \item \code{x}: A vector with coordinates "0mm" and "8mm".
+#'       \item \code{y}: A vector with coordinates "0mm" and "8mm".
+#'     }
+#'   }
+#'   \item \code{observational_unit}: The unit of observation, which is "spot".
+#'   \item \code{unit}: The SI unit used, which is "mm".
+#'   \item \code{version}: The version of the SPATA2 package being used.
+#'   \item \code{name}: The name of the spatial method, which is "VisiumSmall".
+#' }
+#'
+#' @export
+VisiumSmall <-
+  SpatialMethod(
+    capture_area = list(x = c("0.75mm", "7.25mm"), y = c("0.75mm", "7.25mm")),
+    method_specifics =
+      list(
+        ccd = "100um",
+        diameter = "55um",
+        fiducial_frame = list(x = c("0mm", "8mm"), y = c("0mm", "8mm"))
+      ),
+    name = "VisiumSmall",
+    observational_unit = "spot",
+    unit = "mm",
+    version = current_spata2_version
+  )
+
+
 
 # x -----------------------------------------------------------------------
 
+#' Xenium Spatial Method
+#'
+#' This object abstracts the Xenium spatial method, which focuses on cell-level observations.
+#'
+#' @details
+#' The `Xenium` object is based on the `SpatialMethod` class and contains the following specifications:
+#' \itemize{
+#'   \item \code{name}: The name of the spatial method, which is "Xenium".
+#'   \item \code{observational_unit}: The unit of observation, which is "cell".
+#'   \item \code{unit}: The SI unit used, which is "mm".
+#'   \item \code{version}: The version of the SPATA2 package being used.
+#' }
+#'
 #' @export
 Xenium <-
   SpatialMethod(
@@ -1124,8 +1255,34 @@ Xenium <-
 
 
 
+
 # depending objects -------------------------------------------------------
 
+#' List of Spatial Methods
+#'
+#' This list contains predefined spatial methods for various spatial biology platforms. Each entry is an instance of the `SpatialMethod` class with specifications tailored to a specific platform.
+#'
+#' @details
+#' The `spatial_methods` list includes the following spatial methods:
+#' \itemize{
+#'   \item \link{MERFISH}: A spatial method focusing on cell-level observations using the Multiplexed Error-Robust Fluorescence In Situ Hybridization technique.
+#'   \item \link{SlideSeqV1}: A spatial method focusing on bead-level observations using the Slide-seq V1 platform.
+#'   \item \code{Undefined}: A default spatial method with undefined properties.
+#'   \item \link{VisiumSmall}: A spatial method for small capture areas using the Visium platform.
+#'   \item \link{VisiumLarge}: A spatial method for large capture areas using the Visium platform.
+#'   \item \link{VisiumHD}: A high-density spatial method using the Visium platform.
+#'   \item \link{Xenium}: A spatial method focusing on cell-level observations using the Xenium platform.
+#' }
+#'
+#' Each spatial method in the list is an instance of the `SpatialMethod` class and contains specific configurations such as the unit of observation, SI unit, and method-specific details.
+#'
+#' @examples
+#' \dontrun{
+#'   # Access the VisiumLarge spatial method
+#'   visium_large_method <- spatial_methods[["VisiumLarge"]]
+#'   print(visium_large_method)
+#' }
+#'
 #' @export
 spatial_methods <-
   list(
@@ -1134,5 +1291,7 @@ spatial_methods <-
     "Undefined" = SpatialMethod(name = "Undefined", observational_unit = "undefined", version = current_spata2_version, unit = "px"),
     "VisiumSmall" = VisiumSmall,
     "VisiumLarge" = VisiumLarge,
+    "VisiumHD" = VisiumHD,
     "Xenium" = Xenium
   )
+

@@ -31,8 +31,8 @@ A \code{SPATA2} object containing the processed data from the Visium platform. M
 depending on the set up used to create the raw data it is of either spatial method:
 
 \itemize{
-\item{VisiumSmall}{ Visium data set with capture area of 6.5mm x 6.5mm.}
-\item{VisiumLarge}{ Visium data set with capture area of 11mm x 11m. }
+\item{\code{VisiumSmall}}{: Visium data set with capture area of 6.5mm x 6.5mm.}
+\item{\code{VisiumLarge}}{: Visium data set with capture area of 11mm x 11m. }
 }
 
 In any case, the output is an object of class \code{SPATA2}.
@@ -70,6 +70,7 @@ The function ensures that molecule names do not overlap by normalizing the names
 }
 
 This naming convention prevents any overlap and ensures that each molecule type is uniquely
-identified in the resulting \code{SPATA2} object.
+identified in the resulting \code{SPATA2} object, which contains two assays. One of molecular
+modality \emph{gene} and of of molecular modality \emph{protein}.
 }
 

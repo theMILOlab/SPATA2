@@ -136,7 +136,7 @@ SpatialGradientScreening <-  setClass(Class = "SpatialGradientScreening",
 
 #' @title The \code{SpatialMethod} - Class
 #'
-#' @description Defines the core features of spatial biology platforms 
+#' @description Defines the core features of spatial biology platforms
 #' like \emph{Visium} and \emph{SlideSeq}.
 #'
 #' @slot capture_area list
@@ -150,7 +150,8 @@ SpatialGradientScreening <-  setClass(Class = "SpatialGradientScreening",
 #' @slot method_specific list. List method specific data. Depending on the
 #' method certain slot names are reserved. See section *Method specifics:*
 #' for more information.
-#' @slot name character. The name of the spatial method. (E.g. *'Visium'*)
+#' @slot name character. The name of the spatial method. (E.g. *'VisiumSmall'*, *'VisiumHD'*, *'MERFISH'*, ...).
+#' Should be one of `validSpatialMethods()`.
 #' @slot observational_unit character. Name with which to refer to
 #' the data points the method focuses on. (E.g. *'barcode_spot'*, or *'cell'*)
 #' @slot unit character. The SI to be used by default.

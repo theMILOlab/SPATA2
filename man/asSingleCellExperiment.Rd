@@ -21,11 +21,6 @@ as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{bayes_space}{Logical. If \code{TRUE}, the function creates an object
 fitted to the requirements for the BayesSpace pipeline.}
-
-\item{...}{The features to be renamed specified according to
-the following syntax: 'new_feature_name' = 'old_feature_name'. This applies
-to coordinates, too. E.g. ... ~ \emph{'image_col' = 'x', 'image_row' = 'y'}
-renames the coordinate variables to \emph{'image_col'} and \emph{'image_row'}.}
 }
 \value{
 An object of class \code{SingleCellExperiment}.

@@ -848,6 +848,180 @@ initiateSpataObjectVisium <- function(sample_name,
 }
 
 
+#' @title Initiate an object of class `SPATA2` from the VisiumHD platform
+#'
+#' @description This function initiates a [`SPATA2`] object for data generated using the 10x Genomics VisiumHD platform.
+#'
+#' @param sample_name Character. The name of the sample.
+#' @param directory_visium Character. The directory containing the Visium output files.
+#' @param square_res Character. The square resolution from which to load the data. One of *c('16um', '8um', '2um').
+#' See details for more.
+#' @param mtr Character. Specifies which matrix to use, either "filtered" or "raw". Default is "filtered".
+#' @param img_active Character. The active image to use, either "lowres" or "hires". Default is "lowres".
+#' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
+#' @param verbose Logical. If TRUE, progress messages are printed. Default is TRUE.
+#'
+#' @return A `SPATA2` object containing the processed data from the VisiumHD platform.
+#'
+#' @note It is crucial to install the package `arrow` in a way that [`arrow::read_parquet()`] works. There
+#' are several ways. Installing the package with `install.packages('arrow', repos = 'https://apache.r-universe.dev')`
+#' worked reliably for us.
+#'
+#' @details
+#' The function requires a directory containing the output files from a 10x Genomics VisiumHD experiment.
+#' The directory must include at least one of the following subdirectories:
+#'
+#' \itemize{
+#'   \item \emph{~/binned_outputs}: A folder with the following subdirectories.
+#'      \itemize{
+#'        \item \emph{~/square_002um}: The folder containing the data for `square_res = '2um'`.
+#'        \item \emph{~/square_008um}: The folder containing the data for `square_res = '8um'`.
+#'        \item \emph{~/square_016um}: The folder containing the data for `square_res = '16um'`.
+#'        }
+#' }
+#'
+#' Depending on your input for `square_res` only the corresponding subfolder is required. This subfolder should
+#' contain the following files/subdirectories:
+#'
+#' \itemize{
+#'   \item \emph{~/filtered_feature_bc_matrix.h5} or \emph{~/raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
+#'   \item \emph{~/spatial/tissue_lowres_image.png} or \emph{~/spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
+#'   \item \emph{~/spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
+#'   \item \emph{~/spatial/tissue_position.parquet} A .parguet containing the tissue positions and spatial coordinates.
+#' }
+#'
+#' The function will check for these files and process them to create a `SPATA2` object. It reads the count matrix, loads the spatial data,
+#' and initializes the `SPATA2` object with the necessary metadata and settings.
+#'
+#' @export
+#'
+initiateSpataObjectVisiumHD <- function(sample_name,
+                                        directory_visium,
+                                        square_res = "16um",
+                                        mtr = "filtered",
+                                        img_active = "lowres",
+                                        img_ref = "lowres",
+                                        verbose = TRUE){
+
+  confuns::give_feedback(
+    msg = "Initiating SPATA2 object for platform: 'VisiumHD'",
+    verbose = verbose
+  )
+
+  # validate and process input directory
+  dir <- base::normalizePath(directory_visium)
+
+  square_pattern <- stringr::str_c("binned_outputs\\/.*", square_res)
+
+  files <-
+    base::list.files(dir, recursive = TRUE, full.names = TRUE) %>%
+    stringr::str_subset(pattern = square_pattern)
+
+  out_folder <-
+    stringr::str_extract(files, pattern = square_pattern) %>%
+    base::unique() %>%
+    base::file.path(directory_visium, .)
+
+  if(base::length(out_folder) != 1){
+
+    stop("Invalid folder structure.")
+
+  }
+
+  out_files <-
+    base::list.files(out_folder, recursive = TRUE, full.names = TRUE)
+
+  # check and load required mtr
+  confuns::check_one_of(
+    input = mtr,
+    against = c("filtered", "raw")
+  )
+
+  if(mtr == "filtered"){
+
+    mtr_pattern <- "filtered_feature_bc_matrix.h5$"
+
+  } else if(mtr == "raw"){
+
+    mtr_pattern <- "raw_feature_bc_matrix.h5$"
+
+  }
+
+  mtr_path <- out_files[stringr::str_detect(out_files, pattern = mtr_pattern)]
+
+  if(base::length(mtr_path) > 1){
+
+    warning("Multiple matrices found. Picking first.")
+
+    mtr_path <- mtr_path[1]
+
+  } else if(base::length(mtr_path) == 0){
+
+    stop(glue::glue("'{mtr_pattern}' is missing.", mtr_pattern = stringr::str_remove(mtr_pattern, "\\$")))
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Reading count matrix from '{mtr_path}'."),
+    verbose = verbose
+  )
+
+  count_mtr <- Seurat::Read10X_h5(filename = mtr_path)
+
+  # load images
+  sp_data <-
+    createSpatialDataVisiumHD(
+      dir = out_folder,
+      sample = sample_name,
+      img_ref = img_ref,
+      img_active = img_active,
+      verbose = verbose
+    )
+
+  # create SPATA2 object
+  object <-
+    initiateSpataObjectEmpty(
+      sample_name = sample_name,
+      platform = sp_data@method@name, # depends on input
+      verbose = FALSE
+    )
+
+  # set required content
+
+  # molecular assay
+  ma <-
+    MolecularAssay(
+      mtr_counts = count_mtr,
+      modality = "gene",
+      signatures = signatures$gene
+    )
+
+  object <- setAssay(object, assay = ma)
+  object <- activateAssay(object, assay_name = "gene")
+  object <- activateMatrix(object, mtr_name = "counts")
+
+  # meta
+  meta_df <-
+    tibble::tibble(
+      barcodes = getCoordsDf(sp_data)$barcodes,
+      sample = {{sample_name}}
+    )
+
+  object <- setMetaDf(object, meta_df = meta_df)
+
+  # spatial data
+  object <- setSpatialData(object, sp_data = sp_data)
+
+  # set default
+  object <- setDefault(object, pt_size = getSpotSize(object), use_scattermore = TRUE)
+
+  object <- identifyTissueOutline(object)
+
+  returnSpataObject(object)
+
+}
+
+
 #' @title Initiate an object of class `SPATA2` from platform Xenium
 #'
 #' @description Wrapper function around the necessary content to create a

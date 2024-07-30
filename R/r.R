@@ -80,10 +80,10 @@ random_positions_within_period <- function(vector, n, period = 1) {
 #' @return Data.frame of at least five columns:
 #'  \itemize{
 #'   \item{*barcodes*:}{ Character. Unique identifier of each observation.}
-#'   \item{*exclude*:}{ Logical. Indicates whether to exclude the observation by default.}
-#'   \item{*exclude_reason*:}{ Character. The reason for why to exclude the observation.}
 #'   \item{*x_orig*:}{ Numeric. x-coordinates of the original input.}
 #'   \item{*y_orig*:}{ Numeric. y-coordinates of the original input.}
+#'   \item{*col*:}{ Integer. Column index.}
+#'   \item{*row*:}{ Integer. Row index.}
 #'   }
 #'
 #' @export
@@ -156,6 +156,16 @@ read_coords_visium <- function(dir_coords){
       dplyr::filter(in_tissue == 1) %>%
       dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres, row = array_row, col = array_col) %>%
       dplyr::select(barcodes = barcode, x_orig, y_orig, row, col)
+
+    # VisiumHD
+  } else if(stringr::str_detect(dir_coords, pattern = "tissue_positions.parquet$")){
+
+    coords_df <-
+      arrow::read_parquet(dir_coords) %>%
+      dplyr::filter(in_tissue == 1) %>%
+      dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres, row = array_row, col = array_col) %>%
+      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col) %>%
+      tibble::as_tibble()
 
   }
 

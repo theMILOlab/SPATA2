@@ -36,6 +36,7 @@ ggpLayerPoints(object, ...)
   add_labs = FALSE,
   bcs_rm = NULL,
   na_rm = FALSE,
+  geom = "point",
   verbose = NULL,
   ...
 )
@@ -64,6 +65,7 @@ ggpLayerPoints(object, ...)
   scale_fct = 1,
   use_scattermore = FALSE,
   add_labs = FALSE,
+  geom = "point",
   ...
 )
 
@@ -77,6 +79,7 @@ ggpLayerPoints(object, ...)
   scale_fct = 1,
   use_scattermore = FALSE,
   bcs_rm = NULL,
+  geom = "point",
   na_rm = FALSE
 )
 }
@@ -191,8 +194,8 @@ they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
 }
 \description{
-Adds the data points (beads, cells, spots, etc.) of the object
-to the plot. (The working horse of \code{\link[=plotSurface]{plotSurface()}}).
+Adds the \link[=concept_observations]{data points} (beads, cells, spots, etc.) of the object
+to the plot. This function is actually the working horse of \code{\link[=plotSurface]{plotSurface()}}.
 }
 \examples{
 
