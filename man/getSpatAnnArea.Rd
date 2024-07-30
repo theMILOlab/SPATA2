@@ -72,7 +72,7 @@ See examples.
 
 library(SPATA2)
 
-object <- example_data$object_UKF313T_diet
+object <- loadExampleObject("UKF313T")
 
 ids <- c("necrotic_edge2", "necrotic_edge2_transgr")
 

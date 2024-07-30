@@ -15,6 +15,7 @@ identifyTissueOutline(object, ...)
   minPts = recDbscanMinPts(object),
   eps = recDbscanEps(object),
   img_name = activeImage(object),
+  concavity = 2,
   verbose = NULL,
   ...
 )
@@ -23,8 +24,9 @@ identifyTissueOutline(object, ...)
   object,
   method,
   img_name = activeImage(object),
-  minPts = recDbscanMinPts(object),
   eps = recDbscanEps(object),
+  minPts = recDbscanMinPts(object),
+  concavity = 2,
   verbose = TRUE,
   ...
 )
@@ -50,6 +52,11 @@ the size (radius) of the epsilon neighborhood.}
 \item{img_name}{Character value. The name of the image of interest.
 If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
+
+\item{concavity}{Numeric value. Given to argument \code{concavity} of
+\code{\link[concaveman:concaveman]{concaveman::concaveman()}}. Determines the relative measure of concavity.
+1 results in a relatively detailed shape, Infinity results in a convex hull.
+You can use values lower than 1, but they can produce pretty crazy shapes.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -105,10 +112,9 @@ library(ggplot2)
 
 data("example_data")
 
-obj1 <- example_data$object_UKF275T_diet
+obj1 <- loadExampleObject("UKF275T")
 
-obj2 <- example_data$object_lmu_mci_diet
-
+obj2 <- loadExampleObject("LMU_MCI")
 
 # example: 'method = obs'
 obj1 <- identifyTissueOutline(obj1, method = "obs")

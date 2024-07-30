@@ -25,7 +25,7 @@ to \code{nfeatures} of \code{\link[Seurat:FindVariableFeatures]{Seurat::FindVari
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest and thus the
-\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -42,7 +42,7 @@ Identfies molecules that are outliers on a mean-variability plot as proposed by
 library(SPATA2)
 data("example_data")
 
-object <- example_data$object_UKF269T_diet
+object <- loadExampleObject("UKF269T")
 
 object <- identifyVariableMolecules(object, n_mol = 2000)
 object <- identifyVariableMolecules(object, n_mol = 3000, method = "mean.var.plot")

@@ -153,7 +153,7 @@ read_coords_visium <- function(dir_coords){
     coords_df <-
       readr::read_csv(file = dir_coords, col_names = TRUE, show_col_types = FALSE) %>%
       tibble::as_tibble() %>%
-      dplyr::filter(in_tissue = 1) %>%
+      dplyr::filter(in_tissue == 1) %>%
       dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres, row = array_row, col = array_col) %>%
       dplyr::select(barcodes = barcode, x_orig, y_orig, row, col)
 
@@ -238,6 +238,54 @@ recDbscanMinPts <- function(object){
 
 }
 
+
+#' Read Matrix from Folder
+#'
+#' This function reads a matrix, barcodes, and features from a specified directory
+#' and returns the matrix with appropriate row and column names.
+#'
+#' @param dir Character. The directory containing the matrix, barcodes, and features files.
+#'
+#' @return A sparse matrix with barcodes as column names and features as row names.
+#'
+#' @details The specified directory must contain the following files:
+#' \itemize{
+#'   \item{Matrix file}: A file with the extension `.mtx.gz` or `.mtx`. This file contains the count matrix in Matrix Market format.
+#'   \item{Barcodes file}: A file with the name `barcodes.tsv.gz` or `barcodes.tsv`. This file contains the barcodes for the columns of the matrix.
+#'   \item{Features file}: A file with the name `features.tsv.gz` or `features.tsv`. This file contains the features (e.g., gene names) for the rows of the matrix.
+#' }
+#'
+#' The function will search for these files in the specified directory and read them using appropriate functions. The matrix will be returned with barcodes as column names and features as row names.
+#'
+#' @examples
+#' \dontrun{
+#'   matrix_dir <- "path/to/matrix/folder"
+#'   matrix <- read_matrix_from_folder(matrix_dir)
+#'   print(matrix)
+#' }
+#'
+#' @importFrom Matrix readMM
+#' @importFrom readr read_tsv
+#' @importFrom stringr str_subset
+#' @export
+read_matrix_from_folder <- function(dir){
+
+  all_files <- base::list.files(dir, full.names = T)
+
+  dir_mtr <- stringr::str_subset(all_files, ".mtx.gz$|.mtx$")
+  dir_bcs <- stringr::str_subset(all_files, "barcodes.tsv.gz|barcodes.tsv$")
+  dir_features <- stringr::str_subset(all_files, "features.tsv.gz$|features.tsv$")
+
+  mtr <- Matrix::readMM(dir_mtr)
+  bcs <- readr::read_tsv(dir_bcs, col_names = FALSE)
+  feats <- readr::read_tsv(dir_features, col_names = FALSE)
+
+  colnames(mtr) <- as.character(bcs[[1]])
+  rownames(mtr) <- as.character(feats[[2]])
+
+  return(mtr)
+
+}
 
 #' @title Platform dependent input recommendations
 #'
@@ -1128,13 +1176,19 @@ removeMolecules <- function(object,
 
 #' @title Remove observations
 #'
-#' @description `removeObsNoCounts()` dentifies and removes observations with no molecule counts
-#' from the `SPATA2` object. `removeObs()` allows to specify the observations to remove
-#' manually.
+#' @description Remove unwanted \link[=concept_observations]{observations} from the object.
+#'
+#'  \itemize{
+#'    \item{`removeObs()`}{: Allows to specify the observations to remove manually.}
+#'    \item{`removeObsNoCounts()`}{: Identifies and removes observations with no molecule counts from the `SPATA2` object.}
+#'  }
 #'
 #' @param barcodes Character vector or barcodes that are **removed**.
+#' @inherit subsetSpataObject
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
+#'
+#' @seealso [`subsetSpataObject()`]
 #'
 #' @export
 #'
@@ -1142,14 +1196,16 @@ removeMolecules <- function(object,
 #' library(SPATA2)
 #'
 #' data("example_data")
-#'
 #' object <- example_data$object_UKF269T_diet
 #'
 #' # the function tells you if / how many observations were removed
 #' object <- removeObsNoCounts(object, verbose = TRUE)
 #'
 
-removeObs <- function(object, barcodes, verbose = NULL){
+removeObs <- function(object,
+                      barcodes,
+                      spatial_proc = TRUE,
+                      verbose = NULL){
 
   confuns::is_vec(x = "barcodes", mode = "character")
 
@@ -1157,7 +1213,7 @@ removeObs <- function(object, barcodes, verbose = NULL){
 
   barcodes_keep <- barcodes_all[!barcodes_all %in% barcodes]
 
-  object <- subsetByBarcodes(object, barcodes = barcodes_keep, verbose = verbose)
+  object <- subsetByBarcodes(object, barcodes = barcodes_keep, spatial_proc = spatial_proc, verbose = verbose)
 
   returnSpataObject(object)
 
@@ -1166,6 +1222,7 @@ removeObs <- function(object, barcodes, verbose = NULL){
 #' @rdname removeObs
 #' @export
 removeObsNoCounts <- function(object,
+                              spatial_proc = TRUE,
                               assay_name = activeAssay(object),
                               verbose = NULL){
 
@@ -1197,7 +1254,7 @@ removeObsNoCounts <- function(object,
       verbose = verbose
     )
 
-    object <- subsetByBarcodes(object, barcodes = keep)
+    object <- subsetByBarcodes(object, spatial_proc = spatial_proc, barcodes = keep, verbose = verbose)
 
   }
 
@@ -2592,7 +2649,7 @@ rotateCoordsDf <- function(object,
 
   # define center depending on scale factor
   if(containsHistoImages(object)){
-    
+
     center <- getImageCenter(object)
 
     isf <- getScaleFactor(object, fct_name = "image")
@@ -2604,7 +2661,7 @@ rotateCoordsDf <- function(object,
     center <- getCoordsCenter(object)
 
   }
-  
+
   coords_df_rotated <-
     rotate_coords_df(
       df = coords_df,

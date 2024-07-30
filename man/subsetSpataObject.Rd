@@ -4,7 +4,7 @@
 \alias{subsetSpataObject}
 \title{Subset SPATA2 object}
 \usage{
-subsetSpataObject(object, barcodes, verbose = NULL)
+subsetSpataObject(object, barcodes, spatial_proc = TRUE, verbose = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
@@ -12,6 +12,15 @@ objects of classes for which a method has been defined.}
 
 \item{barcodes}{Character vector. The barcodes of the observations that are
 supposed to be \bold{kept}.}
+
+\item{spatial_proc}{Logical value. Indicates whether the new sub-object is
+processed spatially. If \code{TRUE}, a new tissue outline is identified based
+on the remaining observations via \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}. Then,
+spatial annotations are tested on being located on either of the remaining
+tissue sections. If they are not, they are removed. If \code{FALSE}, these processing
+steps are skipped.
+
+Not recommended. Only set to \code{TRUE}, if you know what you're doing.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -22,31 +31,93 @@ the computational progress will be printed.
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Keeps only specified observations.
+Creates a subset of the \code{\link{SPATA2}} object.
 }
 \details{
 Unused levels of factor variables in the feature data.frame are dropped.
 }
 \examples{
 library(SPATA2)
-library(dplyr)
+library(tidyverse)
 library(patchwork)
 
-data("example_data")
+# ----- Example 1: subsetSpataObject()
+object <- loadExampleObject("UKF313T", meta = TRUE)
 
-object <- example_data$object_UKF313T_diet
+plotSpatialAnnotations(object) # plots all annotations
 
 barcodes_keep <-
  getMetaDf(object) \%>\%
- filter(bayes_sapce \%in\% c("3", "2", "1")) \%>\%
+ filter(bayes_sapce \%in\% c("B3", "B2", "B1")) \%>\%
  pull(barcodes)
 
 object_sub <- subsetSpataObject(object, barcodes = barcodes_keep)
 
+plotSpatialAnnotations(object)
+
+ids <- getSpatAnnIds(object)
+
+# use patchwork to compare plots
 plotSurface(object, color_by = "bayes_space") +
- plotSurface(object_sub, color_by = "bayes_space")
+ (plotSurface(object_sub, color_by = "bayes_space") +
+  ggpLayerTissueOutline(object_sub) +
+  ggpLayerSpatAnnOutline(object_sub, ids = ids)
+  )
+
+# ----- Example 2: splitSpataObject()
+# uses subsetSpataObject() in the background
+
+object_mouse <- loadExampleObject("LMU_MCI", process = TRUE, meta = TRUE)
+
+orig_frame <- ggpLayerFrameByCoords(object_mouse)
+
+ids <- getSpatAnnIds(object_mouse)
+
+plotSurface(object_mouse, color_by = "tissue_section", pt_clr = "lightgrey") +
+  ggpLayerSpatAnnOutline(object, ids = ids) +
+  ggpLayerSpatAnnPointer(object, ids = ids, ptr_lengths = "0.45mm", text_dist = 10, text_size = 7)
+
+obj_list <- splitSpataObject(object_mouse, grouping = "tissue_section")
+
+# present resulting sub-objects
+purrr::map(obj_list, .f = ~ .x)
+
+# present remaining ids
+purrr::map(obj_list, .f = ~ getSpatAnnIds(.x))
+
+# show surface plot with all remaining spatial annotations
+purrr::map(obj_list, .f = ~ plotSurface(.x) + ggpLayerSpatAnnOutline(.x) + orig_frame) \%>\%
+  patchwork::wrap_plots()
+
+# repeat with spatial_proc = FALSE
+obj_list <- splitSpataObject(object_mouse, grouping = "tissue_section", spatial_proc = FALSE)
+
+# present remaining spatial annotation ids
+purrr::map(obj_list, .f = ~ getSpatAnnIds(.x))
+
+# show surface plot with all remaining spatial annotations
+purrr::map(obj_list, .f = ~ plotSurface(.x) + ggpLayerSpatAnnOutline(.x) + orig_frame) \%>\%
+  patchwork::wrap_plots()
+
+# -----  Example 3: cropSpataObject()
+# uses subsetSpataObject() in the background
+object <- loadExampleObject("UKF275T", meta = TRUE)
+
+orig_frame <- ggpLayerFrameByCoords(object)
+
+xcrop <- c("2.5mm", "5.5mm")
+ycrop <- c("5mm", "7mm")
+
+plotSurface(object, color_by = "bayes_space") +
+ ggpLayerAxesSI(object) +
+ ggpLayerRect(object, xrange = xcrop, yrange = ycrop)
+
+object_cropped <-
+ cropSpataObject(object, xrange = xcrop, yrange = ycrop)
+
+plotSurface(object_cropped, color_by = "bayes_space") + orig_frame
 
 }
 \seealso{
-\code{\link[=removeObs]{removeObs()}}
+\code{\link[=removeObs]{removeObs()}}, \code{\link[=splitSpataObject]{splitSpataObject()}}, \code{\link[=cropSpataObject]{cropSpataObject()}}
 }

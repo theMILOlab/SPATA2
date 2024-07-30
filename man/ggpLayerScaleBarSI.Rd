@@ -103,9 +103,7 @@ The vignette on distance measures in SPATA2 has been replaced. Click
 library(SPATA2)
 library(tidyverse)
 
-data("example_data")
-
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
 object <-
  createNumericAnnotations(

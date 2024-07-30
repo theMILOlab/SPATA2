@@ -40,17 +40,15 @@ grouping variable is resetted.
 library(SPATA2)
 library(tidyverse)
 
-data("example_data")
-
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T", meta = TRUE)
 
 object <-
   mergeGroups(
     object = object,
     grouping = "bayes_space",
     grouping_new = "bayes_space_merged",
-    merge = c("2", "4"),
-    new_group = "2.4.merged"
+    merge = c("B1", "B6"),
+    new_group = "B1B6_merged"
    )
 
 plotSurface(object, color_by = "bayes_space")

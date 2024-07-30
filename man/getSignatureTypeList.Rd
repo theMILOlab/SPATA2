@@ -24,14 +24,6 @@ This function categorizes signatures into different types based on the provided 
 If the 'signatures' argument is provided as a character vector, the function returns only the specified
 signatures categorized by assay type. Otherwise, it returns all signatures categorized by type.
 }
-\examples{
-# Get signature type list for all signatures in the object
-signature_types <- getSignatureTypeList(object)
-
-# Get signature type list for specific signatures
-signature_types <- getSignatureTypeList(object, signatures = c("sig1", "sig2"))
-
-}
 \seealso{
 Documentation of slot @signatures in the \code{\link{MolecularAssay}}-class.
 }

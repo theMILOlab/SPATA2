@@ -31,8 +31,6 @@ number of minimum points required in the eps neighborhood for core points
 \item{name}{Name of the added variable.}
 
 \item{...}{To silently drop deprecated arguments.}
-
-\item{ccd}{Center to center distance in pixel units.}
 }
 \value{
 Data.frame with additional variable containing numbers. 0 means
@@ -56,11 +54,11 @@ library(tidyverse)
 
 data("example_data")
 
-object <- example_data$object_MCD_LMU_diet
+object <- example_data$object_LMU_MCI_diet
 
 coords_df <-
  getCoordsDf(object) \%>\%
- add_dbscan_variable(eps = getCCD(object, unit = "px"), name = "section")
+ add_dbscan_variable(eps = recDbscanEps(object), name = "section")
 
 plotSurface(coords_df, color_by = "section")
 

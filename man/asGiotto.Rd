@@ -7,11 +7,15 @@
 asGiotto(object, transfer_features = TRUE, verbose = NULL)
 }
 \arguments{
+\item{object}{Objects of classes for which a method has been defined.}
+
 \item{transfer_features, transfer_meta_data}{Logical or character. Specifies
 if meta/feature, e.g clustering, data from the input object is transferred
 to the output object. If TRUE, all variables of the feature/meta data.frame
 are transferred. If character, named variables are transferred. If FALSE,
 none are transferred.}
+
+\item{verbose}{Logical. If TRUE, progress messages will be printed. Default is TRUE.}
 }
 \value{
 An object of class \code{Giotto}.

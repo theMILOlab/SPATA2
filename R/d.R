@@ -223,17 +223,43 @@ discardExpressionMatrix <- function(...){
 #' 6. If `grouping_new` is provided, a new grouping variable is created; otherwise, the original grouping variable is updated.
 #'
 #' @examples
-#' \dontrun{
-#'   # Assuming `spata_obj` is a SPATA2 object with grouping variable 'histology'
-#'   # created via createSpatialSegmentation() with a small subset of spots that
-#'   # left unnamed since the manual outline did not include them by accident
-#'   spata_obj <- dissolveGroups(
-#'     object = spata_obj,
-#'     grouping = 'histology',
+#'
+#' library(SPATA2)
+#' library(ggplot2)
+#' library(patchwork)
+#'
+#' object <- loadExampleObject("UKF313T")
+#'
+#' # add example grouping
+#' # this is a random grouping variable solely created for demonstrating the
+#' # purpose of dissolveGroups()! It is not of any analytical value!
+#' object <- addFeatures(object, feature_df = example_data$dissolve_groups)
+#'
+#' # note the many spots of class 'unnamed' surrounded by actual groups
+#' plot_before <-
+#'  plotSurface(object, color_by = "histo_bad", pt_clrp = "uc", clrp_adjust = c("unnamed" = "black"))
+#'
+#' # show plot
+#' plot_before
+#'
+#' # dissolve the group "unnamed"
+#' object <-
+#'  dissolveGroups(
+#'    object = object,
+#'    grouping = "histo_bad",
 #'     groups_dissolve = "unnamed",
-#'     grouping_new = 'histology_complete'
-#'   )
-#' }
+#'     grouping_new = "histo_better"
+#'     )
+#'
+#' # spots of group 'unnamed' have been dissolved into their respective neighbor group
+#' # use alpha (transparency) to highlight spots that used to of group "unnamed"
+#' plot_afterwards <-
+#'  plotSurface(object, color_by = "histo_better", pt_clrp = "uc", alpha_by = "histo_alpha") +
+#'  scale_alpha_identity()
+#'
+#' # show plots
+#' plot_before + plot_afterwards
+#'
 
 #' @export
 dissolveGroups <- function(object,
@@ -372,7 +398,7 @@ distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object))
 #'
 #' @details The following data can be downloaded.
 #'
-#' From *Kueckelhaus et al., 2024* with `pub = 'kueckelhaus_et_al_2024'`.
+#' From *Kueckelhaus et al., 2024* with `pub = 'Kueckelhaus_et_al_2024'`.
 #'
 #' \itemize{
 #'  \item{id = 'UKF313T'}{An object of class `SPATA2` containing human glioblastoma Visium data.}
@@ -387,9 +413,8 @@ distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object))
 #'  objectT313 <- downloadFromPublication(pub = "kueckelhaus_et_al_2024", what = "UKF313T")
 #'
 #' @keywords internal
-#' @export
 #'
-downloadFromPublication <- function(pub, id, raw = FALSE){
+downloadFromPublication <- function(pub, sample_name){
 
   confuns::check_one_of(
     input = pub,
@@ -409,25 +434,13 @@ downloadFromPublication <- function(pub, id, raw = FALSE){
 }
 
 
-#' @title Download raw Visium output
-#' @inherit SPATAData::downloadRawData title description params return examples
-#' @note Imported from the package `SPATAData`.
-#' @importFrom SPATAData downloadRawData
-#' @export
-#' @keywords internal
-downloadRawData <- SPATAData::downloadRawData
-
-#' @title Download `spata2` objects
-#' @inherit SPATAData::downloadSpataObject title description params return examples
+#' @inherit SPATAData::downloadSpataObject title description params return examples seealso
 #' @note Imported from the package `SPATAData`.
 #' @importFrom SPATAData downloadSpataObject
 #' @export
-#' @keywords internal
 downloadSpataObject <- SPATAData::downloadSpataObject
 
-#' @rdname downloadSpataObject
-#' @inherit SPATAData::downloadSpataObjects params
+#' @inherit SPATAData::downloadSpataObjects title description params return examples
 #' @importFrom SPATAData downloadSpataObjects
 #' @export
-#' @keywords internal
 downloadSpataObjects <- SPATAData::downloadSpataObjects

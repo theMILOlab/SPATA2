@@ -71,7 +71,7 @@ grow the \code{SPATA2} object's size quickly!}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest and thus the
-\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding

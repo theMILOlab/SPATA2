@@ -20,8 +20,4 @@ A data frame representing the polygon with increased vertex density.
 This function interpolates additional vertices in a polygon data frame to increase its vertex density.
 It ensures that the polygon remains closed and that the new vertices are evenly distributed.
 }
-\examples{
-denser_polygon <- increase_polygon_vertices(polygon_df, avg_dist = 10, skip = FALSE)
-
-}
 \keyword{internal}

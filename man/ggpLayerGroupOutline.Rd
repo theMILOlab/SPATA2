@@ -95,10 +95,10 @@ library(tidyverse)
 
 data("example_data")
 
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T", meta = TRUE)
 
 plotSurface(object, color_by = "bayes_space") +
- ggpLayerGroupOutline(object, grouping = "bayes_space", group_subset = c("1", "2"))
+ ggpLayerGroupOutline(object, grouping = "bayes_space", group_subset = c("B1", "B2"))
 
 
 }

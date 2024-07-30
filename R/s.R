@@ -79,12 +79,12 @@ saveSpataObject <- function(object,
 
     base::tryCatch({
 
-      base::saveRDS(object = object, file = directory_spata)
+      base::saveRDS(object = object, file = dir)
 
 
     }, error = function(error){
 
-      base::warning(glue::glue("Attempting to save the `SPATA2` object under {directory_spata} resulted in the following error: {error} "))
+      base::warning(glue::glue("Attempting to save the `SPATA2` object under {dir} resulted in the following error: {error} "))
 
     })
 
@@ -560,6 +560,7 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   n_obs <- length(getBarcodes(object)) # also in case no matrix available
 
   cat("SPATA2 object of size:", n_obs, "x", n_mols, "(observations x molecules)\n")
+  cat("Sample name:", object@sample, "\n")
   cat("Platform:", object@platform, "\n")
   cat("Contains", length(assays), ifelse(length(assays) > 1, "Assays:", "Assay:"), assays, "\n")
   cat("Active Assay:", activeAssay(object), ", Active Matrix:", activeMatrix(object), "\n")
@@ -2979,7 +2980,91 @@ splitHorizontally <- function(..., split_widths = NULL, align = "left", cellWidt
 
 }
 
+#' @title Split SPATA2 object
+#'
+#' @description This function splits a [`SPATA2`] object into multiple sub-objects based on a
+#' specified grouping variable.
+#'
+#' @param reduce A logical value indicating whether to reduce the `SPATA2` sub-objects after splitting
+#' via [`reduceSpataObject()`]. Default is `FALSE`.
+#' @param naming Character value. A glue expression based on which the respective new sample
+#' names are created. See details for more information.
+#' @inherit subsetSpataObject params
+#' @inherit argument_dummy params
+#'
+#' @details
+#' The input for `naming` defaults to the original sample name suffixed with the
+#' name of the group for which the sub-object contains the data. Both are separated
+#' with a *'_'*.  Sample name can be accessed via *'{sample_name}'* and group name
+#' can be accessed via *'{group_name}'*.
+#'
+#' Afterwards, if `grouping` is not *'tissue_section'* a new tissue outline is
+#' identified for every sub-object using [`identifyTissueOutline()`] with default input.
+#'
+#' @return A named list of `SPATA2` sub-objects split by the specified grouping.
+#'
+#' @export
+#'
+#' @inherit subsetSpataObject examples
+#'
+splitSpataObject <- function(object,
+                             grouping,
+                             naming = "{sample_name}_{group_name}",
+                             spatial_proc = TRUE,
+                             reduce = FALSE,
+                             verbose = NULL){
 
+  confuns::is_value(x = grouping, mode = "character")
+
+  confuns::check_one_of(
+    input = grouping,
+    against = getGroupingOptions(object)
+  )
+
+  sample_name <- getSampleName(object)
+  groups <- getGroupNames(object, grouping = grouping)
+
+  out <-
+    purrr::map(
+      .x = groups,
+      .f = function(group_name){
+
+        barcodes_keep <-
+          getMetaDf(object) %>%
+          dplyr::filter(!!rlang::sym(grouping) == {{group_name}}) %>%
+          dplyr::pull(barcodes)
+
+        sample_name_new <- base::as.character(glue::glue(naming))
+
+        object_sub <-
+          subsetSpataObject(
+            object = object,
+            barcode = barcodes_keep,
+            spatial_proc = spatial_proc,
+            verbose = FALSE
+          ) %>%
+          renameSpataObject(sample_name = sample_name_new)
+
+        if(grouping != "tissue_section"){
+
+          object_sub <- identifyTissueOutline(object_sub)
+
+        }
+
+        if(base::isTRUE(reduce)){
+
+          object_sub <- reduceSpataObject(object_sub)
+
+        }
+
+        return(object_sub)
+
+      }
+    ) %>% purrr::set_names(nm = groups)
+
+  return(out)
+
+}
 
 
 # str ---------------------------------------------------------------------
@@ -3038,39 +3123,113 @@ strongH5 <- function(text){
 
 #' @title Subset SPATA2 object
 #'
-#' @description Keeps only specified observations.
+#' @description Creates a subset of the [`SPATA2`] object.
 #'
 #' @param barcodes Character vector. The barcodes of the observations that are
 #' supposed to be \bold{kept}.
+#' @param spatial_proc Logical value. Indicates whether the new sub-object is
+#' processed spatially. If `TRUE`, a new tissue outline is identified based
+#' on the remaining observations via [`identifyTissueOutline()`]. Then,
+#' spatial annotations are tested on being located on either of the remaining
+#' tissue sections. If they are not, they are removed. If `FALSE`, these processing
+#' steps are skipped.
+#'
+#' Not recommended. Only set to `TRUE`, if you know what you're doing.
+#'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @details Unused levels of factor variables in the feature data.frame are dropped.
 #'
-#' @seealso [`removeObs()`]
+#' @seealso [`removeObs()`], [`splitSpataObject()`], [`cropSpataObject()`]
 #'
 #' @export
 #'
 #' @examples
 #' library(SPATA2)
-#' library(dplyr)
+#' library(tidyverse)
 #' library(patchwork)
 #'
-#' data("example_data")
+#' # ----- Example 1: subsetSpataObject()
+#' object <- loadExampleObject("UKF313T", meta = TRUE)
 #'
-#' object <- example_data$object_UKF313T_diet
+#' plotSpatialAnnotations(object) # plots all annotations
 #'
 #' barcodes_keep <-
 #'  getMetaDf(object) %>%
-#'  filter(bayes_sapce %in% c("3", "2", "1")) %>%
+#'  filter(bayes_sapce %in% c("B3", "B2", "B1")) %>%
 #'  pull(barcodes)
 #'
 #' object_sub <- subsetSpataObject(object, barcodes = barcodes_keep)
 #'
-#' plotSurface(object, color_by = "bayes_space") +
-#'  plotSurface(object_sub, color_by = "bayes_space")
+#' plotSpatialAnnotations(object)
 #'
-subsetSpataObject <- function(object, barcodes, verbose = NULL){
+#' ids <- getSpatAnnIds(object)
+#'
+#' # use patchwork to compare plots
+#' plotSurface(object, color_by = "bayes_space") +
+#'  (plotSurface(object_sub, color_by = "bayes_space") +
+#'   ggpLayerTissueOutline(object_sub) +
+#'   ggpLayerSpatAnnOutline(object_sub, ids = ids)
+#'   )
+#'
+#' # ----- Example 2: splitSpataObject()
+#' # uses subsetSpataObject() in the background
+#'
+#' object_mouse <- loadExampleObject("LMU_MCI", process = TRUE, meta = TRUE)
+#'
+#' orig_frame <- ggpLayerFrameByCoords(object_mouse)
+#'
+#' ids <- getSpatAnnIds(object_mouse)
+#'
+#' plotSurface(object_mouse, color_by = "tissue_section", pt_clr = "lightgrey") +
+#'   ggpLayerSpatAnnOutline(object, ids = ids) +
+#'   ggpLayerSpatAnnPointer(object, ids = ids, ptr_lengths = "0.45mm", text_dist = 10, text_size = 7)
+#'
+#' obj_list <- splitSpataObject(object_mouse, grouping = "tissue_section")
+#'
+#' # present resulting sub-objects
+#' purrr::map(obj_list, .f = ~ .x)
+#'
+#' # present remaining ids
+#' purrr::map(obj_list, .f = ~ getSpatAnnIds(.x))
+#'
+#' # show surface plot with all remaining spatial annotations
+#' purrr::map(obj_list, .f = ~ plotSurface(.x) + ggpLayerSpatAnnOutline(.x) + orig_frame) %>%
+#'   patchwork::wrap_plots()
+#'
+#' # repeat with spatial_proc = FALSE
+#' obj_list <- splitSpataObject(object_mouse, grouping = "tissue_section", spatial_proc = FALSE)
+#'
+#' # present remaining spatial annotation ids
+#' purrr::map(obj_list, .f = ~ getSpatAnnIds(.x))
+#'
+#' # show surface plot with all remaining spatial annotations
+#' purrr::map(obj_list, .f = ~ plotSurface(.x) + ggpLayerSpatAnnOutline(.x) + orig_frame) %>%
+#'   patchwork::wrap_plots()
+#'
+#' # -----  Example 3: cropSpataObject()
+#' # uses subsetSpataObject() in the background
+#' object <- loadExampleObject("UKF275T", meta = TRUE)
+#'
+#' orig_frame <- ggpLayerFrameByCoords(object)
+#'
+#' xcrop <- c("2.5mm", "5.5mm")
+#' ycrop <- c("5mm", "7mm")
+#'
+#' plotSurface(object, color_by = "bayes_space") +
+#'  ggpLayerAxesSI(object) +
+#'  ggpLayerRect(object, xrange = xcrop, yrange = ycrop)
+#'
+#' object_cropped <-
+#'  cropSpataObject(object, xrange = xcrop, yrange = ycrop)
+#'
+#' plotSurface(object_cropped, color_by = "bayes_space") + orig_frame
+#'
+subsetSpataObject <- function(object,
+                              barcodes,
+                              spatial_proc = TRUE,
+                              verbose = NULL){
 
   hlpr_assign_arguments(object)
 
@@ -3122,6 +3281,47 @@ subsetSpataObject <- function(object, barcodes, verbose = NULL){
   }
 
   n_bcsp <- nObs(object)
+
+  if(base::isTRUE(spatial_proc)){
+
+    object <- identifyTissueOutline(object)
+    tissue_sections <- getTissueSections(object)
+
+    # keep only spatial annotations that intersect with or or located on at least one
+    # tissue section of the remaining tissue sections
+    spat_anns <-
+      getSpatialAnnotations(object, add_image = FALSE, add_barcodes = FALSE) %>%
+      purrr::keep(.p = function(spat_ann){
+
+        spat_ann_outline_df <- spat_ann@area$outer
+
+        purrr::map_lgl(
+          .x = tissue_sections,
+          .f = function(section){
+
+            section_outline_df <-
+              getTissueOutlineDf(object, section_subset = section)
+
+            locs <-
+              sp::point.in.polygon(
+                point.x = spat_ann_outline_df$x_orig,
+                point.y = spat_ann_outline_df$y_orig,
+                pol.x = section_outline_df$x_orig,
+                pol.y = section_outline_df$y_orig
+              )
+
+            out <- base::any(locs == 1)
+
+            return(out)
+
+          }
+        )
+
+      })
+
+    object@spatial@annotations <- spat_anns
+
+  }
 
   confuns::give_feedback(
     msg = glue::glue("{n_bcsp} barcodes remaining."),

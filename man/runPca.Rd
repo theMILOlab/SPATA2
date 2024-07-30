@@ -8,6 +8,7 @@
 runPCA(
   object,
   n_pcs = 30,
+  variables = NULL,
   mtr_name = activeMatrix(object),
   assay_name = activeAssay(object),
   ...
@@ -21,12 +22,16 @@ objects of classes for which a method has been defined.}
 
 \item{n_pcs}{Numeric value. Denotes the number of principal components to be computed.}
 
+\item{variables}{Character vector or \code{NULL}. If character, subsets the data matrix
+by variable/molecule names such that only the specified ones are used for dimensional reduction.
+If \code{NULL}, the unsubstted matrix denoted in \code{mtr_name} is used.}
+
 \item{mtr_name}{Character value. The name of the matrix of interest. Defaults
 to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest and thus the
-\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{...}{Additional arguments given to \code{irlba::prcomp_irlba()}.}
@@ -35,7 +40,7 @@ as set by \code{\link[=activateAssay]{activateAssay()}}.}
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Takes the expression matrix of choice and passes it to
+Takes the data matrix of choice and passes it to
 \code{irlba::prcomp_irlba()}.
 }
 \examples{
@@ -53,4 +58,7 @@ plotPCA(object, color_by = "histology")
 plotTSNE(object, color_by = "histology")
 plotUMAP(object, color_by = "histology")
 
+}
+\seealso{
+\code{\link[=identifyVariableMolecules]{identifyVariableMolecules()}}, \code{\link[=plotPcaElbow]{plotPcaElbow()}}
 }

@@ -142,9 +142,7 @@ library(tidyverse)
 data("example_data")
 
 # Example 1 - One spatial annotation on one tissue section
-object <- example_data$object_UKF275T_diet
-
-object <- identifyTissueOutline(object)
+object <- loadExampleObject("UKF275T", process = TRUE, meta = TRUE)
 
 object <-
  createNumericAnnotations(
@@ -178,13 +176,11 @@ plotSurface(coords_df_3mm, color_by = "dist") +
 
 ## Example 2 - Multiple spatial annotations on one tissue section
 
-object <- example_data$object_UKF313T_diet
+object <- loadExampleObject("UKF313T")
 
 necr_ids <- getSpatAnnIds(object, tags = c("compr", "necrotic"), test = "all")
 
 plotSpatialAnnotations(object, ids = necr_ids, line_size = 1, fill = NA)
-
-object <- identifyTissueOutline(object)
 
 # considered individually
 
@@ -219,9 +215,7 @@ plotSurface(coords_df, color_by = "dist") +
 
 ## Example 3 - Multiple tissue sections
 
-object <- example_data$object_lmu_mci_diet
-
-object <- identifyTissueOutline(object)
+object <- loadExampleObject("LMU_MCI", process = TRUE, meta = TRUE)
 
 plotSurface(object, color_by = "tissue_section") +
   ggpLayerTissueOutline(object)

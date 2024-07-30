@@ -10,7 +10,7 @@ runKmeansClustering(
   methods_kmeans = "Hartigan-Wong",
   prefix = "K",
   naming = "{method_kmeans}_k{k}",
-  n_pcs = 30,
+  n_pcs = NULL,
   overwrite = TRUE,
   ...
 )

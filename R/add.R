@@ -301,7 +301,6 @@ add_edge_variable <- function(coords_df, id_var = "barcodes"){
 #' the outline of the tissue section(s).
 #'
 #' @param coords_df Data.frame with *x* and *y* variable.
-#' @param ccd Center to center distance in pixel units.
 #' @param name Name of the added variable.
 #' @param ... To silently drop deprecated arguments.
 #'
@@ -324,11 +323,11 @@ add_edge_variable <- function(coords_df, id_var = "barcodes"){
 #'
 #' data("example_data")
 #'
-#' object <- example_data$object_MCD_LMU_diet
+#' object <- example_data$object_LMU_MCI_diet
 #'
 #' coords_df <-
 #'  getCoordsDf(object) %>%
-#'  add_dbscan_variable(eps = getCCD(object, unit = "px"), name = "section")
+#'  add_dbscan_variable(eps = recDbscanEps(object), name = "section")
 #'
 #' plotSurface(coords_df, color_by = "section")
 #'
@@ -1517,7 +1516,7 @@ addSignature <- function(object,
 #'  x_coords <- p[1] + r * cos(angles)
 #'  y_coords <- p[2] + r * sin(angles)
 #'
-#'  polygon_df <- data.frame(x = x_coords, y = y_coords)
+#'  polygon_df <- tibble::tibble(x = x_coords, y = y_coords)
 #'
 #'  return(polygon_df)
 #'
@@ -1528,6 +1527,8 @@ addSignature <- function(object,
 #'  map_dbl(.f = mean)
 #'
 #' area_circle <- create_circle_polygon(center, r = 75, n = 100)
+#'
+#' print(area_circle)
 #'
 #' object <- addSpatialAnnotation(object, area = list(outer = area_circle), id = "circle")
 #'

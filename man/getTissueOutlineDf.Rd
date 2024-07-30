@@ -14,6 +14,7 @@ getTissueOutlineDf(object, ...)
   method = NULL,
   img_name = activeImage(object),
   by_section = TRUE,
+  section_subset = NULL,
   transform = TRUE,
   ...
 )
@@ -23,10 +24,16 @@ getTissueOutlineDf(object, ...)
   method = NULL,
   img_name = activeImage(object),
   by_section = TRUE,
+  section_subset = NULL,
   transform = TRUE
 )
 
-\S4method{getTissueOutlineDf}{HistoImage}(object, by_section = TRUE, transform = TRUE)
+\S4method{getTissueOutlineDf}{HistoImage}(
+  object,
+  by_section = TRUE,
+  section_subset = NULL,
+  transform = TRUE
+)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
@@ -48,6 +55,9 @@ be one of \code{\link[=getImageNames]{getImageNames()}}.}
 \item{by_section}{Logical value. If \code{TRUE}, the outline is used which acknowledges
 the potential for multiple tissue sections. If \code{FALSE}, the outline is used which
 simply outlines everything with one single polygon.}
+
+\item{section_subset}{Character vector or \code{NULL}. If character, specifies
+the tissue sections of interest and filters the output accordingly.}
 
 \item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
 spatial transformation instructions saved during image alignment of

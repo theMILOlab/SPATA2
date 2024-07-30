@@ -27,7 +27,7 @@ to be included.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest and thus the
-\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
@@ -174,6 +174,10 @@ The first \code{n_gsets} are included starting with the one with the lowest sign
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
+\item{n_pcs}{Numeric value or \code{NULL}. If numeric, specifies the number of
+principal components to use. If \code{NULL}, all principal components are used
+(as computed with \code{\link[=runPCA]{runPCA()}}).}
+
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
@@ -250,6 +254,9 @@ the point size must be adjusted with the argument \code{pt_size}.}
 \item{sgmt_alpha, sgmt_color, sgmt_size, sgmt_type}{Parameters given to
 \code{ggplot2::geom_segment()} that control the appearance of segments
 of the plot.}
+
+\item{section_subset}{Character vector or \code{NULL}. If character, specifies
+the tissue sections of interest and filters the output accordingly.}
 
 \item{signif_var}{Character value. Determines what to be considered while checking
 for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).}

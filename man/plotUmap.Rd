@@ -15,31 +15,18 @@ plotPCA(
   object,
   color_by = NULL,
   n_pcs = NULL,
-  method_gs = NULL,
-  pt_size = NULL,
-  pt_alpha = NULL,
+  pt_alpha = 0.9,
+  pt_clr = "lightgrey",
+  pt_size = 1,
   pt_clrp = NULL,
   pt_clrsp = NULL,
-  pt_clr = NULL,
-  normalize = NULL,
+  nrow = NULL,
+  ncol = NULL,
   verbose = NULL,
   ...
 )
 
-plotPca(
-  object,
-  color_by = NULL,
-  n_pcs = NULL,
-  method_gs = NULL,
-  pt_size = NULL,
-  pt_alpha = NULL,
-  pt_clrp = NULL,
-  pt_clrsp = NULL,
-  pt_clr = NULL,
-  normalize = NULL,
-  verbose = NULL,
-  ...
-)
+plotPca(...)
 
 plotTSNE(
   object,
@@ -52,11 +39,11 @@ plotTSNE(
   pt_shape = 19,
   shape_by = NULL,
   method_gs = NULL,
-  pt_size = NULL,
-  pt_alpha = NULL,
+  pt_alpha = 0.9,
+  pt_clr = "lightgrey",
+  pt_size = 1,
   pt_clrsp = NULL,
   pt_clrp = NULL,
-  pt_clr = NULL,
   clrp_adjust = NULL,
   normalize = NULL,
   use_scattermore = FALSE,
@@ -89,11 +76,11 @@ plotUMAP(
   shape_by = NULL,
   method_gs = NULL,
   pt_shape = 19,
-  pt_size = NULL,
-  pt_alpha = NULL,
+  pt_alpha = 0.9,
+  pt_clr = "lightgrey",
+  pt_size = 1,
   pt_clrsp = NULL,
   pt_clrp = NULL,
-  pt_clr = NULL,
   clrp_adjust = NULL,
   normalize = NULL,
   transform_with = list(),
@@ -126,13 +113,11 @@ to color the data points.}
 \item{n_pcs}{Numeric value. Determines the number of principal components to be plotted.
 Must be an even number.}
 
-\item{method_gs}{Character value. The method according to which gene sets will
-be handled specified as a character of length one. This can be either 'mean
-or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
+\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
+
+\item{pt_clr}{Character value. Specifies the color of all points.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
-
-\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
 \item{pt_clrp}{The color palette to be used if the specified variable displayed by
 color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
@@ -140,11 +125,7 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 \item{pt_clrsp}{The color spectrum to be used if the specified variable displayed by
 color is continuous. Run \code{validColorSpectra()} to see valid input.}
 
-\item{pt_clr}{Character value. Specifies the color of all points.}
-
-\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
-
-Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -159,10 +140,18 @@ variable is used to order the data points.}
 \item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
 via \code{order_by} and/or \code{order}.}
 
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
+
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
 represent the group.}
+
+\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
+
+Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
 \item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
 \code{scattermore::geom_scattermore()} which allows quick plotting of several
@@ -176,8 +165,6 @@ the point size must be adjusted with the argument \code{pt_size}.}
 \item{ggpLayers}{A list of ggplot add ons to add to each plot.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
-
-\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{transform_with}{List or \code{NULL.} If list, can be used to transform continuous variables before usage.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.

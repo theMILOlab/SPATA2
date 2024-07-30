@@ -3,14 +3,15 @@
 \name{runUMAP}
 \alias{runUMAP}
 \alias{runUmap}
-\title{Run UMAP}
+\title{Run Uniform Manifold Approximation and Projection}
 \usage{
-runUMAP(object, n_pcs = 20, ...)
+runUMAP(object, n_pcs = NULL, ...)
 
 runUmap(...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{n_pcs}{Numeric value. Denotes the number of principal components used. Must be
 smaller or equal to the number of principal components the pca data.frame contains.}
@@ -39,4 +40,7 @@ plotPCA(object, color_by = "histology")
 plotTSNE(object, color_by = "histology")
 plotUMAP(object, color_by = "histology")
 
+}
+\seealso{
+\code{\link[=runPCA]{runPCA()}}
 }

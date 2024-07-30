@@ -28,14 +28,6 @@ the 'variables' argument is provided as a character vector,
 the function returns only the specified variables categorized by type.
 Otherwise, it returns all variables categorized by type.
 }
-\examples{
-# Get variable type list for all variables in the object
-var_types <- getVarTypeList(object)
-
-# Get variable type list for specific variables
-var_types <- getVarTypeList(object, variables = c("var1", "var2"))
-
-}
 \seealso{
 \code{getCoordsDf()}, \code{getMetaDf()}
 }

@@ -79,8 +79,6 @@ Collate:
     'create.R'
     'd.R'
     'data.R'
-    'delete_maybe.R'
-    'deprecated.R'
     'deprecated_a-i.R'
     'deprecated_j-z.R'
     'dev.R'

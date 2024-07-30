@@ -66,9 +66,7 @@ and everything beyond that is not included in the screening (periphery).
 library(SPATA2)
 library(tidyverse)
 
-data("example_data")
-
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
 object <-
  createNumericAnnotations(

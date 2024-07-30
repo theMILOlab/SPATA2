@@ -45,9 +45,7 @@ lastSpatialAnnotation <- function(object){
 #' library(SPATA2)
 #' library(tidyverse)
 #'
-#' data("example_data")
-#'
-#' object <- example_data$object_UKF275T_diet
+#' object <- loadExampleObject("UKF275T")
 #'
 #' plotSurface(object, color_by = "HM_HYPOXIA")
 #' plotSurface(object, color_by = "HM_HYPOXIA") + legendBottom()
@@ -171,6 +169,81 @@ load_adata_matrix_converter <- function(adata, mname, matrix, verbose){
 
 }
 
+
+#' @title Load example SPATA2 object
+#'
+#' @description Loads a diet example [`SPATA2`] object.
+#'
+#' @param sample_name Character value. One of `c("UKF275T", "UKF313T", "UKF269T", "LMU_MIC")`.
+#' @param process Logical value. If `TRUE`, the object is processed via:
+#' \itemize{
+#'   \item{[`identifyTissueOutline()`]}
+#'   \item{[`identifySpatialOutliers()`]}
+#'   \item{[`removeSpatialOutliers()`]}
+#'   \item{[`normalizeCounts()`]}
+#'   \item{[`computeMetaFeatures()`]}
+#' }
+#' using their default setup (in this precise order).
+#' @param meta Logical value. If `TRUE`, adds some meta features like clustering, histological
+#' segmentation or copy number variation results to the meta data.frame that has been
+#' computed prior to reducing the object to the example version.
+#'
+#' @inherit argument_dummy params
+#'
+#' @details The example objects only contain a subsetted count matrix. If you want to work
+#' with the complete data sets, use [`downloadSpataObject()`].
+#'
+#' @return A reduced diet object of class `SPATA2`.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' # simply load
+#' object <- loadExampleObject(sample_name = "UKF269T")
+#'
+#' # load, process and add some meta data
+#' object_proc <- loadExampleObject(sample_name = "UKF269T", process = TRUE, meta = TRUE)
+#'
+#' getMatrixNames(object)
+#' getMatrixNames(object_proc)
+#'
+#' plotSurface(object, color_by = "histology") # fails
+#' plotSurface(object_proc, color_by = "histology")
+#'
+loadExampleObject <- function(sample_name,
+                              process = FALSE,
+                              meta = FALSE,
+                              verbose = TRUE){
+
+  confuns::check_one_of(
+    input = sample_name,
+    against = c("UKF275T", "UKF313T", "UKF269T", "LMU_MCI")
+  )
+
+  object <- example_data[[stringr::str_c("object_", sample_name, "_diet")]]
+
+  if(base::isTRUE(process)){
+
+    object <- identifyTissueOutline(object)
+    object <- identifySpatialOutliers(object)
+    object <- removeSpatialOutliers(object)
+    object <- normalizeCounts(object)
+    object <- computeMetaFeatures(object)
+
+  }
+
+  if(base::isTRUE(meta)){
+
+    object <- addFeatures(object, feature_df = example_data$meta[[sample_name]])
+
+  }
+
+  return(object)
+
+}
 
 
 #' @title Load image slot content
@@ -319,13 +392,13 @@ setMethod(
 #' @inherit argument_dummy params
 #' @inherit check_object params
 #' @param directory_spata Character value. The directory from which to load the [`SPATA2'] object.
+#' @param update Logical value. If `TRUE`, calls [`updateSpataObject()`] after loading to check whether
+#' the loaded object is up to date.
 #'
 #' @details \code{loadSpataObject()} is a wrapper around \code{base::readRDS()} with which
-#' you could load your [`SPATA2'] object as well. The other two functions take the [`SPATA2'] object
-#' and use \code{getDirectoryInstructions()} to extract the directories of the corresponding object to be loaded under which
-#' they were saved the last time \code{saveCorresponding*()} was used.
+#' you could load your [`SPATA2`] object as well.
 #'
-#' @return The load object of interest.
+#' @return The loaded object. If not of class [`SPATA2`], a warning is printed.
 #'
 #' @export
 
@@ -437,13 +510,15 @@ lump_groups <- function(df,
 
   }
 
+  ref1 <- confuns::scollapse(lump.drop)
+
   groups <-
     df_new[[naming]] %>%
     base::levels() %>%
-    scollapse()
+    confuns::scollapse()
 
   give_feedback(
-    msg = glue::glue("{ref} variable '{naming}'. Group names: '{groups}'.")
+    msg = glue::glue("{ref} variable '{naming}'. Merged '{ref1}' into new group '{groups}'.")
   )
 
   return(df_new)

@@ -39,7 +39,7 @@ the computational progress will be printed.
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest and thus the
-\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 }
 \value{

@@ -305,9 +305,13 @@ joinWithUmap <- function(object,
 #' @examples
 #' # Join spatial data with molecular and/or meta features
 #'
+#' library(SPATA2)
+#'
+#' object <- loadExampleObject("UKFT275", process = TRUE, meta = TRUE)
+#'
 #' coords_df <- getCoordsDf(object)
 #'
-#' joined_data <- joinWithVariables(object, spata_df = coords_df, variables = c("GFAP", "HM_HYXPOXIA"))
+#' joined_data <- joinWithVariables(object, spata_df = coords_df, variables = c("GFAP", "bayes_space", "HM_HYXPOXIA"))
 #'
 #' @export
 joinWithVariables <- function(object,

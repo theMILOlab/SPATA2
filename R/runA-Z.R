@@ -676,7 +676,6 @@ runCNV <- function(object,
                    gene_pos_df = SPATA2::gene_pos_df,
                    directory_cnv_folder = "data-development/cnv-results", # output folder
                    directory_regions_df = NA, # deprecated (chromosome positions)
-                   n_pcs = 30,
                    cnv_prefix = "Chr",
                    save_infercnv_object = TRUE,
                    verbose = NULL,
@@ -1750,7 +1749,7 @@ runKmeansClustering <- function(object,
                                 methods_kmeans = "Hartigan-Wong",
                                 prefix = "K",
                                 naming = "{method_kmeans}_k{k}",
-                                n_pcs = 30,
+                                n_pcs = NULL,
                                 overwrite = TRUE,
                                 ...){
 
@@ -1784,19 +1783,141 @@ runKmeansClustering <- function(object,
 
 }
 
+
+
+# runN --------------------------------------------------------------------
+
+#' @title Clustering with nearest neighbor search
+#'
+#' @description
+#' A wrapper around the [`RANN::nn2()`] function - nearest neighbor clustering.
+#'
+#'
+#' @param k The maximum number of nearest neighbours to compute. The default value
+#'  is set to the smaller of the number of columnns in data.
+#' @param treetype Character vector. Character vector specifying the standard
+#'  \emph{'kd'} tree or a \emph{'bd'} (box-decomposition, AMNSW98) tree which
+#'   may perform better for larger point sets.
+#' @param searchtypes Character value. Either \emph{'priority', 'standard'} or \emph{'radius '}. See details for more.
+#' @param naming Character value. A glue expression for the new cluster variable name.
+#' @inherit RANN::nn2 params
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @note Requires the `RANN` packge.
+#'
+#' @details
+#'
+#' Search types: priority visits cells in increasing order of distance from the
+#' query point, and hence, should converge more rapidly on the true nearest neighbour,
+#' but standard is usually faster for exact searches. radius only searches for neighbours
+#' within a specified radius of the point. If there are no neighbours then nn.idx will
+#' contain 0 and nn.dists will contain 1.340781e+154 for that point.
+#'
+runNearestNeighborClustering <- function(object,
+                                         n_pcs = NULL,
+                                         k = 50,
+                                         naming = "nn2_{priority}_{treetype}",
+                                         searchtype = "priority",
+                                         treetype = "bd",
+                                         radius = 0,
+                                         eps = 0,
+                                         overwrite = FALSE,
+                                         verbose = TRUE){
+
+
+  check_cran_packages("RANN")
+
+  confuns::check_one_of(
+    input = searchtype,
+    against = c("standard", "priority", "radius"),
+    fdb.fn = "stop",
+    ref.input = "input for argument 'searchtype'",
+    ref.against = "valid searchtypes"
+  )
+
+  confuns::check_one_of(
+    input = treetype,
+    against = c("kd", "bd"),
+    fdb.fn = "stop",
+    ref.input = "input for argument 'treetype'",
+    ref.against = "valid treetypes"
+  )
+
+  cluster_name <- glue::glue(naming)
+
+  confuns::check_none_of(
+    against = getFeatureNames(object),
+    input = cluster_name,
+    overwrite = overwrite
+  )
+
+  # 2. Data extraction and for loop -----------------------------------------
+
+  pca_mtr <- getPcaMtr(object, n_pcs = n_pcs)
+
+  cluster_df <- tibble::tibble(barcodes = base::rownames(pca_mtr))
+
+  confuns::give_feedback(msg = msg, verbose = verbose)
+
+  nearest <-
+    RANN::nn2(
+      data = pca_mtr,
+      k = k,
+      treetype = treetype,
+      searchtype = searchtype,
+      radius = radius,
+      eps = eps
+    )
+
+  edges <-
+    reshape::melt(base::t(nearest$nn.idx[, 1:k])) %>%
+    dplyr::select(A = X2, B = value) %>%
+    dplyr::mutate(C = 1)
+
+  edges <-
+    base::transform(edges, A = base::pmin(A, B), B = base::pmax(A, B)) %>%
+    base::unique() %>%
+    dplyr::rename(V1 = A, V2 = B, weight = C)
+
+  edges$V1 <- base::rownames(pca_mtr)[edges$V1]
+  edges$V2 <- base::rownames(pca_mtr)[edges$V2]
+
+  g_df <- igraph::graph.data.frame(edges, directed = FALSE)
+
+  graph_out <- igraph::cluster_louvain(g_df)
+
+  clust_assign <-
+    base::factor(x = graph_out$membership, levels = base::sort(base::unique(graph_out$membership)))
+
+  cluster_df <-
+    dplyr::mutate(.data = cluster_df, cluster_var = base::factor(clust_assign)) %>%
+    dplyr::rename({{cluster_name}} := cluster_var)
+
+  object <- addFeatures(object, feature_df = cluster_df, overwrite = TRUE)
+
+  returnSpataObject(object)
+
+}
+
 # runP --------------------------------------------------------------------
 
 #' @title Run Principal Component Analysis
 #'
-#' @description Takes the expression matrix of choice and passes it to
+#' @description Takes the data matrix of choice and passes it to
 #' \code{irlba::prcomp_irlba()}.
 #'
+#' @param variables Character vector or `NULL`. If character, subsets the data matrix
+#' by variable/molecule names such that only the specified ones are used for dimensional reduction.
+#' If `NULL`, the unsubstted matrix denoted in `mtr_name` is used.
 #' @param n_pcs Numeric value. Denotes the number of principal components to be computed.
 #' @param ... Additional arguments given to \code{irlba::prcomp_irlba()}.
 #'
 #' @inherit argument_dummy params
 #'
 #' @inherit update_dummy return
+#'
+#' @seealso [`identifyVariableMolecules()`], [`plotPcaElbow()`]
 #'
 #' @export
 #'
@@ -1818,15 +1939,25 @@ runKmeansClustering <- function(object,
 
 runPCA <- function(object,
                    n_pcs = 30,
+                   variables = NULL,
                    mtr_name = activeMatrix(object),
                    assay_name = activeAssay(object),
                    ...){
 
-  check_object(object)
-
   expr_mtr <-
     getMatrix(object, mtr_name = mtr_name, assay_name = assay_name) %>%
     base::as.matrix()
+
+  if(base::is.character(variables)){
+
+    confuns::check_one_of(
+      input = variables,
+      against = base::rownames(expr_mtr)
+    )
+
+    expr_mtr <- expr_mtr[variables, ]
+
+  }
 
   pca_res <- irlba::prcomp_irlba(x = base::t(expr_mtr), n = n_pcs, ...)
 
@@ -2204,44 +2335,45 @@ runSparkx <- function(...){
 #' @description Takes the pca-data of the object up to the principal component denoted
 #' in argument \code{n_pcs} and performs tSNE with it.
 #'
-#' @inherit check_sample params
 #' @param n_pcs Numeric value. Denotes the number of principal components used. Must be
 #' smaller or equal to the number of principal components the pca data.frame contains.
 #' @param tsne_perplexity Numeric value. Given to argument \code{perplexity} of
 #' \code{Rtsne::Rtsne()}.
 #' @param ... Additional arguments given to \code{Rtsne::Rtsne()}.
 #'
+#' @inherit argument_dummy params
 #' @inherit update_dummy return
+#'
+#' @seealso [`runPCA()`], [`getPcaDf()`], [`getTsneDf()`], [`getUmapDf()`]
 #'
 #' @export
 #'
 #' @inherit runPCA examples
 #'
 
-runTSNE <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, ...){
+runTSNE <- function(object, n_pcs = NULL, tsne_perplexity = 30, ...){
 
-  check_object(object)
+  hlpr_assign_arguments(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+  tsne_res <-
+    runTsne2(
+      object = object,
+      tsne_perplexity = tsne_perplexity,
+      ...
+    )
 
-  confuns::are_values(c("n_pcs", "tsne_perplexity"), mode = "numeric")
-
-  tsne_res <- runTsne2(object = object,
-                       of_sample = of_sample,
-                       tsne_perplexity = tsne_perplexity,
-                       ...)
-
-  pca_mtr <- getPcaMtr(object = object, of_sample = of_sample, n_pcs = n_pcs)
+  pca_mtr <- getPcaMtr(object = object, n_pcs = n_pcs)
 
   tsne_df <-
     base::data.frame(
       barcodes = base::rownames(pca_mtr),
-      sample = of_sample,
       tsne1 = tsne_res$Y[,1],
       tsne2 = tsne_res$Y[,2]
     )
 
-  object <- setTsneDf(object = object, tsne_df = tsne_df, of_sample = of_sample)
+  object <- setTsneDf(object = object, tsne_df = tsne_df)
+
+  returnSpataObject(object)
 
 }
 
@@ -2256,13 +2388,11 @@ runTsne <- function(...){
 }
 
 #' @keywords internal
-runTsne2 <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, ...){
+runTsne2 <- function(object, n_pcs = 20, tsne_perplexity = 30, ...){
 
   check_object(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  pca_mtr <- getPcaMtr(object = object, of_sample = of_sample, n_pcs = n_pcs)
+  pca_mtr <- getPcaMtr(object = object, n_pcs = n_pcs)
 
   tsne_res <- Rtsne::Rtsne(pca_mtr, perplexity = tsne_perplexity, ...)
 
@@ -2274,30 +2404,32 @@ runTsne2 <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, .
 
 # runU --------------------------------------------------------------------
 
-#' @title Run UMAP
+#' @title Run Uniform Manifold Approximation and Projection
 #'
 #' @description Takes the pca data of the object up to the principal component denoted
 #' in argument \code{n_pcs} and performs UMAP with it.
 #'
-#' @inherit check_sample params
 #' @inherit runTsne params
 #' @param ... Additional arguments given to \code{umap::umap()}.
+#' @inherit argument_dummy params
 #'
 #' @inherit update_dummy return
 #'
 #' @export
 #'
+#' @seealso [`runPCA()`]
+#'
 #' @inherit runPCA examples
 #'
 
-runUMAP <- function(object, n_pcs = 20, ...){
+runUMAP <- function(object, n_pcs = NULL, ...){
 
   check_object(object)
 
   umap_res <-
     runUmap2(object = object, n_pcs = n_pcs, ...)
 
-  pca_mtr <- getPcaMtr(object = object)
+  pca_mtr <- getPcaMtr(object = object, n_pcs = n_pcs)
 
   umap_df <-
     tibble::tibble(
@@ -2329,7 +2461,7 @@ runUmap2 <- function(object, n_pcs = 20, ...){
 
   check_object(object)
 
-  pca_mtr <- getPcaMtr(object = object)
+  pca_mtr <- getPcaMtr(object = object, n_pcs = n_pcs)
 
   umap_res <- umap::umap(d = pca_mtr, ...)
 

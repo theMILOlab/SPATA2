@@ -207,9 +207,9 @@ setMethod(
       }
 
       if(base::ncol(object@coordinates) != base::ncol(coords_df)){
-      
+
         stop("Different number of columns.")
-      
+
       }
 
       object@coordinates <- coords_df
@@ -1110,9 +1110,6 @@ setSpatialTrajectories <- function(object, trajectories, overwrite = FALSE){
 #' @rdname setPcaDf
 #' @export
 setTsneDf <- function(object, tsne_df, ...){
-
-  check_object(object)
-
 
   if(base::identical(tsne_df, base::data.frame())){
 

@@ -34,7 +34,7 @@ library(SPATA2)
 
 data("example_data")
 
-object <- example_data$object_UKF313T_diet
+object <- loadExampleObject("LMU_MCI")
 
 getSpatAnnTags(object, simplify = FALSE)
 getSpatAnnTags(object)

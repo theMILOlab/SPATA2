@@ -141,7 +141,7 @@ library(tidyverse)
 
 data("example_data")
 
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
 plotSurface(object, color_by = "HM_HYPOXIA", pt_clrsp = "Reds 3") +
  ggpLayerTissueOutline(object)

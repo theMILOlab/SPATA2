@@ -1172,7 +1172,10 @@ createHistoImage <- function(img_name,
 
     } else {
 
-      warning("No directory was specified to store the image. Unloading won't be possible. Set with `setImageDir()`.")
+      confuns::give_feedback(
+        msg = "No directory was specified to store the image. Unloading won't be possible. Set with `setImageDir()`.",
+        verbose = verbose
+        )
 
     }
 
@@ -2201,18 +2204,62 @@ createImageAnnotations <- function(object, ...){
               # for every image annotation in case of drawing mode = Multiple
               for(ia in base::seq_along(img_ann_list)){
 
-                # all polygons of the image annotation
+                # all polygons of the image annotation of this iteration
                 polygons <- img_ann_list[[ia]]
 
                 if(!purrr::is_empty(polygons)){
 
-                  graphics::polypath(
-                    x = concatenate_polypaths(polygons, axis = "x"),
-                    y = concatenate_polypaths(polygons, axis = "y"),
-                    col = col,
-                    lwd = input$linesize,
-                    lty = "solid"
-                  )
+                  if(base::length(polygons) == 1){ # contains only outer outline
+
+                    graphics::polypath(
+                      x = concatenate_polypaths(polygons, axis = "x"),
+                      y = concatenate_polypaths(polygons, axis = "y"),
+                      col = col,
+                      lwd = input$linesize,
+                      lty = "solid"
+                    )
+
+                  } else { # contains holes
+
+                    polygons <- purrr::map(polygons, .f = close_area_df)
+
+                    outer_sf <-
+                      sf::st_polygon(list(as.matrix(polygons[["outer"]]))) %>%
+                      sf::st_sfc() %>%
+                      sf::st_sf()
+
+                    # plot outer outline
+                    plot(sf::st_geometry(outer_sf), border = "black", lwd = input$linesize, add = TRUE)
+
+                    # iterate over inner outlines
+                    for(i in 2:length(polygons)){
+
+                      inner_sf <-
+                        sf::st_polygon(list(as.matrix(polygons[[i]]))) %>%
+                        sf::st_sfc() %>%
+                        sf::st_sf()
+
+                      if(i == 2){ # initiate
+
+                        filled_area <-
+                          sf::st_difference(x = outer_sf, y = inner_sf)
+
+                      } else { # grow filled_area continuously
+
+                        filled_area <-
+                          sf::st_difference(x = filled_area, y = inner_sf)
+
+                      }
+
+                      # plots holes
+                      plot(sf::st_geometry(inner_sf), col = ggplot2::alpha("white", 0), lwd = input$linesize, add = TRUE)
+
+                    }
+
+                    # fills area
+                    plot(sf::st_geometry(filled_area), col = col, border = "black", lwd = input$linesize, add = TRUE)
+
+                  }
 
                 }
 
@@ -2323,9 +2370,10 @@ createImageAnnotations <- function(object, ...){
 #'
 #' @note
 #' The molecules of the added assay **must not** already exist in the `SPATA2` object.
-#' Variables in SPATA2 are case sensitive! If you want to add a protein assay to t
+#' Variables in SPATA2 are case sensitive! If you want to add, for instance, a protein assay to
 #' the `SPATA2` object that already contains genes, you can provide the protein names
-#' like this *Ldh* while the gene names exist like this *LDH*.
+#' like this *Ldh* while the gene names exist like this *LDH*. See [`stringr::str_to_title()`] and
+#' related functions.
 #'
 #' @export
 
@@ -2435,6 +2483,23 @@ createMolecularAssay <- function(object,
 
   }
 
+  # duplicated names?
+  dupl_rows <- any(table(rownames(mtr_counts)) == 2)
+
+  if(dupl_rows){
+
+    stop("Every matrix must have unique rownames. Duplicated molecule names are not allowed.")
+
+  }
+
+  dupl_cols <- any(table(rownames(mtr_counts)) == 2)
+
+  if(dupl_cols){
+
+    stop("Every matrix must have unique column names. Duplicated barcodes are not allowed.")
+
+  }
+
   ma <-
     MolecularAssay(
       mtr_counts = mtr_counts,
@@ -2453,10 +2518,9 @@ createMolecularAssay <- function(object,
 
     if(base::length(overlap) >= 1){
 
-      ref2 <- confuns::scollapse(overlap)
-      ref1 <- confuns::adapt_reference(overlap, "Variable")
+      lo <- base::length(overlap)
 
-      stop(glue::glue("{ref1} '{ref2}' already exist in the SPATA2 object."))
+      stop(glue::glue("All variables in the SPATA2 object must have unique names. {lo} variables of the input assay already exist in the SPATA2 object."))
 
     }
   }

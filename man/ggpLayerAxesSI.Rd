@@ -117,7 +117,7 @@ library(SPATA2)
 
 data("example_data")
 
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
  containsPixelScaleFactor(object) # must be TRUE
 

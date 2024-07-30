@@ -2,10 +2,6 @@
 
 # addGeneSet -> addSignature? ---------------------------------------------
 
-
-
-
-
 #' @keywords internal
 addGeneSetsInteractive <- function(object){
 
@@ -77,49 +73,3 @@ adjustGeneSetList <- function(object, limits = 50){
   returnSpataObject(object)
 
 }
-
-
-
-# section variable??? -----------------------------------------------------
-
-#' @title Check availability of section variable
-#'
-#' @description Tests if the results of [`identifySpatialOutliers()`] exist
-#' in the object, namely a variable called *section* in the coordinates
-#' data.frame.
-#'
-#' @inherit argument_dummy params
-#'
-#' @seealso [`containsSpatialOutliers()`] to check if the section variable
-#' contains any identified spatial outliers.
-#'
-#' @return Logical value.
-#' @export
-#'
-setGeneric(name = "containsSectionVariable", def = function(object, ...){
-
-  standardGeneric(f = "containsSectionVariable")
-
-})
-
-#' @rdname containsSectionVariable
-#' @export
-setMethod(
-  f = "containsSectionVariable",
-  signature = "ANY",
-  definition = function(object, error = FALSE, ...){
-
-    coords_df <- getCoordsDf(object)
-
-    out <- "section" %in% base::colnames(coords_df)
-
-    feedback_missing(
-      x = out,
-      use_fn = "identifySpatialOutliers",
-      error = error
-    )
-
-    return(out)
-
-  }
-)

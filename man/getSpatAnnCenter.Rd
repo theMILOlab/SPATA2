@@ -9,7 +9,7 @@
 \alias{getSpatAnnCenters,SPATA2-method}
 \alias{getSpatAnnCenters,SpatialData-method}
 \alias{getSpatAnnCenters,SpatialAnnotation-method}
-\title{Obtain center of an spatial annotation}
+\title{Obtain center of a spatial annotation}
 \usage{
 getSpatAnnCenter(object, ...)
 
@@ -52,4 +52,15 @@ Numeric vector of length two or a list of these. Values are named \emph{x} and \
 x- and y- coordinates of the center of the outer border, returns
 a numeric vector of length two. \code{getSpatAnnCenters()} computes the center of the outer
 and every inner border and returns a list of numeric vectors of length two.
+}
+\examples{
+
+library(SPATA2)
+
+object <- loadExampleObject("LMU_MCI")
+
+plotSpatialAnnotations(object, unit = "px")
+
+getSpatAnnCenter(object, id = "inj1")
+
 }

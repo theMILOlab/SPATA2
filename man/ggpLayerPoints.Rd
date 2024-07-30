@@ -201,7 +201,7 @@ library(tidyverse)
 
 data("example_data")
 
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
 ggplot() +
  ggpLayerPoints(object, color_by = "HM_HYPOXIA")

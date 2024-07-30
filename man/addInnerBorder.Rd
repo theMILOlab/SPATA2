@@ -60,7 +60,7 @@ create_circle_polygon <- function(p, r, n) {
  x_coords <- p[1] + r * cos(angles)
  y_coords <- p[2] + r * sin(angles)
 
- polygon_df <- data.frame(x = x_coords, y = y_coords)
+ polygon_df <- tibble::tibble(x = x_coords, y = y_coords)
 
  return(polygon_df)
 
@@ -71,6 +71,8 @@ center <-
  map_dbl(.f = mean)
 
 area_circle <- create_circle_polygon(center, r = 75, n = 100)
+
+print(area_circle)
 
 object <- addSpatialAnnotation(object, area = list(outer = area_circle), id = "circle")
 

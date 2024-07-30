@@ -8,6 +8,7 @@ cropSpataObject(
   object,
   xrange,
   yrange,
+  spatial_proc = TRUE,
   adjust_capture_area = TRUE,
   verbose = NULL
 )
@@ -21,6 +22,15 @@ two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
 the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
 the two dimensional space being cropped from x-coordinate 200px up to
 x-coordinate 500px. If \code{NULL}, the original range is used.}
+
+\item{spatial_proc}{Logical value. Indicates whether the new sub-object is
+processed spatially. If \code{TRUE}, a new tissue outline is identified based
+on the remaining observations via \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}. Then,
+spatial annotations are tested on being located on either of the remaining
+tissue sections. If they are not, they are removed. If \code{FALSE}, these processing
+steps are skipped.
+
+Not recommended. Only set to \code{TRUE}, if you know what you're doing.}
 
 \item{adjust_capture_area}{Logical. If \code{TRUE}, the capture area is adjusted
 to the input of \code{xrange} and \code{yrange}. If \code{FALSE}, it stays as is. Defaults to \code{TRUE}.}
@@ -41,22 +51,87 @@ rectangle given by \code{xrange} and \code{yrange} are kept.
 \examples{
 library(SPATA2)
 library(tidyverse)
+library(patchwork)
 
-data("example_data")
+# ----- Example 1: subsetSpataObject()
+object <- loadExampleObject("UKF313T", meta = TRUE)
 
-object <- example_data$object_UKF275T_diet
+plotSpatialAnnotations(object) # plots all annotations
+
+barcodes_keep <-
+ getMetaDf(object) \%>\%
+ filter(bayes_sapce \%in\% c("B3", "B2", "B1")) \%>\%
+ pull(barcodes)
+
+object_sub <- subsetSpataObject(object, barcodes = barcodes_keep)
+
+plotSpatialAnnotations(object)
+
+ids <- getSpatAnnIds(object)
+
+# use patchwork to compare plots
+plotSurface(object, color_by = "bayes_space") +
+ (plotSurface(object_sub, color_by = "bayes_space") +
+  ggpLayerTissueOutline(object_sub) +
+  ggpLayerSpatAnnOutline(object_sub, ids = ids)
+  )
+
+# ----- Example 2: splitSpataObject()
+# uses subsetSpataObject() in the background
+
+object_mouse <- loadExampleObject("LMU_MCI", process = TRUE, meta = TRUE)
+
+orig_frame <- ggpLayerFrameByCoords(object_mouse)
+
+ids <- getSpatAnnIds(object_mouse)
+
+plotSurface(object_mouse, color_by = "tissue_section", pt_clr = "lightgrey") +
+  ggpLayerSpatAnnOutline(object, ids = ids) +
+  ggpLayerSpatAnnPointer(object, ids = ids, ptr_lengths = "0.45mm", text_dist = 10, text_size = 7)
+
+obj_list <- splitSpataObject(object_mouse, grouping = "tissue_section")
+
+# present resulting sub-objects
+purrr::map(obj_list, .f = ~ .x)
+
+# present remaining ids
+purrr::map(obj_list, .f = ~ getSpatAnnIds(.x))
+
+# show surface plot with all remaining spatial annotations
+purrr::map(obj_list, .f = ~ plotSurface(.x) + ggpLayerSpatAnnOutline(.x) + orig_frame) \%>\%
+  patchwork::wrap_plots()
+
+# repeat with spatial_proc = FALSE
+obj_list <- splitSpataObject(object_mouse, grouping = "tissue_section", spatial_proc = FALSE)
+
+# present remaining spatial annotation ids
+purrr::map(obj_list, .f = ~ getSpatAnnIds(.x))
+
+# show surface plot with all remaining spatial annotations
+purrr::map(obj_list, .f = ~ plotSurface(.x) + ggpLayerSpatAnnOutline(.x) + orig_frame) \%>\%
+  patchwork::wrap_plots()
+
+# -----  Example 3: cropSpataObject()
+# uses subsetSpataObject() in the background
+object <- loadExampleObject("UKF275T", meta = TRUE)
 
 orig_frame <- ggpLayerFrameByCoords(object)
 
-plotSurface(object, color_by = "bayes_space")
+xcrop <- c("2.5mm", "5.5mm")
+ycrop <- c("5mm", "7mm")
+
+plotSurface(object, color_by = "bayes_space") +
+ ggpLayerAxesSI(object) +
+ ggpLayerRect(object, xrange = xcrop, yrange = ycrop)
 
 object_cropped <-
- cropSpataObject(object, xrange = c("2mm", "4mm"), yrange = c("2mm", "4mm"))
+ cropSpataObject(object, xrange = xcrop, yrange = ycrop)
 
 plotSurface(object_cropped, color_by = "bayes_space") + orig_frame
 
 }
 \seealso{
 \code{\link[=ggpLayerRect]{ggpLayerRect()}} to visualize the rectangle based on which
-the subsetting is done.
+the subsetting is done. \code{\link[=subsetSpataObject]{subsetSpataObject()}} is the working horse behind
+this function.
 }

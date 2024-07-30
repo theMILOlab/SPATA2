@@ -4,8 +4,8 @@
 \alias{concept_scale_factors}
 \title{Scale Factors}
 \description{
-With scale factors we refer to numeric values that are used to multiply the original
-x- and y-coordinates of the object's observations with, in order to align them
+With scale factors we refer to numeric values that are used to multiply with the original
+x- and y-coordinates of the object's observations, in order to align them
 with an image or to bring them into a coordinates system measured in SI units (or both).
 
 Both, S4 class \code{\link{SpatialData}} and \code{\link{HistoImage}} contain a slot named @scale_factors.

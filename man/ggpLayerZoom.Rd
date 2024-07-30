@@ -25,9 +25,7 @@ the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
 the two dimensional space being cropped from x-coordinate 200px up to
 x-coordinate 500px. If \code{NULL}, the original range is used.}
 
-\item{expand_x, expand_y}{Given to \code{expand} of \code{ggplot2::scale_x/y_continuous()}.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+\item{expand_x, expand_y}{Given to \code{expand} of \code{ggplot2::scale_x/y_continuous()}.}
 
 \item{unit}{Character value. Overwrites the unit of the x- and y-axis. (If \code{NULL},
 the defalt, the unit for the respective axis is taken from \code{xrange} and \code{yrange} input.)}
@@ -47,9 +45,7 @@ manual input.
 library(SPATA2)
 library(patchwork)
 
-data("example_data")
-
-object <- example_data$object_UKF275T_diet
+object <- loadExampleObject("UKF275T")
 
 object <-
  createNumericAnnotations(

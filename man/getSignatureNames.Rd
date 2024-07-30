@@ -27,7 +27,7 @@ be obtained e.g. with \code{printSignatureOverview()}).}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest and thus the
-\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay,
+\link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 }
 \value{
@@ -53,7 +53,7 @@ If 'signature' is \code{NULL}, it returns all molecules from the respective assa
 
 library(SPATA2)
 
-object <- normalizeCounts(example_data$object_UKF269T_diet)
+object <- loadExampleObject("UKF269T", process = TRUE)
 
 # only one assay exists...
 getAssayNames(object)
@@ -84,7 +84,7 @@ protein_signatures <- getProteinSets(object, assay_name = "protein")
 ## usage as character vector for argument input
 
 set.seed(123)
-color_by <- sample(all_signature, size = 9)
+color_by <- sample(all_signatures, size = 9)
 
 plotSurfaceComparison(object, color_by = color_by, outline = T, pt_clrsp = "Reds 3")
 

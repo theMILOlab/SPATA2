@@ -68,7 +68,9 @@ Initiates a \code{\link{SPATA2}} object using the basic inputs: a coordinates
 data.frame and a count matrix.
 }
 \note{
-In contrast to \code{\link[=initiateSpataObjectVisium]{initiateSpataObjectVisium()}} or [ìnitiateSpataObjectMERFISH()\verb{], a }SPATA2\verb{ object with this function the output does not contain a tissue outline yet Run [}identifyTissueOutline()`] with your choice of parameters afterwards.
+In contrast to \code{\link[=initiateSpataObjectVisium]{initiateSpataObjectVisium()}} or \code{\link[=nitiateSpataObjectMERFISH]{nitiateSpataObjectMERFISH()}},
+a \code{SPATA2} object with this function the output does not contain a tissue outline yet
+Run \code{\link[=identifyTissueOutline]{identifyTissueOutline()}} with your choice of parameters afterwards.
 }
 \section{Initiating the object with an image}{
 
@@ -88,5 +90,11 @@ environment.
 
 Lastly, if \code{img} and \code{img_dir} is specified the image is saved under
 this directory as a .png file and the image is registered normally.
+}
+
+\section{Tutorials}{
+
+Extensive tutorials for how to use this function can be found on our website
+\url{https://themilolab.github.io/SPATA2/} .
 }
 

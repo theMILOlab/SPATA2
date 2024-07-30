@@ -940,7 +940,7 @@ identifySpatialOutliers <- function(object,
                                     buffer = 0,
                                     eps = recDbscanEps(object),
                                     minPts = recDbscanMinPts(object),
-                                    min_section = nBarcodes(object)*0.05,
+                                    min_section = nObs(object)*0.05,
                                     test = "any",
                                     verbose = NULL){
 
@@ -962,8 +962,12 @@ identifySpatialOutliers <- function(object,
   )
 
   # overwrite active image temporarily
-  active_image <- activeImage(object)
-  object <- activateImageInt(object, img_name = img_name)
+  if(containsHistoImages(object)){
+
+    active_image <- activeImage(object)
+    object <- activateImageInt(object, img_name = img_name)
+
+  }
 
   meta_df <- getMetaDf(object)
 
@@ -975,7 +979,18 @@ identifySpatialOutliers <- function(object,
 
     }
 
+
     meta_df$outlier_obs <- meta_df$tissue_section == "tissue_section_0"
+
+    # check min_section
+    meta_df <-
+      dplyr::group_by(meta_df, tissue_section) %>%
+      dplyr::mutate(n = dplyr::n()) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(
+        outlier_obs = dplyr::if_else(n < {{min_section}}, TRUE, outlier_obs),
+        n = NULL
+        )
 
   }
 
@@ -993,6 +1008,7 @@ identifySpatialOutliers <- function(object,
 
     # declare all obs as artefacts
     coords_df <- getCoordsDf(object)
+    coords_df$sample <- NULL
     coords_df[["section_outline"]] <- "artefact"
 
     # then set actual section name
@@ -1027,6 +1043,12 @@ identifySpatialOutliers <- function(object,
     meta_df <-
       dplyr::left_join(x = meta_df, y = coords_df, by = "barcodes") %>%
       dplyr::mutate(outlier_image = section_outline == "artefact")
+
+    meta_df <-
+      dplyr::group_by(meta_df, section_outline) %>%
+      dplyr::mutate(n = dplyr::n()) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(outlier_image = dplyr::if_else(n < {{min_section}}, TRUE, outlier_image))
 
   }
 
@@ -1069,8 +1091,12 @@ identifySpatialOutliers <- function(object,
 
   object <- addFeatures(object, feature_df = meta_df, feature_names = "sp_outlier", overwrite = TRUE)
 
-  # restore original active image
-  object <- activateImageInt(object, img_name = active_image)
+  if(containsHistoImages(object)){
+
+    # restore original active image
+    object <- activateImageInt(object, img_name = active_image)
+
+  }
 
   return(object)
 
@@ -1137,10 +1163,9 @@ identifySpatialOutliers <- function(object,
 #'
 #' data("example_data")
 #'
-#' obj1 <- example_data$object_UKF275T_diet
+#' obj1 <- loadExampleObject("UKF275T")
 #'
-#' obj2 <- example_data$object_lmu_mci_diet
-#'
+#' obj2 <- loadExampleObject("LMU_MCI")
 #'
 #' # example: 'method = obs'
 #' obj1 <- identifyTissueOutline(obj1, method = "obs")
@@ -1464,7 +1489,7 @@ setMethod(
 #' library(SPATA2)
 #' data("example_data")
 #'
-#' object <- example_data$object_UKF269T_diet
+#' object <- loadExampleObject("UKF269T")
 #'
 #' object <- identifyVariableMolecules(object, n_mol = 2000)
 #' object <- identifyVariableMolecules(object, n_mol = 3000, method = "mean.var.plot")
@@ -1848,9 +1873,6 @@ increase_n_data_points <- function(coords_df, fct = 10, cvars = c("x", "y")){
 #' @param skip Logical; if TRUE, the function skips the interpolation process and returns the original polygon.
 #'
 #' @return A data frame representing the polygon with increased vertex density.
-#'
-#' @examples
-#' denser_polygon <- increase_polygon_vertices(polygon_df, avg_dist = 10, skip = FALSE)
 #'
 #' @keywords internal
 increase_polygon_vertices <- function(polygon_df, avg_dist, skip = FALSE) {

@@ -3,6 +3,18 @@
 # a -----------------------------------------------------------------------
 
 #' @title Deprecated
+#' @description Deprecated in favor of [`addProcessedMatrix()`].
+#' @export
+#' @keywords internal
+addExpressionMatrix <- function(...){
+
+  deprecated(fn = TRUE)
+
+  addProcessedMatrix(...)
+
+}
+
+#' @title Deprecated
 #' @description Deprecated in favor of [`addSpatialAnnotation()`].
 #' @export
 #' @keywords internal

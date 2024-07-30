@@ -34,8 +34,10 @@
 #'
 #' @inherit argument_dummy params
 #'
-#' @note In contrast to [`initiateSpataObjectVisium()`] or [ìnitiateSpataObjectMERFISH()`],
-#' a `SPATA2` object with this function the output does not contain a tissue outline yet
+#' @inherit tutorial_hint_dummy sections
+#'
+#' @note In contrast to [`initiateSpataObjectVisium()`] or [`initiateSpataObjectMERFISH()`],
+#' a `SPATA2` object of this function the output does not contain a tissue outline yet!
 #' Run [`identifyTissueOutline()`] with your choice of parameters afterwards.
 #'
 #' @section Initiating the object with an image:
@@ -270,7 +272,6 @@ initiateSpataObjectEmpty <- function(sample_name, platform, verbose = TRUE){
 #' @inherit initiateSpataObject params return
 #' @inherit argument_dummy params
 #'
-#'
 #' @details MERFISH works in micron space. The coordinates of the cellular centroids are
 #' provided in unit um. Therefore no pixel scale factor must be computed or set
 #' to work with SI units.
@@ -339,7 +340,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
 
       }) %>%
         dplyr::rename(cell = ifelse("...1" %in% colnames(.), "...1", "cell")) %>% # in case cell column is not named
-        dplyr::rename(barcodes = cell) %>% # keep original barcode names in metadata 
+        dplyr::rename(barcodes = cell) %>% # keep original barcode names in metadata
         dplyr::select(-dplyr::matches("^\\.")) %>%
         tibble::column_to_rownames("barcodes") %>%
         dplyr::select_if(.predicate = base::is.numeric) %>%
@@ -629,40 +630,58 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 
 }
 
-#' @title Initiate an object of class `SPATA2` from platform Visium
+#' @title Initiate an object of class `SPATA2` from the Visium platform
 #'
-#' @description Wrapper function around the necessary content to create a
-#' `SPATA2` object from standardized output of the Visium platform. See details
-#' section for more.
+#' @description This function initiates a [`SPATA2`] object for data generated using the 10x Genomics Visium platform.
 #'
-#' @param directory_visium Character value. Directory to a visium folder. Should contain
-#' the subdirectory *'.../spatial'*.
-#' @param mtr The matrix to load. One of `c("filtered", "raw")`.
+#' @param sample_name Character. The name of the sample.
+#' @param directory_visium Character. The directory containing the Visium output files.
+#' @param mtr Character. Specifies which matrix to use, either "filtered" or "raw". Default is "filtered".
+#' @param img_active Character. The active image to use, either "lowres" or "hires". Default is "lowres".
+#' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
+#' @param verbose Logical. If TRUE, progress messages are printed. Default is TRUE.
 #'
-#' @inherit initiateSpataObject params return
-#' @inherit createSpatialDataVisium params
-#'
-#' @seealso [`createSpatialDataVisium()`]
-#'
-#' @details
-#' This function expects `directory_visium` to lead to a folder in which the
-#' following subdirectories exist:
+#' @return A `SPATA2` object containing the processed data from the Visium platform. More precise,
+#' depending on the set up used to create the raw data it is of either spatial method:
 #'
 #'  \itemize{
-#'   \item{*spatial/*}{: The folder in which image and coordinates are located.}
-#'   \item{*filtered_feature_bc_matrix.h5*}{: The filtered count matrix.}
-#'   \item{*raw_feature_bc_matrix.h5*}{: The filtered count matrix.}
-#'   }
-#'
-#' Depending on the input for `mtr` only the requested file has to exist. Given
-#' the content and subsequent filenames, the function differentiates between
-#'
-#'  \itemize{
-#'   \item{VisiumSmall}{ Visium data set with capture area of 6.5mm x 6.5mm.}
-#'   \item{VisiumLarge}{ Visium data set with capture area of 11mm x 11m. }
+#'   \item{`VisiumSmall`}{: Visium data set with capture area of 6.5mm x 6.5mm.}
+#'   \item{`VisiumLarge`}{: Visium data set with capture area of 11mm x 11m. }
 #'   }
 #'
 #' In any case, the output is an object of class `SPATA2`.
+#'
+#' @details
+#' The function requires a directory containing the output files from a 10x Genomics Visium experiment. The directory must include the following files:
+#' \itemize{
+#'   \item \emph{filtered_feature_bc_matrix.h5} or \emph{raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
+#'   \item \emph{spatial/tissue_lowres_image.png} or \emph{spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
+#'   \item \emph{spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
+#'   \item \emph{spatial/tissue_positions_list.csv} or \emph{spatial/tissue_positions.csv}: A CSV file containing the tissue positions and spatial coordinates.
+#' }
+#' The function will check for these files and process them to create a `SPATA2` object. It reads the count matrix, loads the spatial data,
+#' and initializes the `SPATA2` object with the necessary metadata and settings.
+#'
+#' @section Gene and Protein Expression:
+#' This function also supports reading coupled gene expression and protein expression data. It expects the input directory to contain an HDF5
+#' file that includes separate datasets for gene expression and protein expression. The function uses [`Seurat::Read10X_h5()`] to read in
+#' data and, if the result is a list, it assumes that it contains gene and protein expression. This scenario is handled as follows:
+#'
+#' \itemize{
+#'   \item Gene expression data is extracted from the "Gene Expression" dataset in the HDF5 file.
+#'   \item Protein expression data is extracted from the "Antibody Capture" dataset in the HDF5 file.
+#' }
+#'
+#' The function ensures that molecule names do not overlap by normalizing the names:
+#'
+#' \itemize{
+#'   \item Gene expression molecule names are forced to uppercase.
+#'   \item Protein expression molecule names are forced to lowercase.
+#' }
+#'
+#' This naming convention prevents any overlap and ensures that each molecule type is uniquely
+#' identified in the resulting `SPATA2` object, which contains two assays. One of molecular
+#' modality *gene* and of of molecular modality *protein*.
 #'
 #' @export
 #'
@@ -674,11 +693,6 @@ initiateSpataObjectVisium <- function(sample_name,
                                       verbose = TRUE){
 
   isDirVisium(dir = directory_visium, error = TRUE)
-
-  confuns::give_feedback(
-    msg = "Initiating SPATA2 object for platform: 'Visium'",
-    verbose = verbose
-  )
 
   # validate and process input directory
   dir <- base::normalizePath(directory_visium)
@@ -715,13 +729,6 @@ initiateSpataObjectVisium <- function(sample_name,
 
   }
 
-  confuns::give_feedback(
-    msg = glue::glue("Reading count matrix from '{mtr_path}'."),
-    verbose = verbose
-  )
-
-  count_mtr <- Seurat::Read10X_h5(filename = mtr_path)
-
   # load images
   sp_data <-
     createSpatialDataVisium(
@@ -733,26 +740,93 @@ initiateSpataObjectVisium <- function(sample_name,
     )
 
   # create SPATA2 object
+  platform <- sp_data@method@name
+
+  confuns::give_feedback(
+    msg = glue::glue("Initiating SPATA2 object for platform: '{platform}'"),
+    verbose = verbose
+  )
+
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
-      platform = sp_data@method@name, # depends on input
+      platform = platform, # depends on input
       verbose = FALSE
     )
 
-  # set required content
+  object <- setSpatialData(object, sp_data = sp_data)
 
-  # molecular assay
-  ma <-
-    MolecularAssay(
-      mtr_counts = count_mtr,
-      modality = "gene",
-      signatures = signatures$gene
-    )
+  # molecular data
+  confuns::give_feedback(
+    msg = glue::glue("Reading count data from '{mtr_path}'."),
+    verbose = verbose
+  )
 
-  object <- setAssay(object, assay = ma)
-  object <- activateAssay(object, assay_name = "gene")
-  object <- activateMatrix(object, mtr_name = "counts")
+  counts_out <-
+    base::suppressMessages({
+
+      Seurat::Read10X_h5(filename = mtr_path, unique.features = FALSE)
+
+    })
+
+  if(base::length(counts_out) == 2){
+
+    # gene expression
+    gene_counts <- counts_out[["Gene Expression"]]
+
+    base::rownames(gene_counts) <-
+      base::rownames(gene_counts) %>%
+      stringr::str_remove_all("\\.d*") %>%
+      base::toupper()
+
+    gene_assay <-
+      MolecularAssay(
+        mtr_counts = gene_counts,
+        modality = "gene",
+        signatures = signatures$gene
+        )
+
+    object <- setAssay(object, assay = gene_assay)
+
+    # protein expression
+    protein_counts <- counts_out[["Antibody Capture"]]
+
+    base::rownames(protein_counts) <-
+      base::rownames(protein_counts) %>%
+      stringr::str_remove_all("\\.d*") %>%
+      base::tolower()
+
+    protein_assay <-
+      MolecularAssay(
+        mtr_counts = protein_counts,
+        modality = "protein",
+        signatures = signatures$protein
+      )
+
+    object <- setAssay(object, assay = protein_assay)
+
+    # set required content
+    object <- activateAssay(object, assay_name = "gene")
+    object <- activateMatrix(object, mtr_name = "counts")
+    object <- activateMatrix(object, mtr_name = "counts", assay_name = "protein")
+
+  } else {
+
+    # molecular assay
+    ma <-
+      MolecularAssay(
+        mtr_counts = counts_out,
+        modality = "gene",
+        signatures = signatures$gene
+      )
+
+    object <- setAssay(object, assay = ma)
+
+    # set required content
+    object <- activateAssay(object, assay_name = "gene")
+    object <- activateMatrix(object, mtr_name = "counts")
+
+  }
 
   # meta
   meta_df <-
@@ -762,9 +836,6 @@ initiateSpataObjectVisium <- function(sample_name,
       )
 
   object <- setMetaDf(object, meta_df = meta_df)
-
-  # spatial data
-  object <- setSpatialData(object, sp_data = sp_data)
 
   # set default
   object <- setDefault(object, pt_size = getSpotSize(object))
@@ -799,7 +870,6 @@ initiateSpataObjectXenium <- function(sample_name,
       method = "Xenium",
       verbose = verbose
     )
-
 
   # spatial data
   sp_data <-

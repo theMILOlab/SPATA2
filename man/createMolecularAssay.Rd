@@ -64,7 +64,8 @@ matrix.
 }
 \note{
 The molecules of the added assay \strong{must not} already exist in the \code{SPATA2} object.
-Variables in SPATA2 are case sensitive! If you want to add a protein assay to t
+Variables in SPATA2 are case sensitive! If you want to add, for instance, a protein assay to
 the \code{SPATA2} object that already contains genes, you can provide the protein names
-like this \emph{Ldh} while the gene names exist like this \emph{LDH}.
+like this \emph{Ldh} while the gene names exist like this \emph{LDH}. See \code{\link[stringr:case]{stringr::str_to_title()}} and
+related functions.
 }

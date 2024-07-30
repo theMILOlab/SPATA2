@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -34,7 +34,7 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Initiating a SPATA2 object</li>
@@ -52,10 +52,10 @@
       <a href="../articles/adding-data.html">Adding Data to SPATA2 objects</a>
     </li>
     <li>
-      <a href="../articles/platform-compatibility.html">Platform Compatibility</a>
+      <a href="../articles/package-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
+      <a href="../articles/molecular-variables.html">Molecular Variables</a>
     </li>
     <li>
       <a href="../articles/image-handling.html">Image Handling</a>
@@ -69,6 +69,9 @@
     </li>
     <li>
       <a href="../articles/clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="../articles/dimensional-reduction.html">Dimensional Reduction</a>
     </li>
     <li>
       <a href="../articles/dea.html">Differential Expression</a>
@@ -99,21 +102,18 @@
     <li>
       <a href="../articles/plotting-surface.html">Surface Plotting</a>
     </li>
-    <li>
-      <a href="../articles/plotting-misc.html">Miscellaneous</a>
-    </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Add a rectangular to the plot</h1>
-    
+
     <div class="hidden name"><code>ggpLayerRect.Rd</code></div>
     </div>
 
@@ -137,12 +137,14 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>object</dt>
+
+
+<dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
 <dd><p>An object of class <code><a href="SPATA2.html">SPATA2</a></code> or, in case of S4 generics,
 objects of classes for which a method has been defined.</p></dd>
 
 
-<dt>xrange, yrange</dt>
+<dt id="arg-xrange-yrange">xrange, yrange<a class="anchor" aria-label="anchor" href="#arg-xrange-yrange"></a></dt>
 <dd><p>Vector of length two. Specifies the x- and y-range
 of the rectangle. E.g. <code>xrange = c(200, 500)</code> results in a rectangle
 that ranges from 200px to 500px on the x-axis.</p>
@@ -152,11 +154,11 @@ immediately converted to pixel units.</p>
 <p>See details and examples of <code><a href="is_dist.html">?is_dist</a></code> and <code><a href="as_unit.html">?as_unit</a></code> for more information.</p></dd>
 
 
-<dt>alpha, color, fill, size</dt>
+<dt id="arg-alpha-color-fill-size">alpha, color, fill, size<a class="anchor" aria-label="anchor" href="#arg-alpha-color-fill-size"></a></dt>
 <dd><p>Given to <code><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">ggplot2::geom_rect()</a></code>.</p></dd>
 
 
-<dt>expand</dt>
+<dt id="arg-expand">expand<a class="anchor" aria-label="anchor" href="#arg-expand"></a></dt>
 <dd><p>Specifies image expansion. An image that is cropped based on an image
 annotation centers around the image annotation. If <code>expand = 0</code>, the default, the dimensions of the image,
 that is width/x-axis and height/y-axis, are set to include only the image annotation area
@@ -164,20 +166,16 @@ and nothing more. Using <code>expand</code>, the cropped image section can be ad
 <em>Expansion of cropped image sections</em> for more information.</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments given to <code><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">ggplot2::geom_rect()</a></code>.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p><code>ggpLayer*()</code>-functions return lists of <code>ggproto</code> objects
+    <p><code>ggpLayer*()</code>-functions return lists of <code>ggproto</code> objects
 that can be added to ggplots via the <code>+</code> operator. In most of the cases
-they are supposed to be added to plots created with the <code>plotSurface*()</code></p>
-
-
-<p>family.</p>
+they are supposed to be added to plots created with the <code>plotSurface*()</code>
+family.</p>
     </div>
 
     <div id="ref-examples">
@@ -231,15 +229,15 @@ they are supposed to be added to plots created with the <code>plotSurface*()</co
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 
