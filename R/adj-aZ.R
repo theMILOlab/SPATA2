@@ -1428,13 +1428,10 @@ setMethod(
   }
 )
 
-# Register Class to prevent warnings when loading SPATA
-setOldClass("AnnDataR6")
-
 #' @export
 if (requireNamespace("anndata", quietly = TRUE)) {
 
-  # Register AnnDataR6 class
+  # Register AnnDataR6 class to prevent warnings when loading SPATA
   setOldClass("AnnDataR6")
 
   setMethod(
@@ -1514,8 +1511,6 @@ if (requireNamespace("anndata", quietly = TRUE)) {
             fdb.opt = 2
           )
 
-          scale_fct <- object$uns[[spatial_key]][[library_id]]$scalefactors[[paste0('tissue_',scale_with,'_scalef')]]
-
           coords <- as.data.frame(object$obsm[[spatial_key]])
           rownames(coords) <- object$obs_names
           colnames(coords) <- c("y_orig", "x_orig")
@@ -1526,11 +1521,10 @@ if (requireNamespace("anndata", quietly = TRUE)) {
 
           image <-
             EBImage::Image(object$uns[[spatial_key]][[library_id]]$images[[scale_with]]/255,
-              colormode = "Color") %>% # convert RGB 0-255 ints to 0-1 float
-            EBImage::transpose()
+              colormode = "Color") # convert RGB 0-255 ints to 0-1 float
 
-          scale_factors <- list(scale_fct)
-          scale_factors["image"] = scale_factors[scale_with] # image scale factor
+          scale_factors <- object$uns[[spatial_key]][[library_id]]$scalefactors
+          scale_factors["image"] = scale_factors[[paste0('tissue_',scale_with,'_scalef')]] # add image scale factor
 
           histo_image <- createHistoImage(
             img_name = library_id,
@@ -1554,7 +1548,11 @@ if (requireNamespace("anndata", quietly = TRUE)) {
 
           spata_object <- setSpatialData(spata_object, sp_data = sp_data)
 
-          spata_object <- rotateCoordinates(spata_object, angle = 90)
+          if(containsCCD(spata_object)){
+
+            spata_object <- computePixelScaleFactor(spata_object)
+
+          }
 
         } else {
 

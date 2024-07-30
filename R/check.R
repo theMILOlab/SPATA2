@@ -240,12 +240,12 @@ check_coordinate_variables <- function(data, x = "x", y = "y"){
 
 #' @title Check coords data.frame
 #'
-#' @param coords_df A data.frame containing information about every barcode-spot. Must contain the variables:
+#' @param coords_df A data.frame containing information about every \link[=concept_observations]{observation}. Must contain the variables:
 #'  \itemize{
-#'   \item{\emph{barcodes} Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
-#'   \item{\emph{sample} Character. The sample belonging of every barcode-spot.}
-#'   \item{\emph{x} Numeric. The x-coordinates of every barcode.}
-#'   \item{\emph{y} Numeric. The y-coordinates of every barcode.}
+#'   \item{\emph{barcodes} Character. The barcode-sequences (+ the sample belonging) of every observation.}
+#'   \item{\emph{sample} Character. The sample belonging of every observation.}
+#'   \item{\emph{x_orig} Numeric. The unscaled x-coordinates of every observation.}
+#'   \item{\emph{y_orig} Numeric. The unscaled y-coordinates of every observation.}
 #'  }
 #' @keywords internal
 

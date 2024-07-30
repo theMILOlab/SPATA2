@@ -444,7 +444,7 @@ setMetaDf <- function(object, meta_df){
 #' @inherit update_dummy return
 #' @param hist_img An object of class `HistoImage`.
 #'
-#' @seealso [`registerHistoImage()`]
+#' @seealso [`registerImage()`]
 #'
 #' @export
 #' @keywords internal

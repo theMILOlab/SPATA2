@@ -1144,7 +1144,7 @@ identifySpatialOutliers <- function(object,
 #' and `minPts = 3` which has worked well for us. For objects derived
 #' from platforms that do not rely on a fixed grid of data points (MERFISH, SlideSeq, etc.)
 #' we recommend the average minimal distance between the data points times 10 for
-#' `eps` and `minPts = 2`. The function defaults to these recommendations using
+#' `eps` and `minPts = 25`, which might require manual adjustments. The function defaults to these recommendations using
 #' [`recDbscanEps()`] and [`recDbscanMinPts()`] by default. This can, of course,
 #' be overwritten manually by the user by specifying the parameters otherwise!
 #' Note that you can visualize the results with `plotSurface(object, color_by = 'tissue_section')`

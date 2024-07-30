@@ -64,7 +64,7 @@ nMetabolites <- function(object){
 #' @description Normalizes the count matrix of a molecular assay.
 #'
 #' @param method Character value. The normalization method. One of c(*'LogNormalize'*,
-#' *'CLR'*, *'RC'*).
+#' *'CLR'*, *'RC'*, *'SCT'*). *'SCT'* normalization is used for MERFISH and Xenium datasets, as suggested in the [`Seurat` documentation](https://satijalab.org/seurat/articles/spatial_vignette.html). 
 #' @param mtr_name_new Character value. The name under which the new processed matrix
 #' is stored in the `SPATA2` object.
 #' @param activate Logical. If `TRUE`, the created matrix is activated via `activateMatrix()`.
@@ -103,7 +103,7 @@ normalizeCounts <- function(object,
 
   confuns::check_one_of(
     input = method,
-    against = c("LogNormalize", "CLR", "RC", "SCT"), # SCT for MERFISH/Xenium
+    against = c("LogNormalize", "CLR", "RC", "SCT"),
   )
 
   confuns::check_none_of(
