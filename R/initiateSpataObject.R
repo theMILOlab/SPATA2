@@ -301,7 +301,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
   if(!base::is.character(file_counts)){
 
     file_counts <-
-      stringr::str_subset(files_in_dir, pattern = "cell_by_gene.csv")
+      stringr::str_subset(files_in_dir, pattern = "cell_by_gene")
 
     if(base::length(file_counts) == 0){
 
