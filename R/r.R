@@ -2626,13 +2626,17 @@ rotateCoordinates <- function(object, angle, clockwise = TRUE, verbose = NULL){
       verbose = verbose
     )
 
-  object <-
-    rotateTissueOutlineDf(
-      object = object,
-      angle = angle,
-      clockwise = clockwise,
-      verbose = verbose
-    )
+  if(containsTissueOutline(object)){
+
+    object <-
+      rotateTissueOutlineDf(
+        object = object,
+        angle = angle,
+        clockwise = clockwise,
+        verbose = verbose
+      )
+
+  }
 
   object <-
     rotateSpatialTrajectories(
