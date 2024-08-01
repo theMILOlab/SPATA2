@@ -259,19 +259,28 @@ initiateSpataObjectEmpty <- function(sample_name, platform, verbose = TRUE){
 #' `SPATA2` object from the standardized output of the MERFISH platform.
 #'
 #' @param directory_merfish Character value. Directory to a MERFISH folder
-#' that should contain a .csv file called *~/cell_by_gene.csv* and a .csv file
-#' called *~/cell_metadata.csv*, where **~** is the directory to the folder.
+#' that should contain a .csv file called *~/...cell_by_gene.csv* and a .csv file
+#' called *~/...cell_metadata.csv*, where **~** is the directory to the folder.
 #' Deviating filenames can be specified using arguments `file_counts`
 #' and `file_cell_meta`, respectively.
+#' @param read_transcripts Logical value. If `TRUE`, the actual transcript positions
+#' are read in via  *~/...detected_transcript.csv* or the input of `file_transcripts`,
+#' if specified. Note that this argument defaults to `FALSE` since reading file
+#' transcripts can increase the object size by several GB.
 #' @param file_counts Character value or `NULL`. If character, specifies
 #' the filename of .csv file that contains the gene counts by cell. Use only
 #' if filename deviates from the default.
 #' @param file_cell_meta Character value or `NULL`. If character, specifies
 #' the filename of the .csv file that contains cell meta data, in particular,
 #' spatial location via the variables *center_x* and *center_y*.
+#' @param file_transcripts Character value or `NULL`. If character, specifies
+#' the filename of the .csv file that contains molecule transcript positions, in particular,
+#' spatial location via the variables *x* and *y*.
 #'
 #' @inherit initiateSpataObject params return
 #' @inherit argument_dummy params
+#'
+#' @seealso [`addMoleculeCoordinates()`]
 #'
 #' @details MERFISH works in micron space. The coordinates of the cellular centroids are
 #' provided in unit um. Therefore no pixel scale factor must be computed or set
@@ -281,8 +290,10 @@ initiateSpataObjectEmpty <- function(sample_name, platform, verbose = TRUE){
 
 initiateSpataObjectMERFISH <- function(sample_name,
                                        directory_merfish,
+                                       read_transcripts = FALSE,
                                        file_counts = NULL,
                                        file_cell_meta = NULL,
+                                       file_transcripts = NULL,
                                        verbose = TRUE){
 
   # create SPATA2
@@ -298,6 +309,57 @@ initiateSpataObjectMERFISH <- function(sample_name,
   files_in_dir <-
     base::list.files(path = directory_merfish, full.names = TRUE)
 
+  # test and read transcripts directory input if required
+  if(base::isTRUE(read_transcripts)){
+
+    if(!base::is.character(file_transcripts)){
+
+      file_transcripts <-
+        stringr::str_subset(files_in_dir, pattern = "detected_transcript") %>%
+        stringr::str_subset(pattern = ".csv$")
+
+      if(base::length(file_transcripts) == 0){
+
+        stop("Did not find transcript file. If not specified otherwise, directory must contain
+           one '~/...detected_transcripts.csv' file.")
+
+      } else if(base::length(file_transcripts) > 1){
+
+        stop("Found more than one potential transcript file. Please specify argument 'file_transcripts'.")
+
+      }
+
+    } else {
+
+      file_transcripts <- base::file.path(directory_merfish, file_transcripts)
+
+      if(!base::file.exists(file_transcripts)){
+
+        stop(glue::glue("Directory to transcripts '{file_transcripts}' does not exist."))
+
+      }
+
+    }
+
+    confuns::give_feedback(
+      msg = glue::glue("Reading transcripts from {file_transcripts}."),
+      verbose = verbose
+    )
+
+    if(stringr::str_detect(file_transcripts, ".csv$")){
+
+      mol_coords_df <- readr::read_csv(file = file_transcripts, show_col_types = FALSE)
+
+    } else {
+
+      mol_coords_df <- readr::read_delim(file = file_transcripts, show_col_types = FALSE)
+
+    }
+
+    mol_coords_df <- dplyr::select(mol_coords_df, gene, x, y)
+
+  }
+
   # read counts
   if(!base::is.character(file_counts)){
 
@@ -307,7 +369,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
     if(base::length(file_counts) == 0){
 
       stop("Did not find counts. If not specified otherwise, directory must contain
-           one '~...cell_by_gene.csv' file.")
+           one '~/...cell_by_gene.csv' file.")
 
     } else if(base::length(file_counts) > 1){
 
@@ -368,7 +430,6 @@ initiateSpataObjectMERFISH <- function(sample_name,
 
   object <- setSpatialData(object, sp_data = sp_data)
 
-
   # molecular assay
   ma <-
     MolecularAssay(
@@ -380,6 +441,13 @@ initiateSpataObjectMERFISH <- function(sample_name,
   object <- setAssay(object, assay = ma)
   object <- activateAssay(object, assay_name = "gene")
   object <- activateMatrix(object, mtr_name = "counts")
+
+  # add transcripts positions
+  if(base::isTRUE(read_transcripts)){
+
+    object <- addMoleculeCoordinates(object, coordinates = mol_coords_df, assay_name = "gene")
+
+  }
 
   # meta
   meta_df <-
@@ -668,18 +736,18 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #'
 #' @section Gene and Protein Expression:
 #' This function also supports reading coupled gene expression and protein expression data. It expects the input directory to contain an HDF5
-#' file that includes separate datasets for gene expression and protein expression. The function uses [`Seurat::Read10X_h5()`] to read in
+#' file that includes separate datasets for gene expression and protein expression. The function uses [`Seurat::Read10X_h5()`] with `unique.features = TRUE`, to read in
 #' data and, if the result is a list, it assumes that it contains gene and protein expression. This scenario is handled as follows:
 #'
 #' \itemize{
-#'   \item Gene expression data is extracted from the "Gene Expression" dataset in the HDF5 file.
-#'   \item Protein expression data is extracted from the "Antibody Capture" dataset in the HDF5 file.
+#'   \item Gene expression data is extracted from the "Gene Expression" dataset in the HDF5 file and stored in an assay named *gene*.
+#'   \item Protein expression data is extracted from the "Antibody Capture" dataset in the HDF5 file *protein*.
 #' }
 #'
 #' The function ensures that molecule names do not overlap by normalizing the names:
 #'
 #' \itemize{
-#'   \item Gene expression molecule names are forced to uppercase.
+#'   \item Gene expression molecule names remain in upper case (human data) or title case (mouse data).
 #'   \item Protein expression molecule names are forced to lowercase.
 #' }
 #'
@@ -769,7 +837,7 @@ initiateSpataObjectVisium <- function(sample_name,
   counts_out <-
     base::suppressMessages({
 
-      Seurat::Read10X_h5(filename = mtr_path, unique.features = FALSE)
+      Seurat::Read10X_h5(filename = mtr_path, unique.features = TRUE)
 
     })
 
@@ -781,7 +849,9 @@ initiateSpataObjectVisium <- function(sample_name,
     base::rownames(gene_counts) <-
       base::rownames(gene_counts) %>%
       stringr::str_remove_all("\\.d*") %>%
-      base::toupper()
+      stringr::str_replace_all(pattern = "_", replacement = "-")
+
+    gene_counts <- make_unique_molecules(gene_counts)
 
     gene_assay <-
       MolecularAssay(
@@ -797,14 +867,17 @@ initiateSpataObjectVisium <- function(sample_name,
 
     base::rownames(protein_counts) <-
       base::rownames(protein_counts) %>%
-      stringr::str_remove_all("\\.d*") %>%
-      base::tolower()
+      stringr::str_remove_all(pattern = "\\..*$") %>%
+      base::tolower() %>% # force protein names to lower case!
+      stringr::str_replace_all(pattern = "_", replacement = "-")
+
+    protein_counts <- make_unique_molecules(protein_counts)
 
     protein_assay <-
       MolecularAssay(
         mtr_counts = protein_counts,
         modality = "protein",
-        signatures = signatures$protein
+        signatures = purrr::map(signatures$protein, .f = base::tolower)
       )
 
     object <- setAssay(object, assay = protein_assay)

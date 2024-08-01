@@ -7,8 +7,10 @@
 initiateSpataObjectMERFISH(
   sample_name,
   directory_merfish,
+  read_transcripts = FALSE,
   file_counts = NULL,
   file_cell_meta = NULL,
+  file_transcripts = NULL,
   verbose = TRUE
 )
 }
@@ -16,10 +18,15 @@ initiateSpataObjectMERFISH(
 \item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
 
 \item{directory_merfish}{Character value. Directory to a MERFISH folder
-that should contain a .csv file called \emph{~/cell_by_gene.csv} and a .csv file
-called \emph{~/cell_metadata.csv}, where \strong{~} is the directory to the folder.
+that should contain a .csv file called \emph{~/...cell_by_gene.csv} and a .csv file
+called \emph{~/...cell_metadata.csv}, where \strong{~} is the directory to the folder.
 Deviating filenames can be specified using arguments \code{file_counts}
 and \code{file_cell_meta}, respectively.}
+
+\item{read_transcripts}{Logical value. If \code{TRUE}, the actual transcript positions
+are read in via  \emph{~/...detected_transcript.csv} or the input of \code{file_transcripts},
+if specified. Note that this argument defaults to \code{FALSE} since reading file
+transcripts can increase the object size by several GB.}
 
 \item{file_counts}{Character value or \code{NULL}. If character, specifies
 the filename of .csv file that contains the gene counts by cell. Use only
@@ -28,6 +35,10 @@ if filename deviates from the default.}
 \item{file_cell_meta}{Character value or \code{NULL}. If character, specifies
 the filename of the .csv file that contains cell meta data, in particular,
 spatial location via the variables \emph{center_x} and \emph{center_y}.}
+
+\item{file_transcripts}{Character value or \code{NULL}. If character, specifies
+the filename of the .csv file that contains molecule transcript positions, in particular,
+spatial location via the variables \emph{x} and \emph{y}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -45,4 +56,7 @@ Wrapper function around the necessary content to create a
 MERFISH works in micron space. The coordinates of the cellular centroids are
 provided in unit um. Therefore no pixel scale factor must be computed or set
 to work with SI units.
+}
+\seealso{
+\code{\link[=addMoleculeCoordinates]{addMoleculeCoordinates()}}
 }

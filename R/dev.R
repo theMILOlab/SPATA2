@@ -454,12 +454,225 @@ whichSpaceRangerVersion <- function(dir){
 
 
 
+##########################
+
+#' @title Obtain molecular meta data.frame
+#'
+#' @description Retrieves the metadata variable data frame for a specified assay
+#' in the given object. If the metadata variable data frame is empty, it creates
+#' a new one based on the molecule names.
+#'
+#' Do not confuse with [`getMetaDf()`] which contains meta variables for
+#' the \link[=concept_observations]{observations}.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A data frame containing metadata variables for the specified assay.
+#'
+#' @export
+getMetaVarDf <- function(object,
+                         assay_name = activeAssay(object),
+                         verbose = TRUE){
+
+  ma <- getAssay(object, assay_name = assay_name)
+  mvdf <- ma@meta_var
+
+  if(purrr::is_empty(mvdf)){
+
+    mvdf <- tibble::tibble(molecule = base::rownames(ma@mtr_counts))
+
+    confuns::give_feedback(
+      msg = glue::glue("Meta data.frame for molecule variables in assay {assay_name} is empty."),
+      verbose = verbose
+    )
+  }
+
+  mvdf <- dplyr::select(mvdf, molecule, dplyr::everything())
+
+  return(mvdf)
+
+}
+
+#' @title Set molecular meta data.frame
+#'
+#' @description Sets the metadata variable data frame for a specified assay in the given object.
+#'
+#' @param meta_var_df A data.frame for slot @@meta_var of the molecular assay.
+#' @param inherit argument_dummy params
+#' @param inherit update_dummy return
+#'
+#' @export
+setMetaVarDf <- function(object,
+                         meta_var_df,
+                         assay_name = activeAssay(object)){
+
+  ma <- getAssay(object, assay_name = assay_name)
+
+  if(ma@modality %in% base::colnames(meta_var_df)){
+
+    meta_var_df$molecule <- meta_var_df[[ma@modality]]
+
+  }
+
+  ma@meta_var <- meta_var_df
+
+  object <- setAssay(object, assay = ma)
+
+  returnSpataObject(object)
+
+}
+
+
+
+#' @title Add molecule coordinates
+#'
+#' @description Adds or updates the molecule coordinates for a specified assay in the given object.
+#'
+#' @param coordinates A data frame containing the coordinates to be added. The data frame must contain the following variables:
+#'   \itemize{
+#'     \item \emph{molecule} or \emph{<assay_name>} Identifier for the molecules. E.g. if
+#'     \item \emph{x_orig} or \emph{x}:  x-coordinates (original or to be scaled back to original).
+#'     \item \emph{y_orig} or \emph{y}: y-coordinates (original or to be scaled back to original).
+#'   }
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details This function processes the provided coordinates data frame to ensure
+#' it contains the necessary variables (`molecule` or the assay name, `x` or `x_orig`,
+#' and `y` or `y_orig`). If only the scaled coordinates (`x` and `y`) are provided,
+#' they are scaled back to the original coordinate frame using the image scale factor.
+#' The resulting data frame is then nested by the assay modality and integrated into
+#' the molecular metadata variables of the object.
+#'
+#' Results are stored in a nested column in the molecular meta variable data.frame
+#' called *coords*.
+#'
+#' @seealso [`getMolecularCoordinates()`], [`getMetaVarDf()`]
+#'
+#' @export
+addMoleculeCoordinates <- function(object,
+                                   coordinates = NULL,
+                                   assay_name = activeAssay(object)){
+
+  cnames <- base::colnames(coordinates)
+
+  # merge over variable 'molecule'
+  if(!base::any(c("molecule", assay_name) %in% cnames)){
+
+    stop(glue::glue("Need variable 'molecule' or '{modality}' in data.frame input of `coordinates`."))
+
+  } else   if(assay_name %in% cnames){
+
+    coordinates[["molecule"]] <- coordinates[[assay_name]]
+
+  }
+
+  coordinates[[assay_name]] <- NULL
+
+  if(!"x_orig" %in% cnames){
+
+    if(!"x" %in% cnames){ stop("Need either x- or x_orig- variable in `coordinates`.")}
+
+    isf <- getScaleFactor(object, fct_name = "image")
+    coordinates$x_orig <- coordinates$x / isf
+    coordinates$x <- NULL
+
+  }
+
+  if(!"y_orig" %in% cnames){
+
+    if(!"y" %in% cnames){ stop("Need either y- or y_orig variable in `coordinates`.")}
+
+    isf <- getScaleFactor(object, fct_name = "image")
+    coordinates$y_orig <- coordinates$y / isf
+    coordinates$y <- NULL
+
+  }
+
+  mol_pos_df_nested <-
+    dplyr::select(coordinates, molecule, x_orig, y_orig) %>%
+    tidyr::nest(.by = "molecule", .key = "coords")
+
+  meta_var_df <- dplyr::left_join(x = getMetaVarDf(object, verbose = FALSE), y = mol_pos_df_nested, by = "molecule")
+  object <- setMetaVarDf(object, meta_var_df)
+
+  returnSpataObject(object)
+
+}
 
 
 
 
+#' @title Obtain molecule coordinates
+#'
+#' @description Extracts the molecule coordinates of a specfific assay.
+#'
+#' @param molecules Character or `NULL`. If character, specifies the molecules
+#' of interest and the output data.frame is filtered accordingly.
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame with variables *molecule*, *x_orig*, *x*, *y_orig*, *y*.
+#' @export
+#'
+getMoleculeCoordinates <- function(object,
+                                   molecules = NULL,
+                                   assay_name = activeAssay(object)){
 
+  mvdf <- getMetaVarDf(object, assay_name = assay_name, verbose = FALSE)
 
+  if(!"coords" %in% base::colnames(mvdf)){
 
+    stop(glue::glue("No molecular coordinates for assay {assay_name}."))
+
+  }
+
+  isf <- getScaleFactor(object, fct_name = "image")
+
+  mol_coords_df <-
+    tidyr::unnest(mvdf, cols = "coords") %>%
+    dplyr::select(molecule, x_orig, y_orig) %>%
+    dplyr::mutate(x = x_orig * {{isf}}, y = y_orig * {{isf}})
+
+  if(base::is.character(molecules)){
+
+    mols_missing <- molecules[!molecules %in% mol_coords_df$molecule]
+
+    if(mols_missing >= 1){
+
+      mols_missing <- confuns::scollapse(mols_missing)
+
+      stop(glue::glue("No coordinates found for: '{mols_missing}'"))
+
+    }
+
+  }
+
+  return(mol_coords_df)
+
+}
+
+#' @title Check availability molecule coordinates
+#'
+#' @inherit argument_dummy params
+#'
+#' @export
+
+containsMoleculeCoordinates <- function(object,
+                                        assay_name = activeAssay(object),
+                                        error = FALSE){
+
+  mvdf <-
+    getMetaVarDf(object, assay_name = assay_name) %>%
+    tidyr::unnest()
+
+  if(!base::any(c("x_orig", "y_orig") %in% base::colnames(mvdf)) & base::isTRUE(error)){
+
+    stop(glue::glue("Could not find molecule coordinates for assay {assay_name}"))
+
+  }
+
+  return(TRUE)
+
+}
 
 

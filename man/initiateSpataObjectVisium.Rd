@@ -57,18 +57,18 @@ and initializes the \code{SPATA2} object with the necessary metadata and setting
 \section{Gene and Protein Expression}{
 
 This function also supports reading coupled gene expression and protein expression data. It expects the input directory to contain an HDF5
-file that includes separate datasets for gene expression and protein expression. The function uses \code{\link[Seurat:Read10X_h5]{Seurat::Read10X_h5()}} to read in
+file that includes separate datasets for gene expression and protein expression. The function uses \code{\link[Seurat:Read10X_h5]{Seurat::Read10X_h5()}} with \code{unique.features = TRUE}, to read in
 data and, if the result is a list, it assumes that it contains gene and protein expression. This scenario is handled as follows:
 
 \itemize{
-\item Gene expression data is extracted from the "Gene Expression" dataset in the HDF5 file.
-\item Protein expression data is extracted from the "Antibody Capture" dataset in the HDF5 file.
+\item Gene expression data is extracted from the "Gene Expression" dataset in the HDF5 file and stored in an assay named \emph{gene}.
+\item Protein expression data is extracted from the "Antibody Capture" dataset in the HDF5 file \emph{protein}.
 }
 
 The function ensures that molecule names do not overlap by normalizing the names:
 
 \itemize{
-\item Gene expression molecule names are forced to uppercase.
+\item Gene expression molecule names remain in upper case (human data) or title case (mouse data).
 \item Protein expression molecule names are forced to lowercase.
 }
 
