@@ -10,6 +10,7 @@ getCoordsDf(object, ...)
 
 \S4method{getCoordsDf}{SPATA2}(
   object,
+  variables = NULL,
   img_name = activeImage(object),
   exclude = TRUE,
   as_is = FALSE,
@@ -29,10 +30,15 @@ getCoordsDf(object, ...)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Additional arguments given to \code{\link[=joinWithVariables]{joinWithVariables()}} if argument
+\code{variables} is specified.}
 
-\item{img_name}{The name of the image based on which the coordinates are supposed
-to be aligned. If \code{NULL}, defaults to the active image.}
+\item{variables}{Character or \code{NULL}. If character, specifies the
+variables that are merged to the coordinates data.frame via \code{\link[=joinWithVariables]{joinWithVariables()}}.}
+
+\item{img_name}{Only relevant if the \code{\link{SPATA2}} object contains images. If so,
+specifies the name of the image to which the original coordinates are scaled.
+If \code{NULL}, defaults to the active image.}
 }
 \value{
 Data.frame that, among others, contains at least the

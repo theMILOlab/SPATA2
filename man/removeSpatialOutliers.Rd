@@ -4,11 +4,20 @@
 \alias{removeSpatialOutliers}
 \title{Remove spatial outliers}
 \usage{
-removeSpatialOutliers(object, verbose = NULL)
+removeSpatialOutliers(object, spatial_proc = TRUE, verbose = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{spatial_proc}{Logical value. Indicates whether the new sub-object is
+processed spatially. If \code{TRUE}, a new tissue outline is identified based
+on the remaining observations via \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}. Then,
+spatial annotations are tested on being located on either of the remaining
+tissue sections. If they are not, they are removed.
+
+If \code{FALSE}, these processing steps are skipped. Generally speaking, this is
+not recommended. Only set to \code{FALSE}, if you know what you're doing.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -53,5 +62,6 @@ nObs(object) # after removal
 
 }
 \seealso{
-\code{\link[=identifyTissueOutline]{identifyTissueOutline()}}, \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}, \code{\link[=containsSpatialOutliers]{containsSpatialOutliers()}}
+\code{\link[=identifyTissueOutline]{identifyTissueOutline()}}, \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}, \code{\link[=containsSpatialOutliers]{containsSpatialOutliers()}},
+\code{\link[=subsetSpataObject]{subsetSpataObject()}} is the working horse behind the removal.
 }

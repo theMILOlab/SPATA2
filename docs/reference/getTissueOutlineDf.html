@@ -134,6 +134,7 @@ information.</p>
 <span>  method <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  img_name <span class="op">=</span> <span class="fu"><a href="activateImage.html">activeImage</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
 <span>  by_section <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  section_subset <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  transform <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
@@ -144,11 +145,17 @@ information.</p>
 <span>  method <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  img_name <span class="op">=</span> <span class="fu"><a href="activateImage.html">activeImage</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
 <span>  by_section <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  section_subset <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  transform <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'HistoImage'</span></span>
-<span><span class="fu">getTissueOutlineDf</span><span class="op">(</span><span class="va">object</span>, by_section <span class="op">=</span> <span class="cn">TRUE</span>, transform <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">getTissueOutlineDf</span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  by_section <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  section_subset <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  transform <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -183,6 +190,11 @@ be one of <code><a href="getImageNames.html">getImageNames()</a></code>.</p></dd
 <dd><p>Logical value. If <code>TRUE</code>, the outline is used which acknowledges
 the potential for multiple tissue sections. If <code>FALSE</code>, the outline is used which
 simply outlines everything with one single polygon.</p></dd>
+
+
+<dt id="arg-section-subset">section_subset<a class="anchor" aria-label="anchor" href="#arg-section-subset"></a></dt>
+<dd><p>Character vector or <code>NULL</code>. If character, specifies
+the tissue sections of interest and filters the output accordingly.</p></dd>
 
 
 <dt id="arg-transform">transform<a class="anchor" aria-label="anchor" href="#arg-transform"></a></dt>

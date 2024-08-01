@@ -3899,7 +3899,6 @@ ggpLayerTrajectoryBins <- function(object,
     make_orthogonal_segments(
       sp = base::as.numeric(traj@segment[1, ]),
       ep = base::as.numeric(traj@segment[2, ]),
-      resolution = resolution,
       out_length = width
     )
 

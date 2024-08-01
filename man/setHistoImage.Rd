@@ -27,6 +27,6 @@ The updated input object, containing the added, removed or computed results.
 Sets object of class \code{HistoImage}.
 }
 \seealso{
-\code{\link[=registerHistoImage]{registerHistoImage()}}
+\code{\link[=registerImage]{registerImage()}}
 }
 \keyword{internal}

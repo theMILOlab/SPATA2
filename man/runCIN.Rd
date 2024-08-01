@@ -6,7 +6,7 @@
 \usage{
 runCIN(
   object,
-  bin_size = 1e+06,
+  bin_size = 1000000,
   window_k = 10,
   noise = 0.035,
   gene_pos_df = SPATA2::gene_pos_df,

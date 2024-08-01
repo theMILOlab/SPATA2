@@ -69,6 +69,8 @@ The updated input object, containing the added, removed or computed results.
 \description{
 Identifies and stores the spatial boundaries of the tissue section(s).
 Then it assigns \link[=concept_observations]{observations} to their respective section.
+Note that information about the boundaries of the tissue is crucial for many SPATA2
+intern function. This information should not be missing in the \code{SPATA2} object.
 See details for more.
 }
 \details{
@@ -97,7 +99,7 @@ distance, we recommend to set \code{eps = getCCD(object, unit = "px")*1.25}
 and \code{minPts = 3} which has worked well for us. For objects derived
 from platforms that do not rely on a fixed grid of data points (MERFISH, SlideSeq, etc.)
 we recommend the average minimal distance between the data points times 10 for
-\code{eps} and \code{minPts = 2}. The function defaults to these recommendations using
+\code{eps} and \code{minPts = 25}, which might require manual adjustments. The function defaults to these recommendations using
 \code{\link[=recDbscanEps]{recDbscanEps()}} and \code{\link[=recDbscanMinPts]{recDbscanMinPts()}} by default. This can, of course,
 be overwritten manually by the user by specifying the parameters otherwise!
 Note that you can visualize the results with \code{plotSurface(object, color_by = 'tissue_section')}

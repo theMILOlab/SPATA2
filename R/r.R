@@ -287,8 +287,8 @@ read_matrix_from_folder <- function(dir){
   dir_features <- stringr::str_subset(all_files, "features.tsv.gz$|features.tsv$")
 
   mtr <- Matrix::readMM(dir_mtr)
-  bcs <- readr::read_tsv(dir_bcs, col_names = FALSE)
-  feats <- readr::read_tsv(dir_features, col_names = FALSE)
+  bcs <- readr::read_tsv(dir_bcs, col_names = FALSE, show_col_types = FALSE)
+  feats <- readr::read_tsv(dir_features, col_names = FALSE, show_col_types = FALSE)
 
   colnames(mtr) <- as.character(bcs[[1]])
   rownames(mtr) <- as.character(feats[[2]])
@@ -531,7 +531,7 @@ reduceSpataObject <- function(object){
   object@dim_red <- list()
 
   # meta
-  object <- setMetaDf(object, getMetaDf(object)[,c("barcodes")])
+  object <- setMetaDf(object, dplyr::select(meta_df, barcodes))
 
   # obj_info
   object <- activateMatrix(object, mtr_name = "counts", verbose = FALSE)
@@ -1231,10 +1231,10 @@ removeObs <- function(object,
 
 #' @rdname removeObs
 #' @export
-removeObsNoCounts <- function(object,
-                              spatial_proc = TRUE,
-                              assay_name = activeAssay(object),
-                              verbose = NULL){
+removeObsZeroCounts <- function(object,
+                                spatial_proc = TRUE,
+                                assay_name = activeAssay(object),
+                                verbose = NULL){
 
   hlpr_assign_arguments(object)
 
@@ -1389,10 +1389,12 @@ removeSpatialAnnotations <- function(object, ids){
 #' and all their related data. If no spatial outliers exist, the input object
 #' is returned as is.
 #'
+#' @inherit subsetSpataObject params
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @seealso [`identifyTissueOutline()`], [`identifySpatialOutliers()`], [`containsSpatialOutliers()`]
+#' @seealso [`identifyTissueOutline()`], [`identifySpatialOutliers()`], [`containsSpatialOutliers()`],
+#' [`subsetSpataObject()`] is the working horse behind the removal.
 #'
 #' @export
 #'
@@ -1424,7 +1426,7 @@ removeSpatialAnnotations <- function(object, ids){
 #' nObs(object) # after removal
 #'
 #'
-removeSpatialOutliers <- function(object, verbose = NULL){
+removeSpatialOutliers <- function(object, spatial_proc = TRUE, verbose = NULL){
 
   hlpr_assign_arguments(object)
 
@@ -1442,7 +1444,7 @@ removeSpatialOutliers <- function(object, verbose = NULL){
       verbose = verbose
     )
 
-    object <- subsetSpataObject(object, barcodes = bcs_keep, verbose = verbose)
+    object <- subsetSpataObject(object, barcodes = bcs_keep, spatial_proc = spatial_proc, verbose = verbose)
 
   }
 

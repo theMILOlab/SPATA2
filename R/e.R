@@ -374,7 +374,6 @@ estimate_r2_for_sts_run <- function(object,
 # evaluate ----------------------------------------------------------------
 
 #' @keywords internal
-#' @export
 evaluate_model_fits <- function(input_df,
                                 var_order ){
 
@@ -386,7 +385,6 @@ evaluate_model_fits <- function(input_df,
     dplyr::group_by(input_df, variables, models) %>%
     dplyr::filter(!base::all(base::is.na(values))) %>%
     dplyr::summarize(
-      corr = compute_corr(x = values_models, y = values),
       rmse = compute_rmse(gradient = values, model = values_models),
       mae = compute_mae(gradient = values, model = values_models)
     ) %>%

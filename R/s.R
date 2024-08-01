@@ -554,20 +554,35 @@ setMethod(f = "show", signature = "SpatialMethod", definition = function(object)
 #' @export
 setMethod(f = "show", signature = "SPATA2", definition = function(object){
 
-  assays <- getAssayNames(object)
-  if (is.null(assays)){ stop("No assays available.") }
-  n_mols <- purrr::map_dbl(.x = assays, .f = ~ nMolecules(object, assay_name = .x))
-  n_obs <- length(getBarcodes(object)) # also in case no matrix available
+  assay_names <- getAssayNames(object)
+
+  assays <- assay_names
+  assays[assays == activeAssay(object)] <- paste0(activeAssay(object), " (active)")
+  assay_cat <- stringr::str_c(assays, collapse = ", ")
+
+  n_mols <- purrr::map_dbl(.x = assay_names, .f = ~ nMolecules(object, assay_name = .x))
+  n_obs <- nObs(object) # also in case no matrix available
 
   cat("SPATA2 object of size:", n_obs, "x", n_mols, "(observations x molecules)\n")
   cat("Sample name:", object@sample, "\n")
   cat("Platform:", object@platform, "\n")
-  cat("Contains", length(assays), ifelse(length(assays) > 1, "Assays:", "Assay:"), assays, "\n")
-  cat("Active Assay:", activeAssay(object), ", Active Matrix:", activeMatrix(object), "\n")
-  if (length(setdiff(colnames(getMetaDf(object)), "barcodes")) > 0) {
-    cat("Metadata:", paste(setdiff(colnames(getMetaDf(object)), "barcodes"),
-      collapse=", "), "\n")
+  cat("Contains", length(assays), ifelse(length(assays) > 1, "assays:", "assay:"), assays, "\n")
+  for(i in seq_along(assay_names)){
+
+    assay_name <- assay_names[i]
+    ma <- getAssay(object, assay_name = assay_name)
+    mnames <- getMatrixNames(object, assay_name = assay_name)
+    mnames[mnames == ma@active_mtr] <- paste0(mnames[mnames == ma@active_mtr], " (active)")
+    cat(paste0(ifelse(length(mnames)>1, "Matrices", "Matrix"), " for assay ", assay_name, ":"))
+    cat(paste0("\n -",stringr::str_c(mnames, collapse = "\n -")))
+
   }
+
+  mvars <- setdiff(colnames(getMetaDf(object)), "barcodes")
+  n_mvars <- length(mvars)
+  if(n_mvars > 10){ mvars <- paste0(mvars[1:10], " ...")}
+  cat(paste0("\nMeta variables (", n_mvars, "): ", paste(mvars, collapse=", "), "\n"))
+
   if (length(getSpatialAnnotations(object)) > 0) {
     cat("Spatial Annotations:", paste(names(getSpatialAnnotations(object)),
       collapse=", "), "\n")
@@ -831,7 +846,7 @@ simulate_complete_coords_sa <- function(object, id, distance){
 
     tot_dist <-
       as_pixel(distance, object = object, add_attr = FALSE) %>%
-      ceiling()
+      base::ceiling(x = .)
 
     ccd <- getCCD(object, unit = "px")
 
@@ -3131,10 +3146,10 @@ strongH5 <- function(text){
 #' processed spatially. If `TRUE`, a new tissue outline is identified based
 #' on the remaining observations via [`identifyTissueOutline()`]. Then,
 #' spatial annotations are tested on being located on either of the remaining
-#' tissue sections. If they are not, they are removed. If `FALSE`, these processing
-#' steps are skipped.
+#' tissue sections. If they are not, they are removed.
 #'
-#' Not recommended. Only set to `TRUE`, if you know what you're doing.
+#' If `FALSE`, these processing steps are skipped. Generally speaking, this is
+#' not recommended. Only set to `FALSE`, if you know what you're doing.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return

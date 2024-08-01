@@ -11,7 +11,7 @@ getTissueOutlineDf(object, ...)
 
 \S4method{getTissueOutlineDf}{SPATA2}(
   object,
-  method = NULL,
+  method = "obs",
   img_name = activeImage(object),
   by_section = TRUE,
   section_subset = NULL,

@@ -604,7 +604,15 @@ setMethod(
       against = getProcessedMatrixNames(object)
     )
 
-    object@mtr_proc[[mtr_name]]
+    out <- object@mtr_proc[[mtr_name]]
+
+    if(base::is.null(out)){
+
+      out <- character(0)
+
+    }
+
+    return(out)
 
   }
 )
@@ -649,7 +657,15 @@ setMethod(
   signature = "MolecularAssay",
   definition = function(object, ...){
 
-    base::names(object@mtr_proc)
+    out <- base::names(object@mtr_proc)
+
+    if(base::is.null(out)){
+
+      out <- character(0)
+
+    }
+
+    return(out)
 
   }
 )
@@ -2953,6 +2969,7 @@ setMethod(
 
       }
 
+
       # process and expand if desired
       img_sec <-
         process_ranges(
@@ -2961,6 +2978,7 @@ setMethod(
           expand = expand,
           object = object
         )
+
 
       # extract image
       spat_ann@image <-
@@ -3583,7 +3601,7 @@ setMethod(
   f = "getTissueOutlineDf",
   signature = "SPATA2",
   definition = function(object,
-                        method = NULL,
+                        method = "obs",
                         img_name = activeImage(object),
                         by_section = TRUE,
                         section_subset = NULL,

@@ -140,17 +140,20 @@ and checks whether it must be updated.</p>
 the computational progress will be printed.</p>
 <p>(Warning messages will always be printed.)</p></dd>
 
+
+<dt id="arg-update">update<a class="anchor" aria-label="anchor" href="#arg-update"></a></dt>
+<dd><p>Logical value. If <code>TRUE</code>, calls <code><a href="updateSpataObject.html">updateSpataObject()</a></code> after loading to check whether
+the loaded object is up to date.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>The load object of interest.</p>
+    <p>The loaded object. If not of class <code><a href="SPATA2.html">SPATA2</a></code>, a warning is printed.</p>
     </div>
     <div id="details">
     <h2>Details</h2>
     <p><code>loadSpataObject()</code> is a wrapper around <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">base::readRDS()</a></code> with which
-you could load your [<code>SPATA2'] object as well. The other two functions take the [</code>SPATA2'] object
-and use <code><a href="getDefaultInstructions.html">getDirectoryInstructions()</a></code> to extract the directories of the corresponding object to be loaded under which
-they were saved the last time <code>saveCorresponding*()</code> was used.</p>
+you could load your <code><a href="SPATA2.html">SPATA2</a></code> object as well.</p>
     </div>
 
   </div>

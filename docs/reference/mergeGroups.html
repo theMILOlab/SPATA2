@@ -173,17 +173,15 @@ grouping variable is resetted.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"example_data"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="va">example_data</span><span class="op">$</span><span class="va">object_UKF275T_diet</span></span>
+<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="loadExampleObject.html">loadExampleObject</a></span><span class="op">(</span><span class="st">"UKF275T"</span>, meta <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">object</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu">mergeGroups</span><span class="op">(</span></span>
 <span>    object <span class="op">=</span> <span class="va">object</span>,</span>
 <span>    grouping <span class="op">=</span> <span class="st">"bayes_space"</span>,</span>
 <span>    grouping_new <span class="op">=</span> <span class="st">"bayes_space_merged"</span>,</span>
-<span>    merge <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2"</span>, <span class="st">"4"</span><span class="op">)</span>,</span>
-<span>    new_group <span class="op">=</span> <span class="st">"2.4.merged"</span></span>
+<span>    merge <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B1"</span>, <span class="st">"B6"</span><span class="op">)</span>,</span>
+<span>    new_group <span class="op">=</span> <span class="st">"B1B6_merged"</span></span>
 <span>   <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span><span class="op">)</span></span>

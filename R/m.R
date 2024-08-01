@@ -1393,7 +1393,6 @@ moduleAddGeneSetsServer <- function(id, object){
 
 
         obj <- addGeneSet(object = return_obj(),
-                          class_name = input$new_gs_class,
                           gs_name = input$new_gs_name,
                           genes = input$new_gs_genes)
 

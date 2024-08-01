@@ -21,7 +21,8 @@ normalizeCounts(
 objects of classes for which a method has been defined.}
 
 \item{method}{Character value. The normalization method. One of c(\emph{'LogNormalize'},
-\emph{'CLR'}, \emph{'RC'}).}
+\emph{'CLR'}, \emph{'RC'}, \emph{'SCT'}). \emph{'SCT'} normalization is used for MERFISH and Xenium datasets,
+as suggested in the \href{https://satijalab.org/seurat/articles/seurat5_spatial_vignette_2}{\code{Seurat} documentation}.}
 
 \item{mtr_name_new}{Character value. The name under which the new processed matrix
 is stored in the \code{SPATA2} object.}
@@ -51,7 +52,8 @@ Normalizes the count matrix of a molecular assay.
 \details{
 The function creates a temporary \code{Seurat} object and calls \code{\link[Seurat:NormalizeData]{Seurat::NormalizeData()}}
 with the corresponding method. Afterwards, the normalized matrix is extracted and
-stored in the \code{SPATA2} object.
+stored in the \code{SPATA2} object with the name specified in \code{mtr_name_new}. This name, in
+turn, default to the character value of \code{method}.
 }
 \examples{
 
@@ -62,6 +64,9 @@ data("example_data")
 
 object <- example_data$object_UKF275T_diet
 
-object <- normalizeData(object)
+object <- normalizeCounts(object, method = "LogNormalize")
+
+# default name for processed matrix is the input for `method`
+mtr <- getMatrix(object, mtr_name = "LogNormalize")
 
 }

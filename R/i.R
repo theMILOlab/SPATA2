@@ -1109,6 +1109,8 @@ identifySpatialOutliers <- function(object,
 #'
 #' @description Identifies and stores the spatial boundaries of the tissue section(s).
 #' Then it assigns \link[=concept_observations]{observations} to their respective section.
+#' Note that information about the boundaries of the tissue is crucial for many SPATA2
+#' intern function. This information should not be missing in the `SPATA2` object.
 #' See details for more.
 #'
 #' @param method Character value. Defines the origin based on which the outline
@@ -1338,8 +1340,8 @@ setMethod(
       sections_ordered <-
         dplyr::filter(coords_df, ts != "tissue_section_0") %>%
         dplyr::group_by(ts) %>%
-        dplyr::summarise(min_y = base::min(y, na.rm = TRUE)) %>%
-        dplyr::arrange(min_y) %>%
+        dplyr::summarise(max_y = base::max(y, na.rm = TRUE)) %>%
+        dplyr::arrange(max_y) %>%
         dplyr::pull(ts)
 
       coords_df$tissue_section <- "tissue_section_0"

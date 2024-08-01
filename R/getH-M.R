@@ -173,8 +173,6 @@ setMethod(
                         scale_fct = 1,
                         ...){
 
-    containsPseudoImage(object, error = TRUE)
-
     getImage(
       object = getHistoImage(object, img_name),
       xrange = xrange,
@@ -1109,9 +1107,15 @@ setMethod(
 
     if(base::isFALSE(only_proc)){
 
-      out <- c("counts", out)
+      count_mtr <- getCountMatrix(object)
+
+      add <- nrow(count_mtr > 1) & ncol(count_mtr & 1) & !all(as.numeric(count_mtr) == 1)
+
+      if(add){ out <- c("counts", out) }
 
     }
+
+    if(base::is.null(out)){ out <- character(0) }
 
     return(out)
 

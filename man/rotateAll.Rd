@@ -5,6 +5,7 @@
 \alias{rotateImage}
 \alias{rotateCoordinates}
 \alias{rotateCoordsDf}
+\alias{rotateTissueOutlineDf}
 \alias{rotateSpatialAnnotations}
 \alias{rotateSpatialTrajectories}
 \title{Rotate image and coordinates}
@@ -22,6 +23,8 @@ rotateImage(
 rotateCoordinates(object, angle, clockwise = TRUE, verbose = NULL)
 
 rotateCoordsDf(object, angle, clockwise = TRUE, verbose = NULL)
+
+rotateTissueOutlineDf(object, angle, clockwise = TRUE, verbose = NULL)
 
 rotateSpatialAnnotations(
   object,

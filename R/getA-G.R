@@ -100,7 +100,15 @@ getAssayModalities <- function(object){
 #' @export
 getAssayNames <- function(object){
 
-  base::names(object@assays)
+  out <- base::names(object@assays)
+
+  if(base::is.null(out)){
+
+    out <- character(0)
+
+  }
+
+  return(out)
 
 }
 
@@ -203,7 +211,7 @@ getBarcodes <- function(object,
   if(!base::is.null(across)){
 
     res_df <-
-      getMetaDf(object, of_sample) %>%
+      getMetaDf(object) %>%
       confuns::check_across_subset(
         df = .,
         across = across,
@@ -680,8 +688,13 @@ getCoordsCenter <- function(object){
 #' @description Extracts the coordinates data.frame of the identified
 #' or known entities the analysis revolves around.
 #'
-#' @param img_name The name of the image based on which the coordinates are supposed
-#' to be aligned. If `NULL`, defaults to the active image.
+#' @param variables Character or `NULL`. If character, specifies the
+#' variables that are merged to the coordinates data.frame via [`joinWithVariables()`].
+#' @param img_name Only relevant if the [`SPATA2`] object contains images. If so,
+#' specifies the name of the image to which the original coordinates are scaled.
+#' If `NULL`, defaults to the active image.
+#' @param ... Additional arguments given to [`joinWithVariables()`] if argument
+#' `variables` is specified.
 #' @inherit argument_dummy params
 #'
 #' @return Data.frame that, among others, contains at least the
@@ -703,6 +716,7 @@ setMethod(
   f = "getCoordsDf",
   signature = "SPATA2",
   definition = function(object,
+                        variables = NULL,
                         img_name = activeImage(object),
                         exclude = TRUE,
                         as_is = FALSE,
@@ -740,6 +754,13 @@ setMethod(
       )
 
     coords_df <- tibble::as_tibble(coords_df)
+
+    if(base::is.character(variables)){
+
+      coords_df <-
+        joinWithVariables(object, variables = variables, spata_df = coords_df, ...)
+
+    }
 
     return(coords_df)
 

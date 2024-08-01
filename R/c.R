@@ -725,20 +725,44 @@ computeCnvByChrArm <- function(object,
 # computeM ----------------------------------------------------------------
 
 
-#' @title Compute meta features for molecular data
+#' @title Compute meta features
 #'
-#' @description This function computes meta features for molecular data observation wise.
-#' Meta features include the number of counts and the number of distinct molecules observed per barcode.
+#' @description This function computes various meta features for the specified
+#' assay in the `SPATA2` object and adds them to the object's metadata.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @details This function computes meta features such as the number of counts
-#' and the number of distinct molecules per observation. The computed meta
-#' features are added to the input object via [`addFeatures()`]. Features
-#' are suffixed with the data modality of the specified assay.
+#' @details
+#' This function computes the following meta features for each observation in the specified assay.
+#' The computed features are added to the metadata of the SPATA2 object with the following naming conventions:
 #'
-#' @export
+#' \itemize{
+#'   \item \code{n_counts_<assay_name>}: The total number of counts for each observation.
+#'   \item \code{n_distinct_<assay_name>}: The number of distinct molecules (non-zero entries) for each observation.
+#'   \item \code{avg_cpm_<assay_name>}: The average counts per molecule for each observation, computed as the total number of counts divided by the number of distinct molecules.
+#' }
+#'
+#' If the `overwrite` parameter is set to TRUE, existing features with the same names will be overwritten.
+#' Otherwise, the function will check for the presence of existing features and will not overwrite them unless
+#' explicitly instructed to do so.
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' object <- loadExampleObject("UKF269T")
+#'
+#' getAssayNames(object)
+#'
+#' getMetaDf(object)
+#'
+#' object <- computeMetaFeatures(object, asay_name = "gene")
+#'
+#' getMetaDf(object)
+#'
+#' plotSurface(object, color_by = "n_counts_gene")
+#'
 #'
 computeMetaFeatures <- function(object,
                                 assay_name = activeAssay(object),

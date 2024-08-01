@@ -582,7 +582,7 @@ setMethod(
 )
 
 
-#' @title Checks availability of `SpatialData` object
+#' @title Checks availability of a SpatialData object
 #'
 #' @description Tests if the input object contains an object
 #' of class `SpatialData`.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectVisiumHD}
 \alias{initiateSpataObjectVisiumHD}
-\title{Initiate an object of class \code{SPATA2} from the VisiumHD platform}
+\title{Initiate an object of class \code{SPATA2} from platform VisiumHD}
 \usage{
 initiateSpataObjectVisiumHD(
   sample_name,
@@ -37,26 +37,27 @@ A \code{SPATA2} object containing the processed data from the VisiumHD platform.
 This function initiates a \code{\link{SPATA2}} object for data generated using the 10x Genomics VisiumHD platform.
 }
 \details{
-The function requires a directory containing the output files from a 10x Genomics VisiumHD experiment.
-The directory must include at least one of the following subdirectories:
+The function requires a directory containing the output files from a 10x Genomics VisiumHD experiment
+specified with the argument \code{directory_visium}. This directory (below denoted as \strong{~})  must include the following
+sub-directories:
 
 \itemize{
 \item \emph{~/binned_outputs}: A folder with the following subdirectories.
 \itemize{
-\item \emph{~/square_002um}: The folder containing the data for \code{square_res = '2um'}.
-\item \emph{~/square_008um}: The folder containing the data for \code{square_res = '8um'}.
-\item \emph{~/square_016um}: The folder containing the data for \code{square_res = '16um'}.
+\item \emph{~/binned_outputs/square_002um}: The folder containing the data for \code{square_res = '2um'}.
+\item \emph{~/binned_outputs/square_008um}: The folder containing the data for \code{square_res = '8um'}.
+\item \emph{~/binned_outputs/square_016um}: The folder containing the data for \code{square_res = '16um'}.
 }
 }
 
 Depending on your input for \code{square_res} only the corresponding subfolder is required. This subfolder should
-contain the following files/subdirectories:
+contain the following files and sub-directories:
 
 \itemize{
-\item \emph{~/filtered_feature_bc_matrix.h5} or \emph{~/raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
-\item \emph{~/spatial/tissue_lowres_image.png} or \emph{~/spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
-\item \emph{~/spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
-\item \emph{~/spatial/tissue_position.parquet} A .parguet containing the tissue positions and spatial coordinates.
+\item \emph{~/binned_outputs/<square_res>/filtered_feature_bc_matrix.h5} or \emph{~/raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
+\item \emph{~/binned_outputs/<square_res>/spatial/tissue_lowres_image.png} or \emph{~/spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
+\item \emph{~/binned_outputs/<square_res>/spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
+\item \emph{~/binned_outputs/<square_res>/spatial/tissue_position.parquet} A .parguet file containing the tissue positions and spatial coordinates.
 }
 
 The function will check for these files and process them to create a \code{SPATA2} object. It reads the count matrix, loads the spatial data,

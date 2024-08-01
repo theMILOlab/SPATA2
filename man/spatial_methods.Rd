@@ -35,4 +35,4 @@ Each spatial method in the list is an instance of the \code{SpatialMethod} class
 }
 
 }
-\keyword{datasets}
+\keyword{internal}

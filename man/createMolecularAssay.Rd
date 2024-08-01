@@ -7,9 +7,9 @@
 createMolecularAssay(
   object,
   modality,
-  active_mtr = NULL,
   mtr_counts = Matrix::Matrix(),
   mtr_proc = list(),
+  active_mtr = NULL,
   overwrite = FALSE,
   activate = FALSE,
   verbose = NULL,
@@ -25,15 +25,15 @@ Additionally, it defines the \link[=MolecularAssay]{assay} name, that is created
 referred to via the argument \code{assay_name}. Read more on molecular modalities in
 SPATA2 \link[=concept_molecular_modalities]{here}.}
 
-\item{active_mtr}{Character value. The name of the matrix chosen as
-the \link[=concept_active]{active} matrix. If \code{mtr_proc} is an empty
-list, this value defaults to \emph{'counts'}}
-
 \item{mtr_counts}{A count matrix. Column names correspond to the barcodes of
 the \link[=concept_observations]{observations}.
 Rownames correspond to the names of the molecular features (genes, proteins, metabolites etc.).}
 
 \item{mtr_proc}{A list of processed matrices set in slot @mtr_proc.}
+
+\item{active_mtr}{Character value. The name of the matrix chosen as
+the \link[=concept_active]{active} matrix. If \code{mtr_proc} is an empty
+list, this value defaults to \emph{'counts'}}
 
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 

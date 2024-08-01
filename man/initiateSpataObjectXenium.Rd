@@ -7,20 +7,28 @@
 initiateSpataObjectXenium(sample_name, directory_xenium, verbose = TRUE)
 }
 \arguments{
-\item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
-
-\item{directory_xenium}{Character value. Directory to a xenium folder. Should contain
-the subdirectory \emph{'.../cell_feature_matrix'} and the file \emph{'.../cells.csv.gz'}..}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-}
-\value{
-An object of class \code{SPATA2}.
+\item{directory_xenium}{Character value. Directory to a Xenium output folder.}
 }
 \description{
 Wrapper function around the necessary content to create a
 \code{SPATA2} object from standardized output of the Xenium platform.
+}
+\details{
+The function requires a directory containing the output files from a 10x Genomics Xenium experiment
+specified with the argument \code{directory_xenium}. This directory (below denoted as \strong{~}) must include the following
+sub-directories:
+
+\itemize{
+\item \emph{~/cell_feature_matrix}: A folder that contains the following files:
+\itemize{
+\item \emph{~/cell_feature_matrix/barcodes.tsv.gz}: The cell barcodes.
+\item \emph{~/cell_feature_matrix/features.tsv.gz}: The feature (gene) names.
+\item \emph{~/cell_feature_matrix/matrix.mtx.gz}: The raw count data matrix.
+}
+\item \emph{~/cells.csv.gz}: The cellular positions.
+}
+
+MERFISH works in micron space. The coordinates of the cellular centroids are
+provided in unit um. Therefore no pixel scale factor must be computed or set
+to work with SI units.
 }

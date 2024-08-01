@@ -633,7 +633,6 @@ process_expand_input <- function(expand){
 #'
 #' @return List of 4 slots. Named *xmin*, *xmax*, *ymin* and *ymax*. Adjusted range
 #' in pixel.
-#' @export
 #' @keywords internal
 process_ranges <- function(xrange = getImageRange(object)$x,
                            yrange = getImageRange(object)$y,
@@ -653,87 +652,112 @@ process_ranges <- function(xrange = getImageRange(object)$x,
   # process input
   expand_input <- process_expand_input(expand)
 
-  # image meta data
-  img_dims <- getImageDims(object)
+  if(class(object) == "HistoImage" || containsHistoImages(object)){
 
-  img_xmax <- img_dims[1]
-  img_ymax <- img_dims[2]
+    # image meta data
+    img_dims <- getImageDims(object)
 
-  # convert ranges to pixel
-  if(!base::is.null(xrange)){
+    img_xmax <- img_dims[1]
+    img_ymax <- img_dims[2]
 
-    if(!base::all(is_dist_pixel(xrange))){
+    # convert ranges to pixel
+    if(!base::is.null(xrange)){
 
-      xrange <- as_pixel(input = xrange, object = object, as_numeric = TRUE)
+      if(!base::all(is_dist_pixel(xrange))){
 
-    }
+        xrange <- as_pixel(input = xrange, object = object, as_numeric = TRUE)
 
-    if(xrange[1] < 0){ xrange[1] <- 0}
+      }
 
-  }
-
-  if(!base::is.null(yrange)){
-
-    if(!base::all(is_dist_pixel(yrange))){
-
-      yrange <- as_pixel(input = yrange, object = object, as_numeric = TRUE)
+      if(xrange[1] < 0){ xrange[1] <- 0}
 
     }
 
-    if(yrange[1] < 0){ yrange[1] <- 0}
+    if(!base::is.null(yrange)){
 
-    # input for x- and yrange often come from the perspective of the
-    # coordinates. however, the yaxis is flipped in the image and starts
-    # from the top
-    # -> flip range
+      if(!base::all(is_dist_pixel(yrange))){
 
-    if(persp == "image"){
+        yrange <- as_pixel(input = yrange, object = object, as_numeric = TRUE)
 
-      yrange <- c((img_ymax - yrange[1]), (img_ymax - yrange[2]))
+      }
 
-      # switch yrange min and max back to first and last place
-      yrange <- base::rev(yrange)
+      if(yrange[1] < 0){ yrange[1] <- 0}
 
-      expand_input[["y"]] <- base::rev(expand_input[["y"]])
+      # input for x- and yrange often come from the perspective of the
+      # coordinates. however, the yaxis is flipped in the image and starts
+      # from the top
+      # -> flip range
+
+      if(persp == "image"){
+
+        yrange <- c((img_ymax - yrange[1]), (img_ymax - yrange[2]))
+
+        # switch yrange min and max back to first and last place
+        yrange <- base::rev(yrange)
+
+        expand_input[["y"]] <- base::rev(expand_input[["y"]])
+
+      }
 
     }
 
-  }
-
-  xrange_out <-
-    expand_image_range(
-      range = xrange,
-      expand_with = expand_input[["x"]], # width
-      object = object,
-      ref_axis = "x-axis",
-      limits = c(0, img_xmax)
-    )
-
-  yrange_out <-
-    expand_image_range(
-      range = yrange,
-      expand_with = expand_input[["y"]],
-      object = object,
-      ref_axis = "y-axis",
-      limits = c(0, img_ymax)
-    )
-
-  if(opt == 1){
-
-    out <- list(
-      xmin = xrange_out %>% base::min() %>% base::floor(),
-      xmax = xrange_out %>% base::max() %>% base::ceiling(),
-      ymin = yrange_out %>% base::min() %>% base::floor(),
-      ymax = yrange_out %>% base::max() %>% base::ceiling()
-    )
-
-  } else if(opt == 2){
-
-    out <-
-      list(
-        x = xrange_out,
-        y = yrange_out
+    xrange_out <-
+      expand_image_range(
+        range = xrange,
+        expand_with = expand_input[["x"]], # width
+        object = object,
+        ref_axis = "x-axis",
+        limits = c(0, img_xmax)
       )
+
+    yrange_out <-
+      expand_image_range(
+        range = yrange,
+        expand_with = expand_input[["y"]],
+        object = object,
+        ref_axis = "y-axis",
+        limits = c(0, img_ymax)
+      )
+
+    if(opt == 1){
+
+      out <- list(
+        xmin = xrange_out %>% base::min() %>% base::floor(),
+        xmax = xrange_out %>% base::max() %>% base::ceiling(),
+        ymin = yrange_out %>% base::min() %>% base::floor(),
+        ymax = yrange_out %>% base::max() %>% base::ceiling()
+      )
+
+    } else if(opt == 2){
+
+      out <-
+        list(
+          x = xrange_out,
+          y = yrange_out
+        )
+
+    }
+
+  } else {
+
+    if(opt == 1){
+
+      out <- list(
+        xmin = xrange %>% base::min(),
+        xmax = xrange %>% base::max(),
+        ymin = yrange %>% base::min(),
+        ymax = yrange %>% base::max()
+      )
+
+    } else if(opt == 2){
+
+      out <-
+        list(
+          x = xrange,
+          y = yrange
+        )
+
+    }
 
   }
 

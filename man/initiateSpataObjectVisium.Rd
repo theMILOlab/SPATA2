@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectVisium}
 \alias{initiateSpataObjectVisium}
-\title{Initiate an object of class \code{SPATA2} from the Visium platform}
+\title{Initiate an object of class \code{SPATA2} from platform Visium}
 \usage{
 initiateSpataObjectVisium(
   sample_name,
@@ -41,12 +41,15 @@ In any case, the output is an object of class \code{SPATA2}.
 This function initiates a \code{\link{SPATA2}} object for data generated using the 10x Genomics Visium platform.
 }
 \details{
-The function requires a directory containing the output files from a 10x Genomics Visium experiment. The directory must include the following files:
+The function requires a directory containing the output files from a 10x Genomics Visium experiment
+specified with the argument \code{directory_visum}. This directory (below denoted as \strong{~}) must include the following files
+and sub-directories:
+
 \itemize{
-\item \emph{filtered_feature_bc_matrix.h5} or \emph{raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
-\item \emph{spatial/tissue_lowres_image.png} or \emph{spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
-\item \emph{spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
-\item \emph{spatial/tissue_positions_list.csv} or \emph{spatial/tissue_positions.csv}: A CSV file containing the tissue positions and spatial coordinates.
+\item \emph{~/filtered_feature_bc_matrix.h5} or \emph{raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
+\item \emph{~/spatial/tissue_lowres_image.png} or \emph{spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
+\item \emph{~/spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
+\item \emph{~/spatial/tissue_positions_list.csv} or \emph{/~spatial/tissue_positions.csv}: A CSV file containing the tissue positions and spatial coordinates.
 }
 The function will check for these files and process them to create a \code{SPATA2} object. It reads the count matrix, loads the spatial data,
 and initializes the \code{SPATA2} object with the necessary metadata and settings.

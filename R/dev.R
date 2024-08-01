@@ -159,7 +159,7 @@ enhanceSpataObject <- function(object,
 
   cranges <- getCoordsRange(object)
 
-  sce <- asSingleCellExperiment(object, type = "BayesSpace")
+  #sce <- asSingleCellExperiment(object, type = "BayesSpace")
 
   sce <-
     process_sce_bayes_space(

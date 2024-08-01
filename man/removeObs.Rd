@@ -2,12 +2,12 @@
 % Please edit documentation in R/r.R
 \name{removeObs}
 \alias{removeObs}
-\alias{removeObsNoCounts}
+\alias{removeObsZeroCounts}
 \title{Remove observations}
 \usage{
 removeObs(object, barcodes, spatial_proc = TRUE, verbose = NULL)
 
-removeObsNoCounts(
+removeObsZeroCounts(
   object,
   spatial_proc = TRUE,
   assay_name = activeAssay(object),
@@ -24,10 +24,10 @@ objects of classes for which a method has been defined.}
 processed spatially. If \code{TRUE}, a new tissue outline is identified based
 on the remaining observations via \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}. Then,
 spatial annotations are tested on being located on either of the remaining
-tissue sections. If they are not, they are removed. If \code{FALSE}, these processing
-steps are skipped.
+tissue sections. If they are not, they are removed.
 
-Not recommended. Only set to \code{TRUE}, if you know what you're doing.}
+If \code{FALSE}, these processing steps are skipped. Generally speaking, this is
+not recommended. Only set to \code{FALSE}, if you know what you're doing.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

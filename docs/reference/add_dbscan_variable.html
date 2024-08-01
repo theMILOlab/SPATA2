@@ -166,10 +166,6 @@ number of minimum points required in the eps neighborhood for core points
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>To silently drop deprecated arguments.</p></dd>
 
-
-<dt id="arg-ccd">ccd<a class="anchor" aria-label="anchor" href="#arg-ccd"></a></dt>
-<dd><p>Center to center distance in pixel units.</p></dd>
-
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -192,11 +188,11 @@ has specific defaults.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"example_data"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="va">example_data</span><span class="op">$</span><span class="va">object_MCD_LMU_diet</span></span>
+<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="va">example_data</span><span class="op">$</span><span class="va">object_LMU_MCI_diet</span></span>
 <span></span>
 <span><span class="va">coords_df</span> <span class="op">&lt;-</span></span>
 <span> <span class="fu"><a href="getCoordsDf.html">getCoordsDf</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span> <span class="fu">add_dbscan_variable</span><span class="op">(</span>eps <span class="op">=</span> <span class="fu"><a href="getCCD.html">getCCD</a></span><span class="op">(</span><span class="va">object</span>, unit <span class="op">=</span> <span class="st">"px"</span><span class="op">)</span>, name <span class="op">=</span> <span class="st">"section"</span><span class="op">)</span></span>
+<span> <span class="fu">add_dbscan_variable</span><span class="op">(</span>eps <span class="op">=</span> <span class="fu"><a href="recSgsRes.html">recDbscanEps</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, name <span class="op">=</span> <span class="st">"section"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">coords_df</span>, color_by <span class="op">=</span> <span class="st">"section"</span><span class="op">)</span></span>
 <span></span></code></pre></div>

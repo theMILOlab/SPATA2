@@ -16,9 +16,10 @@ initiateSpataObjectMERFISH(
 \item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
 
 \item{directory_merfish}{Character value. Directory to a MERFISH folder
-that should contain a .csv file called \emph{cell_by_gene.csv} and a .csv file
-called \emph{cell_metadata.csv}. Deviating filenames can be specified using
-arguments \code{file_counts} and \code{file_cell_meta}, respectively.}
+that should contain a .csv file called \emph{~/cell_by_gene.csv} and a .csv file
+called \emph{~/cell_metadata.csv}, where \strong{~} is the directory to the folder.
+Deviating filenames can be specified using arguments \code{file_counts}
+and \code{file_cell_meta}, respectively.}
 
 \item{file_counts}{Character value or \code{NULL}. If character, specifies
 the filename of .csv file that contains the gene counts by cell. Use only

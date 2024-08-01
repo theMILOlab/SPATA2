@@ -1117,10 +1117,20 @@ threshold_scattermore <- 100000
 #' @details
 #' The `VisiumHD` object is based on the `SpatialMethod` class and contains the following specifications:
 #' \itemize{
+#'   \item \code{capture_area}: A list specifying the coordinates of the capture area:
+#'   \itemize{
+#'     \item \code{x}: A vector with coordinates "0.75mm" and "7.25mm".
+#'     \item \code{y}: A vector with coordinates "0.75mm" and "7.25mm".
+#'   }
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
-#'     \item \code{ccd}: Center to center distance of "16um".
-#'     \item \code{square_res}: Square resolution of "16um".
+#'     \item \code{ccd}: Center to center distance of "2um", "8um" or "16um".
+#'     \item \code{square_res}: Square resolution of "2um", "8um" or "16um".
+#'     \item \code{fiducial_frame}: A list with the following elements:
+#'     \itemize{
+#'       \item \code{x}: A vector with coordinates "0mm" and "8mm".
+#'       \item \code{y}: A vector with coordinates "0mm" and "8mm".
+#'     }
 #'   }
 #'   \item \code{observational_unit}: The unit of observation, which is "spot".
 #'   \item \code{unit}: The SI unit used, which is "mm".
@@ -1131,7 +1141,13 @@ threshold_scattermore <- 100000
 #' @export
 VisiumHD <-
   SpatialMethod(
-    method_specifics = list(ccd = "16um", square_res = "16um"),
+    capture_area = list(x = c("0.75mm", "7.25mm"), y = c("0.75mm", "7.25mm")),
+    method_specifics =
+      list(
+        ccd = character(1),
+        square_res = character(1),
+        fiducial_frame = list(x = c("0mm", "8mm"), y = c("0mm", "8mm"))
+        ),
     observational_unit = "spot",
     unit = "mm",
     version = current_spata2_version,
@@ -1283,6 +1299,7 @@ Xenium <-
 #'   print(visium_large_method)
 #' }
 #'
+#' @keywords internal
 #' @export
 spatial_methods <-
   list(
