@@ -1230,6 +1230,11 @@ setMethod(
 
     hlpr_assign_arguments(object)
 
+    confuns::give_feedback(
+      msg = glue::glue("Identifying tissue outline with `method = {method}`."),
+      verbose = verbose
+    )
+
     sp_data <- getSpatialData(object)
 
     sp_data <-

@@ -126,6 +126,8 @@
 <span>  <span class="va">sample_name</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  file <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  adjust_link <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  timeout <span class="op">=</span> <span class="fl">600</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -137,7 +139,7 @@
 
 <dl><dt id="arg-sample-name">sample_name<a class="anchor" aria-label="anchor" href="#arg-sample-name"></a></dt>
 <dd><p>Character value. The name of the sample you want to
-download. Use <code><a href="https://rdrr.io/pkg/SPATAData/man/validSampleNames.html" class="external-link">validSampleNames()</a></code> to obtain all valid input options.</p></dd>
+download. Use <code>validSampleNames()</code> to obtain all valid input options.</p></dd>
 
 
 <dt id="arg-overwrite">overwrite<a class="anchor" aria-label="anchor" href="#arg-overwrite"></a></dt>
@@ -153,6 +155,17 @@ under the sample name with an <em>'.RDS'</em> suffix. If <code>FALSE</code>, the
 is skipped and the object is simply returned.</p></dd>
 
 
+<dt id="arg-adjust-link">adjust_link<a class="anchor" aria-label="anchor" href="#arg-adjust-link"></a></dt>
+<dd><p>Logical value. Defaults to <code>TRUE</code>. Allows the function to adjust the link
+if the download fails due to Google Drive warnings. See section below
+for more information.</p></dd>
+
+
+<dt id="arg-timeout">timeout<a class="anchor" aria-label="anchor" href="#arg-timeout"></a></dt>
+<dd><p>Numeric value. Indicates the number of seconds the function has time
+to download the object before the process is aborted. Defaults to 600s (10min).</p></dd>
+
+
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.</p>
@@ -166,6 +179,28 @@ the computational progress will be printed.</p>
     <div id="note">
     <h2>Note</h2>
     <p>Imported from the package <code>SPATAData</code>.</p>
+    </div>
+    <div id="google-drive-warning">
+    <h2>Google Drive Warning</h2>
+
+
+
+<p><code>SPATA2</code> objects are stored in a Google Drive repository and downloaded via their weblink as
+stored in the <a href="https://rdrr.io/pkg/SPATAData/man/sourceDataFrame.html" class="external-link">source data.frame</a>. Often, <code>SPATA2</code> objects are too
+large for the automatic Google Drive virus scan. As a result, the weblink initially leads
+to a webpage that asks if you are okay with skipping this virus scan.</p>
+<p>In cases where the Google Drive link leads to this warning page, the function
+will automatically adjust the download link to bypass the warning and attempt
+the download again. If the adjusted download still fails, an error message is
+displayed, prompting the user to manually download the file using the provided link.</p>
+<p>Since the virus scan cannot be performed by Google Drive regardless of whether
+you download it from within R or manually, the function defaults to bypass this
+warning automatically. If you prefer not to bypass the warning, you can set <code>adjust_link = FALSE</code>
+In this case, the function will give a warning and ask you to download the object manually.</p>
+<p>The downloaded objects do not contain viruses. The way they have been created,
+uploaded as well as how the web links are added to the <a href="https://rdrr.io/pkg/SPATAData/man/sourceDataFrame.html" class="external-link">source data.frame</a>
+can be reconstructed with the <em>populate_<location></location></em> scripts provided on
+the <a href="https://github.com/theMILOlab/SPATAData" class="external-link">SPATAData repository</a> on github under <em>/scripts/</em>.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>

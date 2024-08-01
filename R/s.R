@@ -573,7 +573,7 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
     ma <- getAssay(object, assay_name = assay_name)
     mnames <- getMatrixNames(object, assay_name = assay_name)
     mnames[mnames == ma@active_mtr] <- paste0(mnames[mnames == ma@active_mtr], " (active)")
-    cat(paste0(ifelse(length(mnames)>1, "Matrices", "Matrix"), " for assay ", assay_name, ":"))
+    cat(paste0(ifelse(length(mnames)>1, "Matrices", "Matrix"), " for assay: ", assay_name))
     cat(paste0("\n -",stringr::str_c(mnames, collapse = "\n -")))
 
   }

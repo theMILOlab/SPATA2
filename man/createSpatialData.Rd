@@ -54,6 +54,7 @@ createSpatialDataVisium(
 createSpatialDataVisiumHD(
   dir,
   sample,
+  square_res,
   img_ref = "lowres",
   img_active = "lowres",
   meta = list(),
@@ -89,10 +90,7 @@ multiplied withe its coordinate scale factor in slot @scale_factors$coords.}
 
 \item{misc}{List of miscellaneous information.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
+\item{verbose}{Logical. If TRUE, progress messages are printed. Default is TRUE.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
@@ -120,6 +118,9 @@ on the platform used:
 \itemize{
 \item{\emph{Visium}:}{ Either \emph{'lowres'} or \emph{'hires'}.}
 }}
+
+\item{square_res}{Character. The square resolution from which to load the data. One of *c('16um', '8um', '2um').
+See details for more.}
 }
 \value{
 An object of class \code{SpatialData}

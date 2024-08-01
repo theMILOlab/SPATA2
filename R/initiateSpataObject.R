@@ -392,7 +392,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
   object <- setMetaDf(object, cbind(getMetaDf(object), original_barcodes)) # add original barcodes to metadata
 
   # default processing
-  object <- identifyTissueOutline(object)
+  object <- identifyTissueOutline(object, verbose = verbose)
 
   # set active content
   object <-
@@ -616,7 +616,7 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
   object <- setMetaDf(object = object, meta_df = meta_df)
 
   # default processing
-  object <- identifyTissueOutline(object)
+  object <- identifyTissueOutline(object, verbose = verbose)
 
   # set active content
   object <-
@@ -845,7 +845,7 @@ initiateSpataObjectVisium <- function(sample_name,
   object <- setDefault(object, pt_size = getSpotSize(object))
 
   # default processing
-  object <- identifyTissueOutline(object)
+  object <- identifyTissueOutline(object, verbose = verbose)
 
   returnSpataObject(object)
 
@@ -933,6 +933,18 @@ initiateSpataObjectVisiumHD <- function(sample_name,
 
   }
 
+  # load spatial data
+  # load images
+  sp_data <-
+    createSpatialDataVisiumHD(
+      dir = out_folder,
+      square_res = square_res,
+      sample = sample_name,
+      img_ref = img_ref,
+      img_active = img_active,
+      verbose = verbose
+    )
+
   out_files <-
     base::list.files(out_folder, recursive = TRUE, full.names = TRUE)
 
@@ -973,16 +985,6 @@ initiateSpataObjectVisiumHD <- function(sample_name,
 
   count_mtr <- Seurat::Read10X_h5(filename = mtr_path)
 
-  # load images
-  sp_data <-
-    createSpatialDataVisiumHD(
-      dir = out_folder,
-      sample = sample_name,
-      img_ref = img_ref,
-      img_active = img_active,
-      verbose = verbose
-    )
-
   # create SPATA2 object
   object <-
     initiateSpataObjectEmpty(
@@ -1020,7 +1022,7 @@ initiateSpataObjectVisiumHD <- function(sample_name,
   # set default
   object <- setDefault(object, pt_size = getSpotSize(object), use_scattermore = TRUE)
 
-  object <- identifyTissueOutline(object)
+  object <- identifyTissueOutline(object, verbose = verbose)
 
   returnSpataObject(object)
 
@@ -1120,7 +1122,7 @@ initiateSpataObjectXenium <- function(sample_name,
       y = getCoordsRange(object)$y %>% as_millimeter(object = object)
     )
 
-  object <- identifyTissueOutline(object)
+  object <- identifyTissueOutline(object, verbose = verbose)
 
   # set default
   object <- setDefault(object, use_scattermore = TRUE, display_image = FALSE, pt_size = 2)

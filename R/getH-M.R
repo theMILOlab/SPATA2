@@ -1109,7 +1109,7 @@ setMethod(
 
       count_mtr <- getCountMatrix(object)
 
-      add <- nrow(count_mtr > 1) & ncol(count_mtr & 1) & !all(as.numeric(count_mtr) == 1)
+      add <- nrow(count_mtr > 1) & ncol(count_mtr) > 1
 
       if(add){ out <- c("counts", out) }
 

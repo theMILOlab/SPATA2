@@ -2893,6 +2893,7 @@ createSpatialMethod <- function(...){
 #' @param misc List of miscellaneous information.
 #' @param sample Character value. The sample name of the tissue.
 #'
+#' @inherit initiateSpataObjectVisiumHD params
 #' @inherit argument_dummy params
 #'
 #' @seealso [`registerImage()`] to register images afterwards.
@@ -3276,11 +3277,17 @@ createSpatialDataVisium <- function(dir,
 #' @export
 createSpatialDataVisiumHD <- function(dir,
                                       sample,
+                                      square_res,
                                       img_ref = "lowres",
                                       img_active = "lowres",
                                       meta = list(),
                                       misc = list(),
                                       verbose = TRUE){
+
+  confuns::check_one_of(
+    input = square_res,
+    against = stringr::str_c(c(2, 8, 16), "um")
+  )
 
   # get all files in folder and subfolders
   files <- base::list.files(dir, full.names = TRUE, recursive = TRUE)
@@ -3379,6 +3386,8 @@ createSpatialDataVisiumHD <- function(dir,
   spot_scale_fct <- 1.15
 
   method@method_specifics[["spot_size"]] <- spot_size * spot_scale_fct
+  method@method_specifics[["ccd"]] <- square_res
+  method@method_specifics[["square_res"]] <- square_res
 
   # create output
   sp_data <-
