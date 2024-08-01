@@ -1768,13 +1768,14 @@ getCoordsMtr <- function(object,
 #' @return A list of two vectors each of length 2.
 #' @export
 #'
-getCoordsRange <- function(object, fct = NULL){
+getCoordsRange <- function(object, cvars = c("x", "y"), fct = NULL){
 
   out <-
     list(
-      x = getCoordsDf(object)$x %>% base::range(),
-      y = getCoordsDf(object)$y %>% base::range()
-    )
+      getCoordsDf(object)[[cvars[1]]] %>% base::range(),
+      getCoordsDf(object)[[cvars[2]]] %>% base::range()
+    ) %>%
+    purrr::set_names(nm = cvars)
 
   if(base::is.numeric(fct)){
 

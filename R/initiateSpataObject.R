@@ -356,7 +356,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
 
     }
 
-    mol_coords_df <- dplyr::select(mol_coords_df, gene, x, y)
+    mol_coords_df <- dplyr::select(mol_coords_df, gene, x = global_x, y = global_y)
 
   }
 
@@ -471,8 +471,12 @@ initiateSpataObjectMERFISH <- function(sample_name,
       use_scattermore = TRUE # usually to many points for ggplot2 to handle
     )
 
+  crange <- getCoordsRange(object)
+
+  object <- setCaptureArea(object, x = crange$x, y = crange$y)
+
   confuns::give_feedback(
-    msg = "Estimated field of view range based on cell coordinates. Specify with `setCaptureaArea()`.",
+    msg = "Estimated field of view (capture area) bases on cell coordinates. Specify with `setCaptureaArea()`.",
     verbose = verbose
   )
 

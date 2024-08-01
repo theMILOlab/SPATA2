@@ -4,7 +4,7 @@
 \alias{getCoordsRange}
 \title{Obtain coordinate range}
 \usage{
-getCoordsRange(object, fct = NULL)
+getCoordsRange(object, cvars = c("x", "y"), fct = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,

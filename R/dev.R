@@ -637,13 +637,15 @@ getMoleculeCoordinates <- function(object,
 
     mols_missing <- molecules[!molecules %in% mol_coords_df$molecule]
 
-    if(mols_missing >= 1){
+    if(base::length(mols_missing) >= 1){
 
       mols_missing <- confuns::scollapse(mols_missing)
 
       stop(glue::glue("No coordinates found for: '{mols_missing}'"))
 
     }
+
+    mol_coords_df <- dplyr::filter(mol_coords_df, molecule %in% {{molecules}})
 
   }
 
@@ -674,5 +676,87 @@ containsMoleculeCoordinates <- function(object,
   return(TRUE)
 
 }
+
+
+
+
+#' @title Plot molecules in 2D space
+#'
+#' @description Visualizes the positions of molecules in 2D space on the sample.
+#'
+#' @param molecules Character vector. The molecules of interest.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+plotMolecules2D <- function(object,
+                            molecules,
+                            pt_alpha = 0.5,
+                            pt_size = 1,
+                            pt_clrp = NULL,
+                            clrp_adjust = NULL,
+                            use_scattermore = TRUE,
+                            xrange = getCoordsRange(object)$x,
+                            yrange = getCoordsRange(object)$y,
+                            display_facets = TRUE,
+                            nrow = NULL,
+                            ncol = NULL,
+                            assay_name = activeAssay(object),
+                            ...){
+
+
+  hlpr_assign_arguments(object)
+
+  molecules <- base::unique(molecules)
+
+  mol_coords_df <-
+    getMoleculeCoordinates(
+      object = object,
+      molecules = molecules,
+      assay_name = assay_name
+      ) %>%
+    dplyr::mutate(
+      barcodes = stringr::str_c("mol", dplyr::row_number()),
+      molecule = base::factor(molecule, levels = {{molecules}})
+      )
+
+  add_ons <- list()
+
+  if(base::isTRUE(display_facets)){
+
+    add_ons$facet <- ggplot2::facet_wrap(facets = . ~ molecule, nrow = nrow, ncol = ncol)
+
+  }
+
+  # borrow spatial data class
+  sp_data <- getSpatialData(object)
+  sp_data@coordinates <- mol_coords_df
+
+  main_plot <-
+    ggplot2::ggplot() +
+    add_ons +
+    theme_void_custom()
+
+  main_plot +
+    ggpLayerPoints(
+      object = sp_data,
+      color_by = "molecule",
+      pt_alpha = pt_alpha,
+      pt_size = pt_size,
+      clrp = pt_clrp,
+      clrp_adjust = clrp_adjust,
+      xrange = xrange,
+      yrange = yrange,
+      use_scattermore = use_scattermore,
+      #sctm_pixels = sctm_pixels,
+      #sctm_interpolates = sctm_interpolate,
+      geom = "point",
+      ...
+    )
+
+}
+
+
 
 
