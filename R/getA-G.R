@@ -424,9 +424,16 @@ getBarcodeSpotDistances <- function(object,
 #'
 #' @export
 
-getCaptureArea <- function(object, unit = NULL){
+getCaptureArea <- function(object, img_name = activeImage(object), unit = NULL){
 
-  ca <- getSpatialMethod(object)@capture_area
+  isf <- getScaleFactor(object, fct_name = "image", img_name = img_name)
+
+  ca <-
+    purrr::map(
+      .x = getSpatialMethod(object)@capture_area,
+      .f = ~ .x * {{isf}}
+    ) %>%
+    purrr::set_names(nm = c("x", "y"))
 
   if(base::is.character(unit)){
 

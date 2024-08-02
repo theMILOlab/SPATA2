@@ -551,23 +551,11 @@ ggpLayerCaptureArea <- function(object,
                                 rect_size = 1,
                                 expand_rect = 0.025,
                                 expand_x = ggplot2::waiver(),
-                                expand_y = ggplot2::waiver()){
+                                expand_y = ggplot2::waiver(),
+                                img_name = activeImage(object)){
 
   # capture ranges
-  cr <-
-    purrr::map(
-      .x = getCaptureArea(object),
-      .f = function(capture_range){
-
-        capture_range <- as_pixel(capture_range, object = object)
-
-        capture_range[1] <- capture_range[1] * (1-expand_rect)
-        capture_range[2] <- capture_range[2] * (1+expand_rect)
-
-        return(capture_range)
-
-      }
-    )
+  cr <- getCaptureArea(object, img_name = img_name, unit = "px")
 
   out <- list()
 
@@ -1680,6 +1668,7 @@ setMethod(
                         expand = TRUE,
                         scale_fct = 1,
                         use_scattermore = FALSE,
+                        sctm_pixels = c(1024, 1024),
                         add_labs = FALSE,
                         bcs_rm = NULL,
                         na_rm = FALSE,
@@ -1740,6 +1729,7 @@ setMethod(
       outline_fct = outline_fct,
       scale_fct = scale_fct,
       use_scattermore = use_scattermore,
+      sctm_pixels = sctm_pixels,
       add_labs = add_labs,
       geom = geom,
       na_rm = na_rm,
@@ -1777,6 +1767,7 @@ setMethod(
                         na_rm = FALSE,
                         scale_fct = 1,
                         use_scattermore = FALSE,
+                        sctm_pixels = c(1024, 1024),
                         add_labs = FALSE,
                         geom = "point",
                         ...){
@@ -1910,6 +1901,7 @@ setMethod(
         pt_size = pt_size,
         scale_fct = scale_fct,
         use_scattermore = use_scattermore,
+        sctm_pixels = sctm_pixels,
         bcs_rm = bcs_rm,
         na_rm = na_rm,
         geom = geom
@@ -1972,6 +1964,7 @@ setMethod(
                         pt_size = 1,
                         scale_fct = 1,
                         use_scattermore = FALSE,
+                        sctm_pixels = c(1024, 1024),
                         bcs_rm = NULL,
                         geom = "point",
                         na_rm = FALSE){
@@ -2070,7 +2063,7 @@ setMethod(
             alpha.by = alpha_by,
             color.by = color_by,
             sctm.interpolate = FALSE,
-            sctm.pixels = c(2024, 2024),
+            sctm.pixels = sctm_pixels,
             na.rm = na_rm
           )
 

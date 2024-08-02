@@ -31,10 +31,11 @@ See details for more.}
 \item{verbose}{Logical. If TRUE, progress messages are printed. Default is TRUE.}
 }
 \value{
-A \code{SPATA2} object containing the processed data from the VisiumHD platform.
+A \code{SPATA2} object the VisiumHD platform.
 }
 \description{
-This function initiates a \code{\link{SPATA2}} object for data generated using the 10x Genomics VisiumHD platform.
+This function initiates a \code{\link{SPATA2}} object with data generated
+using the 10x Genomics \code{\link{VisiumHD}} platform.
 }
 \details{
 The function requires a directory containing the output files from a 10x Genomics VisiumHD experiment

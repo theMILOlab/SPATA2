@@ -525,6 +525,9 @@ depr_info <-
       "recBinwidth" = "resSgsRes",
       "runCnvAnalysis" = "runCNV",
       "runDeAnalysis" = "runDEA",
+      "runSparkx" = "runSPARKX",
+      "runTsne" = "runTSNE",
+      "runUmap" = "runUMAP",
       "setActiveExpressionMatrix" = "setActiveMatrix",
       "setActiveMatrx" = "activateMatrix",
       "setDefaultTrajectory" = "setDefaultTrajectoryId",
@@ -1117,21 +1120,11 @@ threshold_scattermore <- 100000
 #' @details
 #' The `VisiumHD` object is based on the `SpatialMethod` class and contains the following specifications:
 #' \itemize{
-#'   \item \code{capture_area}: A list specifying the coordinates of the capture area:
-#'   \itemize{
-#'     \item \code{x}: A vector with coordinates "0.75mm" and "7.25mm".
-#'     \item \code{y}: A vector with coordinates "0.75mm" and "7.25mm".
-#'   }
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
 #'     \item \code{ccd}: Center to center distance of "2um", "8um" or "16um".
 #'     \item \code{square_res}: Square resolution of "2um", "8um" or "16um".
-#'     \item \code{fiducial_frame}: A list with the following elements:
-#'     \itemize{
-#'       \item \code{x}: A vector with coordinates "0mm" and "8mm".
-#'       \item \code{y}: A vector with coordinates "0mm" and "8mm".
 #'     }
-#'   }
 #'   \item \code{observational_unit}: The unit of observation, which is "spot".
 #'   \item \code{unit}: The SI unit used, which is "mm".
 #'   \item \code{version}: The version of the SPATA2 package being used.
@@ -1141,12 +1134,12 @@ threshold_scattermore <- 100000
 #' @export
 VisiumHD <-
   SpatialMethod(
-    capture_area = list(x = c("0.75mm", "7.25mm"), y = c("0.75mm", "7.25mm")),
     method_specifics =
       list(
+        capture_area_sides = list(x = "6.25mm", y = "6.25mm"),
         ccd = character(1),
         square_res = character(1),
-        fiducial_frame = list(x = c("0mm", "8mm"), y = c("0mm", "8mm"))
+        fiducial_frame_sides = list(x = "8mm", y = "8mm")
         ),
     observational_unit = "spot",
     unit = "mm",
@@ -1161,13 +1154,13 @@ VisiumHD <-
 #' @details
 #' The `VisiumLarge` object is based on the `SpatialMethod` class and contains the following specifications:
 #' \itemize{
-#'   \item \code{capture_area}: A list specifying the coordinates of the capture area:
-#'   \itemize{
-#'     \item \code{x}: A vector with coordinates "0.75mm" and "11.75mm".
-#'     \item \code{y}: A vector with coordinates "0.75mm" and "11.75mm".
-#'   }
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
+#'     \item \code{capture_area}: A list specifying the coordinates of the capture area:
+#'       \itemize{
+#'          \item \code{x}: A vector with coordinates "0.75mm" and "11.75mm".
+#'          \item \code{y}: A vector with coordinates "0.75mm" and "11.75mm".
+#'       }
 #'     \item \code{ccd}: Center to center distance of "100um".
 #'     \item \code{diameter}: Diameter of each spot is "55um".
 #'     \item \code{fiducial_frame}: A list with the following elements:
@@ -1185,9 +1178,9 @@ VisiumHD <-
 #' @export
 VisiumLarge <-
   SpatialMethod(
-    capture_area = list(x = c("0.75mm", "11.75mm"), y = c("0.75mm", "11.75mm")),
     method_specifics =
       list(
+        capture_area = list(x = c("0.75mm", "11.75mm"), y = c("0.75mm", "11.75mm")),
         ccd = "100um",
         diameter = "55um",
         fiducial_frame = list(x = c("0mm", "12.5mm"), y = c("0mm", "12.5mm"))
@@ -1205,13 +1198,13 @@ VisiumLarge <-
 #' @details
 #' The `VisiumSmall` object is based on the `SpatialMethod` class and contains the following specifications:
 #' \itemize{
-#'   \item \code{capture_area}: A list specifying the coordinates of the capture area:
-#'   \itemize{
-#'     \item \code{x}: A vector with coordinates "0.75mm" and "7.25mm".
-#'     \item \code{y}: A vector with coordinates "0.75mm" and "7.25mm".
-#'   }
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
+#'     \item \code{capture_area}: A list specifying the coordinates of the capture area:
+#'        \itemize{
+#'          \item \code{x}: A vector with coordinates "0.75mm" and "7.25mm".
+#'          \item \code{y}: A vector with coordinates "0.75mm" and "7.25mm".
+#'         }
 #'     \item \code{ccd}: Center to center distance of "100um".
 #'     \item \code{diameter}: Diameter of each spot is "55um".
 #'     \item \code{fiducial_frame}: A list with the following elements:
@@ -1229,9 +1222,9 @@ VisiumLarge <-
 #' @export
 VisiumSmall <-
   SpatialMethod(
-    capture_area = list(x = c("0.75mm", "7.25mm"), y = c("0.75mm", "7.25mm")),
     method_specifics =
       list(
+        capture_area_frame = list(x = c("0.75mm", "7.25mm"), y = c("0.75mm", "7.25mm")),
         ccd = "100um",
         diameter = "55um",
         fiducial_frame = list(x = c("0mm", "8mm"), y = c("0mm", "8mm"))

@@ -255,8 +255,8 @@ initiateSpataObjectEmpty <- function(sample_name, platform, verbose = TRUE){
 
 #' @title Initiate an object of class `SPATA2` from platform MERFISH
 #'
-#' @description Wrapper function around the necessary content to create a
-#' `SPATA2` object from the standardized output of the MERFISH platform.
+#' @description This function initiates a [`SPATA2`] object with data generated
+#' using the MERFISH platform.
 #'
 #' @param directory_merfish Character value. Directory to a MERFISH folder
 #' that should contain a .csv file called *~/...cell_by_gene.csv* and a .csv file
@@ -277,10 +277,12 @@ initiateSpataObjectEmpty <- function(sample_name, platform, verbose = TRUE){
 #' the filename of the .csv file that contains molecule transcript positions, in particular,
 #' spatial location via the variables *x* and *y*.
 #'
-#' @inherit initiateSpataObject params return
 #' @inherit argument_dummy params
 #'
-#' @seealso [`addMoleculeCoordinates()`]
+#' @return A `SPATA2` object from the MERFISH platform. Default for `pt_size` is
+#' set to 0.4 which might need adjustment.
+#'
+#' @seealso [`addMoleculeCoordinates()`], [`setDefault()`]
 #'
 #' @details MERFISH works in micron space. The coordinates of the cellular centroids are
 #' provided in unit um. Therefore no pixel scale factor must be computed or set
@@ -467,13 +469,18 @@ initiateSpataObjectMERFISH <- function(sample_name,
     setDefault(
       object = object,
       display_image = FALSE, # MERFISH does not come with an image
-      pt_size = 1, # many obs of small size
+      pt_size = 0.4, # many obs of small size
       use_scattermore = TRUE # usually to many points for ggplot2 to handle
     )
 
   crange <- getCoordsRange(object)
 
-  object <- setCaptureArea(object, x = crange$x, y = crange$y)
+  object <-
+    setCaptureArea(
+      object = object,
+      x = as_millimeter(crange$x, object = object),
+      y = as_millimeter(crange$y, object = object)
+      )
 
   confuns::give_feedback(
     msg = "Estimated field of view (capture area) bases on cell coordinates. Specify with `setCaptureaArea()`.",
@@ -488,7 +495,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
 #' @title Initiate an object of class `SPATA2` from platform SlideSeq
 #'
 #' @description Wrapper function around the necessary content to create a
-#' `SPATA2` object from the standardized output of the SlideSeq platform.
+#' `SPATA2` object from the standardized output of the [`SlideSeq`] platform.
 #'
 #' @param directory_slide_seq Character value. Directory to a SlideSeq folder
 #' that contains a count matrix and bead locations.
@@ -705,7 +712,8 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 
 #' @title Initiate an object of class `SPATA2` from platform Visium
 #'
-#' @description This function initiates a [`SPATA2`] object for data generated using the 10x Genomics Visium platform.
+#' @description This function initiates a [`SPATA2`] object with data generated
+#' using the 10x Genomics Visium platform.
 #'
 #' @param sample_name Character. The name of the sample.
 #' @param directory_visium Character. The directory containing the Visium output files.
@@ -714,12 +722,12 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
 #' @param verbose Logical. If TRUE, progress messages are printed. Default is TRUE.
 #'
-#' @return A `SPATA2` object containing the processed data from the Visium platform. More precise,
+#' @return A `SPATA2` object containing data from the Visium platform. More precise,
 #' depending on the set up used to create the raw data it is of either spatial method:
 #'
 #'  \itemize{
-#'   \item{`VisiumSmall`}{: Visium data set with capture area of 6.5mm x 6.5mm.}
-#'   \item{`VisiumLarge`}{: Visium data set with capture area of 11mm x 11m. }
+#'   \item{[`VisiumSmall`]}{: Visium data set with capture area of 6.5mm x 6.5mm.}
+#'   \item{[`VisiumLarge`]}{: Visium data set with capture area of 11mm x 11m. }
 #'   }
 #'
 #' In any case, the output is an object of class `SPATA2`.
@@ -768,7 +776,10 @@ initiateSpataObjectVisium <- function(sample_name,
                                       img_ref = "lowres",
                                       verbose = TRUE){
 
-  isDirVisium(dir = directory_visium, error = TRUE)
+  confuns::give_feedback(
+    msg = "Initiating SPATA2 object for platform Visium.",
+    verbose = verbose
+  )
 
   # validate and process input directory
   dir <- base::normalizePath(directory_visium)
@@ -793,19 +804,66 @@ initiateSpataObjectVisium <- function(sample_name,
 
   mtr_path <- files[stringr::str_detect(files, pattern = mtr_pattern)]
 
-  if(base::length(mtr_path) > 1){
+  if(base::length(mtr_path) == 0){
 
-    warning("Multiple matrices found. Picking first.")
+    confuns::give_feedback(
+      msg = glue::glue("'{mtr_pattern}' is missing. Looking for folder."),
+      verbose = verbose
+      )
 
-    mtr_path <- mtr_path[1]
+    mtr_pattern <- stringr::str_remove(mtr_pattern, ".h5\\$$")
 
-  } else if(base::length(mtr_path) == 0){
+    mtr_folder_path <-
+      stringr::str_subset(
+        string = list.files(directory_visium, full.names = TRUE, recursive = FALSE),
+        pattern = stringr::str_remove(mtr_pattern, ".h5\\$")
+      )
 
-    stop(glue::glue("'{mtr_pattern}' is missing.", mtr_pattern = stringr::str_remove(mtr_pattern, "\\$")))
+    if(base::length(mtr_folder_path) == 1){
+
+      confuns::give_feedback(
+        msg = glue::glue("Reading count data from folder: {mtr_folder_path}"),
+        verbose = verbose
+      )
+
+      counts_out <- read_matrix_from_folder(mtr_folder_path)
+
+    } else {
+
+      stop("Can't find count data.")
+
+    }
+
+  } else {
+
+    if(base::length(mtr_path) > 1){
+
+      warning(glue::glue("Multiple matrices found. Picking first: {mtr_path}."))
+
+      mtr_path <- mtr_path[1]
+
+    }
+
+    confuns::give_feedback(
+      msg = glue::glue("Reading count data from '{mtr_path}'."),
+      verbose = verbose
+    )
+
+    counts_out <-
+      base::suppressMessages({
+
+        Seurat::Read10X_h5(filename = mtr_path, unique.features = TRUE)
+
+      })
 
   }
 
-  # load images
+  # load images and spatial data
+  confuns::give_feedback(
+    msg = "Reading spatial and image data.",
+    verbose = verbose
+  )
+
   sp_data <-
     createSpatialDataVisium(
       dir = dir,
@@ -818,11 +876,6 @@ initiateSpataObjectVisium <- function(sample_name,
   # create SPATA2 object
   platform <- sp_data@method@name
 
-  confuns::give_feedback(
-    msg = glue::glue("Initiating SPATA2 object for platform: '{platform}'"),
-    verbose = verbose
-  )
-
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
@@ -833,18 +886,6 @@ initiateSpataObjectVisium <- function(sample_name,
   object <- setSpatialData(object, sp_data = sp_data)
 
   # molecular data
-  confuns::give_feedback(
-    msg = glue::glue("Reading count data from '{mtr_path}'."),
-    verbose = verbose
-  )
-
-  counts_out <-
-    base::suppressMessages({
-
-      Seurat::Read10X_h5(filename = mtr_path, unique.features = TRUE)
-
-    })
-
   if(base::length(counts_out) == 2){
 
     # gene expression
@@ -893,6 +934,8 @@ initiateSpataObjectVisium <- function(sample_name,
 
   } else {
 
+    counts_out <- make_unique_molecules(counts_out)
+
     # molecular assay
     ma <-
       MolecularAssay(
@@ -931,7 +974,8 @@ initiateSpataObjectVisium <- function(sample_name,
 
 #' @title Initiate an object of class `SPATA2` from platform VisiumHD
 #'
-#' @description This function initiates a [`SPATA2`] object for data generated using the 10x Genomics VisiumHD platform.
+#' @description This function initiates a [`SPATA2`] object with data generated
+#' using the 10x Genomics [`VisiumHD`] platform.
 #'
 #' @param sample_name Character. The name of the sample.
 #' @param directory_visium Character. The directory containing the Visium output files.
@@ -942,7 +986,7 @@ initiateSpataObjectVisium <- function(sample_name,
 #' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
 #' @param verbose Logical. If TRUE, progress messages are printed. Default is TRUE.
 #'
-#' @return A `SPATA2` object containing the processed data from the VisiumHD platform.
+#' @return A `SPATA2` object the VisiumHD platform.
 #'
 #' @note It is crucial to install the package `arrow` in a way that [`arrow::read_parquet()`] works. There
 #' are several ways. Installing the package with `install.packages('arrow', repos = 'https://apache.r-universe.dev')`
@@ -1108,10 +1152,16 @@ initiateSpataObjectVisiumHD <- function(sample_name,
 
 #' @title Initiate an object of class `SPATA2` from platform Xenium
 #'
-#' @description Wrapper function around the necessary content to create a
-#' `SPATA2` object from standardized output of the Xenium platform.
+#' @description This function initiates a [`SPATA2`] object with data generated
+#' using the 10x Genomics [`Xenium`] platform.
 #'
 #' @param directory_xenium Character value. Directory to a Xenium output folder.
+#' @inherit initiateSpataObject params
+#'
+#' @return A `SPATA2` object from the Xenium platform. Default for `pt_size ` is
+#' set to 0.1 which might need adjustment.
+#'
+#' @seealso [`setDefault()`]
 #'
 #' @details
 #' The function requires a directory containing the output files from a 10x Genomics Xenium experiment
@@ -1128,7 +1178,7 @@ initiateSpataObjectVisiumHD <- function(sample_name,
 #'    \item \emph{~/cells.csv.gz}: The cellular positions.
 #' }
 #'
-#' @details MERFISH works in micron space. The coordinates of the cellular centroids are
+#' @details Xenium works in micron space. The coordinates of the cellular centroids are
 #' provided in unit um. Therefore no pixel scale factor must be computed or set
 #' to work with SI units.
 #'
@@ -1202,7 +1252,7 @@ initiateSpataObjectXenium <- function(sample_name,
   object <- identifyTissueOutline(object, verbose = verbose)
 
   # set default
-  object <- setDefault(object, use_scattermore = TRUE, display_image = FALSE, pt_size = 2)
+  object <- setDefault(object, use_scattermore = TRUE, display_image = FALSE, pt_size = 0.1)
 
   returnSpataObject(object)
 

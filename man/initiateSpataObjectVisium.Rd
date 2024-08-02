@@ -27,18 +27,19 @@ initiateSpataObjectVisium(
 \item{verbose}{Logical. If TRUE, progress messages are printed. Default is TRUE.}
 }
 \value{
-A \code{SPATA2} object containing the processed data from the Visium platform. More precise,
+A \code{SPATA2} object containing data from the Visium platform. More precise,
 depending on the set up used to create the raw data it is of either spatial method:
 
 \itemize{
-\item{\code{VisiumSmall}}{: Visium data set with capture area of 6.5mm x 6.5mm.}
-\item{\code{VisiumLarge}}{: Visium data set with capture area of 11mm x 11m. }
+\item{\code{\link{VisiumSmall}}}{: Visium data set with capture area of 6.5mm x 6.5mm.}
+\item{\code{\link{VisiumLarge}}}{: Visium data set with capture area of 11mm x 11m. }
 }
 
 In any case, the output is an object of class \code{SPATA2}.
 }
 \description{
-This function initiates a \code{\link{SPATA2}} object for data generated using the 10x Genomics Visium platform.
+This function initiates a \code{\link{SPATA2}} object with data generated
+using the 10x Genomics Visium platform.
 }
 \details{
 The function requires a directory containing the output files from a 10x Genomics Visium experiment

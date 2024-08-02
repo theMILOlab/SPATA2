@@ -16,20 +16,10 @@ This object abstracts the VisiumHD spatial method, which is a high-density versi
 \details{
 The \code{VisiumHD} object is based on the \code{SpatialMethod} class and contains the following specifications:
 \itemize{
-\item \code{capture_area}: A list specifying the coordinates of the capture area:
-\itemize{
-\item \code{x}: A vector with coordinates "0.75mm" and "7.25mm".
-\item \code{y}: A vector with coordinates "0.75mm" and "7.25mm".
-}
 \item \code{method_specifics}: A list with the following elements:
 \itemize{
 \item \code{ccd}: Center to center distance of "2um", "8um" or "16um".
 \item \code{square_res}: Square resolution of "2um", "8um" or "16um".
-\item \code{fiducial_frame}: A list with the following elements:
-\itemize{
-\item \code{x}: A vector with coordinates "0mm" and "8mm".
-\item \code{y}: A vector with coordinates "0mm" and "8mm".
-}
 }
 \item \code{observational_unit}: The unit of observation, which is "spot".
 \item \code{unit}: The SI unit used, which is "mm".

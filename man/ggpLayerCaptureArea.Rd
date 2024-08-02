@@ -13,7 +13,8 @@ ggpLayerCaptureArea(
   rect_size = 1,
   expand_rect = 0.025,
   expand_x = ggplot2::waiver(),
-  expand_y = ggplot2::waiver()
+  expand_y = ggplot2::waiver(),
+  img_name = activeImage(object)
 )
 }
 \arguments{

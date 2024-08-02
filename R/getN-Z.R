@@ -3997,14 +3997,37 @@ getVariableMolecules <- function(object,
                                  method = NULL,
                                  assay_name = activeAssay(object)){
 
-  confuns::check_one_of(
-    input = method,
-    against = c("vst", "mean.var.plot", "dispersion")
+
+  ma <- getAssay(object, assay_name = assay_name)
+
+  var_mol_results <- ma@analysis$variable_molecules
+
+  check_availability(
+    test = base::length(var_mol_results) != 0,
+    ref_x = "results for identification of molecules with high variability",
+    ref_fns = glue::glue("identifyVariableMolecules(..., method = '{method}')")
   )
 
-  ma <- getAssay(object)
+  available_methods <- base::names(var_mol_results)
 
-  out <- ma@analysis$variable_molecules[[method]]
+  if(base::is.null(method) & base::length(var_mol_results) == 1){
+
+    method <- available_methods
+
+  } else {
+
+    confuns::is_value(method, mode = "character")
+
+    confuns::check_one_of(
+      input = method,
+      against = available_methods,
+      fdb.opt = 2,
+      ref.opt.2 = "methods with which molecules of high variability were identified"
+    )
+
+  }
+
+  out <- var_mol_results[[method]]
 
   check_availability(
     test = !base::is.null(out),

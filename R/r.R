@@ -142,10 +142,10 @@ read_coords_visium <- function(dir_coords){
 
       }) %>%
       tibble::as_tibble() %>%
-      magrittr::set_colnames(value = c("barcodes", "tissue", "row", "col", "imagerow", "imagecol")) %>%
-      dplyr::filter(tissue == 1) %>%
+      magrittr::set_colnames(value = c("barcodes", "in_tissue", "row", "col", "imagerow", "imagecol")) %>%
+      #dplyr::filter(in_tissue == 1) %>%
       dplyr::rename(x_orig = imagecol, y_orig = imagerow) %>%
-      dplyr::select(barcodes, x_orig, y_orig, row, col)
+      dplyr::select(barcodes, x_orig, y_orig, row, col, in_tissue)
 
     # space ranger v2
   } else if(stringr::str_detect(dir_coords, pattern = "tissue_positions.csv")){
@@ -153,18 +153,18 @@ read_coords_visium <- function(dir_coords){
     coords_df <-
       readr::read_csv(file = dir_coords, col_names = TRUE, show_col_types = FALSE) %>%
       tibble::as_tibble() %>%
-      dplyr::filter(in_tissue == 1) %>%
+      #dplyr::filter(in_tissue == 1) %>%
       dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres, row = array_row, col = array_col) %>%
-      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col)
+      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col, in_tissue)
 
     # VisiumHD
   } else if(stringr::str_detect(dir_coords, pattern = "tissue_positions.parquet$")){
 
     coords_df <-
       arrow::read_parquet(dir_coords) %>%
-      dplyr::filter(in_tissue == 1) %>%
+      #dplyr::filter(in_tissue == 1) %>%
       dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres, row = array_row, col = array_col) %>%
-      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col) %>%
+      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col, in_tissue) %>%
       tibble::as_tibble()
 
   }
@@ -1389,6 +1389,10 @@ removeSpatialAnnotations <- function(object, ids){
 #' and all their related data. If no spatial outliers exist, the input object
 #' is returned as is.
 #'
+#' @param rm_var Logical value. If `TRUE`, the variable *sp_outlier* is removed
+#' since it only contains `FALSE` after this function call and is of no value
+#' any longer.
+#'
 #' @inherit subsetSpataObject params
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
@@ -1426,7 +1430,10 @@ removeSpatialAnnotations <- function(object, ids){
 #' nObs(object) # after removal
 #'
 #'
-removeSpatialOutliers <- function(object, spatial_proc = TRUE, verbose = NULL){
+removeSpatialOutliers <- function(object,
+                                  spatial_proc = TRUE,
+                                  rm_var = TRUE,
+                                  verbose = NULL){
 
   hlpr_assign_arguments(object)
 
@@ -1445,6 +1452,12 @@ removeSpatialOutliers <- function(object, spatial_proc = TRUE, verbose = NULL){
     )
 
     object <- subsetSpataObject(object, barcodes = bcs_keep, spatial_proc = spatial_proc, verbose = verbose)
+
+  }
+
+  if(base::isTRUE(object)){
+
+    object@meta_obs$sp_outlier <- NULL
 
   }
 

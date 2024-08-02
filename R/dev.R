@@ -470,6 +470,7 @@ whichSpaceRangerVersion <- function(dir){
 #' @return A data frame containing metadata variables for the specified assay.
 #'
 #' @export
+#'
 getMetaVarDf <- function(object,
                          assay_name = activeAssay(object),
                          verbose = TRUE){
@@ -658,7 +659,6 @@ getMoleculeCoordinates <- function(object,
 #' @inherit argument_dummy params
 #'
 #' @export
-
 containsMoleculeCoordinates <- function(object,
                                         assay_name = activeAssay(object),
                                         error = FALSE){

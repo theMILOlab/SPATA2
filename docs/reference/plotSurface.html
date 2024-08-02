@@ -162,14 +162,15 @@ on the setup with which <code><a href="spatialAnnotationScreening.html">spatialA
 <span>  outline <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  outline_fct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.125</span>, <span class="fl">2.75</span><span class="op">)</span>,</span>
 <span>  clrp_adjust <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  display_image <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  img_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  transform_with <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  use_scattermore <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sctm_pixels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1024</span>, <span class="fl">1024</span><span class="op">)</span>,</span>
 <span>  bcs_rm <span class="op">=</span> <span class="fu">base</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  na_rm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  xrange <span class="op">=</span> <span class="fu"><a href="getCoordsRange.html">getCoordsRange</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">$</span><span class="va">x</span>,</span>
 <span>  yrange <span class="op">=</span> <span class="fu"><a href="getCoordsRange.html">getCoordsRange</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">$</span><span class="va">y</span>,</span>
+<span>  display_image <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  img_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  img_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  geom <span class="op">=</span> <span class="st">"point"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -286,10 +287,6 @@ to the group and the respective named element denotes the color with which to
 represent the group.</p></dd>
 
 
-<dt id="arg-img-alpha">img_alpha<a class="anchor" aria-label="anchor" href="#arg-img-alpha"></a></dt>
-<dd><p>Numeric value. Sets the transparency for the image.</p></dd>
-
-
 <dt id="arg-transform-with">transform_with<a class="anchor" aria-label="anchor" href="#arg-transform-with"></a></dt>
 <dd><p>List or <code>NULL.</code> If list, can be used to transform continuous variables before usage.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
@@ -320,6 +317,10 @@ two or <code>NULL</code>. If not <code>NULL</code>, specifies the x- and y-range
 the spatial output is cropped. E.g. <code>xrange = c(200, 500)</code> results in
 the two dimensional space being cropped from x-coordinate 200px up to
 x-coordinate 500px. If <code>NULL</code>, the original range is used.</p></dd>
+
+
+<dt id="arg-img-alpha">img_alpha<a class="anchor" aria-label="anchor" href="#arg-img-alpha"></a></dt>
+<dd><p>Numeric value. Sets the transparency for the image.</p></dd>
 
 
 <dt id="arg-img-name">img_name<a class="anchor" aria-label="anchor" href="#arg-img-name"></a></dt>

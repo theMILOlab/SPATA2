@@ -4,7 +4,12 @@
 \alias{removeSpatialOutliers}
 \title{Remove spatial outliers}
 \usage{
-removeSpatialOutliers(object, spatial_proc = TRUE, verbose = NULL)
+removeSpatialOutliers(
+  object,
+  spatial_proc = TRUE,
+  rm_var = TRUE,
+  verbose = NULL
+)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
@@ -18,6 +23,10 @@ tissue sections. If they are not, they are removed.
 
 If \code{FALSE}, these processing steps are skipped. Generally speaking, this is
 not recommended. Only set to \code{FALSE}, if you know what you're doing.}
+
+\item{rm_var}{Logical value. If \code{TRUE}, the variable \emph{sp_outlier} is removed
+since it only contains \code{FALSE} after this function call and is of no value
+any longer.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

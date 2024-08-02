@@ -33,6 +33,7 @@ ggpLayerPoints(object, ...)
   expand = TRUE,
   scale_fct = 1,
   use_scattermore = FALSE,
+  sctm_pixels = c(1024, 1024),
   add_labs = FALSE,
   bcs_rm = NULL,
   na_rm = FALSE,
@@ -64,6 +65,7 @@ ggpLayerPoints(object, ...)
   na_rm = FALSE,
   scale_fct = 1,
   use_scattermore = FALSE,
+  sctm_pixels = c(1024, 1024),
   add_labs = FALSE,
   geom = "point",
   ...
@@ -78,6 +80,7 @@ ggpLayerPoints(object, ...)
   pt_size = 1,
   scale_fct = 1,
   use_scattermore = FALSE,
+  sctm_pixels = c(1024, 1024),
   bcs_rm = NULL,
   geom = "point",
   na_rm = FALSE

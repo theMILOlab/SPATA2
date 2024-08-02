@@ -7,11 +7,22 @@
 initiateSpataObjectXenium(sample_name, directory_xenium, verbose = TRUE)
 }
 \arguments{
+\item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
+
 \item{directory_xenium}{Character value. Directory to a Xenium output folder.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+}
+\value{
+A \code{SPATA2} object from the Xenium platform. Default for \code{pt_size } is
+set to 0.1 which might need adjustment.
 }
 \description{
-Wrapper function around the necessary content to create a
-\code{SPATA2} object from standardized output of the Xenium platform.
+This function initiates a \code{\link{SPATA2}} object with data generated
+using the 10x Genomics \code{\link{Xenium}} platform.
 }
 \details{
 The function requires a directory containing the output files from a 10x Genomics Xenium experiment
@@ -28,7 +39,10 @@ sub-directories:
 \item \emph{~/cells.csv.gz}: The cellular positions.
 }
 
-MERFISH works in micron space. The coordinates of the cellular centroids are
+Xenium works in micron space. The coordinates of the cellular centroids are
 provided in unit um. Therefore no pixel scale factor must be computed or set
 to work with SI units.
+}
+\seealso{
+\code{\link[=setDefault]{setDefault()}}
 }

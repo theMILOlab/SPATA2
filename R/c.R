@@ -747,6 +747,7 @@ computeCnvByChrArm <- function(object,
 #' Otherwise, the function will check for the presence of existing features and will not overwrite them unless
 #' explicitly instructed to do so.
 #'
+#' @export
 #' @examples
 #'
 #' library(SPATA2)
