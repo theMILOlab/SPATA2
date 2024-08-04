@@ -2706,6 +2706,8 @@ ggpLayerSpatAnnOutline <- function(object,
                                    merge_edge = FALSE,
                                    incr_vert = FALSE,
                                    expand_outline = 0,
+                                   xrange = getCoordsRange(object)$x,
+                                   yrange = getCoordsRange(object)$y,
                                    ...){
 
   deprecated(...)
@@ -2847,15 +2849,23 @@ ggpLayerSpatAnnOutline <- function(object,
 
           df <- getSpatAnnSf(object, id)
 
-          ggplot2::geom_sf(
-            data = df,
-            linewidth = line_size,
-            color = line_color,
-            linetype = line_type,
-            alpha = alpha,
-            fill = fill,
-            ...
+
+          list(
+            ggplot2::geom_sf(
+              data = df,
+              linewidth = line_size,
+              color = line_color,
+              linetype = line_type,
+              alpha = alpha,
+              fill = fill,
+              ...
+            ),
+            ggplot2::coord_sf(
+              xlim = xrange,
+              ylim = yrange
+            )
           )
+
 
         }
 

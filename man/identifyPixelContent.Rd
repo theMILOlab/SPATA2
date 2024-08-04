@@ -103,7 +103,7 @@ of pixels than the maximum threshold are considered tissue sections. If a thresh
 it is calculated as a percentage of the total number of pixels in the image.
 If a threshold value is greater than or equal to 1, it is taken as an absolute value.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

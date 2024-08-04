@@ -20,7 +20,7 @@ plot_screening_evaluation(
   line_size = 1,
   display_se = FALSE,
   display_eval = FALSE,
-  eval_p_min = 0.00005,
+  eval_p_min = 5e-05,
   eval_pos_x = NULL,
   eval_pos_y = NULL,
   eval_text_sep = "\\n",

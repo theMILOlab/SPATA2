@@ -2,7 +2,7 @@
 % Please edit documentation in R/getH-M.R
 \name{getMetaDf}
 \alias{getMetaDf}
-\title{Obtain meta data.frame}
+\title{Obtain meta data.frame for observations}
 \usage{
 getMetaDf(object)
 }
@@ -15,5 +15,6 @@ The meta data frame.
 }
 \description{
 Retrieves the meta data frame from the provided object which
-contains feature variables that do not derive from the molecular count matrices.
+contains \link[=concept_variables]{meta information} about the objects's
+\link[=concept_observations]{observations}.
 }

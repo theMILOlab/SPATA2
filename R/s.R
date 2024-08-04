@@ -3136,9 +3136,11 @@ strongH5 <- function(text){
 # subset ------------------------------------------------------------------
 
 
-#' @title Subset SPATA2 object
+#' @title Subset SPATA2 object with barcodes
 #'
-#' @description Creates a subset of the [`SPATA2`] object.
+#' @description Creates a subset of the [`SPATA2`] object by using a list
+#' of barcodes. This function is the working horse behind all functions that manipulate
+#' the number of observations in the object.
 #'
 #' @param barcodes Character vector. The barcodes of the observations that are
 #' supposed to be \bold{kept}.
@@ -3156,7 +3158,7 @@ strongH5 <- function(text){
 #'
 #' @details Unused levels of factor variables in the feature data.frame are dropped.
 #'
-#' @seealso [`removeObs()`], [`splitSpataObject()`], [`cropSpataObject()`]
+#' @seealso [`removeObs()`], [`splitSpataObject()`], [`cropSpataObject()`], [`filterSpataObject()`]
 #'
 #' @export
 #'
@@ -3168,25 +3170,32 @@ strongH5 <- function(text){
 #' # ----- Example 1: subsetSpataObject()
 #' object <- loadExampleObject("UKF313T", meta = TRUE)
 #'
-#' plotSpatialAnnotations(object) # plots all annotations
-#'
 #' barcodes_keep <-
 #'  getMetaDf(object) %>%
-#'  filter(bayes_sapce %in% c("B3", "B2", "B1")) %>%
+#'  filter(bayes_space %in% c("B3", "B2", "B1")) %>%
 #'  pull(barcodes)
 #'
 #' object_sub <- subsetSpataObject(object, barcodes = barcodes_keep)
 #'
-#' plotSpatialAnnotations(object)
+#' show(object)
+#' show(object_sub)
+#'
+#' plotSpatialAnnotations(object) # plots all annotations
+#' plotSpatialAnnotations(object_sub) # subsetting affects everything by default
 #'
 #' ids <- getSpatAnnIds(object)
+#' ids_sub <- getSpatAnnIds(object_sub)
 #'
 #' # use patchwork to compare plots
-#' plotSurface(object, color_by = "bayes_space") +
-#'  (plotSurface(object_sub, color_by = "bayes_space") +
-#'   ggpLayerTissueOutline(object_sub) +
-#'   ggpLayerSpatAnnOutline(object_sub, ids = ids)
-#'   )
+#' plot_orig <-
+#'   plotSurface(object, color_by = "bayes_space", outline = T) +
+#'   ggpLayerSpatAnnOutline(object, ids = ids)
+#'
+#' plot_sub <-
+#'   plotSurface(object_sub, color_by = "bayes_space", outline = T) +
+#'   ggpLayerSpatAnnOutline(object_sub, ids = ids_sub)
+#'
+#' plot_orig + plot_sub
 #'
 #' # ----- Example 2: splitSpataObject()
 #' # uses subsetSpataObject() in the background
@@ -3310,27 +3319,30 @@ subsetSpataObject <- function(object,
 
         spat_ann_outline_df <- spat_ann@area$outer
 
-        purrr::map_lgl(
-          .x = tissue_sections,
-          .f = function(section){
+        on_section <-
+          purrr::map_lgl(
+            .x = tissue_sections,
+            .f = function(section){
 
-            section_outline_df <-
-              getTissueOutlineDf(object, section_subset = section)
+              section_outline_df <-
+                getTissueOutlineDf(object, section_subset = section)
 
-            locs <-
-              sp::point.in.polygon(
-                point.x = spat_ann_outline_df$x_orig,
-                point.y = spat_ann_outline_df$y_orig,
-                pol.x = section_outline_df$x_orig,
-                pol.y = section_outline_df$y_orig
-              )
+              locs <-
+                sp::point.in.polygon(
+                  point.x = spat_ann_outline_df$x_orig,
+                  point.y = spat_ann_outline_df$y_orig,
+                  pol.x = section_outline_df$x_orig,
+                  pol.y = section_outline_df$y_orig
+                )
 
-            out <- base::any(locs == 1)
+              out <- base::any(locs == 1)
 
-            return(out)
+              return(out)
 
-          }
-        )
+            }
+          )
+
+        return(any(on_section))
 
       })
 

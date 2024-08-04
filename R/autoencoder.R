@@ -128,6 +128,7 @@ assessAutoencoderOptions <- function(expr_mtr,
 #'
 #' @inherit print_family return
 #' @export
+#' @keywords internal
 
 printAutoencoderSummary <- function(object, mtr_name = "denoised", of_sample = ""){
 

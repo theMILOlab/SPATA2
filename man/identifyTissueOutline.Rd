@@ -58,7 +58,7 @@ be one of \code{\link[=getImageNames]{getImageNames()}}.}
 1 results in a relatively detailed shape, Infinity results in a convex hull.
 You can use values lower than 1, but they can produce pretty crazy shapes.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

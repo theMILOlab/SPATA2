@@ -28,7 +28,7 @@ not recommended. Only set to \code{FALSE}, if you know what you're doing.}
 since it only contains \code{FALSE} after this function call and is of no value
 any longer.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

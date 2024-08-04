@@ -7,17 +7,19 @@
 \alias{getSignatureList}
 \title{Obtain molecular signatures}
 \usage{
-getGeneSetList(object, class = NULL)
+getGeneSetList(object, ..., class = NULL)
 
-getMetaboliteSetList(object, class = NULL)
+getMetaboliteSetList(object, ..., class = NULL)
 
-getProteinSetList(object, class = NULL)
+getProteinSetList(object, ..., class = NULL)
 
-getSignatureList(object, class = NULL, assay_name = activeAssay(object))
+getSignatureList(object, ..., class = NULL, assay_name = activeAssay(object))
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{...}{Additional selection helpers from the tidyselect package that match names according to a given pattern.}
 
 \item{class}{Character vector of signature classes with which to subset the output.}
 
@@ -85,8 +87,20 @@ two_kinds_of_gene_sets <- getGeneSetList(object, class = c("HM", "RCTM"))
 head(two_kinds_of_gene_sets)
 tail(two_kinds_of_gene_sets)
 
+# subsetting with tidyselect grammar
+
+tcr_gene_sets <- getGeneSetList(object, contains("TCR"))
+
+str(tcr_gene_sets)
+
+tcr_gene_sets2 <- getGeneSetList(object, contains("TCR") & !starts_with("RCTM"))
+
+str(tcr_gene_sets2)
+
 }
 \seealso{
+\code{\link[=vselect]{vselect()}}, \code{\link[=lselect]{lselect()}}
+
 Documentation of slot @signatures in the \code{\link{MolecularAssay}}-class.
 To extract character vectors of molecule names \code{\link[=getMolecules]{getMolecules()}} or \code{\link[=getGenes]{getGenes()}}, ...
 To extract character vectors of signature names \code{\link[=getSignatureNames]{getSignatureNames()}}, \code{\link[=getGeneSets]{getGeneSets()}}, ...

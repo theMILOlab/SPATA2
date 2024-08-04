@@ -279,6 +279,7 @@ getBarcodes <- function(object,
 #'
 #' @return Character vector.
 #' @export
+#' @keywords internal
 #'
 getBarcodesInPolygon <- function(object, polygon_df, strictly = TRUE){
 
@@ -2138,29 +2139,6 @@ getDimRedDf <- function(object,
 
 }
 
-#' @rdname getDefaultInstructions
-#' @keywords internal
-getDirectoryInstructions <- function(object, to = c("cell_data_set", "seurat_object", "spata_object")){
-
-  check_object(object)
-
-  directory_list <-
-    purrr::map(.x = to, .f = ~ object@obj_info$instructions$directories[[.x]]) %>%
-    purrr::set_names(nm = to)
-
-  if(base::length(directory_list) > 1){
-
-    return(directory_list)
-
-  } else {
-
-    dir <- base::unlist(directory_list, use.names = FALSE)
-
-    return(dir)
-
-  }
-
-}
 # getE --------------------------------------------------------------------
 
 
@@ -2252,34 +2230,7 @@ getFromSeurat <- function(return_value, error_handling, error_value, error_ref){
 # getG --------------------------------------------------------------------
 
 
-#' @title Obtain gene meta data
-#'
-#' @inherit argument_dummy params
-#' @inherit getExpressionMatrix params
-#' @param only_df Logical. If set to TRUE only the data.frame is returned.
-#' If set to FALSE (the default) the whole list is returned.
-#'
-#' @return A data.frame from \code{getMetaDataDf()} or a list from \code{getGeneMetaData()}.
-#' @export
-
-getGeneMetaData <- function(object, ...){
-
-  deprecated(fn = TRUE, ...)
-
-  getAssay(object, assay_name = "gene")@meta_var
-
-}
-
-#' @rdname getGeneMetaData
-#' @export
-getGeneMetaDf <- function(object, ...){
-
-  getAssay(object, assay_name = "gene")@meta_var
-
-}
-
-
-#' @title Obtain gene information
+#' @title Obtain gene CNV information
 #'
 #' @description Extracts information regarding gene positioning
 #' on chromosomes and/or chromosome arms.
@@ -2358,51 +2309,21 @@ getGeneSetDf <- function(object){
 
 #' @rdname getSignatureList
 #' @export
-getGeneSetList <- function(object, class = NULL){
+getGeneSetList <- function(object, ..., class = NULL){
 
-  getSignatureList(object, assay_name = "gene", class = class)
+  getSignatureList(object, ..., assay_name = "gene", class = class)
 
 }
 
-#' @title Overview about the current gene sets
-#'
-#' @param object A valid spata-object.
-#'
-#' @return A data.frame with two variables \emph{Class} and \emph{Available Gene
-#' Sets} indicating the number of different gene sets the classes contain.
-#'
+
+#' @rdname getSignatureOverview
 #' @export
+getGeneSetOverview <- function(object, ...){
 
-getGeneSetOverview <- function(object){
-
-  # lazy check
-  check_object(object)
-
-  # main part
-
-  gene_sets <- getGeneSetList(object) %>% base::names()
-
-  if(base::nrow(gene_sets_df) == 0){
-
-    base::message("Gene-set data.frame is empty.")
-    return(data.frame())
-
-  } else {
-
-    gene_set_classes <- stringr::str_extract(string = gene_sets, pattern = "^.+?(?=_)")
-
-    dplyr::mutate(gene_sets_df, gs_type = gene_set_classes) %>%
-      dplyr::select(-gene) %>%
-      dplyr::distinct() %>%
-      dplyr::pull(gs_type) %>%
-      base::table() %>%
-      base::as.data.frame() %>%
-      magrittr::set_colnames(value = c("Class", "Available Gene Sets"))
-
-  }
-
+  getSignatureOverview(object, ..., assay_name = "gene")
 
 }
+
 
 #' @rdname getSignature
 #' @export
@@ -2417,9 +2338,9 @@ getGeneSet <- function(object, gene_set, ...){
 
 #' @rdname getSignatureNames
 #' @export
-getGeneSets <- function(object, class = NULL, ...){
+getGeneSets <- function(object, ..., class = NULL){
 
-  getSignatureNames(object, class = class, assay_name = "gene")
+  getSignatureNames(object, ..., class = class, assay_name = "gene")
 
 }
 

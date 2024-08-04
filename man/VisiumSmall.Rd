@@ -18,7 +18,7 @@ The \code{VisiumSmall} object is based on the \code{SpatialMethod} class and con
 \itemize{
 \item \code{method_specifics}: A list with the following elements:
 \itemize{
-\item \code{capture_area}: A list specifying the coordinates of the capture area:
+\item \code{capture_area_frame}: A list specifying the coordinates of the capture area:
 \itemize{
 \item \code{x}: A vector with coordinates "0.75mm" and "7.25mm".
 \item \code{y}: A vector with coordinates "0.75mm" and "7.25mm".

@@ -53,7 +53,7 @@ objects of classes for which a method has been defined.}
 \item{img_name}{Character value. The name of the image to activate as
 the default image.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

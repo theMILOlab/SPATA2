@@ -102,7 +102,7 @@ then 4 pixels to the right, and so on. If \code{step < 1}, the final step value 
 calculated as \code{round(side.length * step, digits = 0)} where \code{side.length} is
 equal to the height and width of the \strong{reference} image. See details for more.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

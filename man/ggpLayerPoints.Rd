@@ -177,7 +177,7 @@ thousand data points. If the number of data points plotted is bigger than
 \item{bcs_rm}{Character vector or \code{NULL}. If character, specifies the observations
 to be removed prior to analysis or visualization by their barcode.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

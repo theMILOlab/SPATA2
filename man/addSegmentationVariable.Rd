@@ -21,7 +21,7 @@ objects of classes for which a method has been defined.}
 \item{init_value}{A character string specifying the initial value of each observation.
 Defaults to \emph{unnnamed}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

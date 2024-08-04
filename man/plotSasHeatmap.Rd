@@ -72,7 +72,7 @@ valid input options.}
 to \code{ggplot2::geom_vline()}. Adjusts appearance of the vertical line that
 represents the border of the spatial annotation.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

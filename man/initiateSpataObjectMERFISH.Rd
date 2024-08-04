@@ -38,7 +38,7 @@ spatial location via the variables \emph{center_x} and \emph{center_y}.}
 the filename of the .csv file that contains molecule transcript positions, in particular,
 spatial location via the variables \emph{x} and \emph{y}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

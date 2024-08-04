@@ -9,7 +9,7 @@ loadSpataObject(directory_spata, verbose = TRUE, update = TRUE)
 \arguments{
 \item{directory_spata}{Character value. The directory from which to load the \link{`SPATA2'} object.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

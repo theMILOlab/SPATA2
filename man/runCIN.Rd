@@ -6,7 +6,7 @@
 \usage{
 runCIN(
   object,
-  bin_size = 1000000,
+  bin_size = 1e+06,
   window_k = 10,
   noise = 0.035,
   gene_pos_df = SPATA2::gene_pos_df,
@@ -32,7 +32,7 @@ base pairs.}
 
 \item{coverage_model}{A formula.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

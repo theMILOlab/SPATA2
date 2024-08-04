@@ -28,7 +28,7 @@ objects of classes for which a method has been defined.}
 \item{axis}{Character value. The axis around which the content is flipped.
 Either \emph{'horizontal'}, \emph{'h'}, \emph{'vertical'} or \emph{'v'}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

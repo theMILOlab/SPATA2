@@ -456,6 +456,184 @@ whichSpaceRangerVersion <- function(dir){
 
 ##########################
 
+#' @title Add meta variables for molecular data
+#'
+#' @description This function adds metadata variables from a given data frame to
+#' an object, aligning the data with
+#' existing \link[=concept_molecular_modalites]{molecular} \link[=concept_variables]{variables}.
+#'
+#' @param meta_var_df A data frame containing new metadata variables to be added.
+#' This data frame must contain a column named `molecule` which is used as the key
+#' for merging. Other columns should represent the metadata variables to be added.
+#' @param var_names A character vector specifying which columns from `meta_var_df` should be added as metadata variables.
+#' If `NULL`, all columns except *molecule* and *<assay_name>* will be added. Default is `NULL`.
+#' @param na_warn Logical value indicating whether to issue warnings if NAs are
+#' introduced in the new metadata variables. Default is `TRUE`.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' The input `meta_var_df` must satisfy the following requirements:
+#' - It must be a data frame.
+#' - It must contain a column named `molecule`, which will be used as the key for merging the metadata variables with the existing molecular observations.
+#' - Any other columns can represent the metadata variables to be added. These columns must not be named *"molecule"* or the value of *assay_name*.
+#' - The columns specified in `var_names` must be present in `meta_var_df`.
+#'
+#' The function checks for the existence of the specified metadata variables in the object.
+#' If `overwrite` is `FALSE`, it ensures that no existing variables are overwritten.
+#' If NAs are introduced in the new metadata variables, warnings will be issued if `na_warn` is `TRUE`.
+#'
+#' @export
+addMetaDataMol <- function(object,
+                           meta_var_df,
+                           var_names = NULL,
+                           assay_name = activeAssay(object),
+                           na_warn = TRUE,
+                           overwrite = FALSE){
+
+  mvdf <- getMetaVarDf(object, assay_name = assay_name, verbose = FALSE)
+
+  vars_rm <- c("molecule", assay_name)
+
+  all_var_names <- setdiff(x = colnames(meta_var_df), y = vars_rm)
+  all_existing_var_names <- setdiff(x = colnames(mvdf), y = vars_rm)
+
+  if (is.null(var_names)) {
+    var_names <- all_var_names
+  } else if (is.character(var_names)) {
+    var_names <- setdiff(x = var_names, y = vars_rm)
+
+    confuns::check_one_of(
+      input = var_names,
+      against = all_var_names,
+      fdb.opt = 2,
+      ref.opt.2 = "column names of `meta_var_df`"
+    )
+  } else {
+    stop("Input for `var_names` must be of class character or `NULL`.")
+  }
+
+  confuns::check_none_of(
+    input = var_names,
+    against = all_existing_var_names,
+    overwrite = overwrite
+  )
+
+  if (!"molecule" %in% colnames(meta_var_df)) {
+    stop(glue::glue("Require variable 'molecule' in input for `meta_var_df` as key for safe merging."))
+  }
+
+  mvdf <- dplyr::select(mvdf, -dplyr::any_of(var_names))
+
+  mvdf_new <- dplyr::left_join(x = mvdf, y = meta_var_df[, c("molecule", var_names)], by = "molecule")
+
+  object <- setMetaVarDf(object, meta_var_df = mvdf_new, assay_name = assay_name)
+
+  # Check for NAs
+  if (isTRUE(na_warn)) {
+    count_nas <- sapply(mvdf_new[var_names], function(x) sum(is.na(x)))
+
+    if (any(count_nas >= 1)) {
+      for (nm in names(count_nas[count_nas >= 1])) {
+        n <- count_nas[nm]
+        warning(glue::glue("New meta variable `{nm}` contains {n} NA."))
+      }
+    }
+  }
+
+  return(object)
+}
+
+
+
+#' @title Add meta variables for observations
+#'
+#' @description This function adds metadata variables from a given data frame to
+#' an object, aligning the data with existing \link[=concept_observations]{observations}.
+#'
+#' @param meta_obs_df A data frame containing new metadata variables to be added.
+#' This data frame must contain a column named `barcodes` which is used as the key
+#' for merging. Other columns should represent the metadata variables to be added.
+#' @param var_names A character vector specifying which columns from `meta_obs_df` should be added as metadata variables.
+#' If `NULL`, all columns except *barcodes* and *sample* will be added. Default is `NULL`.
+#' @param na_warn Logical value indicating whether to issue warnings if NAs are
+#' introduced in the new metadata variables. Default is `TRUE`.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' The input `meta_obs_df` must satisfy the following requirements:
+#' - It must be a data frame.
+#' - It must contain a column named `barcodes`, which will be used as the key for merging the metadata variables with the existing observations.
+#' - Any other columns can represent the metadata variables to be added. These columns must not be named *"barcodes"* or *"sample"*.
+#' - The columns specified in `var_names` must be present in `meta_obs_df`.
+#'
+#' The function checks for the existence of the specified metadata variables in the object.
+#' If `overwrite` is `FALSE`, it ensures that no existing variables are overwritten.
+#' If NAs are introduced in the new metadata variables, warnings will be issued if `na_warn` is `TRUE`.
+#'
+#' @export
+addMetaDataObs <- function(object,
+                           meta_obs_df,
+                           var_names = NULL,
+                           na_warn = TRUE,
+                           overwrite = FALSE){
+
+  vars_rm <- c("barcodes", "sample")
+
+  meta_df <- getMetaDf(object)
+
+  all_var_names <- setdiff(x = colnames(meta_obs_df), y = vars_rm)
+  all_existing_var_names <- setdiff(x = colnames(meta_df), y = vars_rm)
+
+  if(is.null(var_names)){
+    var_names <- all_var_names
+  } else if(is.character(var_names)) {
+    var_names <- setdiff(x = var_names, y = vars_rm)
+
+    confuns::check_one_of(
+      input = var_names,
+      against = all_var_names,
+      fdb.opt = 2,
+      ref.opt.2 = "column names of `meta_obs_df`"
+    )
+  } else {
+    stop("Input for `var_names` must be of class character or `NULL`.")
+  }
+
+  confuns::check_none_of(
+    input = var_names,
+    against = all_existing_var_names,
+    overwrite = overwrite
+  )
+
+  meta_df <- dplyr::select(meta_df, -dplyr::any_of(var_names))
+
+  if(!"barcodes" %in% colnames(meta_obs_df)){
+    stop(glue::glue("Require variable 'barcodes' in input for `meta_obs_df` as key for safe merging."))
+  }
+
+  meta_df_new <- dplyr::left_join(x = meta_df, y = meta_obs_df[, c("barcodes", var_names)], by = "barcodes")
+
+  object <- setMetaDf(object, meta_df = meta_df_new)
+
+  # Check for NAs
+  if(isTRUE(na_warn)){
+    count_nas <- sapply(meta_df_new[var_names], function(x) sum(is.na(x)))
+
+    if(any(count_nas >= 1)){
+      for(nm in names(count_nas[count_nas >= 1])){
+        n <- count_nas[nm]
+        warning(glue::glue("New meta variable `{nm}` contains {n} NA."))
+      }
+    }
+  }
+
+  return(object)
+}
+
+
+
 #' @title Obtain molecular meta data.frame
 #'
 #' @description Retrieves the metadata variable data frame for a specified assay

@@ -18,8 +18,10 @@ The \code{VisiumHD} object is based on the \code{SpatialMethod} class and contai
 \itemize{
 \item \code{method_specifics}: A list with the following elements:
 \itemize{
-\item \code{ccd}: Center to center distance of "2um", "8um" or "16um".
-\item \code{square_res}: Square resolution of "2um", "8um" or "16um".
+\item \code{capture_area_sides}: A list specifying the dimensions of the capture area with elements \code{x} and \code{y}, both set to "6.25mm".
+\item \code{ccd}: Center to center distance, which is a character value.
+\item \code{square_res}: Square resolution, which is a character value.
+\item \code{fiducial_frame_sides}: A list specifying the dimensions of the fiducial frame with elements \code{x} and \code{y}, both set to "8mm".
 }
 \item \code{observational_unit}: The unit of observation, which is "spot".
 \item \code{unit}: The SI unit used, which is "mm".

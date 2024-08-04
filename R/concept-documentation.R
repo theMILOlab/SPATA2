@@ -534,7 +534,7 @@ NULL
 #' features that characterize \emph{\link[=concept_observations]{observations}}.
 #'
 #' Throughout documentation the term *variables* and *features* are used
-#' synonymously. We work closely with the tidyverse which proposes the concept
+#' synonymously. We work closely with the tidyverse. It proposes the concept
 #' of tidy data, which structures data.frames in observations and variables.
 #' Therefore, we tend to stick to the term *variables*
 #'
@@ -559,14 +559,19 @@ NULL
 #' \itemize{
 #'  \item{*spatial*:}{ Numeric variables used to position the observations in two dimensional
 #'  space. Stored in the coordinates data.frame as obtained by [`getCoordsDf()`].
-#'  E.g. *x*, *x_orig*, *y* and *y_orig*.}
+#'  E.g. *x*, *x_orig*, *y* and *y_orig*. They are stored in the coordinates data.frame.}
 #'  \item{*molecular*:}{ Numeric variables used to quantify molecular expression of an
 #'  observation. Stored in the count and processed matrices of the [`MolecularAssay`]
-#'  objects. E.g. *GFAP*, *VEGFA*, *LDH*}
-#'  \item{*signature*:}{ Specific scores or mean expression based on other numeric (mainly
-#'  molecular) data variables. E.g. gene signatures like *HM_HYPOXIA* or cell cycling scores.}
-#'  \item{*meta*:}{ Numeric variables that do not fit in any of the descriptions above
-#'  and often correspond to meta data. E.g. the number of molecule counts per observation.}
+#'  objects. E.g. *GFAP*, *VEGFA*, *LDH*.}
+#'  \item{*dimensional reduction*}{ Numeric variables used to position the observations
+#'  in latent space. Stored in slot @@dim_red.}
+#'  \item{*signature*:}{ Specific scores or mean expression based on multiple molecular
+#'  data variables. E.g. gene signatures like *HM_HYPOXIA*. The [`SPATA2`] object
+#'  only stores the molecules of which the signature consists, namely in slot @@signatures
+#'  of the [`MolecularAssay`]. The actual variable is computed upon extraction.}
+#'  \item{*miscellaneous*:}{ Numeric variables that do not fit in any of the descriptions above
+#'  and often correspond to meta data. E.g. the number of molecule counts per observation.
+#'. They are stored in the meta data.frame for the observations, as obtained by [`getMetaDf()`].}
 #'  }
 #'
 #' @section Categorical / Grouping variables:
@@ -579,11 +584,11 @@ NULL
 #' \itemize{
 #'  \item{*cluster*:}{ Results of clustering algorithms. E.g. [`runBayesSpaceClustering()`]}
 #'  \item{*segmentation*:}{ Results of manual, spatial segmentation via [`createSpatialSegmentation()`]}
-#'  \item{*meta*:}{ Categorical variables that do not fit in any of the descriptions above.
-#'  E.g. group assignment by [`identifySpatialOutliers()`].}
+#'  \item{*miscellaneous*:}{ Categorical variables that do not fit in any of the descriptions above.
+#'  E.g. tissue section assignment by [`identifyTissueOutline()`], or outlier assignment by [`identifySpatialOutliers()`].}
 #'  }
 #'
-#' Grouping variables are stored as factors in the meta data.frame of slot @@meta_obs.
+#' Grouping variables are stored as factors in the meta data.frame of slot @@meta_obs, as obtained by [`getMetaDf()`].
 #'
 #' @seealso [`joinWithVariables()`]
 #'

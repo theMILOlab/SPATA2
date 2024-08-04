@@ -29,7 +29,7 @@ tissue sections. If they are not, they are removed.
 If \code{FALSE}, these processing steps are skipped. Generally speaking, this is
 not recommended. Only set to \code{FALSE}, if you know what you're doing.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

@@ -760,17 +760,25 @@ getProteinSet <- function(object, protein_set, ...){
 
 #' @rdname getSignatureList
 #' @export
-getProteinSetList <- function(object, class = NULL){
+getProteinSetList <- function(object, ..., class = NULL){
 
-  getSignatureList(object, assay_name = "protein", class = class)
+  getSignatureList(object, ..., assay_name = "protein", class = class)
+
+}
+
+#' @rdname getSignatureOverview
+#' @export
+getProteinSetOverview <- function(object, ...){
+
+  getSignatureOverview(object, ..., assay_name = "protein")
 
 }
 
 #' @rdname getSignatureNames
 #' @export
-getProteinSets <- function(object, class = NULL, ...){
+getProteinSets <- function(object, ..., class = NULL){
 
-  getSignatureNames(object, class = class, assay_name = "protein")
+  getSignatureNames(object, ..., class = class, assay_name = "protein")
 
 }
 
@@ -1520,6 +1528,40 @@ getSignature <- function(object,
 
 }
 
+#' @title Overview about the current signature collection
+#'
+#' @description
+#' Counts the number of signatures by class - after subsetting if desired.
+#'
+#' @inherit getSignatureList params
+#'
+#' @return A data.frame with two variables \emph{Class} and \emph{Available Signatures}
+#' indicating the number of different signatures the classes contain.
+#'
+#' @export
+getSignatureOverview <- function(object, ..., assay_name = activeAssay(object)){
+
+  # main part
+  snames <- getSignatureNames(object, ...,  assay_name = assay_name)
+
+  if(base::length(snames) == 0){
+
+    base::message("No signatures found. Returning NULL.")
+    return(NULL)
+
+  } else {
+
+    sign_classes <- stringr::str_extract(string = snames, pattern = "^.+?(?=_)")
+
+    base::table(sign_classes) %>%
+      base::as.data.frame() %>%
+      magrittr::set_colnames(value = c("Class", "Available Signatures")) %>%
+      tibble::as_tibble()
+
+  }
+
+}
+
 
 #' @title Obtain molecular signatures
 #'
@@ -1528,10 +1570,13 @@ getSignature <- function(object,
 #' to extract signatures of all assays, `getGeneSetList()`, `getMetaboliteSetList()` and `getProteinSetList()`
 #' are quick wrappers. But they require assays of specific names/\link[=concept_molecular_modalities]{molecular modalities}.
 #'
+#' @param ... Additional selection helpers from the tidyselect package that match names according to a given pattern.
 #' @param class Character vector of signature classes with which to subset the output.
 #' @inherit argument_dummy params
 #'
 #' @return A named list of character vectors.
+#'
+#' @seealso [`vselect()`], [`lselect()`]
 #'
 #' @details These functions retrieve the signatures from the provided object.
 #'
@@ -1587,24 +1632,57 @@ getSignature <- function(object,
 #' head(two_kinds_of_gene_sets)
 #' tail(two_kinds_of_gene_sets)
 #'
+#' # subsetting with tidyselect grammar
+#'
+#' tcr_gene_sets <- getGeneSetList(object, contains("TCR"))
+#'
+#' str(tcr_gene_sets)
+#'
+#' tcr_gene_sets2 <- getGeneSetList(object, contains("TCR") & !starts_with("RCTM"))
+#'
+#' str(tcr_gene_sets2)
+#'
 #' @export
 getSignatureList <- function(object,
+                             ...,
                              class = NULL,
                              assay_name = activeAssay(object)){
 
+  filter_expr <- rlang::enquos(...)
+
   signatures <- getAssay(object, assay_name = assay_name)@signatures
 
-  if(base::is.character(class)){
+  if(purrr::is_empty(signatures)){
 
-    class_inp <-
-      stringr::str_c(class, collapse = "|") %>%
-      stringr::str_c("^(",. ,")")
+    warning(glue::glue("Signature list for assay {assay_name} is empty."))
 
-    signature_names <- base::names(signatures)
+  } else {
 
-    signature_sub <- stringr::str_subset(signature_names, pattern = class_inp)
+    if(base::is.character(class)){
 
-    signatures <- signatures[signature_sub]
+      class_inp <-
+        stringr::str_c(class, collapse = "|") %>%
+        stringr::str_c("^(",. ,")")
+
+      signature_names <- base::names(signatures)
+
+      signature_sub <- stringr::str_subset(signature_names, pattern = class_inp)
+
+      signatures <- signatures[signature_sub]
+
+    }
+
+    if(!purrr::is_empty(filter_expr)){
+
+      signatures <- confuns::lselect(lst = signatures, !!!filter_expr, out.fail = list())
+
+    }
+
+    if(purrr::is_empty(signatures)){
+
+      warning("Subsetting of signature list resulted in 0 signatures. Returning empty list.")
+
+    }
 
   }
 
@@ -1619,9 +1697,7 @@ getSignatureList <- function(object,
 #' Extracts a character vector of \link[=concept_molecular_signatures]{molecular signature}
 #' names.
 #'
-#' @param class `NULL` or a character vector indicating the classes from which to obtain
-#' the gene set names. (Which sisgnature classes currently exist can
-#' be obtained e.g. with \code{printSignatureOverview()}).
+#' @inherit getSignatureList params seealso
 #' @inherit argument_dummy params
 #'
 #' @return Character vector.
@@ -1682,19 +1758,18 @@ getSignatureList <- function(object,
 #'
 #' print(coords_df)
 #'
-#' coords_df <- joinWithVariables(object, coords_df = coords_df, variables = hallmark_signatures)
+#' coords_df <- joinWithVariables(object, spata_df = coords_df, variables = hallmark_signatures)
 #'
 #' print(coords_df)
 #'
 
 getSignatureNames <- function(object,
+                              ...,
                               class = NULL,
-                              assay_name = activeAssay(object),
-                              ...){
+                              assay_name = activeAssay(object)
+                              ){
 
-  deprecated(...)
-
-  getSignatureList(object, class = class, assay_name = assay_name) %>%
+  getSignatureList(object, ..., class = class, assay_name = assay_name) %>%
     base::names()
 
 }
@@ -4039,7 +4114,7 @@ getVariableMolecules <- function(object,
 
 }
 
-#' @title Obtain variable names
+#' @title Obtain variable names of the SPATA2 object
 #'
 #' @description Extracts a character vector of variable names that are currently
 #' known to the `SPATA2` object.
@@ -4113,6 +4188,7 @@ getVariableNames <- function(object, protected = FALSE){
 #'
 #' @seealso `getCoordsDf()`, `getMetaDf()`
 #'
+#' @keywords internal
 #' @export
 getVarTypeList <- function(object, variables = NULL){
 

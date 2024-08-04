@@ -34,7 +34,7 @@ the \code{HistoImage} is stored.}
 treated as the reference image for all other registered images in
 the \code{SpatialData} object.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

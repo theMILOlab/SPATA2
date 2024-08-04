@@ -109,7 +109,7 @@ are not supposed to be included.}
 \item{nsep}{Character value with which to separate the aspects that
 build the name of each simulation.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

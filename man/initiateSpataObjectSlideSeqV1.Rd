@@ -38,7 +38,7 @@ for a file ending with \emph{genes.tsv}.}
 the filename of the coordinates. If \code{NULL}, the SlideSeq folder is skimmed
 for a file ending with \emph{MatchedBeadLocation.csv}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

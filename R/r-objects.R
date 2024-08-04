@@ -471,6 +471,8 @@ depr_info <-
       "getDefaultTrajectory" = "getDefaultTrajectoryId",
       "getExpressionMatrix" = "getProcessedMatrix() or getMatrix",
       "getFeatureDf" = "getMetaDf",
+      "getGeneMetaData" = "getMetaVarDf",
+      "getGeneMetaDf" = "getMetaVarDf",
       "getHistoImaging" = "getSpatialData",
       "getImageAnnotationAreaDf" = "getImgAnnBorderDf",
       "getImageAnnotationCenter" = "getImgAnnCenter",
@@ -1122,9 +1124,11 @@ threshold_scattermore <- 100000
 #' \itemize{
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
-#'     \item \code{ccd}: Center to center distance of "2um", "8um" or "16um".
-#'     \item \code{square_res}: Square resolution of "2um", "8um" or "16um".
-#'     }
+#'     \item \code{capture_area_sides}: A list specifying the dimensions of the capture area with elements \code{x} and \code{y}, both set to "6.25mm".
+#'     \item \code{ccd}: Center to center distance, which is a character value.
+#'     \item \code{square_res}: Square resolution, which is a character value.
+#'     \item \code{fiducial_frame_sides}: A list specifying the dimensions of the fiducial frame with elements \code{x} and \code{y}, both set to "8mm".
+#'   }
 #'   \item \code{observational_unit}: The unit of observation, which is "spot".
 #'   \item \code{unit}: The SI unit used, which is "mm".
 #'   \item \code{version}: The version of the SPATA2 package being used.
@@ -1140,12 +1144,13 @@ VisiumHD <-
         ccd = character(1),
         square_res = character(1),
         fiducial_frame_sides = list(x = "8mm", y = "8mm")
-        ),
+      ),
     observational_unit = "spot",
     unit = "mm",
     version = current_spata2_version,
     name = "VisiumHD"
   )
+
 
 #' VisiumLarge Spatial Method
 #'
@@ -1164,11 +1169,11 @@ VisiumHD <-
 #'     \item \code{ccd}: Center to center distance of "100um".
 #'     \item \code{diameter}: Diameter of each spot is "55um".
 #'     \item \code{fiducial_frame}: A list with the following elements:
-#'     \itemize{
-#'       \item \code{x}: A vector with coordinates "0mm" and "12.5mm".
-#'       \item \code{y}: A vector with coordinates "0mm" and "12.5mm".
+#'       \itemize{
+#'         \item \code{x}: A vector with coordinates "0mm" and "12.5mm".
+#'         \item \code{y}: A vector with coordinates "0mm" and "12.5mm".
+#'       }
 #'     }
-#'   }
 #'   \item \code{observational_unit}: The unit of observation, which is "spot".
 #'   \item \code{unit}: The SI unit used, which is "mm".
 #'   \item \code{version}: The version of the SPATA2 package being used.
@@ -1191,6 +1196,7 @@ VisiumLarge <-
     version = current_spata2_version
   )
 
+
 #' VisiumSmall Spatial Method
 #'
 #' This object abstracts the VisiumSmall spatial method, which is designed for smaller capture areas compared to other Visium methods.
@@ -1200,19 +1206,19 @@ VisiumLarge <-
 #' \itemize{
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
-#'     \item \code{capture_area}: A list specifying the coordinates of the capture area:
-#'        \itemize{
-#'          \item \code{x}: A vector with coordinates "0.75mm" and "7.25mm".
-#'          \item \code{y}: A vector with coordinates "0.75mm" and "7.25mm".
-#'         }
+#'     \item \code{capture_area_frame}: A list specifying the coordinates of the capture area:
+#'       \itemize{
+#'         \item \code{x}: A vector with coordinates "0.75mm" and "7.25mm".
+#'         \item \code{y}: A vector with coordinates "0.75mm" and "7.25mm".
+#'       }
 #'     \item \code{ccd}: Center to center distance of "100um".
 #'     \item \code{diameter}: Diameter of each spot is "55um".
 #'     \item \code{fiducial_frame}: A list with the following elements:
-#'     \itemize{
-#'       \item \code{x}: A vector with coordinates "0mm" and "8mm".
-#'       \item \code{y}: A vector with coordinates "0mm" and "8mm".
+#'       \itemize{
+#'         \item \code{x}: A vector with coordinates "0mm" and "8mm".
+#'         \item \code{y}: A vector with coordinates "0mm" and "8mm".
+#'       }
 #'     }
-#'   }
 #'   \item \code{observational_unit}: The unit of observation, which is "spot".
 #'   \item \code{unit}: The SI unit used, which is "mm".
 #'   \item \code{version}: The version of the SPATA2 package being used.
@@ -1234,6 +1240,8 @@ VisiumSmall <-
     unit = "mm",
     version = current_spata2_version
   )
+
+
 
 
 

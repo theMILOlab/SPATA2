@@ -36,3 +36,4 @@ Character vector.
 Extracts barcodes of barcode-spots that fall in a given
 polygon. Works closely with \code{sp::point.in.polygon()}.
 }
+\keyword{internal}

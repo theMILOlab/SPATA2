@@ -110,6 +110,18 @@ plotTrajectoryLineplot <- function(...){
 }
 
 
+#' @title Deprecated
+#' @description Deprecated in favor of [`getGeneSetOverview()`]
+#' @export
+#' @keywords internal
+printGeneSetOverview <- function(object, ...){
+
+  deprecated(fn = TRUE)
+
+  getGeneSetOverview(object, ...)
+
+}
+
 # r -----------------------------------------------------------------------
 
 #' @title Deprecated

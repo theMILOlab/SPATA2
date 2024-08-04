@@ -31,7 +31,7 @@ Given to argument \code{span} of \code{stats::loess()}.}
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

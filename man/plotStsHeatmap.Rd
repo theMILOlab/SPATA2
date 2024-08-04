@@ -49,7 +49,7 @@ is the number of bins multiplied with the input for this argument.}
 continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 valid input options.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

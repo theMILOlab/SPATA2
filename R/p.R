@@ -219,10 +219,11 @@ pixel_df_to_image <- function(pxl_df){
 
 #' @title Print current default settings
 #'
-#' @inherit check_object params
+#' @inherit argument_dummy params
 #' @inherit print_family return
 #'
 #' @export
+#' @keywords internal
 printDefaultInstructions <- function(object){
 
   check_object(object)
@@ -257,29 +258,6 @@ printDefaultInstructions <- function(object){
   base::return(feedback)
 
 }
-
-
-#' @title Print overview about the current gene sets
-#'
-#' @inherit check_sample params
-#'
-#' @inherit print_family return
-#'
-#' @export
-
-printGeneSetOverview <- function(object){
-
-  gene_sets <-
-    getSignatures(object, assay_name = "transcriptomics") %>%
-    base::names()
-
-  stringr::str_extract(string = gene_sets, pattern = "^.+?(?=_)") %>%
-    base::table() %>%
-    base::as.data.frame() %>%
-    magrittr::set_colnames(value = c("Class", "Available Gene Sets"))
-
-}
-
 
 # process -----------------------------------------------------------------
 

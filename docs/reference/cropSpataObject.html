@@ -49,6 +49,9 @@ rectangle given by xrange and yrange are kept."><!-- mathjax --><script src="htt
     <li>
       <a href="../articles/initiation-and-preprocessing-visium.html">Initiation &amp; Preprocessing with Visium data</a>
     </li>
+    <li>
+      <a href="../articles/initiation-and-preprocessing-visium-hd.html">Initiation &amp; Preprocessing with VisiumHD data</a>
+    </li>
     <li class="dropdown-header">Basic Manipulation of a SPATA2 object</li>
     <li>
       <a href="../articles/adding-data.html">Adding Data to SPATA2 objects</a>
@@ -169,7 +172,7 @@ to the input of <code>xrange</code> and <code>yrange</code>. If <code>FALSE</cod
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical. If set to TRUE informative messages regarding
+<dd><p>Logical. If <code>TRUE</code>, informative messages regarding
 the computational progress will be printed.</p>
 <p>(Warning messages will always be printed.)</p></dd>
 
@@ -194,25 +197,32 @@ this function.</p></div>
 <span><span class="co"># ----- Example 1: subsetSpataObject()</span></span>
 <span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="loadExampleObject.html">loadExampleObject</a></span><span class="op">(</span><span class="st">"UKF313T"</span>, meta <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="plotSpatialAnnotations.html">plotSpatialAnnotations</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="co"># plots all annotations</span></span>
-<span></span>
 <span><span class="va">barcodes_keep</span> <span class="op">&lt;-</span></span>
 <span> <span class="fu"><a href="getMetaDf.html">getMetaDf</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">bayes_sapce</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B3"</span>, <span class="st">"B2"</span>, <span class="st">"B1"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">bayes_space</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B3"</span>, <span class="st">"B2"</span>, <span class="st">"B1"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">barcodes</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">object_sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="subsetSpataObject.html">subsetSpataObject</a></span><span class="op">(</span><span class="va">object</span>, barcodes <span class="op">=</span> <span class="va">barcodes_keep</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="plotSpatialAnnotations.html">plotSpatialAnnotations</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/show.html" class="external-link">show</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/show.html" class="external-link">show</a></span><span class="op">(</span><span class="va">object_sub</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="plotSpatialAnnotations.html">plotSpatialAnnotations</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="co"># plots all annotations</span></span>
+<span><span class="fu"><a href="plotSpatialAnnotations.html">plotSpatialAnnotations</a></span><span class="op">(</span><span class="va">object_sub</span><span class="op">)</span> <span class="co"># subsetting affects everything by default</span></span>
 <span></span>
 <span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="getSpatAnnIds.html">getSpatAnnIds</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span><span class="va">ids_sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="getSpatAnnIds.html">getSpatAnnIds</a></span><span class="op">(</span><span class="va">object_sub</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># use patchwork to compare plots</span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span><span class="op">)</span> <span class="op">+</span></span>
-<span> <span class="op">(</span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_sub</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="ggpLayerTissueOutline.html">ggpLayerTissueOutline</a></span><span class="op">(</span><span class="va">object_sub</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline</a></span><span class="op">(</span><span class="va">object_sub</span>, ids <span class="op">=</span> <span class="va">ids</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
+<span><span class="va">plot_orig</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span>, outline <span class="op">=</span> <span class="cn">T</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline</a></span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="va">ids</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">plot_sub</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_sub</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span>, outline <span class="op">=</span> <span class="cn">T</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline</a></span><span class="op">(</span><span class="va">object_sub</span>, ids <span class="op">=</span> <span class="va">ids_sub</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">plot_orig</span> <span class="op">+</span> <span class="va">plot_sub</span></span>
 <span></span>
 <span><span class="co"># ----- Example 2: splitSpataObject()</span></span>
 <span><span class="co"># uses subsetSpataObject() in the background</span></span>

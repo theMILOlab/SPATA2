@@ -23,7 +23,7 @@ using their default setup (in this precise order).}
 segmentation or copy number variation results to the meta data.frame that has been
 computed prior to reducing the object to the example version.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

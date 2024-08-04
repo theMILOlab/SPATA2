@@ -47,6 +47,9 @@
     <li>
       <a href="../articles/initiation-and-preprocessing-visium.html">Initiation &amp; Preprocessing with Visium data</a>
     </li>
+    <li>
+      <a href="../articles/initiation-and-preprocessing-visium-hd.html">Initiation &amp; Preprocessing with VisiumHD data</a>
+    </li>
     <li class="dropdown-header">Basic Manipulation of a SPATA2 object</li>
     <li>
       <a href="../articles/adding-data.html">Adding Data to SPATA2 objects</a>
@@ -204,6 +207,10 @@
         </td>
         <td><p>Crop SPATA2 object</p></td>
       </tr><tr><td>
+          <p><code><a href="filterSpataObject.html">filterSpataObject()</a></code> </p>
+        </td>
+        <td><p>Subset SPATA2 object with logical expressions</p></td>
+      </tr><tr><td>
           <p><code><a href="reduceSpataObject.html">reduceSpataObject()</a></code> </p>
         </td>
         <td><p>Reduce SPATA2 object</p></td>
@@ -218,7 +225,7 @@
       </tr><tr><td>
           <p><code><a href="subsetSpataObject.html">subsetSpataObject()</a></code> </p>
         </td>
-        <td><p>Subset SPATA2 object</p></td>
+        <td><p>Subset SPATA2 object with barcodes</p></td>
       </tr><tr><td>
           <p><code><a href="updateSpataObject.html">updateSpataObject()</a></code> </p>
         </td>
@@ -239,6 +246,14 @@
           <p><code><a href="addInnerBorder.html">addInnerBorder()</a></code> </p>
         </td>
         <td><p>Add holes to spatial annotations</p></td>
+      </tr><tr><td>
+          <p><code><a href="addMetaDataMol.html">addMetaDataMol()</a></code> </p>
+        </td>
+        <td><p>Add meta variables for molecular data</p></td>
+      </tr><tr><td>
+          <p><code><a href="addMetaDataObs.html">addMetaDataObs()</a></code> </p>
+        </td>
+        <td><p>Add meta variables for observations</p></td>
       </tr><tr><td>
           <p><code><a href="addMoleculeCoordinates.html">addMoleculeCoordinates()</a></code> </p>
         </td>
@@ -357,7 +372,7 @@
         <td><p>Set SPATA2 directory</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="availability-checks">Availability Checks <a href="#availability-checks" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>A collection of functions that check availability of processing steps and return logical values.</p>
+          <p class="section-desc"></p><p>A collection of functions that check availability of processing steps and return logical values. (This is a subset of all related functions.)</p>
         </th>
       </tr></tbody><tbody><tr><td>
           <p><code><a href="containsAssay.html">containsAssay()</a></code> </p>
@@ -528,17 +543,9 @@
         </td>
         <td><p>Obtain assay names/modalites</p></td>
       </tr><tr><td>
-          <p><code><a href="getGeneMetaData.html">getGeneMetaData()</a></code> <code><a href="getGeneMetaData.html">getGeneMetaDf()</a></code> </p>
-        </td>
-        <td><p>Obtain gene meta data</p></td>
-      </tr><tr><td>
           <p><code><a href="getGenePosDf.html">getGenePosDf()</a></code> </p>
         </td>
-        <td><p>Obtain gene information</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGeneSetOverview.html">getGeneSetOverview()</a></code> </p>
-        </td>
-        <td><p>Overview about the current gene sets</p></td>
+        <td><p>Obtain gene CNV information</p></td>
       </tr><tr><td>
           <p><code><a href="getSignature.html">getGeneSet()</a></code> <code><a href="getSignature.html">getMetaboliteSet()</a></code> <code><a href="getSignature.html">getProteinSet()</a></code> <code><a href="getSignature.html">getSignature()</a></code> </p>
         </td>
@@ -551,6 +558,10 @@
           <p><code><a href="getSignatureNames.html">getGeneSets()</a></code> <code><a href="getSignatureNames.html">getMetaboliteSets()</a></code> <code><a href="getSignatureNames.html">getProteinSets()</a></code> <code><a href="getSignatureNames.html">getSignatureNames()</a></code> </p>
         </td>
         <td><p>Obtain molecular signature names</p></td>
+      </tr><tr><td>
+          <p><code><a href="getSignatureOverview.html">getGeneSetOverview()</a></code> <code><a href="getSignatureOverview.html">getMetaboliteOverview()</a></code> <code><a href="getSignatureOverview.html">getProteinSetOverview()</a></code> <code><a href="getSignatureOverview.html">getSignatureOverview()</a></code> </p>
+        </td>
+        <td><p>Overview about the current signature collection</p></td>
       </tr><tr><td>
           <p><code><a href="getCountMatrix.html">getCountMatrix()</a></code> </p>
         </td>
@@ -654,7 +665,7 @@
       </tr><tr><td>
           <p><code><a href="getMetaDf.html">getMetaDf()</a></code> </p>
         </td>
-        <td><p>Obtain meta data.frame</p></td>
+        <td><p>Obtain meta data.frame for observations</p></td>
       </tr><tr><td>
           <p><code><a href="getSpatSegmVarNames.html">getSpatSegmVarNames()</a></code> </p>
         </td>
@@ -732,13 +743,9 @@
         </td>
         <td><p>Obtain names of registered images</p></td>
       </tr><tr><td>
-          <p><code><a href="getImageRaster.html">getImageRaster()</a></code> <code><a href="getImageRaster.html">getImageRasterInfo()</a></code> </p>
-        </td>
-        <td><p>Obtain image raster-(information)</p></td>
-      </tr><tr><td>
           <p><code><a href="getImageSectionsByBarcode.html">getImageSectionsByBarcode()</a></code> </p>
         </td>
-        <td><p>Obtain image sections by barcode spot</p></td>
+        <td><p>Obtain image sections by barcode</p></td>
       </tr><tr><td>
           <p><code><a href="getImageTransformations.html">getImageTransformations()</a></code> </p>
         </td>
@@ -872,17 +879,17 @@
         </td>
         <td><p>Obtain barcodes</p></td>
       </tr><tr><td>
-          <p><code><a href="getBarcodesInPolygon.html">getBarcodesInPolygon()</a></code> <code><a href="getBarcodesInPolygon.html">getBarcodesInPolygonList()</a></code> </p>
-        </td>
-        <td><p>Obtain barcodes in polygon</p></td>
-      </tr><tr><td>
-          <p><code><a href="getDefaultInstructions.html">getDefault()</a></code> <code><a href="getDefaultInstructions.html">getDefaultInstructions()</a></code> <code><a href="getDefaultInstructions.html">getDirectoryInstructions()</a></code> </p>
+          <p><code><a href="getDefaultInstructions.html">getDefault()</a></code> <code><a href="getDefaultInstructions.html">getDefaultInstructions()</a></code> </p>
         </td>
         <td><p>Obtain default argument inputs</p></td>
       </tr><tr><td>
+          <p><code><a href="getLogfileDf.html">getLogfileDf()</a></code> </p>
+        </td>
+        <td><p>Obtain object logfile data.frame</p></td>
+      </tr><tr><td>
           <p><code><a href="getMethodSpecifics.html">getMethodSpecifics()</a></code> </p>
         </td>
-        <td><p>Obtain method specifics</p></td>
+        <td><p>Obtain platform details</p></td>
       </tr><tr><td>
           <p><code><a href="getPlatform.html">getPlatform()</a></code> </p>
         </td>
@@ -910,11 +917,7 @@
       </tr><tr><td>
           <p><code><a href="getVariableNames.html">getVariableNames()</a></code> </p>
         </td>
-        <td><p>Obtain variable names</p></td>
-      </tr><tr><td>
-          <p><code><a href="getVarTypeList.html">getVarTypeList()</a></code> </p>
-        </td>
-        <td><p>Get variable type list</p></td>
+        <td><p>Obtain variable names of the SPATA2 object</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="remove-content">Remove Content <a href="#remove-content" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Remove miscellaneous kinds of data from a SPATA2 object.</p>
@@ -1087,26 +1090,6 @@
           <p><code><a href="unloadImage.html">unloadImage()</a></code> <code><a href="unloadImage.html">unloadImages()</a></code> </p>
         </td>
         <td><p>Unload image slot content</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h2 id="information-summaries">Information &amp; Summaries <a href="#information-summaries" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>Functions that quickly give you an overwiew about the objects data and the progress made.</p>
-        </th>
-      </tr></tbody><tbody><tr><td>
-          <p><code><a href="getLogfileDf.html">getLogfileDf()</a></code> </p>
-        </td>
-        <td><p>Obtain object logfile data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="printAutoencoderSummary.html">printAutoencoderSummary()</a></code> </p>
-        </td>
-        <td><p>Print autoencoder summary</p></td>
-      </tr><tr><td>
-          <p><code><a href="printDefaultInstructions.html">printDefaultInstructions()</a></code> </p>
-        </td>
-        <td><p>Print current default settings</p></td>
-      </tr><tr><td>
-          <p><code><a href="printGeneSetOverview.html">printGeneSetOverview()</a></code> </p>
-        </td>
-        <td><p>Print overview about the current gene sets</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="join-information">Join Information <a href="#join-information" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>These functions access the information of interest, perform additional customized computations and join it as additional variables to already existing data.frames in a tidy-data fashion.</p>
