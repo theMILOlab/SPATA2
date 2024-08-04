@@ -44,7 +44,7 @@ of the expression estimates.}
 to be plotted is increased by linear interpolation. This can lead to smoother
 visualization but also to increased runtime.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

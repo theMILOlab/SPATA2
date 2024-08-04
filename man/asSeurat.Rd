@@ -27,7 +27,7 @@ initiation.}
 to refer to the assay or the image in the \code{Seurat} object. Defaults to
 the default of the \code{Seurat} package.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

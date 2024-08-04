@@ -366,6 +366,123 @@ filterDeaDf <- function(dea_df,
 }
 
 
+
+#' @title Subset SPATA2 object with logical expressions
+#'
+#' @description This function filters a SPATA2 object based on specified logical expressions,
+#' retaining only the observations that meet the criteria. It has the same effect as
+#' the function [`subsetSpataObject()`] has, but it provides more convenient input options.
+#'
+#' Note the `.` prefix before the arguments.
+#'
+#' @inherit dplyr::filter params
+#' @param .normalize Logical value indicating whether numeric variables should be
+#' scaled to 0-1 before filtering. Default is `FALSE`.
+#' @param .spatial_proc Logical value. Indicates whether the new sub-object is
+#' processed spatially. If `TRUE`, a new tissue outline is identified based
+#' on the remaining observations via [`identifyTissueOutline()`]. Then,
+#' spatial annotations are tested on being located on either of the remaining
+#' tissue sections. If they are not, they are removed.
+#'
+#' If `FALSE`, these processing steps are skipped. Generally speaking, this is
+#' not recommended. Only set to `FALSE`, if you know what you're doing.
+#'
+#' @param .verbose Logical. If `TRUE`, informative messages regarding the
+#' computational process will be printed.
+#'
+#' (Warning messages will always be printed.)
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' The function filters the input `SPATA2` object based on the logical expressions provided in `...`.
+#' If no expressions are provided, the function returns the input object with a warning.
+#' The variables used in the expressions are extracted and joined with the `SPATA2` object's data frame.
+#' The observations that meet the criteria specified by the logical expressions are retained.
+#'
+#' @seealso [`joinWithVariables()`], [`subsetSpataObject()`]
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(patchwork)
+#'
+#' object <- loadExampleObject("UKF269T", process = TRUE, meta = TRUE)
+#'
+#' orig_frame <- ggpLayerFrameByCoords(object)
+#'
+#' # exemplifies the effect of the 'normalize'
+#' # note the value range
+#' plotSurface(object, color_by = "SNAP25", normalize = TRUE)
+#' plotSurface(object, color_by = "SNAP25", normalize = FALSE)
+#'
+#' # another grouping variable for this example
+#' plotSurface(object, color_by = "bayes_space")
+#'
+#' # example 1: normalize = TRUE
+#' object_sub1 <- filterSpataObject(object, SNAP25 > 0.5, .normalize = TRUE)
+#'
+#' plotSurface(object_sub1) +
+#' (plotSurface(object_sub1) + orig_frame)
+#'
+#'
+#' # example 2: normalize = FALSE
+#' object_sub2 <- filterSpataObject(object, SNAP25 > 0.5, .normalize = FALSE)
+#'
+#' plotSurface(object_sub2, color_by = "SNAP25") +
+#' (plotSurface(object_sub1) + orig_frame)
+#'
+#' # example 3: logical tests can be more complex
+#'
+#' object_sub3 <- filterSpataObject(object, GFAP > 0.5 | bayes_space %in% c("1", "3"), .normalize = TRUE)
+#'
+#' plotSurface(object_sub3, color_by = "SNAP25") +
+#' plotSurface(object_sub3, color_by = "bayes_space")
+#'
+#' @export
+filterSpataObject <- function(object, ..., .normalize = FALSE, .spatial_proc = TRUE, .verbose = TRUE){
+
+  filter_expr <- rlang::enquos(...)
+
+  if(purrr::is_empty(filter_expr)){
+
+    warning("No tests specified. Returning input SPATA2 object.")
+
+  } else {
+
+    variables <- extract_var_names(filter_expr)
+
+    confuns::check_one_of(
+      input = variables,
+      against = getVariableNames(object),
+      fdb.opt = 2,
+      ref.opt.2 = "among variables in this SPATA2 object"
+    )
+
+    test_df <-
+      joinWithVariables(
+        object = object,
+        spata_df = getSpataDf(object),
+        variables = variables,
+        smooth = FALSE,
+        uniform_variables = "keep",
+        normalize = .normalize,
+        verbose = FALSE
+      )
+
+    barcodes_keep <-
+      dplyr::filter(test_df, !!!filter_expr) %>%
+      dplyr::pull(barcodes)
+
+    object <- subsetSpataObject(object, barcodes = barcodes_keep, spatial_proc = .spatial_proc, verbose = .verbose)
+
+  }
+
+  returnSpataObject(object)
+
+}
+
 #' @keywords internal
 #' @export
 find_elbow_point <- function(df){

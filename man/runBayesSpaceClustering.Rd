@@ -110,7 +110,7 @@ is assigned to the global environment. This makes the whole output
 of the bayes space pipeline available instead of only adding the clustering
 output as a grouping variable to the \code{SPATA2} object.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

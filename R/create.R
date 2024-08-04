@@ -2893,6 +2893,7 @@ createSpatialMethod <- function(...){
 #' @param misc List of miscellaneous information.
 #' @param sample Character value. The sample name of the tissue.
 #'
+#' @inherit initiateSpataObjectVisiumHD params
 #' @inherit argument_dummy params
 #'
 #' @seealso [`registerImage()`] to register images afterwards.
@@ -3132,9 +3133,6 @@ createSpatialDataVisium <- function(dir,
                                     misc = list(),
                                     verbose = TRUE){
 
-  # check input directory
-  isDirVisium(dir = dir, error = TRUE)
-
   # get all files in folder and subfolders
   files <- base::list.files(dir, full.names = TRUE, recursive = TRUE)
 
@@ -3190,11 +3188,18 @@ createSpatialDataVisium <- function(dir,
 
   }
 
-  if(base::nrow(coords_df) < 10000){
+  xmean <- base::mean(coords_df$x_orig, na.rm = TRUE)
+  ymean <- base::mean(coords_df$y_orig, na.rm = TRUE)
+
+  coords_df <-
+    dplyr::filter(coords_df, in_tissue == 1) %>%
+    dplyr::select(-in_tissue)
+
+  if(base::any(coords_df$barcodes %in% visium_spots$VisiumSmall$barcode)){
 
     method <- spatial_methods[["VisiumSmall"]]
 
-  } else {
+  } else if(base::any(coords_df$barcodes %in% visium_spots$VisiumLarge$barcode)){
 
     method <- spatial_methods[["VisiumLarge"]]
 
@@ -3245,11 +3250,9 @@ createSpatialDataVisium <- function(dir,
   spot_size <-
     scale_factors$fiducial_diameter_fullres *
     scale_factors[[stringr::str_c("tissue", img_ref, "scalef", sep = "_")]] /
-    base::max(getImageDims(img_list[[img_ref]]))*100
+    base::max(getImageDims(img_list[[img_ref]]))*100 # Visium * 100
 
-  spot_scale_fct <- 1.15
-
-  method@method_specifics[["spot_size"]] <- spot_size * spot_scale_fct
+  method@method_specifics[["spot_size"]] <- spot_size * 1.1
 
   # create output
   object <-
@@ -3262,11 +3265,45 @@ createSpatialDataVisium <- function(dir,
       coordinates = coords_df,
       method = method,
       meta = meta,
-      misc = misc
+      misc = misc,
+      verbose = verbose
     )
 
-  # compute pixel scale factor
+  # compute pixel scale factor to
   object <- computePixelScaleFactor(object, verbose = verbose)
+
+  # set capture area
+  isf <- getScaleFactor(object, fct_name = "image", img_name = img_active)
+
+  if(method@name == "VisiumSmall"){
+
+    # scale to orig with isf
+    half <- as_pixel(input = "3.25mm", object = object)/isf
+
+  } else if(method@name == "VisiumLarge"){
+
+    # scale to orig with isf
+    half <- as_pixel(input = "5.5mm", object = object)/isf
+
+  }
+
+  if(method@name == "VisiumSmall"){
+
+    object@method@capture_area <-
+      list(
+        x = c(xmean-half, xmean + half),
+        y = c(ymean-half*1.045, ymean + half*1.045)
+      )
+
+  } else if(method@name == "VisiumLarge"){
+
+    object@method@capture_area <-
+      list(
+        x = c(xmean-half*1.045, xmean + half*1.045),
+        y = c(ymean-half*1.025, ymean + half*1.025)
+      )
+
+  }
 
   return(object)
 
@@ -3276,11 +3313,17 @@ createSpatialDataVisium <- function(dir,
 #' @export
 createSpatialDataVisiumHD <- function(dir,
                                       sample,
+                                      square_res,
                                       img_ref = "lowres",
                                       img_active = "lowres",
                                       meta = list(),
                                       misc = list(),
                                       verbose = TRUE){
+
+  confuns::check_one_of(
+    input = square_res,
+    against = stringr::str_c(c(2, 8, 16), "um")
+  )
 
   # get all files in folder and subfolders
   files <- base::list.files(dir, full.names = TRUE, recursive = TRUE)
@@ -3319,9 +3362,6 @@ createSpatialDataVisiumHD <- function(dir,
 
   }
 
-  dir_coords <- file.path(dir, "spatial", "tissue_positions.parquet")
-
-  coords_df <- read_coords_visium(dir_coords)
 
   # load scalefactors
   scale_factors <-
@@ -3370,15 +3410,38 @@ createSpatialDataVisiumHD <- function(dir,
       )
   }
 
+  # read coordinates
+  dir_coords <- file.path(dir, "spatial", "tissue_positions.parquet")
+
+  coords_df <- read_coords_visium(dir_coords)
+
+  xmean <- base::mean(coords_df$x_orig, na.rm = TRUE)
+  ymean <- base::mean(coords_df$y_orig, na.rm = TRUE)
+
+  coords_df <-
+    dplyr::filter(coords_df, in_tissue == 1) %>%
+    dplyr::select(-in_tissue)
+
   # compute spot size
   spot_size <-
     scale_factors$fiducial_diameter_fullres *
     scale_factors[[stringr::str_c("tissue", img_ref, "scalef", sep = "_")]] /
-    base::max(getImageDims(img_list[[img_ref]]))*100
+    base::max(getImageDims(img_list[[img_ref]]))*10 # VisiumHD * 10
 
-  spot_scale_fct <- 1.15
+  spot_scale_fct <- 1.05
 
   method@method_specifics[["spot_size"]] <- spot_size * spot_scale_fct
+  method@method_specifics[["ccd"]] <- square_res
+  method@method_specifics[["square_res"]] <- square_res
+
+  # half capture area in pixel_orig
+  half_ca <- (3250*(1/scale_factors$microns_per_pixel))*1.025
+
+  method@capture_area <-
+    list(
+      x_orig = c(xmean-half_ca, xmean+half_ca),
+      y_orig = c(ymean-half_ca, ymean+half_ca)
+    )
 
   # create output
   sp_data <-

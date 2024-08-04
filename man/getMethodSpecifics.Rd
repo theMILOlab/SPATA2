@@ -2,7 +2,7 @@
 % Please edit documentation in R/getH-M.R
 \name{getMethodSpecifics}
 \alias{getMethodSpecifics}
-\title{Obtain method specifics}
+\title{Obtain platform details}
 \usage{
 getMethodSpecifics(object)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectVisium}
 \alias{initiateSpataObjectVisium}
-\title{Initiate an object of class \code{SPATA2} from the Visium platform}
+\title{Initiate an object of class \code{SPATA2} from platform Visium}
 \usage{
 initiateSpataObjectVisium(
   sample_name,
@@ -27,26 +27,30 @@ initiateSpataObjectVisium(
 \item{verbose}{Logical. If TRUE, progress messages are printed. Default is TRUE.}
 }
 \value{
-A \code{SPATA2} object containing the processed data from the Visium platform. More precise,
+A \code{SPATA2} object containing data from the Visium platform. More precise,
 depending on the set up used to create the raw data it is of either spatial method:
 
 \itemize{
-\item{\code{VisiumSmall}}{: Visium data set with capture area of 6.5mm x 6.5mm.}
-\item{\code{VisiumLarge}}{: Visium data set with capture area of 11mm x 11m. }
+\item{\code{\link{VisiumSmall}}}{: Visium data set with capture area of 6.5mm x 6.5mm.}
+\item{\code{\link{VisiumLarge}}}{: Visium data set with capture area of 11mm x 11m. }
 }
 
 In any case, the output is an object of class \code{SPATA2}.
 }
 \description{
-This function initiates a \code{\link{SPATA2}} object for data generated using the 10x Genomics Visium platform.
+This function initiates a \code{\link{SPATA2}} object with data generated
+using the 10x Genomics Visium platform.
 }
 \details{
-The function requires a directory containing the output files from a 10x Genomics Visium experiment. The directory must include the following files:
+The function requires a directory containing the output files from a 10x Genomics Visium experiment
+specified with the argument \code{directory_visum}. This directory (below denoted as \strong{~}) must include the following files
+and sub-directories:
+
 \itemize{
-\item \emph{filtered_feature_bc_matrix.h5} or \emph{raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
-\item \emph{spatial/tissue_lowres_image.png} or \emph{spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
-\item \emph{spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
-\item \emph{spatial/tissue_positions_list.csv} or \emph{spatial/tissue_positions.csv}: A CSV file containing the tissue positions and spatial coordinates.
+\item \emph{~/filtered_feature_bc_matrix.h5} or \emph{raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
+\item \emph{~/spatial/tissue_lowres_image.png} or \emph{spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
+\item \emph{~/spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
+\item \emph{~/spatial/tissue_positions_list.csv} or \emph{/~spatial/tissue_positions.csv}: A CSV file containing the tissue positions and spatial coordinates.
 }
 The function will check for these files and process them to create a \code{SPATA2} object. It reads the count matrix, loads the spatial data,
 and initializes the \code{SPATA2} object with the necessary metadata and settings.
@@ -54,18 +58,18 @@ and initializes the \code{SPATA2} object with the necessary metadata and setting
 \section{Gene and Protein Expression}{
 
 This function also supports reading coupled gene expression and protein expression data. It expects the input directory to contain an HDF5
-file that includes separate datasets for gene expression and protein expression. The function uses \code{\link[Seurat:Read10X_h5]{Seurat::Read10X_h5()}} to read in
+file that includes separate datasets for gene expression and protein expression. The function uses \code{\link[Seurat:Read10X_h5]{Seurat::Read10X_h5()}} with \code{unique.features = TRUE}, to read in
 data and, if the result is a list, it assumes that it contains gene and protein expression. This scenario is handled as follows:
 
 \itemize{
-\item Gene expression data is extracted from the "Gene Expression" dataset in the HDF5 file.
-\item Protein expression data is extracted from the "Antibody Capture" dataset in the HDF5 file.
+\item Gene expression data is extracted from the "Gene Expression" dataset in the HDF5 file and stored in an assay named \emph{gene}.
+\item Protein expression data is extracted from the "Antibody Capture" dataset in the HDF5 file \emph{protein}.
 }
 
 The function ensures that molecule names do not overlap by normalizing the names:
 
 \itemize{
-\item Gene expression molecule names are forced to uppercase.
+\item Gene expression molecule names remain in upper case (human data) or title case (mouse data).
 \item Protein expression molecule names are forced to lowercase.
 }
 

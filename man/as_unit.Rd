@@ -59,7 +59,7 @@ objects of classes for which a method has been defined.}
 \item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 of \code{base::round()}. Rounds transformed values before they are returned.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

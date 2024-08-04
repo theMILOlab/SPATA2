@@ -7,23 +7,21 @@
 \alias{getSignatureNames}
 \title{Obtain molecular signature names}
 \usage{
-getGeneSets(object, class = NULL, ...)
+getGeneSets(object, ..., class = NULL)
 
-getMetaboliteSets(object, class = NULL, ...)
+getMetaboliteSets(object, ..., class = NULL)
 
-getProteinSets(object, class = NULL, ...)
+getProteinSets(object, ..., class = NULL)
 
-getSignatureNames(object, class = NULL, assay_name = activeAssay(object), ...)
+getSignatureNames(object, ..., class = NULL, assay_name = activeAssay(object))
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{class}{\code{NULL} or a character vector indicating the classes from which to obtain
-the gene set names. (Which sisgnature classes currently exist can
-be obtained e.g. with \code{printSignatureOverview()}).}
+\item{...}{Additional selection helpers from the tidyselect package that match names according to a given pattern.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{class}{Character vector of signature classes with which to subset the output.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest and thus the
@@ -92,8 +90,16 @@ coords_df <- getCoordsDf(object)
 
 print(coords_df)
 
-coords_df <- joinWithVariables(object, coords_df = coords_df, variables = hallmark_signatures)
+coords_df <- joinWithVariables(object, spata_df = coords_df, variables = hallmark_signatures)
 
 print(coords_df)
 
+}
+\seealso{
+\code{\link[=vselect]{vselect()}}, \code{\link[=lselect]{lselect()}}
+
+Documentation of slot @signatures in the \code{\link{MolecularAssay}}-class.
+To extract character vectors of molecule names \code{\link[=getMolecules]{getMolecules()}} or \code{\link[=getGenes]{getGenes()}}, ...
+To extract character vectors of signature names \code{\link[=getSignatureNames]{getSignatureNames()}}, \code{\link[=getGeneSets]{getGeneSets()}}, ...
+To add signatures \code{\link[=addSignature]{addSignature()}} or \code{\link[=addGeneSet]{addGeneSet()}}, ...
 }

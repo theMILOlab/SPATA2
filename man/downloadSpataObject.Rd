@@ -8,6 +8,8 @@ downloadSpataObject(
   sample_name,
   overwrite = FALSE,
   file = FALSE,
+  adjust_link = TRUE,
+  timeout = 600,
   verbose = TRUE,
   ...
 )
@@ -25,6 +27,13 @@ as a character. If \code{NULL}, the function saves the object
 under the sample name with an \emph{'.RDS'} suffix. If \code{FALSE}, the saving
 is skipped and the object is simply returned.}
 
+\item{adjust_link}{Logical value. Defaults to \code{TRUE}. Allows the function to adjust the link
+if the download fails due to Google Drive warnings. See section below
+for more information.}
+
+\item{timeout}{Numeric value. Indicates the number of seconds the function has time
+to download the object before the process is aborted. Defaults to 600s (10min).}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -39,6 +48,31 @@ Downloads a single \code{SPATA2} object and returns it.
 \note{
 Imported from the package \code{SPATAData}.
 }
+\section{Google Drive Warning}{
+
+
+\code{SPATA2} objects are stored in a Google Drive repository and downloaded via their weblink as
+stored in the \link[SPATAData:sourceDataFrame]{source data.frame}. Often, \code{SPATA2} objects are too
+large for the automatic Google Drive virus scan. As a result, the weblink initially leads
+to a webpage that asks if you are okay with skipping this virus scan.
+
+In cases where the Google Drive link leads to this warning page, the function
+will automatically adjust the download link to bypass the warning and attempt
+the download again. If the adjusted download still fails, an error message is
+displayed, prompting the user to manually download the file using the provided link.
+
+Since the virus scan cannot be performed by Google Drive regardless of whether
+you download it from within R or manually, the function defaults to bypass this
+warning automatically. If you prefer not to bypass the warning, you can set \code{adjust_link = FALSE}
+In this case, the function will give a warning and ask you to download the object manually.
+
+The downloaded objects do not contain viruses. The way they have been created,
+uploaded as well as how the web links are added to the \link[SPATAData:sourceDataFrame]{source data.frame}
+can be reconstructed with the \emph{populate_\if{html}{\out{<location>}}} scripts provided on
+the \href{https://github.com/theMILOlab/SPATAData}{SPATAData repository} on github under \emph{/scripts/}.
+
+}
+
 \examples{
 # download & assign (no saving on the disk)
 object <- downloadSpataObject(sample_name = "UKF275T")

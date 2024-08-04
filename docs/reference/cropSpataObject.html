@@ -49,6 +49,9 @@ rectangle given by xrange and yrange are kept."><!-- mathjax --><script src="htt
     <li>
       <a href="../articles/initiation-and-preprocessing-visium.html">Initiation &amp; Preprocessing with Visium data</a>
     </li>
+    <li>
+      <a href="../articles/initiation-and-preprocessing-visium-hd.html">Initiation &amp; Preprocessing with VisiumHD data</a>
+    </li>
     <li class="dropdown-header">Basic Manipulation of a SPATA2 object</li>
     <li>
       <a href="../articles/adding-data.html">Adding Data to SPATA2 objects</a>
@@ -130,6 +133,7 @@ rectangle given by <code>xrange</code> and <code>yrange</code> are kept.</p>
 <span>  <span class="va">object</span>,</span>
 <span>  <span class="va">xrange</span>,</span>
 <span>  <span class="va">yrange</span>,</span>
+<span>  spatial_proc <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  adjust_capture_area <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -152,13 +156,23 @@ the two dimensional space being cropped from x-coordinate 200px up to
 x-coordinate 500px. If <code>NULL</code>, the original range is used.</p></dd>
 
 
+<dt id="arg-spatial-proc">spatial_proc<a class="anchor" aria-label="anchor" href="#arg-spatial-proc"></a></dt>
+<dd><p>Logical value. Indicates whether the new sub-object is
+processed spatially. If <code>TRUE</code>, a new tissue outline is identified based
+on the remaining observations via <code><a href="identifyTissueOutline.html">identifyTissueOutline()</a></code>. Then,
+spatial annotations are tested on being located on either of the remaining
+tissue sections. If they are not, they are removed.</p>
+<p>If <code>FALSE</code>, these processing steps are skipped. Generally speaking, this is
+not recommended. Only set to <code>FALSE</code>, if you know what you're doing.</p></dd>
+
+
 <dt id="arg-adjust-capture-area">adjust_capture_area<a class="anchor" aria-label="anchor" href="#arg-adjust-capture-area"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, the capture area is adjusted
 to the input of <code>xrange</code> and <code>yrange</code>. If <code>FALSE</code>, it stays as is. Defaults to <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical. If set to TRUE informative messages regarding
+<dd><p>Logical. If <code>TRUE</code>, informative messages regarding
 the computational progress will be printed.</p>
 <p>(Warning messages will always be printed.)</p></dd>
 
@@ -170,24 +184,96 @@ the computational progress will be printed.</p>
     <div id="see-also">
     <h2>See also</h2>
     <div class="dont-index"><p><code><a href="ggpLayerRect.html">ggpLayerRect()</a></code> to visualize the rectangle based on which
-the subsetting is done.</p></div>
+the subsetting is done. <code><a href="subsetSpataObject.html">subsetSpataObject()</a></code> is the working horse behind
+this function.</p></div>
     </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"example_data"</span><span class="op">)</span></span>
+<span><span class="co"># ----- Example 1: subsetSpataObject()</span></span>
+<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="loadExampleObject.html">loadExampleObject</a></span><span class="op">(</span><span class="st">"UKF313T"</span>, meta <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="va">example_data</span><span class="op">$</span><span class="va">object_UKF275T_diet</span></span>
+<span><span class="va">barcodes_keep</span> <span class="op">&lt;-</span></span>
+<span> <span class="fu"><a href="getMetaDf.html">getMetaDf</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">bayes_space</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B3"</span>, <span class="st">"B2"</span>, <span class="st">"B1"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">barcodes</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">object_sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="subsetSpataObject.html">subsetSpataObject</a></span><span class="op">(</span><span class="va">object</span>, barcodes <span class="op">=</span> <span class="va">barcodes_keep</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/show.html" class="external-link">show</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/show.html" class="external-link">show</a></span><span class="op">(</span><span class="va">object_sub</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="plotSpatialAnnotations.html">plotSpatialAnnotations</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="co"># plots all annotations</span></span>
+<span><span class="fu"><a href="plotSpatialAnnotations.html">plotSpatialAnnotations</a></span><span class="op">(</span><span class="va">object_sub</span><span class="op">)</span> <span class="co"># subsetting affects everything by default</span></span>
+<span></span>
+<span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="getSpatAnnIds.html">getSpatAnnIds</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span><span class="va">ids_sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="getSpatAnnIds.html">getSpatAnnIds</a></span><span class="op">(</span><span class="va">object_sub</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># use patchwork to compare plots</span></span>
+<span><span class="va">plot_orig</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span>, outline <span class="op">=</span> <span class="cn">T</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline</a></span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="va">ids</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">plot_sub</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_sub</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span>, outline <span class="op">=</span> <span class="cn">T</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline</a></span><span class="op">(</span><span class="va">object_sub</span>, ids <span class="op">=</span> <span class="va">ids_sub</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">plot_orig</span> <span class="op">+</span> <span class="va">plot_sub</span></span>
+<span></span>
+<span><span class="co"># ----- Example 2: splitSpataObject()</span></span>
+<span><span class="co"># uses subsetSpataObject() in the background</span></span>
+<span></span>
+<span><span class="va">object_mouse</span> <span class="op">&lt;-</span> <span class="fu"><a href="loadExampleObject.html">loadExampleObject</a></span><span class="op">(</span><span class="st">"LMU_MCI"</span>, process <span class="op">=</span> <span class="cn">TRUE</span>, meta <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">orig_frame</span> <span class="op">&lt;-</span> <span class="fu"><a href="ggpLayerFrameByCoords.html">ggpLayerFrameByCoords</a></span><span class="op">(</span><span class="va">object_mouse</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="getSpatAnnIds.html">getSpatAnnIds</a></span><span class="op">(</span><span class="va">object_mouse</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_mouse</span>, color_by <span class="op">=</span> <span class="st">"tissue_section"</span>, pt_clr <span class="op">=</span> <span class="st">"lightgrey"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline</a></span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="va">ids</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="ggpLayerSpatAnnPointer.html">ggpLayerSpatAnnPointer</a></span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="va">ids</span>, ptr_lengths <span class="op">=</span> <span class="st">"0.45mm"</span>, text_dist <span class="op">=</span> <span class="fl">10</span>, text_size <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">obj_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="splitSpataObject.html">splitSpataObject</a></span><span class="op">(</span><span class="va">object_mouse</span>, grouping <span class="op">=</span> <span class="st">"tissue_section"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># present resulting sub-objects</span></span>
+<span><span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">obj_list</span>, .f <span class="op">=</span> <span class="op">~</span> <span class="va">.x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># present remaining ids</span></span>
+<span><span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">obj_list</span>, .f <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="getSpatAnnIds.html">getSpatAnnIds</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># show surface plot with all remaining spatial annotations</span></span>
+<span><span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">obj_list</span>, .f <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span> <span class="op">+</span> <span class="va">orig_frame</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">patchwork</span><span class="fu">::</span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># repeat with spatial_proc = FALSE</span></span>
+<span><span class="va">obj_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="splitSpataObject.html">splitSpataObject</a></span><span class="op">(</span><span class="va">object_mouse</span>, grouping <span class="op">=</span> <span class="st">"tissue_section"</span>, spatial_proc <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># present remaining spatial annotation ids</span></span>
+<span><span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">obj_list</span>, .f <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="getSpatAnnIds.html">getSpatAnnIds</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># show surface plot with all remaining spatial annotations</span></span>
+<span><span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">obj_list</span>, .f <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span> <span class="op">+</span> <span class="va">orig_frame</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">patchwork</span><span class="fu">::</span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># -----  Example 3: cropSpataObject()</span></span>
+<span><span class="co"># uses subsetSpataObject() in the background</span></span>
+<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="loadExampleObject.html">loadExampleObject</a></span><span class="op">(</span><span class="st">"UKF275T"</span>, meta <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">orig_frame</span> <span class="op">&lt;-</span> <span class="fu"><a href="ggpLayerFrameByCoords.html">ggpLayerFrameByCoords</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span><span class="op">)</span></span>
+<span><span class="va">xcrop</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2.5mm"</span>, <span class="st">"5.5mm"</span><span class="op">)</span></span>
+<span><span class="va">ycrop</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"5mm"</span>, <span class="st">"7mm"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span><span class="op">)</span> <span class="op">+</span></span>
+<span> <span class="fu"><a href="ggpLayerAxesSI.html">ggpLayerAxesSI</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">+</span></span>
+<span> <span class="fu"><a href="ggpLayerRect.html">ggpLayerRect</a></span><span class="op">(</span><span class="va">object</span>, xrange <span class="op">=</span> <span class="va">xcrop</span>, yrange <span class="op">=</span> <span class="va">ycrop</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">object_cropped</span> <span class="op">&lt;-</span></span>
-<span> <span class="fu">cropSpataObject</span><span class="op">(</span><span class="va">object</span>, xrange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2mm"</span>, <span class="st">"4mm"</span><span class="op">)</span>, yrange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2mm"</span>, <span class="st">"4mm"</span><span class="op">)</span><span class="op">)</span></span>
+<span> <span class="fu">cropSpataObject</span><span class="op">(</span><span class="va">object</span>, xrange <span class="op">=</span> <span class="va">xcrop</span>, yrange <span class="op">=</span> <span class="va">ycrop</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_cropped</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span><span class="op">)</span> <span class="op">+</span> <span class="va">orig_frame</span></span>
 <span></span></code></pre></div>

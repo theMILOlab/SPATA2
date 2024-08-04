@@ -40,7 +40,7 @@ contain such that the whole cluster is identified as a contiguous tissue section
 as outliers. If \emph{'all'}, spots are labeled as outliers if both methods identify
 them as outliers.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

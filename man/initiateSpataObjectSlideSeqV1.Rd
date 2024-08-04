@@ -38,7 +38,7 @@ for a file ending with \emph{genes.tsv}.}
 the filename of the coordinates. If \code{NULL}, the SlideSeq folder is skimmed
 for a file ending with \emph{MatchedBeadLocation.csv}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
@@ -48,5 +48,5 @@ An object of class \code{SPATA2}.
 }
 \description{
 Wrapper function around the necessary content to create a
-\code{SPATA2} object from the standardized output of the SlideSeq platform.
+\code{SPATA2} object from the standardized output of the \code{\link{SlideSeq}} platform.
 }

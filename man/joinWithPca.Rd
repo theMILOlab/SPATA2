@@ -20,7 +20,7 @@ objects of classes for which a method has been defined.}
 principal components to use. If \code{NULL}, all principal components are used
 (as computed with \code{\link[=runPCA]{runPCA()}}).}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

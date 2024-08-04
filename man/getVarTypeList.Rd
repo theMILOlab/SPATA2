@@ -31,3 +31,4 @@ Otherwise, it returns all variables categorized by type.
 \seealso{
 \code{getCoordsDf()}, \code{getMetaDf()}
 }
+\keyword{internal}

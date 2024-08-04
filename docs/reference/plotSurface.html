@@ -60,6 +60,9 @@ on the setup with which spatialAnnotationScreening() was run.
     <li>
       <a href="../articles/initiation-and-preprocessing-visium.html">Initiation &amp; Preprocessing with Visium data</a>
     </li>
+    <li>
+      <a href="../articles/initiation-and-preprocessing-visium-hd.html">Initiation &amp; Preprocessing with VisiumHD data</a>
+    </li>
     <li class="dropdown-header">Basic Manipulation of a SPATA2 object</li>
     <li>
       <a href="../articles/adding-data.html">Adding Data to SPATA2 objects</a>
@@ -162,15 +165,17 @@ on the setup with which <code><a href="spatialAnnotationScreening.html">spatialA
 <span>  outline <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  outline_fct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.125</span>, <span class="fl">2.75</span><span class="op">)</span>,</span>
 <span>  clrp_adjust <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  display_image <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  img_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  transform_with <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  use_scattermore <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sctm_pixels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1024</span>, <span class="fl">1024</span><span class="op">)</span>,</span>
 <span>  bcs_rm <span class="op">=</span> <span class="fu">base</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  na_rm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  xrange <span class="op">=</span> <span class="fu"><a href="getCoordsRange.html">getCoordsRange</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">$</span><span class="va">x</span>,</span>
 <span>  yrange <span class="op">=</span> <span class="fu"><a href="getCoordsRange.html">getCoordsRange</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">$</span><span class="va">y</span>,</span>
+<span>  display_image <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  img_alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  img_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  geom <span class="op">=</span> <span class="st">"point"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
@@ -285,10 +290,6 @@ to the group and the respective named element denotes the color with which to
 represent the group.</p></dd>
 
 
-<dt id="arg-img-alpha">img_alpha<a class="anchor" aria-label="anchor" href="#arg-img-alpha"></a></dt>
-<dd><p>Numeric value. Sets the transparency for the image.</p></dd>
-
-
 <dt id="arg-transform-with">transform_with<a class="anchor" aria-label="anchor" href="#arg-transform-with"></a></dt>
 <dd><p>List or <code>NULL.</code> If list, can be used to transform continuous variables before usage.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
@@ -321,6 +322,10 @@ the two dimensional space being cropped from x-coordinate 200px up to
 x-coordinate 500px. If <code>NULL</code>, the original range is used.</p></dd>
 
 
+<dt id="arg-img-alpha">img_alpha<a class="anchor" aria-label="anchor" href="#arg-img-alpha"></a></dt>
+<dd><p>Numeric value. Sets the transparency for the image.</p></dd>
+
+
 <dt id="arg-img-name">img_name<a class="anchor" aria-label="anchor" href="#arg-img-name"></a></dt>
 <dd><p>Character value. The name of the image of interest.
 If <code>NULL</code>, the <a href="concept_active.html">active</a> image is chosen by default. Either way, must
@@ -328,7 +333,7 @@ be one of <code><a href="getImageNames.html">getImageNames()</a></code>.</p></dd
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical. If set to TRUE informative messages regarding
+<dd><p>Logical. If <code>TRUE</code>, informative messages regarding
 the computational progress will be printed.</p>
 <p>(Warning messages will always be printed.)</p></dd>
 

@@ -52,3 +52,4 @@ and nothing more. Using \code{expand}, the cropped image section can be adjusted
 \description{
 Obtain image raster-(information)
 }
+\keyword{internal}

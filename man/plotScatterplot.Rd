@@ -45,7 +45,7 @@ Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/getA-G.R
 \name{getGenePosDf}
 \alias{getGenePosDf}
-\title{Obtain gene information}
+\title{Obtain gene CNV information}
 \usage{
 getGenePosDf(object, keep = FALSE)
 }

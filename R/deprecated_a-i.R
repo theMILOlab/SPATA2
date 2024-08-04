@@ -173,6 +173,33 @@ getExpressionMatrixNames <- function(object, assay_name = activeAssay(object), .
 
 }
 
+
+
+#' @title Deprecated
+#' @description
+#' Deprecated in favor of [`getMetaVarDf()`].
+#'
+#' @keywords internal
+#' @export
+getGeneMetaData <- function(object, ...){
+
+  deprecated(fn = TRUE)
+
+  getMetaVarDf(object, ...)
+
+}
+
+#' @keywords internal
+#' @rdname getGeneMetaData
+#' @export
+getGeneMetaDf <- function(object, ...){
+
+  deprecated(fn = TRUE)
+
+  getMetaVarDf(object, ...)
+
+}
+
 #' @title Deprecated
 #' @description Deprecated in favor of [`getMetaDf()`].
 #' @export

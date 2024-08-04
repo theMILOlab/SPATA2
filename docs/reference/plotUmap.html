@@ -48,6 +48,9 @@ or feature information onto the color-aesthetic."><!-- mathjax --><script src="h
     <li>
       <a href="../articles/initiation-and-preprocessing-visium.html">Initiation &amp; Preprocessing with Visium data</a>
     </li>
+    <li>
+      <a href="../articles/initiation-and-preprocessing-visium-hd.html">Initiation &amp; Preprocessing with VisiumHD data</a>
+    </li>
     <li class="dropdown-header">Basic Manipulation of a SPATA2 object</li>
     <li>
       <a href="../articles/adding-data.html">Adding Data to SPATA2 objects</a>
@@ -139,20 +142,7 @@ or feature information onto the color-aesthetic.</p>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">plotPca</span><span class="op">(</span></span>
-<span>  <span class="va">object</span>,</span>
-<span>  color_by <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  n_pcs <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pt_alpha <span class="op">=</span> <span class="fl">0.9</span>,</span>
-<span>  pt_clr <span class="op">=</span> <span class="st">"lightgrey"</span>,</span>
-<span>  pt_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  pt_clrp <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pt_clrsp <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  nrow <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ncol <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">...</span></span>
-<span><span class="op">)</span></span>
+<span><span class="fu">plotPca</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">plotTSNE</span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
@@ -165,11 +155,11 @@ or feature information onto the color-aesthetic.</p>
 <span>  pt_shape <span class="op">=</span> <span class="fl">19</span>,</span>
 <span>  shape_by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  method_gs <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pt_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pt_alpha <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  pt_alpha <span class="op">=</span> <span class="fl">0.9</span>,</span>
+<span>  pt_clr <span class="op">=</span> <span class="st">"lightgrey"</span>,</span>
+<span>  pt_size <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  pt_clrsp <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  pt_clrp <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pt_clr <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  clrp_adjust <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  use_scattermore <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -202,11 +192,11 @@ or feature information onto the color-aesthetic.</p>
 <span>  shape_by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  method_gs <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  pt_shape <span class="op">=</span> <span class="fl">19</span>,</span>
-<span>  pt_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pt_alpha <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  pt_alpha <span class="op">=</span> <span class="fl">0.9</span>,</span>
+<span>  pt_clr <span class="op">=</span> <span class="st">"lightgrey"</span>,</span>
+<span>  pt_size <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  pt_clrsp <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  pt_clrp <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pt_clr <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  clrp_adjust <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  transform_with <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -276,7 +266,7 @@ color is continuous. Run <code><a href="validActivationFunctions.html">validColo
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical. If set to TRUE informative messages regarding
+<dd><p>Logical. If <code>TRUE</code>, informative messages regarding
 the computational progress will be printed.</p>
 <p>(Warning messages will always be printed.)</p></dd>
 

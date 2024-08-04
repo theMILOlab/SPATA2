@@ -71,7 +71,7 @@ that is width/x-axis and height/y-axis, are set to include only the image annota
 and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
 \emph{Expansion of cropped image sections} for more information.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

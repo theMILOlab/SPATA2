@@ -2,7 +2,7 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageSectionsByBarcode}
 \alias{getImageSectionsByBarcode}
-\title{Obtain image sections by barcode spot}
+\title{Obtain image sections by barcode}
 \usage{
 getImageSectionsByBarcode(object, barcodes = NULL, expand = 0, verbose = NULL)
 }
@@ -10,8 +10,8 @@ getImageSectionsByBarcode(object, barcodes = NULL, expand = 0, verbose = NULL)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{barcodes}{Characte vector or NULL. If character, subsets the barcodes
-of interest. If NULL, all barcodes are considered.}
+\item{barcodes}{Characte vector or \code{NULL}. If character, subsets the barcodes
+of interest. If \code{NULL}, all barcodes are considered.}
 
 \item{expand}{Specifies image expansion. An image that is cropped based on an image
 annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
@@ -19,7 +19,7 @@ that is width/x-axis and height/y-axis, are set to include only the image annota
 and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
 \emph{Expansion of cropped image sections} for more information.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

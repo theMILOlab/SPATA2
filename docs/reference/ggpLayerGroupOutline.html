@@ -49,6 +49,9 @@ or a dimensional reduction plot."><!-- mathjax --><script src="https://cdnjs.clo
     <li>
       <a href="../articles/initiation-and-preprocessing-visium.html">Initiation &amp; Preprocessing with Visium data</a>
     </li>
+    <li>
+      <a href="../articles/initiation-and-preprocessing-visium-hd.html">Initiation &amp; Preprocessing with VisiumHD data</a>
+    </li>
     <li class="dropdown-header">Basic Manipulation of a SPATA2 object</li>
     <li>
       <a href="../articles/adding-data.html">Adding Data to SPATA2 objects</a>
@@ -251,10 +254,10 @@ family.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"example_data"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="va">example_data</span><span class="op">$</span><span class="va">object_UKF275T_diet</span></span>
+<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="loadExampleObject.html">loadExampleObject</a></span><span class="op">(</span><span class="st">"UKF275T"</span>, meta <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span><span class="op">)</span> <span class="op">+</span></span>
-<span> <span class="fu">ggpLayerGroupOutline</span><span class="op">(</span><span class="va">object</span>, grouping <span class="op">=</span> <span class="st">"bayes_space"</span>, group_subset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1"</span>, <span class="st">"2"</span><span class="op">)</span><span class="op">)</span></span>
+<span> <span class="fu">ggpLayerGroupOutline</span><span class="op">(</span><span class="va">object</span>, grouping <span class="op">=</span> <span class="st">"bayes_space"</span>, group_subset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B1"</span>, <span class="st">"B2"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span></span></code></pre></div>
     </div>

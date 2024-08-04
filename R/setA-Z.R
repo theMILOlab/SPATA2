@@ -319,6 +319,39 @@ setDeaResultsDf <- function(object,
 #' @inherit update_dummy return
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' object1 <- loadExampleObject("UKFT269T", meta = TRUE)
+#' object2 <- loadExmapleObject("UKF275T", meta = TRUE)
+#'
+#' # current
+#' getDefault(object1, arg = "pt_clrp")
+#' getDefault(object2, arg = "pt_clrp")
+#'
+#' # if not specified, the function uses the object specific default
+#' plotSurface(object1, color_by = "bayes_space")
+#' plotSurface(object2, color_by = "bayes_space")
+#'
+#' # overwrite
+#' object1 <- setDefault(object1, pt_clrp = "uc")
+#' objct2 <- setDefault(object2, pt_clrp = "jco")
+#'
+#' # if not specified, the function uses the object specific default
+#' # default has changed
+#' plotSurface(object1, color_by = "bayes_space")
+#' plotSurface(object2, color_by = "bayes_space")
+#'
+#' # manually speciyfing the argument overwrites the default
+#' plotSurface(object1, color_by = "bayes_space", pt_clrp = "jama")
+#' plotSurface(object2, color_by = "bayes_space", pt_clrp = "tab20")
+#'
+#'
+#'
+#'
+#'
 setDefault <- function(object, ...){
 
   named_list <-
@@ -1142,6 +1175,68 @@ setTsneDf <- function(object, tsne_df, ...){
 
 
 # setU --------------------------------------------------------------------
+
+
+
+#' @title Set up meta var slot
+#'
+#' @description Sets up slot @@meta_var of a molecular assay if not already done.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#' @keywords internal
+#'
+setGeneric(name = "setUpMetaVar", def = function(object, ...){
+
+  standardGeneric(f = "setUpMetaVar")
+
+})
+
+#' @rdname setUpMetaVar
+#' @export
+setMethod(
+  f = "setUpMetaVar",
+  signature = "SPATA2",
+  definition = function(object, assay_name = activeAssay(object), ...){
+
+    containsAssay(object, assay_name = assay_name, error = TRUE)
+
+    ma <- getAssay(object, assay_name = assay_name)
+    ma <- setUpMetaVar(ma)
+    object <- setAssay(object, assay = ma)
+
+    returnSpataObject(object)
+
+  }
+)
+
+#' @rdname setUpMetaVar
+#' @export
+setMethod(
+  f = "setUpMetaVar",
+  signature = "MolecularAssay",
+  definition = function(object, assay_name = activeAssay(object), ...){
+
+    ma <- object
+
+    if(purrr::is_empty(ma@meta_var)){
+
+      ma@meta_var <-
+        tibble::tibble(molecule = base::rownames(ma@mtr_counts))
+
+    } else {
+
+      warning(glue::glue("Slot @meta_var of assay '{ma@modality}' is already set."))
+
+    }
+
+    return(ma)
+
+  }
+)
+
 
 #' @keywords internal
 #' @rdname setPcaDf

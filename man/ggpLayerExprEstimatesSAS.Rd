@@ -50,7 +50,7 @@ of the spatial annotation.}
 
 \item{incl_edge}{Logical. If \code{TRUE}, makes use of \code{SPATA2} automatic tissue outline algorithm.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

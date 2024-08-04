@@ -93,7 +93,7 @@ the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
 the two dimensional space being cropped from x-coordinate 200px up to
 x-coordinate 500px. If \code{NULL}, the original range is used.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

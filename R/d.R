@@ -13,6 +13,9 @@
 #'
 #' @return Character value.
 #'
+#' @keywords internal
+#'
+
 defaultGeomObs <- function(object){
 
   platform <- getPlatform(object)
@@ -468,6 +471,7 @@ downloadFromPublication <- function(pub, sample_name){
 
 
 #' @inherit SPATAData::downloadSpataObject title description params return examples seealso
+#' @inheritSection SPATAData::downloadSpataObject Google Drive Warning
 #' @note Imported from the package `SPATAData`.
 #' @importFrom SPATAData downloadSpataObject
 #' @export
@@ -475,5 +479,6 @@ downloadSpataObject <- SPATAData::downloadSpataObject
 
 #' @inherit SPATAData::downloadSpataObjects title description params return examples
 #' @importFrom SPATAData downloadSpataObjects
+#' @inheritSection SPATAData::downloadSpataObject Google Drive Warning
 #' @export
 downloadSpataObjects <- SPATAData::downloadSpataObjects

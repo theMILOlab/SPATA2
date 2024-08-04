@@ -37,7 +37,7 @@ on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exc
 \item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
 \emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

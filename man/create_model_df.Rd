@@ -35,7 +35,7 @@ same length as the input vector. Test models with \code{showModels()}.}
 
 \item{seed}{Numeric value. Sets the random seed.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

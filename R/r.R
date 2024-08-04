@@ -142,10 +142,10 @@ read_coords_visium <- function(dir_coords){
 
       }) %>%
       tibble::as_tibble() %>%
-      magrittr::set_colnames(value = c("barcodes", "tissue", "row", "col", "imagerow", "imagecol")) %>%
-      dplyr::filter(tissue == 1) %>%
+      magrittr::set_colnames(value = c("barcodes", "in_tissue", "row", "col", "imagerow", "imagecol")) %>%
+      #dplyr::filter(in_tissue == 1) %>%
       dplyr::rename(x_orig = imagecol, y_orig = imagerow) %>%
-      dplyr::select(barcodes, x_orig, y_orig, row, col)
+      dplyr::select(barcodes, x_orig, y_orig, row, col, in_tissue)
 
     # space ranger v2
   } else if(stringr::str_detect(dir_coords, pattern = "tissue_positions.csv")){
@@ -153,18 +153,18 @@ read_coords_visium <- function(dir_coords){
     coords_df <-
       readr::read_csv(file = dir_coords, col_names = TRUE, show_col_types = FALSE) %>%
       tibble::as_tibble() %>%
-      dplyr::filter(in_tissue == 1) %>%
+      #dplyr::filter(in_tissue == 1) %>%
       dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres, row = array_row, col = array_col) %>%
-      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col)
+      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col, in_tissue)
 
     # VisiumHD
   } else if(stringr::str_detect(dir_coords, pattern = "tissue_positions.parquet$")){
 
     coords_df <-
       arrow::read_parquet(dir_coords) %>%
-      dplyr::filter(in_tissue == 1) %>%
+      #dplyr::filter(in_tissue == 1) %>%
       dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres, row = array_row, col = array_col) %>%
-      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col) %>%
+      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col, in_tissue) %>%
       tibble::as_tibble()
 
   }
@@ -287,8 +287,8 @@ read_matrix_from_folder <- function(dir){
   dir_features <- stringr::str_subset(all_files, "features.tsv.gz$|features.tsv$")
 
   mtr <- Matrix::readMM(dir_mtr)
-  bcs <- readr::read_tsv(dir_bcs, col_names = FALSE)
-  feats <- readr::read_tsv(dir_features, col_names = FALSE)
+  bcs <- readr::read_tsv(dir_bcs, col_names = FALSE, show_col_types = FALSE)
+  feats <- readr::read_tsv(dir_features, col_names = FALSE, show_col_types = FALSE)
 
   colnames(mtr) <- as.character(bcs[[1]])
   rownames(mtr) <- as.character(feats[[2]])
@@ -531,7 +531,7 @@ reduceSpataObject <- function(object){
   object@dim_red <- list()
 
   # meta
-  object <- setMetaDf(object, getMetaDf(object)[,c("barcodes")])
+  object <- setMetaDf(object, dplyr::select(meta_df, barcodes))
 
   # obj_info
   object <- activateMatrix(object, mtr_name = "counts", verbose = FALSE)
@@ -1231,10 +1231,10 @@ removeObs <- function(object,
 
 #' @rdname removeObs
 #' @export
-removeObsNoCounts <- function(object,
-                              spatial_proc = TRUE,
-                              assay_name = activeAssay(object),
-                              verbose = NULL){
+removeObsZeroCounts <- function(object,
+                                spatial_proc = TRUE,
+                                assay_name = activeAssay(object),
+                                verbose = NULL){
 
   hlpr_assign_arguments(object)
 
@@ -1389,10 +1389,16 @@ removeSpatialAnnotations <- function(object, ids){
 #' and all their related data. If no spatial outliers exist, the input object
 #' is returned as is.
 #'
+#' @param rm_var Logical value. If `TRUE`, the variable *sp_outlier* is removed
+#' since it only contains `FALSE` after this function call and is of no value
+#' any longer.
+#'
+#' @inherit subsetSpataObject params
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @seealso [`identifyTissueOutline()`], [`identifySpatialOutliers()`], [`containsSpatialOutliers()`]
+#' @seealso [`identifyTissueOutline()`], [`identifySpatialOutliers()`], [`containsSpatialOutliers()`],
+#' [`subsetSpataObject()`] is the working horse behind the removal.
 #'
 #' @export
 #'
@@ -1424,7 +1430,10 @@ removeSpatialAnnotations <- function(object, ids){
 #' nObs(object) # after removal
 #'
 #'
-removeSpatialOutliers <- function(object, verbose = NULL){
+removeSpatialOutliers <- function(object,
+                                  spatial_proc = TRUE,
+                                  rm_var = TRUE,
+                                  verbose = NULL){
 
   hlpr_assign_arguments(object)
 
@@ -1442,7 +1451,13 @@ removeSpatialOutliers <- function(object, verbose = NULL){
       verbose = verbose
     )
 
-    object <- subsetSpataObject(object, barcodes = bcs_keep, verbose = verbose)
+    object <- subsetSpataObject(object, barcodes = bcs_keep, spatial_proc = spatial_proc, verbose = verbose)
+
+  }
+
+  if(base::isTRUE(object)){
+
+    object@meta_obs$sp_outlier <- NULL
 
   }
 

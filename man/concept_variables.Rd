@@ -8,7 +8,7 @@ In the context of SPATA2, the term \emph{variables} refers to the
 features that characterize \emph{\link[=concept_observations]{observations}}.
 
 Throughout documentation the term \emph{variables} and \emph{features} are used
-synonymously. We work closely with the tidyverse which proposes the concept
+synonymously. We work closely with the tidyverse. It proposes the concept
 of tidy data, which structures data.frames in observations and variables.
 Therefore, we tend to stick to the term \emph{variables}
 
@@ -34,14 +34,19 @@ conceptually subdivided.
 \itemize{
 \item{\emph{spatial}:}{ Numeric variables used to position the observations in two dimensional
 space. Stored in the coordinates data.frame as obtained by \code{\link[=getCoordsDf]{getCoordsDf()}}.
-E.g. \emph{x}, \emph{x_orig}, \emph{y} and \emph{y_orig}.}
+E.g. \emph{x}, \emph{x_orig}, \emph{y} and \emph{y_orig}. They are stored in the coordinates data.frame.}
 \item{\emph{molecular}:}{ Numeric variables used to quantify molecular expression of an
 observation. Stored in the count and processed matrices of the \code{\link{MolecularAssay}}
-objects. E.g. \emph{GFAP}, \emph{VEGFA}, \emph{LDH}}
-\item{\emph{signature}:}{ Specific scores or mean expression based on other numeric (mainly
-molecular) data variables. E.g. gene signatures like \emph{HM_HYPOXIA} or cell cycling scores.}
-\item{\emph{meta}:}{ Numeric variables that do not fit in any of the descriptions above
-and often correspond to meta data. E.g. the number of molecule counts per observation.}
+objects. E.g. \emph{GFAP}, \emph{VEGFA}, \emph{LDH}.}
+\item{\emph{dimensional reduction}}{ Numeric variables used to position the observations
+in latent space. Stored in slot @dim_red.}
+\item{\emph{signature}:}{ Specific scores or mean expression based on multiple molecular
+data variables. E.g. gene signatures like \emph{HM_HYPOXIA}. The \code{\link{SPATA2}} object
+only stores the molecules of which the signature consists, namely in slot @signatures
+of the \code{\link{MolecularAssay}}. The actual variable is computed upon extraction.}
+\item{\emph{miscellaneous}:}{ Numeric variables that do not fit in any of the descriptions above
+and often correspond to meta data. E.g. the number of molecule counts per observation.
+. They are stored in the meta data.frame for the observations, as obtained by \code{\link[=getMetaDf]{getMetaDf()}}.}
 }
 }
 
@@ -56,11 +61,11 @@ conceptually subdivided.
 \itemize{
 \item{\emph{cluster}:}{ Results of clustering algorithms. E.g. \code{\link[=runBayesSpaceClustering]{runBayesSpaceClustering()}}}
 \item{\emph{segmentation}:}{ Results of manual, spatial segmentation via \code{\link[=createSpatialSegmentation]{createSpatialSegmentation()}}}
-\item{\emph{meta}:}{ Categorical variables that do not fit in any of the descriptions above.
-E.g. group assignment by \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}.}
+\item{\emph{miscellaneous}:}{ Categorical variables that do not fit in any of the descriptions above.
+E.g. tissue section assignment by \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}, or outlier assignment by \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}.}
 }
 
-Grouping variables are stored as factors in the meta data.frame of slot @meta_obs.
+Grouping variables are stored as factors in the meta data.frame of slot @meta_obs, as obtained by \code{\link[=getMetaDf]{getMetaDf()}}.
 }
 
 \seealso{

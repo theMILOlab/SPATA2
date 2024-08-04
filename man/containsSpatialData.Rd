@@ -2,7 +2,7 @@
 % Please edit documentation in R/contains.R
 \name{containsSpatialData}
 \alias{containsSpatialData}
-\title{Checks availability of \code{SpatialData} object}
+\title{Checks availability of a SpatialData object}
 \usage{
 containsSpatialData(object, error = FALSE)
 }

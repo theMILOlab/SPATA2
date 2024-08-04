@@ -23,7 +23,7 @@ showModels(
 \arguments{
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

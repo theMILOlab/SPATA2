@@ -5,6 +5,7 @@
 \alias{rotateImage}
 \alias{rotateCoordinates}
 \alias{rotateCoordsDf}
+\alias{rotateTissueOutlineDf}
 \alias{rotateSpatialAnnotations}
 \alias{rotateSpatialTrajectories}
 \title{Rotate image and coordinates}
@@ -22,6 +23,8 @@ rotateImage(
 rotateCoordinates(object, angle, clockwise = TRUE, verbose = NULL)
 
 rotateCoordsDf(object, angle, clockwise = TRUE, verbose = NULL)
+
+rotateTissueOutlineDf(object, angle, clockwise = TRUE, verbose = NULL)
 
 rotateSpatialAnnotations(
   object,
@@ -49,7 +52,7 @@ be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{...}{Additional arguments given to \code{give_feedback()}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
