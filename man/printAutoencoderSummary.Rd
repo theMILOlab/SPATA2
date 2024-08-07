@@ -19,3 +19,4 @@ A human readable report of the issue of interest.
 Prints a human readable summary about the set up of the last neural network that
 was constructed to generate a denoised expression matrix.
 }
+\keyword{internal}

@@ -9,18 +9,40 @@ initiateSpataObjectXenium(sample_name, directory_xenium, verbose = TRUE)
 \arguments{
 \item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
 
-\item{directory_xenium}{Character value. Directory to a xenium folder. Should contain
-the subdirectory \emph{'.../cell_feature_matrix'} and the file \emph{'.../cells.csv.gz'}..}
+\item{directory_xenium}{Character value. Directory to a Xenium output folder.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 }
 \value{
-An object of class \code{SPATA2}.
+A \code{SPATA2} object from the Xenium platform. Default for \code{pt_size } is
+set to 0.1 which might need adjustment.
 }
 \description{
-Wrapper function around the necessary content to create a
-\code{SPATA2} object from standardized output of the Xenium platform.
+This function initiates a \code{\link{SPATA2}} object with data generated
+using the 10x Genomics \code{\link{Xenium}} platform.
+}
+\details{
+The function requires a directory containing the output files from a 10x Genomics Xenium experiment
+specified with the argument \code{directory_xenium}. This directory (below denoted as \strong{~}) must include the following
+sub-directories:
+
+\itemize{
+\item \emph{~/cell_feature_matrix}: A folder that contains the following files:
+\itemize{
+\item \emph{~/cell_feature_matrix/barcodes.tsv.gz}: The cell barcodes.
+\item \emph{~/cell_feature_matrix/features.tsv.gz}: The feature (gene) names.
+\item \emph{~/cell_feature_matrix/matrix.mtx.gz}: The raw count data matrix.
+}
+\item \emph{~/cells.csv.gz}: The cellular positions.
+}
+
+Xenium works in micron space. The coordinates of the cellular centroids are
+provided in unit um. Therefore no pixel scale factor must be computed or set
+to work with SI units.
+}
+\seealso{
+\code{\link[=setDefault]{setDefault()}}
 }

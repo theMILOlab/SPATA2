@@ -330,7 +330,7 @@ thousand data points. If the number of data points plotted is bigger than
 \item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
 of interest.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

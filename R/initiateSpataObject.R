@@ -255,22 +255,34 @@ initiateSpataObjectEmpty <- function(sample_name, platform, verbose = TRUE){
 
 #' @title Initiate an object of class `SPATA2` from platform MERFISH
 #'
-#' @description Wrapper function around the necessary content to create a
-#' `SPATA2` object from the standardized output of the MERFISH platform.
+#' @description This function initiates a [`SPATA2`] object with data generated
+#' using the MERFISH platform.
 #'
 #' @param directory_merfish Character value. Directory to a MERFISH folder
-#' that should contain a .csv file called *cell_by_gene.csv* and a .csv file
-#' called *cell_metadata.csv*. Deviating filenames can be specified using
-#' arguments `file_counts` and `file_cell_meta`, respectively.
+#' that should contain a .csv file called *~/...cell_by_gene.csv* and a .csv file
+#' called *~/...cell_metadata.csv*, where **~** is the directory to the folder.
+#' Deviating filenames can be specified using arguments `file_counts`
+#' and `file_cell_meta`, respectively.
+#' @param read_transcripts Logical value. If `TRUE`, the actual transcript positions
+#' are read in via  *~/...detected_transcript.csv* or the input of `file_transcripts`,
+#' if specified. Note that this argument defaults to `FALSE` since reading file
+#' transcripts can increase the object size by several GB.
 #' @param file_counts Character value or `NULL`. If character, specifies
 #' the filename of .csv file that contains the gene counts by cell. Use only
 #' if filename deviates from the default.
 #' @param file_cell_meta Character value or `NULL`. If character, specifies
 #' the filename of the .csv file that contains cell meta data, in particular,
 #' spatial location via the variables *center_x* and *center_y*.
+#' @param file_transcripts Character value or `NULL`. If character, specifies
+#' the filename of the .csv file that contains molecule transcript positions, in particular,
+#' spatial location via the variables *x* and *y*.
 #'
-#' @inherit initiateSpataObject params return
 #' @inherit argument_dummy params
+#'
+#' @return A `SPATA2` object from the MERFISH platform. Default for `pt_size` is
+#' set to 0.4 which might need adjustment.
+#'
+#' @seealso [`addMoleculeCoordinates()`], [`setDefault()`]
 #'
 #' @details MERFISH works in micron space. The coordinates of the cellular centroids are
 #' provided in unit um. Therefore no pixel scale factor must be computed or set
@@ -280,8 +292,10 @@ initiateSpataObjectEmpty <- function(sample_name, platform, verbose = TRUE){
 
 initiateSpataObjectMERFISH <- function(sample_name,
                                        directory_merfish,
+                                       read_transcripts = FALSE,
                                        file_counts = NULL,
                                        file_cell_meta = NULL,
+                                       file_transcripts = NULL,
                                        verbose = TRUE){
 
   # create SPATA2
@@ -297,6 +311,57 @@ initiateSpataObjectMERFISH <- function(sample_name,
   files_in_dir <-
     base::list.files(path = directory_merfish, full.names = TRUE)
 
+  # test and read transcripts directory input if required
+  if(base::isTRUE(read_transcripts)){
+
+    if(!base::is.character(file_transcripts)){
+
+      file_transcripts <-
+        stringr::str_subset(files_in_dir, pattern = "detected_transcript") %>%
+        stringr::str_subset(pattern = ".csv$")
+
+      if(base::length(file_transcripts) == 0){
+
+        stop("Did not find transcript file. If not specified otherwise, directory must contain
+           one '~/...detected_transcripts.csv' file.")
+
+      } else if(base::length(file_transcripts) > 1){
+
+        stop("Found more than one potential transcript file. Please specify argument 'file_transcripts'.")
+
+      }
+
+    } else {
+
+      file_transcripts <- base::file.path(directory_merfish, file_transcripts)
+
+      if(!base::file.exists(file_transcripts)){
+
+        stop(glue::glue("Directory to transcripts '{file_transcripts}' does not exist."))
+
+      }
+
+    }
+
+    confuns::give_feedback(
+      msg = glue::glue("Reading transcripts from {file_transcripts}."),
+      verbose = verbose
+    )
+
+    if(stringr::str_detect(file_transcripts, ".csv$")){
+
+      mol_coords_df <- readr::read_csv(file = file_transcripts, show_col_types = FALSE)
+
+    } else {
+
+      mol_coords_df <- readr::read_delim(file = file_transcripts, show_col_types = FALSE)
+
+    }
+
+    mol_coords_df <- dplyr::select(mol_coords_df, gene, x = global_x, y = global_y)
+
+  }
+
   # read counts
   if(!base::is.character(file_counts)){
 
@@ -306,7 +371,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
     if(base::length(file_counts) == 0){
 
       stop("Did not find counts. If not specified otherwise, directory must contain
-           one '~...cell_by_gene.csv' file.")
+           one '~/...cell_by_gene.csv' file.")
 
     } else if(base::length(file_counts) > 1){
 
@@ -367,7 +432,6 @@ initiateSpataObjectMERFISH <- function(sample_name,
 
   object <- setSpatialData(object, sp_data = sp_data)
 
-
   # molecular assay
   ma <-
     MolecularAssay(
@@ -380,6 +444,13 @@ initiateSpataObjectMERFISH <- function(sample_name,
   object <- activateAssay(object, assay_name = "gene")
   object <- activateMatrix(object, mtr_name = "counts")
 
+  # add transcripts positions
+  if(base::isTRUE(read_transcripts)){
+
+    object <- addMoleculeCoordinates(object, coordinates = mol_coords_df, assay_name = "gene")
+
+  }
+
   # meta
   meta_df <-
     tibble::tibble(
@@ -391,19 +462,28 @@ initiateSpataObjectMERFISH <- function(sample_name,
   object <- setMetaDf(object, cbind(getMetaDf(object), original_barcodes)) # add original barcodes to metadata
 
   # default processing
-  object <- identifyTissueOutline(object)
+  object <- identifyTissueOutline(object, verbose = verbose)
 
   # set active content
   object <-
     setDefault(
       object = object,
       display_image = FALSE, # MERFISH does not come with an image
-      pt_size = 1, # many obs of small size
+      pt_size = 0.4, # many obs of small size
       use_scattermore = TRUE # usually to many points for ggplot2 to handle
     )
 
+  crange <- getCoordsRange(object)
+
+  object <-
+    setCaptureArea(
+      object = object,
+      x = as_millimeter(crange$x, object = object),
+      y = as_millimeter(crange$y, object = object)
+      )
+
   confuns::give_feedback(
-    msg = "Estimated field of view range based on cell coordinates. Specify with `setCaptureaArea()`.",
+    msg = "Estimated field of view (capture area) bases on cell coordinates. Specify with `setCaptureaArea()`.",
     verbose = verbose
   )
 
@@ -415,7 +495,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
 #' @title Initiate an object of class `SPATA2` from platform SlideSeq
 #'
 #' @description Wrapper function around the necessary content to create a
-#' `SPATA2` object from the standardized output of the SlideSeq platform.
+#' `SPATA2` object from the standardized output of the [`SlideSeq`] platform.
 #'
 #' @param directory_slide_seq Character value. Directory to a SlideSeq folder
 #' that contains a count matrix and bead locations.
@@ -451,7 +531,7 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
-      method = "SlideSeqV1",
+      platform = "SlideSeqV1",
       verbose = verbose
     )
 
@@ -615,7 +695,7 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
   object <- setMetaDf(object = object, meta_df = meta_df)
 
   # default processing
-  object <- identifyTissueOutline(object)
+  object <- identifyTissueOutline(object, verbose = verbose)
 
   # set active content
   object <-
@@ -630,9 +710,10 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 
 }
 
-#' @title Initiate an object of class `SPATA2` from the Visium platform
+#' @title Initiate an object of class `SPATA2` from platform Visium
 #'
-#' @description This function initiates a [`SPATA2`] object for data generated using the 10x Genomics Visium platform.
+#' @description This function initiates a [`SPATA2`] object with data generated
+#' using the 10x Genomics Visium platform.
 #'
 #' @param sample_name Character. The name of the sample.
 #' @param directory_visium Character. The directory containing the Visium output files.
@@ -641,41 +722,44 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
 #' @param verbose Logical. If TRUE, progress messages are printed. Default is TRUE.
 #'
-#' @return A `SPATA2` object containing the processed data from the Visium platform. More precise,
+#' @return A `SPATA2` object containing data from the Visium platform. More precise,
 #' depending on the set up used to create the raw data it is of either spatial method:
 #'
 #'  \itemize{
-#'   \item{`VisiumSmall`}{: Visium data set with capture area of 6.5mm x 6.5mm.}
-#'   \item{`VisiumLarge`}{: Visium data set with capture area of 11mm x 11m. }
+#'   \item{[`VisiumSmall`]}{: Visium data set with capture area of 6.5mm x 6.5mm.}
+#'   \item{[`VisiumLarge`]}{: Visium data set with capture area of 11mm x 11m. }
 #'   }
 #'
 #' In any case, the output is an object of class `SPATA2`.
 #'
 #' @details
-#' The function requires a directory containing the output files from a 10x Genomics Visium experiment. The directory must include the following files:
+#' The function requires a directory containing the output files from a 10x Genomics Visium experiment
+#' specified with the argument `directory_visum`. This directory (below denoted as **~**) must include the following files
+#' and sub-directories:
+#'
 #' \itemize{
-#'   \item \emph{filtered_feature_bc_matrix.h5} or \emph{raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
-#'   \item \emph{spatial/tissue_lowres_image.png} or \emph{spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
-#'   \item \emph{spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
-#'   \item \emph{spatial/tissue_positions_list.csv} or \emph{spatial/tissue_positions.csv}: A CSV file containing the tissue positions and spatial coordinates.
+#'   \item \emph{~/filtered_feature_bc_matrix.h5} or \emph{raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
+#'   \item \emph{~/spatial/tissue_lowres_image.png} or \emph{spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
+#'   \item \emph{~/spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
+#'   \item \emph{~/spatial/tissue_positions_list.csv} or \emph{/~spatial/tissue_positions.csv}: A CSV file containing the tissue positions and spatial coordinates.
 #' }
 #' The function will check for these files and process them to create a `SPATA2` object. It reads the count matrix, loads the spatial data,
 #' and initializes the `SPATA2` object with the necessary metadata and settings.
 #'
 #' @section Gene and Protein Expression:
 #' This function also supports reading coupled gene expression and protein expression data. It expects the input directory to contain an HDF5
-#' file that includes separate datasets for gene expression and protein expression. The function uses [`Seurat::Read10X_h5()`] to read in
+#' file that includes separate datasets for gene expression and protein expression. The function uses [`Seurat::Read10X_h5()`] with `unique.features = TRUE`, to read in
 #' data and, if the result is a list, it assumes that it contains gene and protein expression. This scenario is handled as follows:
 #'
 #' \itemize{
-#'   \item Gene expression data is extracted from the "Gene Expression" dataset in the HDF5 file.
-#'   \item Protein expression data is extracted from the "Antibody Capture" dataset in the HDF5 file.
+#'   \item Gene expression data is extracted from the "Gene Expression" dataset in the HDF5 file and stored in an assay named *gene*.
+#'   \item Protein expression data is extracted from the "Antibody Capture" dataset in the HDF5 file *protein*.
 #' }
 #'
 #' The function ensures that molecule names do not overlap by normalizing the names:
 #'
 #' \itemize{
-#'   \item Gene expression molecule names are forced to uppercase.
+#'   \item Gene expression molecule names remain in upper case (human data) or title case (mouse data).
 #'   \item Protein expression molecule names are forced to lowercase.
 #' }
 #'
@@ -692,7 +776,10 @@ initiateSpataObjectVisium <- function(sample_name,
                                       img_ref = "lowres",
                                       verbose = TRUE){
 
-  isDirVisium(dir = directory_visium, error = TRUE)
+  confuns::give_feedback(
+    msg = "Initiating SPATA2 object for platform Visium.",
+    verbose = verbose
+  )
 
   # validate and process input directory
   dir <- base::normalizePath(directory_visium)
@@ -717,19 +804,66 @@ initiateSpataObjectVisium <- function(sample_name,
 
   mtr_path <- files[stringr::str_detect(files, pattern = mtr_pattern)]
 
-  if(base::length(mtr_path) > 1){
+  if(base::length(mtr_path) == 0){
 
-    warning("Multiple matrices found. Picking first.")
+    confuns::give_feedback(
+      msg = glue::glue("'{mtr_pattern}' is missing. Looking for folder."),
+      verbose = verbose
+      )
 
-    mtr_path <- mtr_path[1]
+    mtr_pattern <- stringr::str_remove(mtr_pattern, ".h5\\$$")
 
-  } else if(base::length(mtr_path) == 0){
+    mtr_folder_path <-
+      stringr::str_subset(
+        string = list.files(directory_visium, full.names = TRUE, recursive = FALSE),
+        pattern = stringr::str_remove(mtr_pattern, ".h5\\$")
+      )
 
-    stop(glue::glue("'{mtr_pattern}' is missing.", mtr_pattern = stringr::str_remove(mtr_pattern, "\\$")))
+    if(base::length(mtr_folder_path) == 1){
+
+      confuns::give_feedback(
+        msg = glue::glue("Reading count data from folder: {mtr_folder_path}"),
+        verbose = verbose
+      )
+
+      counts_out <- read_matrix_from_folder(mtr_folder_path)
+
+    } else {
+
+      stop("Can't find count data.")
+
+    }
+
+  } else {
+
+    if(base::length(mtr_path) > 1){
+
+      warning(glue::glue("Multiple matrices found. Picking first: {mtr_path}."))
+
+      mtr_path <- mtr_path[1]
+
+    }
+
+    confuns::give_feedback(
+      msg = glue::glue("Reading count data from '{mtr_path}'."),
+      verbose = verbose
+    )
+
+    counts_out <-
+      base::suppressMessages({
+
+        Seurat::Read10X_h5(filename = mtr_path, unique.features = TRUE)
+
+      })
 
   }
 
-  # load images
+  # load images and spatial data
+  confuns::give_feedback(
+    msg = "Reading spatial and image data.",
+    verbose = verbose
+  )
+
   sp_data <-
     createSpatialDataVisium(
       dir = dir,
@@ -742,11 +876,6 @@ initiateSpataObjectVisium <- function(sample_name,
   # create SPATA2 object
   platform <- sp_data@method@name
 
-  confuns::give_feedback(
-    msg = glue::glue("Initiating SPATA2 object for platform: '{platform}'"),
-    verbose = verbose
-  )
-
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
@@ -757,18 +886,6 @@ initiateSpataObjectVisium <- function(sample_name,
   object <- setSpatialData(object, sp_data = sp_data)
 
   # molecular data
-  confuns::give_feedback(
-    msg = glue::glue("Reading count data from '{mtr_path}'."),
-    verbose = verbose
-  )
-
-  counts_out <-
-    base::suppressMessages({
-
-      Seurat::Read10X_h5(filename = mtr_path, unique.features = FALSE)
-
-    })
-
   if(base::length(counts_out) == 2){
 
     # gene expression
@@ -777,7 +894,9 @@ initiateSpataObjectVisium <- function(sample_name,
     base::rownames(gene_counts) <-
       base::rownames(gene_counts) %>%
       stringr::str_remove_all("\\.d*") %>%
-      base::toupper()
+      stringr::str_replace_all(pattern = "_", replacement = "-")
+
+    gene_counts <- make_unique_molecules(gene_counts)
 
     gene_assay <-
       MolecularAssay(
@@ -793,14 +912,17 @@ initiateSpataObjectVisium <- function(sample_name,
 
     base::rownames(protein_counts) <-
       base::rownames(protein_counts) %>%
-      stringr::str_remove_all("\\.d*") %>%
-      base::tolower()
+      stringr::str_remove_all(pattern = "\\..*$") %>%
+      base::tolower() %>% # force protein names to lower case!
+      stringr::str_replace_all(pattern = "_", replacement = "-")
+
+    protein_counts <- make_unique_molecules(protein_counts)
 
     protein_assay <-
       MolecularAssay(
         mtr_counts = protein_counts,
         modality = "protein",
-        signatures = signatures$protein
+        signatures = purrr::map(signatures$protein, .f = base::tolower)
       )
 
     object <- setAssay(object, assay = protein_assay)
@@ -811,6 +933,8 @@ initiateSpataObjectVisium <- function(sample_name,
     object <- activateMatrix(object, mtr_name = "counts", assay_name = "protein")
 
   } else {
+
+    counts_out <- make_unique_molecules(counts_out)
 
     # molecular assay
     ma <-
@@ -841,16 +965,17 @@ initiateSpataObjectVisium <- function(sample_name,
   object <- setDefault(object, pt_size = getSpotSize(object))
 
   # default processing
-  object <- identifyTissueOutline(object)
+  object <- identifyTissueOutline(object, verbose = verbose)
 
   returnSpataObject(object)
 
 }
 
 
-#' @title Initiate an object of class `SPATA2` from the VisiumHD platform
+#' @title Initiate an object of class `SPATA2` from platform VisiumHD
 #'
-#' @description This function initiates a [`SPATA2`] object for data generated using the 10x Genomics VisiumHD platform.
+#' @description This function initiates a [`SPATA2`] object with data generated
+#' using the 10x Genomics [`VisiumHD`] platform.
 #'
 #' @param sample_name Character. The name of the sample.
 #' @param directory_visium Character. The directory containing the Visium output files.
@@ -861,33 +986,34 @@ initiateSpataObjectVisium <- function(sample_name,
 #' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
 #' @param verbose Logical. If TRUE, progress messages are printed. Default is TRUE.
 #'
-#' @return A `SPATA2` object containing the processed data from the VisiumHD platform.
+#' @return A `SPATA2` object the VisiumHD platform.
 #'
 #' @note It is crucial to install the package `arrow` in a way that [`arrow::read_parquet()`] works. There
 #' are several ways. Installing the package with `install.packages('arrow', repos = 'https://apache.r-universe.dev')`
 #' worked reliably for us.
 #'
 #' @details
-#' The function requires a directory containing the output files from a 10x Genomics VisiumHD experiment.
-#' The directory must include at least one of the following subdirectories:
+#' The function requires a directory containing the output files from a 10x Genomics VisiumHD experiment
+#' specified with the argument `directory_visium`. This directory (below denoted as **~**)  must include the following
+#' sub-directories:
 #'
 #' \itemize{
 #'   \item \emph{~/binned_outputs}: A folder with the following subdirectories.
 #'      \itemize{
-#'        \item \emph{~/square_002um}: The folder containing the data for `square_res = '2um'`.
-#'        \item \emph{~/square_008um}: The folder containing the data for `square_res = '8um'`.
-#'        \item \emph{~/square_016um}: The folder containing the data for `square_res = '16um'`.
+#'        \item \emph{~/binned_outputs/square_002um}: The folder containing the data for `square_res = '2um'`.
+#'        \item \emph{~/binned_outputs/square_008um}: The folder containing the data for `square_res = '8um'`.
+#'        \item \emph{~/binned_outputs/square_016um}: The folder containing the data for `square_res = '16um'`.
 #'        }
 #' }
 #'
 #' Depending on your input for `square_res` only the corresponding subfolder is required. This subfolder should
-#' contain the following files/subdirectories:
+#' contain the following files and sub-directories:
 #'
 #' \itemize{
-#'   \item \emph{~/filtered_feature_bc_matrix.h5} or \emph{~/raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
-#'   \item \emph{~/spatial/tissue_lowres_image.png} or \emph{~/spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
-#'   \item \emph{~/spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
-#'   \item \emph{~/spatial/tissue_position.parquet} A .parguet containing the tissue positions and spatial coordinates.
+#'   \item \emph{~/binned_outputs/<square_res>/filtered_feature_bc_matrix.h5} or \emph{~/raw_feature_bc_matrix.h5}: The HDF5 file containing the filtered or raw feature-barcode matrix, respectively.
+#'   \item \emph{~/binned_outputs/<square_res>/spatial/tissue_lowres_image.png} or \emph{~/spatial/tissue_hires_image.png}: The low-resolution or high-resolution tissue image.
+#'   \item \emph{~/binned_outputs/<square_res>/spatial/scalefactors_json.json}: A JSON file containing the scale factors for the images.
+#'   \item \emph{~/binned_outputs/<square_res>/spatial/tissue_position.parquet} A .parguet file containing the tissue positions and spatial coordinates.
 #' }
 #'
 #' The function will check for these files and process them to create a `SPATA2` object. It reads the count matrix, loads the spatial data,
@@ -927,6 +1053,18 @@ initiateSpataObjectVisiumHD <- function(sample_name,
     stop("Invalid folder structure.")
 
   }
+
+  # load spatial data
+  # load images
+  sp_data <-
+    createSpatialDataVisiumHD(
+      dir = out_folder,
+      square_res = square_res,
+      sample = sample_name,
+      img_ref = img_ref,
+      img_active = img_active,
+      verbose = verbose
+    )
 
   out_files <-
     base::list.files(out_folder, recursive = TRUE, full.names = TRUE)
@@ -968,16 +1106,6 @@ initiateSpataObjectVisiumHD <- function(sample_name,
 
   count_mtr <- Seurat::Read10X_h5(filename = mtr_path)
 
-  # load images
-  sp_data <-
-    createSpatialDataVisiumHD(
-      dir = out_folder,
-      sample = sample_name,
-      img_ref = img_ref,
-      img_active = img_active,
-      verbose = verbose
-    )
-
   # create SPATA2 object
   object <-
     initiateSpataObjectEmpty(
@@ -1015,7 +1143,7 @@ initiateSpataObjectVisiumHD <- function(sample_name,
   # set default
   object <- setDefault(object, pt_size = getSpotSize(object), use_scattermore = TRUE)
 
-  object <- identifyTissueOutline(object)
+  object <- identifyTissueOutline(object, verbose = verbose)
 
   returnSpataObject(object)
 
@@ -1024,12 +1152,35 @@ initiateSpataObjectVisiumHD <- function(sample_name,
 
 #' @title Initiate an object of class `SPATA2` from platform Xenium
 #'
-#' @description Wrapper function around the necessary content to create a
-#' `SPATA2` object from standardized output of the Xenium platform.
+#' @description This function initiates a [`SPATA2`] object with data generated
+#' using the 10x Genomics [`Xenium`] platform.
 #'
-#' @param directory_xenium Character value. Directory to a xenium folder. Should contain
-#' the subdirectory *'.../cell_feature_matrix'* and the file *'.../cells.csv.gz'*..
-#' @inherit initiateSpataObject params return
+#' @param directory_xenium Character value. Directory to a Xenium output folder.
+#' @inherit initiateSpataObject params
+#'
+#' @return A `SPATA2` object from the Xenium platform. Default for `pt_size ` is
+#' set to 0.1 which might need adjustment.
+#'
+#' @seealso [`setDefault()`]
+#'
+#' @details
+#' The function requires a directory containing the output files from a 10x Genomics Xenium experiment
+#' specified with the argument `directory_xenium`. This directory (below denoted as **~**) must include the following
+#' sub-directories:
+#'
+#' \itemize{
+#'   \item \emph{~/cell_feature_matrix}: A folder that contains the following files:
+#'      \itemize{
+#'        \item \emph{~/cell_feature_matrix/barcodes.tsv.gz}: The cell barcodes.
+#'        \item \emph{~/cell_feature_matrix/features.tsv.gz}: The feature (gene) names.
+#'        \item \emph{~/cell_feature_matrix/matrix.mtx.gz}: The raw count data matrix.
+#'        }
+#'    \item \emph{~/cells.csv.gz}: The cellular positions.
+#' }
+#'
+#' @details Xenium works in micron space. The coordinates of the cellular centroids are
+#' provided in unit um. Therefore no pixel scale factor must be computed or set
+#' to work with SI units.
 #'
 #' @export
 #'
@@ -1041,7 +1192,7 @@ initiateSpataObjectXenium <- function(sample_name,
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
-      method = "Xenium",
+      platform = "Xenium",
       verbose = verbose
     )
 
@@ -1062,12 +1213,7 @@ initiateSpataObjectXenium <- function(sample_name,
     verbose = verbose
   )
 
-  count_mtr <-
-    base::suppressMessages({
-
-      Seurat::Read10X(data.dir = mtr_path)[["Gene Expression"]]
-
-    })
+  count_mtr <- read_matrix_from_folder(mtr_path)
 
   # molecular assay
   ma <-
@@ -1103,8 +1249,10 @@ initiateSpataObjectXenium <- function(sample_name,
       y = getCoordsRange(object)$y %>% as_millimeter(object = object)
     )
 
+  object <- identifyTissueOutline(object, verbose = verbose)
+
   # set default
-  object <- setDefault(object, display_image = FALSE, pt_size = 0.5)
+  object <- setDefault(object, use_scattermore = TRUE, display_image = FALSE, pt_size = 0.1)
 
   returnSpataObject(object)
 

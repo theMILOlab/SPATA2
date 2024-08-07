@@ -47,6 +47,9 @@
     <li>
       <a href="../articles/initiation-and-preprocessing-visium.html">Initiation &amp; Preprocessing with Visium data</a>
     </li>
+    <li>
+      <a href="../articles/initiation-and-preprocessing-visium-hd.html">Initiation &amp; Preprocessing with VisiumHD data</a>
+    </li>
     <li class="dropdown-header">Basic Manipulation of a SPATA2 object</li>
     <li>
       <a href="../articles/adding-data.html">Adding Data to SPATA2 objects</a>
@@ -153,7 +156,7 @@ to be included.</p></dd>
 <dt id="arg-assay-name">assay_name<a class="anchor" aria-label="anchor" href="#arg-assay-name"></a></dt>
 <dd><p>Only relevant if the <code>SPATA2</code> object contains more than
 one assay: Denotes the assay of interest and thus the
-<a href="concept_molecular_modalities.html">molecular modality</a> to use. Defaults to the active assay,
+<a href="concept_molecular_modalities.html">molecular modality</a> to use. Defaults to the active assay
 as set by <code><a href="activateAssay.html">activateAssay()</a></code>.</p></dd>
 
 
@@ -521,6 +524,11 @@ the point size must be adjusted with the argument <code>pt_size</code>.</p></dd>
 of the plot.</p></dd>
 
 
+<dt id="arg-section-subset">section_subset<a class="anchor" aria-label="anchor" href="#arg-section-subset"></a></dt>
+<dd><p>Character vector or <code>NULL</code>. If character, specifies
+the tissue sections of interest and filters the output accordingly.</p></dd>
+
+
 <dt id="arg-signif-var">signif_var<a class="anchor" aria-label="anchor" href="#arg-signif-var"></a></dt>
 <dd><p>Character value. Determines what to be considered while checking
 for significance. Either <em>'pval'</em> (p-Value) or <em>'fdr'</em> (False Discovery Rate).</p></dd>
@@ -621,7 +629,7 @@ of interest.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical. If set to TRUE informative messages regarding
+<dd><p>Logical. If <code>TRUE</code>, informative messages regarding
 the computational progress will be printed.</p>
 <p>(Warning messages will always be printed.)</p></dd>
 

@@ -173,8 +173,6 @@ setMethod(
                         scale_fct = 1,
                         ...){
 
-    containsPseudoImage(object, error = TRUE)
-
     getImage(
       object = getHistoImage(object, img_name),
       xrange = xrange,
@@ -686,6 +684,7 @@ setMethod(
 )
 
 
+#' @keywords internal
 #' @rdname getImageRaster
 #' @export
 getImageRasterInfo <- function(object, xrange = NULL, yrange = NULL){
@@ -834,12 +833,12 @@ setMethod(
 )
 
 
-#' @title Obtain image sections by barcode spot
+#' @title Obtain image sections by barcode
 #'
 #' @description Cuts out the area of the image that is covered by each barcode.
 #'
-#' @param barcodes Characte vector or NULL. If character, subsets the barcodes
-#' of interest. If NULL, all barcodes are considered.
+#' @param barcodes Characte vector or `NULL`. If character, subsets the barcodes
+#' of interest. If `NULL`, all barcodes are considered.
 #' @inherit argument_dummy params
 #'
 #' @return A named list. Each slot is named after one barcode. The content is
@@ -1109,9 +1108,15 @@ setMethod(
 
     if(base::isFALSE(only_proc)){
 
-      out <- c("counts", out)
+      count_mtr <- getCountMatrix(object)
+
+      add <- nrow(count_mtr > 1) & ncol(count_mtr) > 1
+
+      if(add){ out <- c("counts", out) }
 
     }
+
+    if(base::is.null(out)){ out <- character(0) }
 
     return(out)
 
@@ -1149,24 +1154,33 @@ getMetaboliteSet <- function(object, metabolite_set, ...){
 
 #' @rdname getSignatureList
 #' @export
-getMetaboliteSetList <- function(object, class = NULL){
+getMetaboliteSetList <- function(object, ..., class = NULL){
 
   getSignatureList(object, assay_name = "metabolite", class = class)
 
 }
 
+#' @rdname getSignatureOverview
+#' @export
+getMetaboliteOverview <- function(object, ...){
+
+  getSignatureOverview(object, ..., assay_name = "metabolite")
+
+}
+
 #' @rdname getSignatureNames
 #' @export
-getMetaboliteSets <- function(object, class = NULL, ...){
+getMetaboliteSets <- function(object, ..., class = NULL){
 
   getSignatureNames(object, class = class, assay_name = "metabolite")
 
 }
 
-#' @title Obtain meta data.frame
+#' @title Obtain meta data.frame for observations
 #'
 #' @description Retrieves the meta data frame from the provided object which
-#' contains feature variables that do not derive from the molecular count matrices.
+#' contains \link[=concept_variables]{meta information} about the objects's
+#' \link[=concept_observations]{observations}.
 #'
 #' @inherit argument_dummy params
 #'
@@ -1182,7 +1196,7 @@ getMetaDf <- function(object){
 }
 
 
-#' @title Obtain method specifics
+#' @title Obtain platform details
 #'
 #' @description Extracts a list of method specifics from the `SpatialMethod` of
 #' the `SPATA2` object.

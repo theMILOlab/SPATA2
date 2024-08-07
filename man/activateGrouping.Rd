@@ -16,7 +16,7 @@ objects of classes for which a method has been defined.}
 \item{grouping}{Character value. The grouping variable that is
 supposed to be used by default within all functions that need one.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

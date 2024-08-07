@@ -27,15 +27,15 @@ x-coordinate 500px. If \code{NULL}, the original range is used.}
 processed spatially. If \code{TRUE}, a new tissue outline is identified based
 on the remaining observations via \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}. Then,
 spatial annotations are tested on being located on either of the remaining
-tissue sections. If they are not, they are removed. If \code{FALSE}, these processing
-steps are skipped.
+tissue sections. If they are not, they are removed.
 
-Not recommended. Only set to \code{TRUE}, if you know what you're doing.}
+If \code{FALSE}, these processing steps are skipped. Generally speaking, this is
+not recommended. Only set to \code{FALSE}, if you know what you're doing.}
 
 \item{adjust_capture_area}{Logical. If \code{TRUE}, the capture area is adjusted
 to the input of \code{xrange} and \code{yrange}. If \code{FALSE}, it stays as is. Defaults to \code{TRUE}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
@@ -56,25 +56,32 @@ library(patchwork)
 # ----- Example 1: subsetSpataObject()
 object <- loadExampleObject("UKF313T", meta = TRUE)
 
-plotSpatialAnnotations(object) # plots all annotations
-
 barcodes_keep <-
  getMetaDf(object) \%>\%
- filter(bayes_sapce \%in\% c("B3", "B2", "B1")) \%>\%
+ filter(bayes_space \%in\% c("B3", "B2", "B1")) \%>\%
  pull(barcodes)
 
 object_sub <- subsetSpataObject(object, barcodes = barcodes_keep)
 
-plotSpatialAnnotations(object)
+show(object)
+show(object_sub)
+
+plotSpatialAnnotations(object) # plots all annotations
+plotSpatialAnnotations(object_sub) # subsetting affects everything by default
 
 ids <- getSpatAnnIds(object)
+ids_sub <- getSpatAnnIds(object_sub)
 
 # use patchwork to compare plots
-plotSurface(object, color_by = "bayes_space") +
- (plotSurface(object_sub, color_by = "bayes_space") +
-  ggpLayerTissueOutline(object_sub) +
-  ggpLayerSpatAnnOutline(object_sub, ids = ids)
-  )
+plot_orig <-
+  plotSurface(object, color_by = "bayes_space", outline = T) +
+  ggpLayerSpatAnnOutline(object, ids = ids)
+
+plot_sub <-
+  plotSurface(object_sub, color_by = "bayes_space", outline = T) +
+  ggpLayerSpatAnnOutline(object_sub, ids = ids_sub)
+
+plot_orig + plot_sub
 
 # ----- Example 2: splitSpataObject()
 # uses subsetSpataObject() in the background

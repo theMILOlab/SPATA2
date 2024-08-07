@@ -23,6 +23,8 @@ ggpLayerSpatAnnOutline(
   merge_edge = FALSE,
   incr_vert = FALSE,
   expand_outline = 0,
+  xrange = getCoordsRange(object)$x,
+  yrange = getCoordsRange(object)$y,
   ...
 )
 }
@@ -77,6 +79,12 @@ to be plotted is increased by linear interpolation. This can lead to smoother
 visualization but also to increased runtime.}
 
 \item{expand_outline}{Distance measure by which the outline of the area is expanded.}
+
+\item{xrange, yrange}{\link[=concept_distance_measure]{Distance vector} of length
+two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
+the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
+the two dimensional space being cropped from x-coordinate 200px up to
+x-coordinate 500px. If \code{NULL}, the original range is used.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }

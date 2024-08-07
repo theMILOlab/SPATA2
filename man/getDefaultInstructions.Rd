@@ -3,17 +3,11 @@
 \name{getDefault}
 \alias{getDefault}
 \alias{getDefaultInstructions}
-\alias{getDirectoryInstructions}
 \title{Obtain default argument inputs}
 \usage{
 getDefault(object, arg)
 
 getDefaultInstructions(object)
-
-getDirectoryInstructions(
-  object,
-  to = c("cell_data_set", "seurat_object", "spata_object")
-)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -25,4 +19,3 @@ default in case of \code{getDefault()}.
 \description{
 Obtain default argument inputs
 }
-\keyword{internal}

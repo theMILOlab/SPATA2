@@ -50,7 +50,7 @@ no image is provided.}
 \item{spatial_method}{Character value or object of class \code{\link{SpatialMethod}}.
 If character, one of \code{validSpatialMethods()}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

@@ -13,7 +13,7 @@ objects of classes for which a method has been defined.}
 \item{dir}{Character value. The directory under which to store
 the \code{SPATA2} object. If \code{NULL}, defaults to the directory set with \code{\link[=setSpataDir]{setSpataDir()}}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

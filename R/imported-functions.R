@@ -109,6 +109,8 @@ is_vec <- confuns::is_vec
 #' @keywords internal
 lrename <- confuns::lrename
 
+lselect <- confuns::lselect
+
 # m -----------------------------------------------------------------------
 
 #' @keywords internal

@@ -25,14 +25,15 @@ plotSurface(object, ...)
   outline = FALSE,
   outline_fct = c(2.125, 2.75),
   clrp_adjust = NULL,
-  display_image = NULL,
-  img_alpha = 1,
   transform_with = NULL,
   use_scattermore = NULL,
+  sctm_pixels = c(1024, 1024),
   bcs_rm = base::character(0),
   na_rm = FALSE,
   xrange = getCoordsRange(object)$x,
   yrange = getCoordsRange(object)$y,
+  display_image = NULL,
+  img_alpha = 1,
   img_name = NULL,
   geom = "point",
   verbose = NULL,
@@ -118,8 +119,6 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{img_alpha}{Numeric value. Sets the transparency for the image.}
-
 \item{transform_with}{List or \code{NULL.} If list, can be used to transform continuous variables before usage.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
 E.g if the variable of interest is \emph{GFAP} gene expression, the following would work:
@@ -148,11 +147,13 @@ the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
 the two dimensional space being cropped from x-coordinate 200px up to
 x-coordinate 500px. If \code{NULL}, the original range is used.}
 
+\item{img_alpha}{Numeric value. Sets the transparency for the image.}
+
 \item{img_name}{Character value. The name of the image of interest.
 If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

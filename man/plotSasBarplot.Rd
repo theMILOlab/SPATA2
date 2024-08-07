@@ -59,7 +59,7 @@ represent the group.}
 
 \item{expand_x, expand_y}{Given to argument \code{expand} of \code{ggplot2:scale_x/y_continuous()}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

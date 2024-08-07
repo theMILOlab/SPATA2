@@ -100,7 +100,15 @@ getAssayModalities <- function(object){
 #' @export
 getAssayNames <- function(object){
 
-  base::names(object@assays)
+  out <- base::names(object@assays)
+
+  if(base::is.null(out)){
+
+    out <- character(0)
+
+  }
+
+  return(out)
 
 }
 
@@ -203,7 +211,7 @@ getBarcodes <- function(object,
   if(!base::is.null(across)){
 
     res_df <-
-      getMetaDf(object, of_sample) %>%
+      getMetaDf(object) %>%
       confuns::check_across_subset(
         df = .,
         across = across,
@@ -271,6 +279,7 @@ getBarcodes <- function(object,
 #'
 #' @return Character vector.
 #' @export
+#' @keywords internal
 #'
 getBarcodesInPolygon <- function(object, polygon_df, strictly = TRUE){
 
@@ -416,9 +425,16 @@ getBarcodeSpotDistances <- function(object,
 #'
 #' @export
 
-getCaptureArea <- function(object, unit = NULL){
+getCaptureArea <- function(object, img_name = activeImage(object), unit = NULL){
 
-  ca <- getSpatialMethod(object)@capture_area
+  isf <- getScaleFactor(object, fct_name = "image", img_name = img_name)
+
+  ca <-
+    purrr::map(
+      .x = getSpatialMethod(object)@capture_area,
+      .f = ~ .x * {{isf}}
+    ) %>%
+    purrr::set_names(nm = c("x", "y"))
 
   if(base::is.character(unit)){
 
@@ -680,8 +696,13 @@ getCoordsCenter <- function(object){
 #' @description Extracts the coordinates data.frame of the identified
 #' or known entities the analysis revolves around.
 #'
-#' @param img_name The name of the image based on which the coordinates are supposed
-#' to be aligned. If `NULL`, defaults to the active image.
+#' @param variables Character or `NULL`. If character, specifies the
+#' variables that are merged to the coordinates data.frame via [`joinWithVariables()`].
+#' @param img_name Only relevant if the [`SPATA2`] object contains images. If so,
+#' specifies the name of the image to which the original coordinates are scaled.
+#' If `NULL`, defaults to the active image.
+#' @param ... Additional arguments given to [`joinWithVariables()`] if argument
+#' `variables` is specified.
 #' @inherit argument_dummy params
 #'
 #' @return Data.frame that, among others, contains at least the
@@ -703,6 +724,7 @@ setMethod(
   f = "getCoordsDf",
   signature = "SPATA2",
   definition = function(object,
+                        variables = NULL,
                         img_name = activeImage(object),
                         exclude = TRUE,
                         as_is = FALSE,
@@ -740,6 +762,13 @@ setMethod(
       )
 
     coords_df <- tibble::as_tibble(coords_df)
+
+    if(base::is.character(variables)){
+
+      coords_df <-
+        joinWithVariables(object, variables = variables, spata_df = coords_df, ...)
+
+    }
 
     return(coords_df)
 
@@ -1747,13 +1776,14 @@ getCoordsMtr <- function(object,
 #' @return A list of two vectors each of length 2.
 #' @export
 #'
-getCoordsRange <- function(object, fct = NULL){
+getCoordsRange <- function(object, cvars = c("x", "y"), fct = NULL){
 
   out <-
     list(
-      x = getCoordsDf(object)$x %>% base::range(),
-      y = getCoordsDf(object)$y %>% base::range()
-    )
+      getCoordsDf(object)[[cvars[1]]] %>% base::range(),
+      getCoordsDf(object)[[cvars[2]]] %>% base::range()
+    ) %>%
+    purrr::set_names(nm = cvars)
 
   if(base::is.numeric(fct)){
 
@@ -2109,29 +2139,6 @@ getDimRedDf <- function(object,
 
 }
 
-#' @rdname getDefaultInstructions
-#' @keywords internal
-getDirectoryInstructions <- function(object, to = c("cell_data_set", "seurat_object", "spata_object")){
-
-  check_object(object)
-
-  directory_list <-
-    purrr::map(.x = to, .f = ~ object@obj_info$instructions$directories[[.x]]) %>%
-    purrr::set_names(nm = to)
-
-  if(base::length(directory_list) > 1){
-
-    return(directory_list)
-
-  } else {
-
-    dir <- base::unlist(directory_list, use.names = FALSE)
-
-    return(dir)
-
-  }
-
-}
 # getE --------------------------------------------------------------------
 
 
@@ -2223,34 +2230,7 @@ getFromSeurat <- function(return_value, error_handling, error_value, error_ref){
 # getG --------------------------------------------------------------------
 
 
-#' @title Obtain gene meta data
-#'
-#' @inherit argument_dummy params
-#' @inherit getExpressionMatrix params
-#' @param only_df Logical. If set to TRUE only the data.frame is returned.
-#' If set to FALSE (the default) the whole list is returned.
-#'
-#' @return A data.frame from \code{getMetaDataDf()} or a list from \code{getGeneMetaData()}.
-#' @export
-
-getGeneMetaData <- function(object, ...){
-
-  deprecated(fn = TRUE, ...)
-
-  getAssay(object, assay_name = "gene")@meta_var
-
-}
-
-#' @rdname getGeneMetaData
-#' @export
-getGeneMetaDf <- function(object, ...){
-
-  getAssay(object, assay_name = "gene")@meta_var
-
-}
-
-
-#' @title Obtain gene information
+#' @title Obtain gene CNV information
 #'
 #' @description Extracts information regarding gene positioning
 #' on chromosomes and/or chromosome arms.
@@ -2329,51 +2309,21 @@ getGeneSetDf <- function(object){
 
 #' @rdname getSignatureList
 #' @export
-getGeneSetList <- function(object, class = NULL){
+getGeneSetList <- function(object, ..., class = NULL){
 
-  getSignatureList(object, assay_name = "gene", class = class)
+  getSignatureList(object, ..., assay_name = "gene", class = class)
 
 }
 
-#' @title Overview about the current gene sets
-#'
-#' @param object A valid spata-object.
-#'
-#' @return A data.frame with two variables \emph{Class} and \emph{Available Gene
-#' Sets} indicating the number of different gene sets the classes contain.
-#'
+
+#' @rdname getSignatureOverview
 #' @export
+getGeneSetOverview <- function(object, ...){
 
-getGeneSetOverview <- function(object){
-
-  # lazy check
-  check_object(object)
-
-  # main part
-
-  gene_sets <- getGeneSetList(object) %>% base::names()
-
-  if(base::nrow(gene_sets_df) == 0){
-
-    base::message("Gene-set data.frame is empty.")
-    return(data.frame())
-
-  } else {
-
-    gene_set_classes <- stringr::str_extract(string = gene_sets, pattern = "^.+?(?=_)")
-
-    dplyr::mutate(gene_sets_df, gs_type = gene_set_classes) %>%
-      dplyr::select(-gene) %>%
-      dplyr::distinct() %>%
-      dplyr::pull(gs_type) %>%
-      base::table() %>%
-      base::as.data.frame() %>%
-      magrittr::set_colnames(value = c("Class", "Available Gene Sets"))
-
-  }
-
+  getSignatureOverview(object, ..., assay_name = "gene")
 
 }
+
 
 #' @rdname getSignature
 #' @export
@@ -2388,9 +2338,9 @@ getGeneSet <- function(object, gene_set, ...){
 
 #' @rdname getSignatureNames
 #' @export
-getGeneSets <- function(object, class = NULL, ...){
+getGeneSets <- function(object, ..., class = NULL){
 
-  getSignatureNames(object, class = class, assay_name = "gene")
+  getSignatureNames(object, ..., class = class, assay_name = "gene")
 
 }
 

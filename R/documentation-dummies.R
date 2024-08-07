@@ -305,7 +305,7 @@
 #' @param variables Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
 #' of interest.
 #'
-#' @param verbose Logical. If set to TRUE informative messages regarding
+#' @param verbose Logical. If `TRUE`, informative messages regarding
 #' the computational progress will be printed.
 #'
 #' (Warning messages will always be printed.)

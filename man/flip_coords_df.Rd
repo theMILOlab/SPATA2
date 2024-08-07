@@ -33,7 +33,7 @@ contain axis coordinates. If some of the names are not present in the
 input data.frame: Depending on the input of \code{verbose} and \code{error}
 the functions silently skips flipping, gives feedback or throws an error.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

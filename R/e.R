@@ -374,7 +374,6 @@ estimate_r2_for_sts_run <- function(object,
 # evaluate ----------------------------------------------------------------
 
 #' @keywords internal
-#' @export
 evaluate_model_fits <- function(input_df,
                                 var_order ){
 
@@ -386,7 +385,6 @@ evaluate_model_fits <- function(input_df,
     dplyr::group_by(input_df, variables, models) %>%
     dplyr::filter(!base::all(base::is.na(values))) %>%
     dplyr::summarize(
-      corr = compute_corr(x = values_models, y = values),
       rmse = compute_rmse(gradient = values, model = values_models),
       mae = compute_mae(gradient = values, model = values_models)
     ) %>%
@@ -525,6 +523,55 @@ extract_value <- function(input){
 }
 
 
+#' Extract var names from filter expression
+#'
+#' This function takes a list of quosures representing logical expressions and
+#' returns the variable names used in these expressions.
+#'
+#' @param filter_expr A list of quosures representing logical expressions.
+#'
+#' @return A character vector containing the unique variable names used in the expressions.
+#'
+#' @keywords internal
+extract_var_names <- function(filter_expr) {
+
+  all_vars <- function(expr) {
+
+    if (rlang::is_symbol(expr)) {
+
+      return(as.character(expr))
+
+    } else if (rlang::is_call(expr)) {
+
+      return(unique(unlist(lapply(expr[-1], all_vars))))
+
+    } else {
+
+      return(NULL)
+
+    }
+  }
+
+  var_names <- lapply(filter_expr, function(expr) {
+
+    all_vars(rlang::quo_get_expr(expr))
+
+  })
+
+  var_names <- unique(unlist(var_names))
+
+  return(var_names)
+}
+
+# Example usage:
+test_fn <- function(x, ...) {
+  filter_expr <- rlang::enquos(...)
+  return(extract_var_names(filter_expr))
+}
+
+# Test call
+test_fn(x = "something", GFAP > 0.5 & bayes_space %in% c("1", "2"))
+# Expected output: [1] "GFAP"        "bayes_space"
 
 
 # expand ------------------------------------------------------------------

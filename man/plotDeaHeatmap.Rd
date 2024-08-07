@@ -78,7 +78,7 @@ are displayed in the heatmap.}
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 input options.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

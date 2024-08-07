@@ -73,7 +73,7 @@ Skim \code{ggpLayer*()}-functions for more options.}
 \item{bcs_exclude}{Character value containing the barcodes of observations to be excluded
 from the analysis.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

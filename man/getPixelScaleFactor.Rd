@@ -54,7 +54,7 @@ be one of \code{\link[=getImageNames]{getImageNames()}}.}
 \item{switch}{Logical value. If \code{TRUE}, the unit of the output is switched.
 See details for more.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

@@ -54,7 +54,7 @@ nMolecules <- function(object, assay_name = activeAssay(object)){
 #' @export
 nMetabolites <- function(object){
 
-  nMetabolites(object, assay_name = "metabolite")
+  nMolecules(object, assay_name = "metabolite")
 
 }
 
@@ -64,7 +64,8 @@ nMetabolites <- function(object){
 #' @description Normalizes the count matrix of a molecular assay.
 #'
 #' @param method Character value. The normalization method. One of c(*'LogNormalize'*,
-#' *'CLR'*, *'RC'*, *'SCT'*). *'SCT'* normalization is used for MERFISH and Xenium datasets, as suggested in the [`Seurat` documentation](https://satijalab.org/seurat/articles/spatial_vignette.html). 
+#' *'CLR'*, *'RC'*, *'SCT'*). *'SCT'* normalization is used for MERFISH and Xenium datasets,
+#' as suggested in the [`Seurat` documentation](https://satijalab.org/seurat/articles/seurat5_spatial_vignette_2).
 #' @param mtr_name_new Character value. The name under which the new processed matrix
 #' is stored in the `SPATA2` object.
 #' @param activate Logical. If `TRUE`, the created matrix is activated via `activateMatrix()`.
@@ -72,7 +73,8 @@ nMetabolites <- function(object){
 #'
 #' @details The function creates a temporary `Seurat` object and calls [`Seurat::NormalizeData()`]
 #' with the corresponding method. Afterwards, the normalized matrix is extracted and
-#' stored in the `SPATA2` object.
+#' stored in the `SPATA2` object with the name specified in `mtr_name_new`. This name, in
+#' turn, default to the character value of `method`.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
@@ -85,7 +87,10 @@ nMetabolites <- function(object){
 #'
 #' object <- example_data$object_UKF275T_diet
 #'
-#' object <- normalizeData(object)
+#' object <- normalizeCounts(object, method = "LogNormalize")
+#'
+#' # default name for processed matrix is the input for `method`
+#' mtr <- getMatrix(object, mtr_name = "LogNormalize")
 #'
 #' @export
 #'
@@ -116,7 +121,7 @@ normalizeCounts <- function(object,
 
   count_mtr <- getCountMatrix(object, assay_name = assay_name)
 
-  if (method == "SCT") {
+  if(method == "SCT") {
 
     proc_mtr <-
       Seurat::CreateSeuratObject(counts = count_mtr, assay = "X") %>%
@@ -164,7 +169,7 @@ normalizeCounts <- function(object,
 #' @export
 nObs <- function(object){
 
-  getCoordsDf(object) %>%
+  getMetaDf(object) %>%
     base::nrow()
 
 }

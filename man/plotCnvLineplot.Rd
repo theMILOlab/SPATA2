@@ -92,7 +92,7 @@ of the plot.}
 \item{breaks_y, labels_y, limits_y, expand_y}{Given to the corresponding arguments
 of \code{ggplot2::scale_y_continuous()}.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

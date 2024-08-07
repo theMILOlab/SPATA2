@@ -17,3 +17,4 @@ Character value.
 Extracts the default ggplot2 geometry to visualize \link[=concept_observations]{observations}
 in 2D space on surface plots.
 }
+\keyword{internal}

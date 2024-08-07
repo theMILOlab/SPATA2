@@ -93,7 +93,7 @@ the same tissue section obtain NAs for the created variables.}
 the default, data points that do not share the same tissue section with the spatial
 annotation are dropped!}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

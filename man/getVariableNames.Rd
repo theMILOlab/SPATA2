@@ -2,7 +2,7 @@
 % Please edit documentation in R/getN-Z.R
 \name{getVariableNames}
 \alias{getVariableNames}
-\title{Obtain variable names}
+\title{Obtain variable names of the SPATA2 object}
 \usage{
 getVariableNames(object, protected = FALSE)
 }

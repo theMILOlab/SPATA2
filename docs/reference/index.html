@@ -47,6 +47,9 @@
     <li>
       <a href="../articles/initiation-and-preprocessing-visium.html">Initiation &amp; Preprocessing with Visium data</a>
     </li>
+    <li>
+      <a href="../articles/initiation-and-preprocessing-visium-hd.html">Initiation &amp; Preprocessing with VisiumHD data</a>
+    </li>
     <li class="dropdown-header">Basic Manipulation of a SPATA2 object</li>
     <li>
       <a href="../articles/adding-data.html">Adding Data to SPATA2 objects</a>
@@ -140,13 +143,13 @@
         </td>
         <td><p>Initiate an object of class <code>SPATA2</code> from platform Visium</p></td>
       </tr><tr><td>
+          <p><code><a href="initiateSpataObjectVisiumHD.html">initiateSpataObjectVisiumHD()</a></code> </p>
+        </td>
+        <td><p>Initiate an object of class <code>SPATA2</code> from platform VisiumHD</p></td>
+      </tr><tr><td>
           <p><code><a href="initiateSpataObjectXenium.html">initiateSpataObjectXenium()</a></code> </p>
         </td>
         <td><p>Initiate an object of class <code>SPATA2</code> from platform Xenium</p></td>
-      </tr><tr><td>
-          <p><code><a href="updateSpataObject.html">updateSpataObject()</a></code> </p>
-        </td>
-        <td><p>Update <code>SPATA2</code> object</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h3 id="transformation">Transformation <a href="#transformation" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p><p>The transform-functions ensure compatibility between different platforms.</p>
@@ -158,7 +161,7 @@
       </tr><tr><td>
           <p><code><a href="asSPATA2.html">asSPATA2()</a></code> </p>
         </td>
-        <td><p>Convert objects to <code>SPATA2</code> object</p></td>
+        <td><p>Transform miscellaneous objects to SPATA2 objects</p></td>
       </tr><tr><td>
           <p><code><a href="asSeurat.html">asSeurat()</a></code> </p>
         </td>
@@ -172,7 +175,7 @@
         </td>
         <td><p>Transform SPATA2 object to SummarizedExperiment object</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h2 id="loading-downloading-and-saving">Loading, downloading and Saving <a href="#loading-downloading-and-saving" class="anchor" aria-hidden="true"></a></h2>
+          <h2 id="loading-downloading-and-saving">Loading, Downloading and Saving <a href="#loading-downloading-and-saving" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Some handy functions that make saving and loading corresponding objects more convenient.</p>
         </th>
       </tr></tbody><tbody><tr><td>
@@ -204,6 +207,10 @@
         </td>
         <td><p>Crop SPATA2 object</p></td>
       </tr><tr><td>
+          <p><code><a href="filterSpataObject.html">filterSpataObject()</a></code> </p>
+        </td>
+        <td><p>Subset SPATA2 object with logical expressions</p></td>
+      </tr><tr><td>
           <p><code><a href="reduceSpataObject.html">reduceSpataObject()</a></code> </p>
         </td>
         <td><p>Reduce SPATA2 object</p></td>
@@ -218,7 +225,11 @@
       </tr><tr><td>
           <p><code><a href="subsetSpataObject.html">subsetSpataObject()</a></code> </p>
         </td>
-        <td><p>Subset SPATA2 object</p></td>
+        <td><p>Subset SPATA2 object with barcodes</p></td>
+      </tr><tr><td>
+          <p><code><a href="updateSpataObject.html">updateSpataObject()</a></code> </p>
+        </td>
+        <td><p>Update <code>SPATA2</code> object</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="object-manipulation">Object Manipulation <a href="#object-manipulation" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p>
@@ -235,6 +246,22 @@
           <p><code><a href="addInnerBorder.html">addInnerBorder()</a></code> </p>
         </td>
         <td><p>Add holes to spatial annotations</p></td>
+      </tr><tr><td>
+          <p><code><a href="addMetaDataMol.html">addMetaDataMol()</a></code> </p>
+        </td>
+        <td><p>Add meta variables for molecular data</p></td>
+      </tr><tr><td>
+          <p><code><a href="addMetaDataObs.html">addMetaDataObs()</a></code> </p>
+        </td>
+        <td><p>Add meta variables for observations</p></td>
+      </tr><tr><td>
+          <p><code><a href="addMoleculeCoordinates.html">addMoleculeCoordinates()</a></code> </p>
+        </td>
+        <td><p>Add molecule coordinates</p></td>
+      </tr><tr><td>
+          <p><code><a href="addProcessedMatrix.html">addProcessedMatrix()</a></code> </p>
+        </td>
+        <td><p>Add a processed matrix</p></td>
       </tr><tr><td>
           <p><code><a href="addSignature.html">addGeneSet()</a></code> <code><a href="addSignature.html">addMetaboliteSet()</a></code> <code><a href="addSignature.html">addProteinSet()</a></code> <code><a href="addSignature.html">addSignature()</a></code> </p>
         </td>
@@ -260,7 +287,7 @@
         </td>
         <td><p>Create and add an object of class <code>MolecularAssay</code></p></td>
       </tr><tr><td>
-          <p><code><a href="createSpatialData.html">createSpatialData()</a></code> <code><a href="createSpatialData.html">createSpatialDataMERFISH()</a></code> <code><a href="createSpatialData.html">createSpatialDataSlideSeqV1()</a></code> <code><a href="createSpatialData.html">createSpatialDataVisium()</a></code> <code><a href="createSpatialData.html">createSpatialDataXenium()</a></code> </p>
+          <p><code><a href="createSpatialData.html">createSpatialData()</a></code> <code><a href="createSpatialData.html">createSpatialDataMERFISH()</a></code> <code><a href="createSpatialData.html">createSpatialDataSlideSeqV1()</a></code> <code><a href="createSpatialData.html">createSpatialDataVisium()</a></code> <code><a href="createSpatialData.html">createSpatialDataVisiumHD()</a></code> <code><a href="createSpatialData.html">createSpatialDataXenium()</a></code> </p>
         </td>
         <td><p>Create an object of class <code>SpatialData</code> from raw output</p></td>
       </tr><tr><td>
@@ -282,7 +309,7 @@
       </tr></tbody><tbody><tr><td>
           <p><code><a href="identifyVariableMolecules.html">identifyVariableMolecules()</a></code> </p>
         </td>
-        <td><p>Identify variable molecules</p></td>
+        <td><p>Identify molecules of high variability</p></td>
       </tr><tr><td>
           <p><code><a href="identifyPixelContent.html">identifyPixelContent()</a></code> </p>
         </td>
@@ -332,6 +359,10 @@
         </td>
         <td><p>Set image directory</p></td>
       </tr><tr><td>
+          <p><code><a href="setMetaVarDf.html">setMetaVarDf()</a></code> </p>
+        </td>
+        <td><p>Set molecular meta data.frame</p></td>
+      </tr><tr><td>
           <p><code><a href="setScaleFactor.html">setScaleFactor()</a></code> </p>
         </td>
         <td><p>Set scale factors</p></td>
@@ -341,7 +372,7 @@
         <td><p>Set SPATA2 directory</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="availability-checks">Availability Checks <a href="#availability-checks" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>A collection of functions that check availability of processing steps and return logical values.</p>
+          <p class="section-desc"></p><p>A collection of functions that check availability of processing steps and return logical values. (This is a subset of all related functions.)</p>
         </th>
       </tr></tbody><tbody><tr><td>
           <p><code><a href="containsAssay.html">containsAssay()</a></code> </p>
@@ -380,6 +411,10 @@
         </td>
         <td><p>Check availability of molecular modality</p></td>
       </tr><tr><td>
+          <p><code><a href="containsMoleculeCoordinates.html">containsMoleculeCoordinates()</a></code> </p>
+        </td>
+        <td><p>Check availability molecule coordinates</p></td>
+      </tr><tr><td>
           <p><code><a href="containsPixelContent.html">containsPixelContent()</a></code> </p>
         </td>
         <td><p>Check availability pixel content</p></td>
@@ -388,17 +423,13 @@
         </td>
         <td><p>Check availability of specific scale factors</p></td>
       </tr><tr><td>
-          <p><code><a href="containsSectionVariable.html">containsSectionVariable()</a></code> </p>
-        </td>
-        <td><p>Check availability of section variable</p></td>
-      </tr><tr><td>
           <p><code><a href="containsSpatialAnnotations.html">containsSpatialAnnotations()</a></code> </p>
         </td>
         <td><p>Check availability of spatial annotations</p></td>
       </tr><tr><td>
           <p><code><a href="containsSpatialData.html">containsSpatialData()</a></code> </p>
         </td>
-        <td><p>Checks availability of <code>SpatialData</code> object</p></td>
+        <td><p>Checks availability of a SpatialData object</p></td>
       </tr><tr><td>
           <p><code><a href="containsSpatialOutliers.html">containsSpatialOutliers()</a></code> </p>
         </td>
@@ -426,7 +457,7 @@
       </tr><tr><td>
           <p><code><a href="example_data.html">example_data</a></code> </p>
         </td>
-        <td><p>A data.frame necessary for cnv-analysis. Contains information about the gene positions on chromosomes. Contains the following variables:</p></td>
+        <td><p>Data required for reproducible examples in SPATA2 tutorials.</p></td>
       </tr><tr><td>
           <p><code><a href="gene_pos_df.html">gene_pos_df</a></code> </p>
         </td>
@@ -460,13 +491,13 @@
           <p class="section-desc"></p><p>Functions that quantify the abundance of specific ascpects in the <code>SPATA2</code> object.</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="nMolecules.html">nMolecules()</a></code> </p>
+          <p><code><a href="nMolecules.html">nGenes()</a></code> <code><a href="nMolecules.html">nMolecules()</a></code> <code><a href="nMolecules.html">nMetabolites()</a></code> <code><a href="nMolecules.html">nProteins()</a></code> </p>
         </td>
         <td><p>Number of molecules</p></td>
       </tr><tr><td>
           <p><code><a href="nObs.html">nObs()</a></code> </p>
         </td>
-        <td><p>Number of observations (e.g. cells)</p></td>
+        <td><p>Number of observations</p></td>
       </tr><tr><td>
           <p><code><a href="nSpatialAnnotations.html">nSpatialAnnotations()</a></code> </p>
         </td>
@@ -512,17 +543,9 @@
         </td>
         <td><p>Obtain assay names/modalites</p></td>
       </tr><tr><td>
-          <p><code><a href="getGeneMetaData.html">getGeneMetaData()</a></code> <code><a href="getGeneMetaData.html">getGeneMetaDf()</a></code> </p>
-        </td>
-        <td><p>Obtain gene meta data</p></td>
-      </tr><tr><td>
           <p><code><a href="getGenePosDf.html">getGenePosDf()</a></code> </p>
         </td>
-        <td><p>Obtain gene information</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGeneSetOverview.html">getGeneSetOverview()</a></code> </p>
-        </td>
-        <td><p>Overview about the current gene sets</p></td>
+        <td><p>Obtain gene CNV information</p></td>
       </tr><tr><td>
           <p><code><a href="getSignature.html">getGeneSet()</a></code> <code><a href="getSignature.html">getMetaboliteSet()</a></code> <code><a href="getSignature.html">getProteinSet()</a></code> <code><a href="getSignature.html">getSignature()</a></code> </p>
         </td>
@@ -535,6 +558,10 @@
           <p><code><a href="getSignatureNames.html">getGeneSets()</a></code> <code><a href="getSignatureNames.html">getMetaboliteSets()</a></code> <code><a href="getSignatureNames.html">getProteinSets()</a></code> <code><a href="getSignatureNames.html">getSignatureNames()</a></code> </p>
         </td>
         <td><p>Obtain molecular signature names</p></td>
+      </tr><tr><td>
+          <p><code><a href="getSignatureOverview.html">getGeneSetOverview()</a></code> <code><a href="getSignatureOverview.html">getMetaboliteOverview()</a></code> <code><a href="getSignatureOverview.html">getProteinSetOverview()</a></code> <code><a href="getSignatureOverview.html">getSignatureOverview()</a></code> </p>
+        </td>
+        <td><p>Overview about the current signature collection</p></td>
       </tr><tr><td>
           <p><code><a href="getCountMatrix.html">getCountMatrix()</a></code> </p>
         </td>
@@ -556,9 +583,17 @@
         </td>
         <td><p>Obtain names of processed matrices</p></td>
       </tr><tr><td>
+          <p><code><a href="getMetaVarDf.html">getMetaVarDf()</a></code> </p>
+        </td>
+        <td><p>Obtain molecular meta data.frame</p></td>
+      </tr><tr><td>
           <p><code><a href="getModality.html">getModality()</a></code> </p>
         </td>
         <td><p>Obatin molecular modality</p></td>
+      </tr><tr><td>
+          <p><code><a href="getMoleculeCoordinates.html">getMoleculeCoordinates()</a></code> </p>
+        </td>
+        <td><p>Obtain molecule coordinates</p></td>
       </tr><tr><td>
           <p><code><a href="getMoleculeTypeList.html">getMoleculeTypeList()</a></code> </p>
         </td>
@@ -574,7 +609,7 @@
       </tr><tr><td>
           <p><code><a href="getVariableMolecules.html">getVariableMolecules()</a></code> </p>
         </td>
-        <td><p>Obtain variable molecules</p></td>
+        <td><p>Obtain molecules of high variability</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h3 id="spatial-coordinates">Spatial Coordinates <a href="#spatial-coordinates" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p><p>Functions to extract coordinates of observations.</p>
@@ -630,7 +665,7 @@
       </tr><tr><td>
           <p><code><a href="getMetaDf.html">getMetaDf()</a></code> </p>
         </td>
-        <td><p>Obtain meta data.frame</p></td>
+        <td><p>Obtain meta data.frame for observations</p></td>
       </tr><tr><td>
           <p><code><a href="getSpatSegmVarNames.html">getSpatSegmVarNames()</a></code> </p>
         </td>
@@ -708,13 +743,9 @@
         </td>
         <td><p>Obtain names of registered images</p></td>
       </tr><tr><td>
-          <p><code><a href="getImageRaster.html">getImageRaster()</a></code> <code><a href="getImageRaster.html">getImageRasterInfo()</a></code> </p>
-        </td>
-        <td><p>Obtain image raster-(information)</p></td>
-      </tr><tr><td>
           <p><code><a href="getImageSectionsByBarcode.html">getImageSectionsByBarcode()</a></code> </p>
         </td>
-        <td><p>Obtain image sections by barcode spot</p></td>
+        <td><p>Obtain image sections by barcode</p></td>
       </tr><tr><td>
           <p><code><a href="getImageTransformations.html">getImageTransformations()</a></code> </p>
         </td>
@@ -750,7 +781,7 @@
       </tr><tr><td>
           <p><code><a href="getSpatAnnCenter.html">getSpatAnnCenter()</a></code> <code><a href="getSpatAnnCenter.html">getSpatAnnCenters()</a></code> </p>
         </td>
-        <td><p>Obtain center of an spatial annotation</p></td>
+        <td><p>Obtain center of a spatial annotation</p></td>
       </tr><tr><td>
           <p><code><a href="getSpatAnnCenterBcsp.html">getSpatAnnCenterBcsp()</a></code> </p>
         </td>
@@ -848,17 +879,21 @@
         </td>
         <td><p>Obtain barcodes</p></td>
       </tr><tr><td>
-          <p><code><a href="getBarcodesInPolygon.html">getBarcodesInPolygon()</a></code> <code><a href="getBarcodesInPolygon.html">getBarcodesInPolygonList()</a></code> </p>
-        </td>
-        <td><p>Obtain barcodes in polygon</p></td>
-      </tr><tr><td>
-          <p><code><a href="getDefaultInstructions.html">getDefault()</a></code> <code><a href="getDefaultInstructions.html">getDefaultInstructions()</a></code> <code><a href="getDefaultInstructions.html">getDirectoryInstructions()</a></code> </p>
+          <p><code><a href="getDefaultInstructions.html">getDefault()</a></code> <code><a href="getDefaultInstructions.html">getDefaultInstructions()</a></code> </p>
         </td>
         <td><p>Obtain default argument inputs</p></td>
       </tr><tr><td>
+          <p><code><a href="getLogfileDf.html">getLogfileDf()</a></code> </p>
+        </td>
+        <td><p>Obtain object logfile data.frame</p></td>
+      </tr><tr><td>
           <p><code><a href="getMethodSpecifics.html">getMethodSpecifics()</a></code> </p>
         </td>
-        <td><p>Obtain method specifics</p></td>
+        <td><p>Obtain platform details</p></td>
+      </tr><tr><td>
+          <p><code><a href="getPlatform.html">getPlatform()</a></code> </p>
+        </td>
+        <td><p>Obtain platform name</p></td>
       </tr><tr><td>
           <p><code><a href="getSampleName.html">getSampleName()</a></code> </p>
         </td>
@@ -882,11 +917,7 @@
       </tr><tr><td>
           <p><code><a href="getVariableNames.html">getVariableNames()</a></code> </p>
         </td>
-        <td><p>Obtain variable names</p></td>
-      </tr><tr><td>
-          <p><code><a href="getVarTypeList.html">getVarTypeList()</a></code> </p>
-        </td>
-        <td><p>Get variable type list</p></td>
+        <td><p>Obtain variable names of the SPATA2 object</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="remove-content">Remove Content <a href="#remove-content" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Remove miscellaneous kinds of data from a SPATA2 object.</p>
@@ -904,7 +935,7 @@
         </td>
         <td><p>Remove molecules from the <code>SPATA2</code> object</p></td>
       </tr><tr><td>
-          <p><code><a href="removeObs.html">removeObs()</a></code> <code><a href="removeObs.html">removeObsNoCounts()</a></code> </p>
+          <p><code><a href="removeObs.html">removeObs()</a></code> <code><a href="removeObs.html">removeObsZeroCounts()</a></code> </p>
         </td>
         <td><p>Remove observations</p></td>
       </tr><tr><td>
@@ -1048,7 +1079,7 @@
         </td>
         <td><p>Reset image transformations</p></td>
       </tr><tr><td>
-          <p><code><a href="rotateAll.html">rotateAll()</a></code> <code><a href="rotateAll.html">rotateImage()</a></code> <code><a href="rotateAll.html">rotateCoordinates()</a></code> <code><a href="rotateAll.html">rotateCoordsDf()</a></code> <code><a href="rotateAll.html">rotateSpatialAnnotations()</a></code> <code><a href="rotateAll.html">rotateSpatialTrajectories()</a></code> </p>
+          <p><code><a href="rotateAll.html">rotateAll()</a></code> <code><a href="rotateAll.html">rotateImage()</a></code> <code><a href="rotateAll.html">rotateCoordinates()</a></code> <code><a href="rotateAll.html">rotateCoordsDf()</a></code> <code><a href="rotateAll.html">rotateTissueOutlineDf()</a></code> <code><a href="rotateAll.html">rotateSpatialAnnotations()</a></code> <code><a href="rotateAll.html">rotateSpatialTrajectories()</a></code> </p>
         </td>
         <td><p>Rotate image and coordinates</p></td>
       </tr><tr><td>
@@ -1059,26 +1090,6 @@
           <p><code><a href="unloadImage.html">unloadImage()</a></code> <code><a href="unloadImage.html">unloadImages()</a></code> </p>
         </td>
         <td><p>Unload image slot content</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h2 id="information-summaries">Information &amp; Summaries <a href="#information-summaries" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>Functions that quickly give you an overwiew about the objects data and the progress made.</p>
-        </th>
-      </tr></tbody><tbody><tr><td>
-          <p><code><a href="getLogfileDf.html">getLogfileDf()</a></code> </p>
-        </td>
-        <td><p>Obtain object logfile data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="printAutoencoderSummary.html">printAutoencoderSummary()</a></code> </p>
-        </td>
-        <td><p>Print autoencoder summary</p></td>
-      </tr><tr><td>
-          <p><code><a href="printDefaultInstructions.html">printDefaultInstructions()</a></code> </p>
-        </td>
-        <td><p>Print current default settings</p></td>
-      </tr><tr><td>
-          <p><code><a href="printGeneSetOverview.html">printGeneSetOverview()</a></code> </p>
-        </td>
-        <td><p>Print overview about the current gene sets</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="join-information">Join Information <a href="#join-information" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>These functions access the information of interest, perform additional customized computations and join it as additional variables to already existing data.frames in a tidy-data fashion.</p>
@@ -1102,7 +1113,7 @@
       </tr><tr><td>
           <p><code><a href="computeMetaFeatures.html">computeMetaFeatures()</a></code> </p>
         </td>
-        <td><p>Compute meta features for molecular data</p></td>
+        <td><p>Compute meta features</p></td>
       </tr><tr><td>
           <p><code><a href="computePixelScaleFactor.html">computePixelScaleFactor()</a></code> </p>
         </td>
@@ -1131,6 +1142,10 @@
           <p><code><a href="runKmeansClustering.html">runKmeansClustering()</a></code> </p>
         </td>
         <td><p>Clustering with Kmeans</p></td>
+      </tr><tr><td>
+          <p><code><a href="runNearestNeighborClustering.html">runNearestNeighborClustering()</a></code> </p>
+        </td>
+        <td><p>Clustering with nearest neighbor search</p></td>
       </tr><tr><td>
           <p><code><a href="runPCA.html">runPCA()</a></code> <code><a href="runPCA.html">runPca()</a></code> </p>
         </td>
@@ -1227,6 +1242,10 @@
           <p><code><a href="map_to_tissue_section.html">map_to_tissue_section()</a></code> </p>
         </td>
         <td><p>Map observations to tissue sections</p></td>
+      </tr><tr><td>
+          <p><code><a href="merge_intersecting_polygons.html">merge_intersecting_polygons()</a></code> </p>
+        </td>
+        <td><p>Merge polygons</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="spatial-gradient-screening">Spatial Gradient Screening <a href="#spatial-gradient-screening" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Functions around Spatial Trajectory Screening and Image Annotation Screening.</p>
@@ -1364,6 +1383,34 @@
         </td>
         <td><p>The <code>SpatialTrajectoryScreening</code> - Class</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="platforms">Platforms <a href="#platforms" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Variables that have been defined as objects of class <code>SpatialMethod</code> to store information related to the spatial platforms.</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="MERFISH.html">MERFISH</a></code> </p>
+        </td>
+        <td><p>MERFISH Spatial Method</p></td>
+      </tr><tr><td>
+          <p><code><a href="VisiumSmall.html">VisiumSmall</a></code> </p>
+        </td>
+        <td><p>VisiumSmall Spatial Method</p></td>
+      </tr><tr><td>
+          <p><code><a href="VisiumHD.html">VisiumHD</a></code> </p>
+        </td>
+        <td><p>VisiumHD Spatial Method</p></td>
+      </tr><tr><td>
+          <p><code><a href="VisiumLarge.html">VisiumLarge</a></code> </p>
+        </td>
+        <td><p>VisiumLarge Spatial Method</p></td>
+      </tr><tr><td>
+          <p><code><a href="SlideSeqV1.html">SlideSeqV1</a></code> </p>
+        </td>
+        <td><p>SlideSeqV1 Spatial Method</p></td>
+      </tr><tr><td>
+          <p><code><a href="Xenium.html">Xenium</a></code> </p>
+        </td>
+        <td><p>Xenium Spatial Method</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="visualization">Visualization <a href="#visualization" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p>
         </th>
@@ -1380,8 +1427,8 @@
         </td>
         <td><p>Plot CNV Lineplot</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="differential-expression-analysis-gsea">Differential Expression Analysis &amp; GSEA <a href="#differential-expression-analysis-gsea" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p><p>Visualize the results of differential expression analysis</p>
+          <h3 id="dea-gsea">DEA &amp; GSEA <a href="#dea-gsea" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p><p>Visualize the results of differential expression analysis and gene set enrichment analysis.</p>
         </th>
       </tr></tbody><tbody><tr><td>
           <p><code><a href="plotDeaDotPlot.html">plotDeaDotPlot()</a></code> </p>
@@ -1644,7 +1691,7 @@
         </td>
         <td><p>Plot distribution of variables interactively</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="surface-plots">Surface Plots <a href="#surface-plots" class="anchor" aria-hidden="true"></a></h3>
+          <h3 id="surface-plots-d-data">Surface Plots &amp; 2D data <a href="#surface-plots-d-data" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
@@ -1667,6 +1714,10 @@
           <p><code><a href="plotSurfaceSC.html">plotSurfaceSC()</a></code> </p>
         </td>
         <td><p>Plot single cells on surface</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotMolecules2D.html">plotMolecules2D()</a></code> </p>
+        </td>
+        <td><p>Plot molecules in 2D space</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="miscellaneous-functions">Miscellaneous Functions <a href="#miscellaneous-functions" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p>
@@ -1699,6 +1750,10 @@
           <p><code><a href="read_coords.html">read_coords()</a></code> <code><a href="read_coords.html">read_coords_merfish()</a></code> <code><a href="read_coords.html">read_coords_slide_seq_v1()</a></code> <code><a href="read_coords.html">read_coords_visium()</a></code> <code><a href="read_coords.html">read_coords_xenium()</a></code> </p>
         </td>
         <td><p>Read coordinate data.frames</p></td>
+      </tr><tr><td>
+          <p><code><a href="read_matrix_from_folder.html">read_matrix_from_folder()</a></code> </p>
+        </td>
+        <td><p>Read Matrix from Folder</p></td>
       </tr><tr><td>
           <p><code><a href="transform_coords.html">transform_coords()</a></code> </p>
         </td>

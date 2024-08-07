@@ -276,6 +276,9 @@ make_orthogonal_segments <- function(sp, ep, binwidth, out_length) {
 
 }
 
+
+
+
 #' @keywords internal
 make_scattermore_add_on <- function(mapping,
                                     alpha,
@@ -339,6 +342,17 @@ make_sf_polygon <- function(poly){
 
 }
 
+
+#' @keywords internal
+make_unique_molecules <- function(mtr){
+
+  molecules <- base::rownames(mtr)
+
+  mtr <- mtr[!SummarizedExperiment::duplicated(molecules),]
+
+  return(mtr)
+
+}
 
 # map ---------------------------------------------------------------------
 
@@ -1393,7 +1407,6 @@ moduleAddGeneSetsServer <- function(id, object){
 
 
         obj <- addGeneSet(object = return_obj(),
-                          class_name = input$new_gs_class,
                           gs_name = input$new_gs_name,
                           genes = input$new_gs_genes)
 

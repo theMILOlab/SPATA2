@@ -2,7 +2,7 @@
 % Please edit documentation in R/s.R
 \name{subsetSpataObject}
 \alias{subsetSpataObject}
-\title{Subset SPATA2 object}
+\title{Subset SPATA2 object with barcodes}
 \usage{
 subsetSpataObject(object, barcodes, spatial_proc = TRUE, verbose = NULL)
 }
@@ -17,12 +17,12 @@ supposed to be \bold{kept}.}
 processed spatially. If \code{TRUE}, a new tissue outline is identified based
 on the remaining observations via \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}. Then,
 spatial annotations are tested on being located on either of the remaining
-tissue sections. If they are not, they are removed. If \code{FALSE}, these processing
-steps are skipped.
+tissue sections. If they are not, they are removed.
 
-Not recommended. Only set to \code{TRUE}, if you know what you're doing.}
+If \code{FALSE}, these processing steps are skipped. Generally speaking, this is
+not recommended. Only set to \code{FALSE}, if you know what you're doing.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
@@ -31,7 +31,9 @@ the computational progress will be printed.
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Creates a subset of the \code{\link{SPATA2}} object.
+Creates a subset of the \code{\link{SPATA2}} object by using a list
+of barcodes. This function is the working horse behind all functions that manipulate
+the number of observations in the object.
 }
 \details{
 Unused levels of factor variables in the feature data.frame are dropped.
@@ -44,25 +46,32 @@ library(patchwork)
 # ----- Example 1: subsetSpataObject()
 object <- loadExampleObject("UKF313T", meta = TRUE)
 
-plotSpatialAnnotations(object) # plots all annotations
-
 barcodes_keep <-
  getMetaDf(object) \%>\%
- filter(bayes_sapce \%in\% c("B3", "B2", "B1")) \%>\%
+ filter(bayes_space \%in\% c("B3", "B2", "B1")) \%>\%
  pull(barcodes)
 
 object_sub <- subsetSpataObject(object, barcodes = barcodes_keep)
 
-plotSpatialAnnotations(object)
+show(object)
+show(object_sub)
+
+plotSpatialAnnotations(object) # plots all annotations
+plotSpatialAnnotations(object_sub) # subsetting affects everything by default
 
 ids <- getSpatAnnIds(object)
+ids_sub <- getSpatAnnIds(object_sub)
 
 # use patchwork to compare plots
-plotSurface(object, color_by = "bayes_space") +
- (plotSurface(object_sub, color_by = "bayes_space") +
-  ggpLayerTissueOutline(object_sub) +
-  ggpLayerSpatAnnOutline(object_sub, ids = ids)
-  )
+plot_orig <-
+  plotSurface(object, color_by = "bayes_space", outline = T) +
+  ggpLayerSpatAnnOutline(object, ids = ids)
+
+plot_sub <-
+  plotSurface(object_sub, color_by = "bayes_space", outline = T) +
+  ggpLayerSpatAnnOutline(object_sub, ids = ids_sub)
+
+plot_orig + plot_sub
 
 # ----- Example 2: splitSpataObject()
 # uses subsetSpataObject() in the background
@@ -119,5 +128,5 @@ plotSurface(object_cropped, color_by = "bayes_space") + orig_frame
 
 }
 \seealso{
-\code{\link[=removeObs]{removeObs()}}, \code{\link[=splitSpataObject]{splitSpataObject()}}, \code{\link[=cropSpataObject]{cropSpataObject()}}
+\code{\link[=removeObs]{removeObs()}}, \code{\link[=splitSpataObject]{splitSpataObject()}}, \code{\link[=cropSpataObject]{cropSpataObject()}}, \code{\link[=filterSpataObject]{filterSpataObject()}}
 }

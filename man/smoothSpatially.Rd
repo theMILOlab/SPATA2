@@ -13,12 +13,12 @@ smoothSpatially(
 )
 }
 \arguments{
-\item{coords_df}{A data.frame containing information about every barcode-spot. Must contain the variables:
+\item{coords_df}{A data.frame containing information about every \link[=concept_observations]{observation}. Must contain the variables:
 \itemize{
-\item{\emph{barcodes} Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
-\item{\emph{sample} Character. The sample belonging of every barcode-spot.}
-\item{\emph{x} Numeric. The x-coordinates of every barcode.}
-\item{\emph{y} Numeric. The y-coordinates of every barcode.}
+\item{\emph{barcodes} Character. The barcode-sequences (+ the sample belonging) of every observation.}
+\item{\emph{sample} Character. The sample belonging of every observation.}
+\item{\emph{x_orig} Numeric. The unscaled x-coordinates of every observation.}
+\item{\emph{y_orig} Numeric. The unscaled y-coordinates of every observation.}
 }}
 
 \item{variables}{Character vector. Specifies the numeric variables of the
@@ -31,7 +31,7 @@ Given to argument \code{span} of \code{stats::loess()}.}
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

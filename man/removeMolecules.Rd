@@ -32,7 +32,7 @@ objects of classes for which a method has been defined.}
 although they were mentioned in the vector of genes that are to be discarded
 are suppressed.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}

@@ -159,7 +159,7 @@ enhanceSpataObject <- function(object,
 
   cranges <- getCoordsRange(object)
 
-  sce <- asSingleCellExperiment(object, type = "BayesSpace")
+  #sce <- asSingleCellExperiment(object, type = "BayesSpace")
 
   sce <-
     process_sce_bayes_space(
@@ -454,11 +454,486 @@ whichSpaceRangerVersion <- function(dir){
 
 
 
+##########################
+
+#' @title Add meta variables for molecular data
+#'
+#' @description This function adds metadata variables from a given data frame to
+#' an object, aligning the data with
+#' existing \link[=concept_molecular_modalites]{molecular} \link[=concept_variables]{variables}.
+#'
+#' @param meta_var_df A data frame containing new metadata variables to be added.
+#' This data frame must contain a column named `molecule` which is used as the key
+#' for merging. Other columns should represent the metadata variables to be added.
+#' @param var_names A character vector specifying which columns from `meta_var_df` should be added as metadata variables.
+#' If `NULL`, all columns except *molecule* and *<assay_name>* will be added. Default is `NULL`.
+#' @param na_warn Logical value indicating whether to issue warnings if NAs are
+#' introduced in the new metadata variables. Default is `TRUE`.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' The input `meta_var_df` must satisfy the following requirements:
+#' - It must be a data frame.
+#' - It must contain a column named `molecule`, which will be used as the key for merging the metadata variables with the existing molecular observations.
+#' - Any other columns can represent the metadata variables to be added. These columns must not be named *"molecule"* or the value of *assay_name*.
+#' - The columns specified in `var_names` must be present in `meta_var_df`.
+#'
+#' The function checks for the existence of the specified metadata variables in the object.
+#' If `overwrite` is `FALSE`, it ensures that no existing variables are overwritten.
+#' If NAs are introduced in the new metadata variables, warnings will be issued if `na_warn` is `TRUE`.
+#'
+#' @export
+addMetaDataMol <- function(object,
+                           meta_var_df,
+                           var_names = NULL,
+                           assay_name = activeAssay(object),
+                           na_warn = TRUE,
+                           overwrite = FALSE){
+
+  mvdf <- getMetaVarDf(object, assay_name = assay_name, verbose = FALSE)
+
+  vars_rm <- c("molecule", assay_name)
+
+  all_var_names <- setdiff(x = colnames(meta_var_df), y = vars_rm)
+  all_existing_var_names <- setdiff(x = colnames(mvdf), y = vars_rm)
+
+  if (is.null(var_names)) {
+    var_names <- all_var_names
+  } else if (is.character(var_names)) {
+    var_names <- setdiff(x = var_names, y = vars_rm)
+
+    confuns::check_one_of(
+      input = var_names,
+      against = all_var_names,
+      fdb.opt = 2,
+      ref.opt.2 = "column names of `meta_var_df`"
+    )
+  } else {
+    stop("Input for `var_names` must be of class character or `NULL`.")
+  }
+
+  confuns::check_none_of(
+    input = var_names,
+    against = all_existing_var_names,
+    overwrite = overwrite
+  )
+
+  if (!"molecule" %in% colnames(meta_var_df)) {
+    stop(glue::glue("Require variable 'molecule' in input for `meta_var_df` as key for safe merging."))
+  }
+
+  mvdf <- dplyr::select(mvdf, -dplyr::any_of(var_names))
+
+  mvdf_new <- dplyr::left_join(x = mvdf, y = meta_var_df[, c("molecule", var_names)], by = "molecule")
+
+  object <- setMetaVarDf(object, meta_var_df = mvdf_new, assay_name = assay_name)
+
+  # Check for NAs
+  if (isTRUE(na_warn)) {
+    count_nas <- sapply(mvdf_new[var_names], function(x) sum(is.na(x)))
+
+    if (any(count_nas >= 1)) {
+      for (nm in names(count_nas[count_nas >= 1])) {
+        n <- count_nas[nm]
+        warning(glue::glue("New meta variable `{nm}` contains {n} NA."))
+      }
+    }
+  }
+
+  return(object)
+}
+
+
+
+#' @title Add meta variables for observations
+#'
+#' @description This function adds metadata variables from a given data frame to
+#' an object, aligning the data with existing \link[=concept_observations]{observations}.
+#'
+#' @param meta_obs_df A data frame containing new metadata variables to be added.
+#' This data frame must contain a column named `barcodes` which is used as the key
+#' for merging. Other columns should represent the metadata variables to be added.
+#' @param var_names A character vector specifying which columns from `meta_obs_df` should be added as metadata variables.
+#' If `NULL`, all columns except *barcodes* and *sample* will be added. Default is `NULL`.
+#' @param na_warn Logical value indicating whether to issue warnings if NAs are
+#' introduced in the new metadata variables. Default is `TRUE`.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' The input `meta_obs_df` must satisfy the following requirements:
+#' - It must be a data frame.
+#' - It must contain a column named `barcodes`, which will be used as the key for merging the metadata variables with the existing observations.
+#' - Any other columns can represent the metadata variables to be added. These columns must not be named *"barcodes"* or *"sample"*.
+#' - The columns specified in `var_names` must be present in `meta_obs_df`.
+#'
+#' The function checks for the existence of the specified metadata variables in the object.
+#' If `overwrite` is `FALSE`, it ensures that no existing variables are overwritten.
+#' If NAs are introduced in the new metadata variables, warnings will be issued if `na_warn` is `TRUE`.
+#'
+#' @export
+addMetaDataObs <- function(object,
+                           meta_obs_df,
+                           var_names = NULL,
+                           na_warn = TRUE,
+                           overwrite = FALSE){
+
+  vars_rm <- c("barcodes", "sample")
+
+  meta_df <- getMetaDf(object)
+
+  all_var_names <- setdiff(x = colnames(meta_obs_df), y = vars_rm)
+  all_existing_var_names <- setdiff(x = colnames(meta_df), y = vars_rm)
+
+  if(is.null(var_names)){
+    var_names <- all_var_names
+  } else if(is.character(var_names)) {
+    var_names <- setdiff(x = var_names, y = vars_rm)
+
+    confuns::check_one_of(
+      input = var_names,
+      against = all_var_names,
+      fdb.opt = 2,
+      ref.opt.2 = "column names of `meta_obs_df`"
+    )
+  } else {
+    stop("Input for `var_names` must be of class character or `NULL`.")
+  }
+
+  confuns::check_none_of(
+    input = var_names,
+    against = all_existing_var_names,
+    overwrite = overwrite
+  )
+
+  meta_df <- dplyr::select(meta_df, -dplyr::any_of(var_names))
+
+  if(!"barcodes" %in% colnames(meta_obs_df)){
+    stop(glue::glue("Require variable 'barcodes' in input for `meta_obs_df` as key for safe merging."))
+  }
+
+  meta_df_new <- dplyr::left_join(x = meta_df, y = meta_obs_df[, c("barcodes", var_names)], by = "barcodes")
+
+  object <- setMetaDf(object, meta_df = meta_df_new)
+
+  # Check for NAs
+  if(isTRUE(na_warn)){
+    count_nas <- sapply(meta_df_new[var_names], function(x) sum(is.na(x)))
+
+    if(any(count_nas >= 1)){
+      for(nm in names(count_nas[count_nas >= 1])){
+        n <- count_nas[nm]
+        warning(glue::glue("New meta variable `{nm}` contains {n} NA."))
+      }
+    }
+  }
+
+  return(object)
+}
+
+
+
+#' @title Obtain molecular meta data.frame
+#'
+#' @description Retrieves the metadata variable data frame for a specified assay
+#' in the given object. If the metadata variable data frame is empty, it creates
+#' a new one based on the molecule names.
+#'
+#' Do not confuse with [`getMetaDf()`] which contains meta variables for
+#' the \link[=concept_observations]{observations}.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A data frame containing metadata variables for the specified assay.
+#'
+#' @export
+#'
+getMetaVarDf <- function(object,
+                         assay_name = activeAssay(object),
+                         verbose = TRUE){
+
+  ma <- getAssay(object, assay_name = assay_name)
+  mvdf <- ma@meta_var
+
+  if(purrr::is_empty(mvdf)){
+
+    mvdf <- tibble::tibble(molecule = base::rownames(ma@mtr_counts))
+
+    confuns::give_feedback(
+      msg = glue::glue("Meta data.frame for molecule variables in assay {assay_name} is empty."),
+      verbose = verbose
+    )
+  }
+
+  mvdf <- dplyr::select(mvdf, molecule, dplyr::everything())
+
+  return(mvdf)
+
+}
+
+#' @title Set molecular meta data.frame
+#'
+#' @description Sets the metadata variable data frame for a specified assay in the given object.
+#'
+#' @param meta_var_df A data.frame for slot @@meta_var of the molecular assay.
+#' @param inherit argument_dummy params
+#' @param inherit update_dummy return
+#'
+#' @export
+setMetaVarDf <- function(object,
+                         meta_var_df,
+                         assay_name = activeAssay(object)){
+
+  ma <- getAssay(object, assay_name = assay_name)
+
+  if(ma@modality %in% base::colnames(meta_var_df)){
+
+    meta_var_df$molecule <- meta_var_df[[ma@modality]]
+
+  }
+
+  ma@meta_var <- meta_var_df
+
+  object <- setAssay(object, assay = ma)
+
+  returnSpataObject(object)
+
+}
+
+
+
+#' @title Add molecule coordinates
+#'
+#' @description Adds or updates the molecule coordinates for a specified assay in the given object.
+#'
+#' @param coordinates A data frame containing the coordinates to be added. The data frame must contain the following variables:
+#'   \itemize{
+#'     \item \emph{molecule} or \emph{<assay_name>} Identifier for the molecules. E.g. if
+#'     \item \emph{x_orig} or \emph{x}:  x-coordinates (original or to be scaled back to original).
+#'     \item \emph{y_orig} or \emph{y}: y-coordinates (original or to be scaled back to original).
+#'   }
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details This function processes the provided coordinates data frame to ensure
+#' it contains the necessary variables (`molecule` or the assay name, `x` or `x_orig`,
+#' and `y` or `y_orig`). If only the scaled coordinates (`x` and `y`) are provided,
+#' they are scaled back to the original coordinate frame using the image scale factor.
+#' The resulting data frame is then nested by the assay modality and integrated into
+#' the molecular metadata variables of the object.
+#'
+#' Results are stored in a nested column in the molecular meta variable data.frame
+#' called *coords*.
+#'
+#' @seealso [`getMolecularCoordinates()`], [`getMetaVarDf()`]
+#'
+#' @export
+addMoleculeCoordinates <- function(object,
+                                   coordinates = NULL,
+                                   assay_name = activeAssay(object)){
+
+  cnames <- base::colnames(coordinates)
+
+  # merge over variable 'molecule'
+  if(!base::any(c("molecule", assay_name) %in% cnames)){
+
+    stop(glue::glue("Need variable 'molecule' or '{modality}' in data.frame input of `coordinates`."))
+
+  } else   if(assay_name %in% cnames){
+
+    coordinates[["molecule"]] <- coordinates[[assay_name]]
+
+  }
+
+  coordinates[[assay_name]] <- NULL
+
+  if(!"x_orig" %in% cnames){
+
+    if(!"x" %in% cnames){ stop("Need either x- or x_orig- variable in `coordinates`.")}
+
+    isf <- getScaleFactor(object, fct_name = "image")
+    coordinates$x_orig <- coordinates$x / isf
+    coordinates$x <- NULL
+
+  }
+
+  if(!"y_orig" %in% cnames){
+
+    if(!"y" %in% cnames){ stop("Need either y- or y_orig variable in `coordinates`.")}
+
+    isf <- getScaleFactor(object, fct_name = "image")
+    coordinates$y_orig <- coordinates$y / isf
+    coordinates$y <- NULL
+
+  }
+
+  mol_pos_df_nested <-
+    dplyr::select(coordinates, molecule, x_orig, y_orig) %>%
+    tidyr::nest(.by = "molecule", .key = "coords")
+
+  meta_var_df <- dplyr::left_join(x = getMetaVarDf(object, verbose = FALSE), y = mol_pos_df_nested, by = "molecule")
+  object <- setMetaVarDf(object, meta_var_df)
+
+  returnSpataObject(object)
+
+}
 
 
 
 
+#' @title Obtain molecule coordinates
+#'
+#' @description Extracts the molecule coordinates of a specfific assay.
+#'
+#' @param molecules Character or `NULL`. If character, specifies the molecules
+#' of interest and the output data.frame is filtered accordingly.
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame with variables *molecule*, *x_orig*, *x*, *y_orig*, *y*.
+#' @export
+#'
+getMoleculeCoordinates <- function(object,
+                                   molecules = NULL,
+                                   assay_name = activeAssay(object)){
 
+  mvdf <- getMetaVarDf(object, assay_name = assay_name, verbose = FALSE)
+
+  if(!"coords" %in% base::colnames(mvdf)){
+
+    stop(glue::glue("No molecular coordinates for assay {assay_name}."))
+
+  }
+
+  isf <- getScaleFactor(object, fct_name = "image")
+
+  mol_coords_df <-
+    tidyr::unnest(mvdf, cols = "coords") %>%
+    dplyr::select(molecule, x_orig, y_orig) %>%
+    dplyr::mutate(x = x_orig * {{isf}}, y = y_orig * {{isf}})
+
+  if(base::is.character(molecules)){
+
+    mols_missing <- molecules[!molecules %in% mol_coords_df$molecule]
+
+    if(base::length(mols_missing) >= 1){
+
+      mols_missing <- confuns::scollapse(mols_missing)
+
+      stop(glue::glue("No coordinates found for: '{mols_missing}'"))
+
+    }
+
+    mol_coords_df <- dplyr::filter(mol_coords_df, molecule %in% {{molecules}})
+
+  }
+
+  return(mol_coords_df)
+
+}
+
+#' @title Check availability molecule coordinates
+#'
+#' @inherit argument_dummy params
+#'
+#' @export
+containsMoleculeCoordinates <- function(object,
+                                        assay_name = activeAssay(object),
+                                        error = FALSE){
+
+  mvdf <-
+    getMetaVarDf(object, assay_name = assay_name) %>%
+    tidyr::unnest()
+
+  if(!base::any(c("x_orig", "y_orig") %in% base::colnames(mvdf)) & base::isTRUE(error)){
+
+    stop(glue::glue("Could not find molecule coordinates for assay {assay_name}"))
+
+  }
+
+  return(TRUE)
+
+}
+
+
+
+
+#' @title Plot molecules in 2D space
+#'
+#' @description Visualizes the positions of molecules in 2D space on the sample.
+#'
+#' @param molecules Character vector. The molecules of interest.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+plotMolecules2D <- function(object,
+                            molecules,
+                            pt_alpha = 0.5,
+                            pt_size = 1,
+                            pt_clrp = NULL,
+                            clrp_adjust = NULL,
+                            use_scattermore = TRUE,
+                            xrange = getCoordsRange(object)$x,
+                            yrange = getCoordsRange(object)$y,
+                            display_facets = TRUE,
+                            nrow = NULL,
+                            ncol = NULL,
+                            assay_name = activeAssay(object),
+                            ...){
+
+
+  hlpr_assign_arguments(object)
+
+  molecules <- base::unique(molecules)
+
+  mol_coords_df <-
+    getMoleculeCoordinates(
+      object = object,
+      molecules = molecules,
+      assay_name = assay_name
+      ) %>%
+    dplyr::mutate(
+      barcodes = stringr::str_c("mol", dplyr::row_number()),
+      molecule = base::factor(molecule, levels = {{molecules}})
+      )
+
+  add_ons <- list()
+
+  if(base::isTRUE(display_facets)){
+
+    add_ons$facet <- ggplot2::facet_wrap(facets = . ~ molecule, nrow = nrow, ncol = ncol)
+
+  }
+
+  # borrow spatial data class
+  sp_data <- getSpatialData(object)
+  sp_data@coordinates <- mol_coords_df
+
+  main_plot <-
+    ggplot2::ggplot() +
+    add_ons +
+    theme_void_custom()
+
+  main_plot +
+    ggpLayerPoints(
+      object = sp_data,
+      color_by = "molecule",
+      pt_alpha = pt_alpha,
+      pt_size = pt_size,
+      clrp = pt_clrp,
+      clrp_adjust = clrp_adjust,
+      xrange = xrange,
+      yrange = yrange,
+      use_scattermore = use_scattermore,
+      #sctm_pixels = sctm_pixels,
+      #sctm_interpolates = sctm_interpolate,
+      geom = "point",
+      ...
+    )
+
+}
 
 
 
