@@ -30,7 +30,9 @@ spatial annotations are tested on being located on either of the remaining
 tissue sections. If they are not, they are removed.
 
 If \code{FALSE}, these processing steps are skipped. Generally speaking, this is
-not recommended. Only set to \code{FALSE}, if you know what you're doing.}
+not recommended. Only set to \code{FALSE}, if you know what you're doing.
+
+Only relevant, if \code{barcodes} is not \code{NULL}.}
 
 \item{adjust_capture_area}{Logical. If \code{TRUE}, the capture area is adjusted
 to the input of \code{xrange} and \code{yrange}. If \code{FALSE}, it stays as is. Defaults to \code{TRUE}.}

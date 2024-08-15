@@ -3291,16 +3291,16 @@ createSpatialDataVisium <- function(dir,
 
     object@method@capture_area <-
       list(
-        x = c(xmean-half, xmean + half),
-        y = c(ymean-half*1.045, ymean + half*1.045)
+        x_orig = c(xmean-half, xmean + half),
+        y_orig = c(ymean-half*1.045, ymean + half*1.045)
       )
 
   } else if(method@name == "VisiumLarge"){
 
     object@method@capture_area <-
       list(
-        x = c(xmean-half*1.045, xmean + half*1.045),
-        y = c(ymean-half*1.025, ymean + half*1.025)
+        x_orig = c(xmean-half*1.045, xmean + half*1.045),
+        y_orig = c(ymean-half*1.025, ymean + half*1.025)
       )
 
   }

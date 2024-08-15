@@ -63,7 +63,7 @@ displayed, prompting the user to manually download the file using the provided l
 
 Since the virus scan cannot be performed by Google Drive regardless of whether
 you download it from within R or manually, the function defaults to bypass this
-warning automatically. If you prefer not to bypass the warning, you can set \code{adjust_link = FALSE}
+warning automatically. If you prefer not to bypass the warning, you can set \code{adjust_link = FALSE}.
 In this case, the function will give a warning and ask you to download the object manually.
 
 The downloaded objects do not contain viruses. The way they have been created,

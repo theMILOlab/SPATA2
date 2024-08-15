@@ -2,12 +2,18 @@
 % Please edit documentation in R/r.R
 \name{removeGenes}
 \alias{removeGenes}
+\alias{removeGenesMitochondrial}
+\alias{removeGenesRibosomal}
 \alias{removeGenesStress}
 \alias{removeGenesZeroCounts}
 \alias{removeMolecules}
-\title{Remove molecules from the \code{SPATA2} object}
+\title{Remove molecules from the SPATA2 object}
 \usage{
 removeGenes(object, genes, show_warnings = FALSE, verbose = NULL)
+
+removeGenesMitochondrial(object, verbose = NULL, ...)
+
+removeGenesRibosomal(object, verbose = NULL, ...)
 
 removeGenesStress(object, verbose = NULL)
 
@@ -37,6 +43,8 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
+\item{...}{Used to absorb deprecated arguments or functions.}
+
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest and thus the
 \link[=concept_molecular_modalities]{molecular modality} to use. Defaults to the active assay
@@ -46,29 +54,31 @@ as set by \code{\link[=activateAssay]{activateAssay()}}.}
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Functions that removes molecules from the \code{SPATA2} object by removing
+Functions that remove molecules from the \code{SPATA2} object by removing
 them from count matrix and all processed matrices of the respective \link[MolecularAssay]{assay}.
 
 \itemize{
-\item{\code{removeMolecules()}:}{ Removes user specified molecules}
+\item{\code{removeMolecules()}:}{ Removes user specified molecules.}
 \item{\code{removeMoleculesZeroCounts()}:}{ Removes molecules that do not have a single count
 across all observations.}
 }
 
-Wrappers for transriptomic assay:
+Wrappers for transcriptomic assay:
 
 \itemize{
 \item{\code{removeGenes()}:}{ Removes user specified genes.}
+\item{\code{removeGenesMitochondrial()}:}{ Removes mitochondrial genes.}
+\item{\code{removeGenesRibosomal()}:}{ Removes ribosomal genes.}
+\item{\code{removeGenesStress()}:}{ Removes stress related genes.}
 \item{\code{removeGenesZeroCounts()}:}{ Removes genes that do not have a single count
 across all observations.}
-\item{\code{removeGenesStress()}:}{ Removes mitochondrial and stress related genes.}
+
 }
 }
 \details{
 This step affects the matrices of the object and thus all subsequent
 analysis steps. Analysis steps that have already been conducted are not affected!
-This includes clustering, DEA, GSEA etc. It is advisable to integrate this
-step as early as possible in the processing pipeline.
+It is advisable to integrate this step as early as possible in the processing pipeline.
 }
 \examples{
 library(SPATA2)

@@ -487,7 +487,6 @@ update_spata2v2_to_spata2v3 <- function(object, method = NULL, verbose = TRUE){
 #' the old `SPATA` (not `SPATA2`) package!
 #'
 #' @export
-#'
 
 updateSpataObject <- function(object,
                               method = NULL,
@@ -1356,6 +1355,7 @@ setMethod(
   definition = updateSpataObject
 )
 
+#' @export
 #' @keywords internal
 update_s4_architecture_of_spata2_object <- function(object){
 

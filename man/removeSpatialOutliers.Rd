@@ -22,7 +22,9 @@ spatial annotations are tested on being located on either of the remaining
 tissue sections. If they are not, they are removed.
 
 If \code{FALSE}, these processing steps are skipped. Generally speaking, this is
-not recommended. Only set to \code{FALSE}, if you know what you're doing.}
+not recommended. Only set to \code{FALSE}, if you know what you're doing.
+
+Only relevant, if \code{barcodes} is not \code{NULL}.}
 
 \item{rm_var}{Logical value. If \code{TRUE}, the variable \emph{sp_outlier} is removed
 since it only contains \code{FALSE} after this function call and is of no value

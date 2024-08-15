@@ -1,5 +1,5 @@
 pandoc: 3.1.11
-pkgdown: 2.0.9
+pkgdown: 2.1.0
 pkgdown_sha: ~
 articles:
   adding-data: adding-data.html
@@ -8,17 +8,22 @@ articles:
   creating-spatial-annotations: creating-spatial-annotations.html
   creating-spatial-trajectories: creating-spatial-trajectories.html
   dea: dea.html
+  dimensional-reduction: dimensional-reduction.html
   gsea: gsea.html
   image-handling: image-handling.html
   initiation-and-preprocessing-customized: initiation-and-preprocessing-customized.html
+  initiation-and-preprocessing-merfish: initiation-and-preprocessing-merfish.html
+  initiation-and-preprocessing-visium-hd: initiation-and-preprocessing-visium-hd.html
   initiation-and-preprocessing-visium: initiation-and-preprocessing-visium.html
-  molecular-data: molecular-data.html
+  initiation-and-preprocessing-xenium: initiation-and-preprocessing-xenium.html
+  installation: installation.html
+  molecular-variables: molecular-variables.html
   newslog: newslog.html
   plotting-surface: plotting-surface.html
+  spata-data: spata-data.html
   spatial-annotation-screening: spatial-annotation-screening.html
   spatial-measures: spatial-measures.html
   spatial-segmentation: spatial-segmentation.html
   spatial-trajectory-screening: spatial-trajectory-screening.html
   using-spatial-annotations: using-spatial-annotations.html
-last_built: 2024-07-22T03:56Z
-
+last_built: 2024-08-06T08:00Z
