@@ -23,7 +23,13 @@ objects of classes for which a method has been defined.}
 
 \item{opt}{Combination of \emph{'rect'} and/or \emph{'crop'}.}
 
+\item{rect_alpha}{The alpha transparency level of the rectangle's border}
+
 \item{expand_x, expand_y}{Given to \code{expand} of \code{ggplot2::scale_x/y_continuous()}.}
+
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 }
 \value{
 List of ggpLayer outputs.

@@ -13,6 +13,7 @@ ggpLayerRect(
   size = 1,
   expand = 0,
   persp = "coords",
+  img_name = activeImage(object),
   ...
 )
 }
@@ -37,6 +38,10 @@ annotation centers around the image annotation. If \code{expand = 0}, the defaul
 that is width/x-axis and height/y-axis, are set to include only the image annotation area
 and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
 \emph{Expansion of cropped image sections} for more information.}
+
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{...}{Additional arguments given to \code{ggplot2::geom_rect()}.}
 }

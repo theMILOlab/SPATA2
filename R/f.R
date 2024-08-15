@@ -434,7 +434,6 @@ filterDeaDf <- function(dea_df,
 #' (plotSurface(object_sub1) + orig_frame)
 #'
 #' # example 3: logical tests can be more complex
-#'
 #' object_sub3 <- filterSpataObject(object, GFAP > 0.5 | bayes_space %in% c("1", "3"), .normalize = TRUE)
 #'
 #' plotSurface(object_sub3, color_by = "SNAP25") +

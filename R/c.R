@@ -717,6 +717,117 @@ computeCnvByChrArm <- function(object,
 }
 
 
+#' @title Compute count percentage
+#'
+#' @description
+#' Calculates the percentage contribution of a specified set of molecules to the total counts
+#' within the count matrix of the given assay.
+#'
+#' @param regex Character value. A regular expression with which to create the
+#' set of molecules (e.g. '^MT-.*' to subset human mitochondrial genes).
+#' @param molecules Character vector. Instead of providing a regular expression
+#' the set of molecules can be specified directly.
+#' @param var_name Character value. The name of the new meta feature.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' The equivalent of [`Seurat::PercentageFeatureSet()`]. Usage differs. See examples.
+#'
+#' @seealso [`filterSpataObject()`]
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#' library(patchwork)
+#'
+#' object <- downloadSpataObject("MGH258")
+#'
+#' # compute the percentage contribution of mitochondrial genes
+#' object <- computeCountPercentage(object, regex = "MT-.*", var_name = "perc_mit")
+#'
+#' plotSurface(object, color_by = "perc_mit") +
+#' plotDensityPlot(object, variables = "perc_mit")
+#'
+#' # keep only spots with less than 20% mitochondrial counts
+#' object <- filterSpataObject(object, perc_mit < 20)
+#'
+#' # new outlier identification necessary?
+#' plotSurface(object, color_by = "tissue_section")
+#'
+computeCountPercentage <- function(object,
+                                   regex = NULL,
+                                   molecules = NULL,
+                                   var_name = NULL,
+                                   assay_name = activeAssay(object),
+                                   overwrite = FALSE){
+
+  confuns::is_value(var_name, mode = "character")
+
+  confuns::check_none_of(
+    input = var_name,
+    against = getVariableNames(object, protected = TRUE),
+    ref.against = "variable names in the SPATA2 object",
+    overwrite = overwrite
+  )
+
+  if(is.character(regex) & is.character(molecules)){
+
+    stop("Only one of `regex` and `molecules` can be specified. The other one needs to be NULL.")
+
+  }
+
+  count_mtr <- getCountMatrix(object, assay_name = assay_name)
+
+  molecules_all <- base::rownames(count_mtr)
+
+  if(is.character(regex)){
+
+    confuns::is_value(regex, mode = "character")
+
+    molecules_use <- stringr::str_subset(molecules_all, pattern = regex)
+
+    if(length(molecules_use) == 0){
+
+      warning(glue::glue("No molecules remain after subsetting with regex '{regex}'."))
+
+    }
+
+  } else if(is.character(molecules)){
+
+     confuns::check_one_of(
+       input = molecules,
+       against = molecules_all,
+       fdb.opt = 2,
+       ref.opt.2 = glue::glue("molecules in assay '{assay_name}'")
+     )
+
+    molecules_use <- molecules
+
+  }
+
+  count_mtr_sub <- count_mtr[molecules_use, ]
+
+  perc_df <-
+    tibble::tibble(
+      barcodes = colnames(count_mtr),
+      all_counts = Matrix::colSums(count_mtr),
+      sub_counts = Matrix::colSums(count_mtr[molecules_use,])
+    ) %>%
+    dplyr::mutate(
+      {{var_name}} := (sub_counts/all_counts)*100
+    )
+
+  object <- addFeatures(object, feature_df = perc_df, feature_names = var_name, overwrite = overwrite)
+
+  returnSpataObject(object)
+
+}
+
 
 # computeG ----------------------------------------------------------------
 

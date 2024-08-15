@@ -522,6 +522,7 @@ ggpLayerAxesSI <- function(object,
 #' @param opt Combination of *'rect'* and/or *'crop'*.
 #' @inherit ggpLayerRect params
 #' @inherit ggpLayerZoom params
+#' @inherit argument_dummy params
 #'
 #' @seealso [`getCaptureArea()`]
 #'
@@ -557,6 +558,8 @@ ggpLayerCaptureArea <- function(object,
   # capture ranges
   cr <- getCaptureArea(object, img_name = img_name, unit = "px")
 
+  object <
+
   out <- list()
 
   if("rect" %in% opt){
@@ -570,7 +573,8 @@ ggpLayerCaptureArea <- function(object,
         color = rect_clr,
         fill = NA,
         size = rect_size,
-        linetype = rect_line_type
+        linetype = rect_line_type,
+        img_name = img_name
       )
 
   }
@@ -583,7 +587,8 @@ ggpLayerCaptureArea <- function(object,
         xrange = cr$x,
         yrange = cr$y,
         expand_x = expand_x,
-        expand_y = expand_y
+        expand_y = expand_y,
+        img_name = img_name
       )
 
   }
@@ -2164,7 +2169,10 @@ ggpLayerRect <- function(object = "object",
                          size = 1,
                          expand = 0,
                          persp = "coords",
+                         img_name = activeImage(object),
                          ...){
+
+  object <- activateImageInt(object, img_name = img_name)
 
   # process range input
   pri <-

@@ -931,6 +931,10 @@ pub_dropbox_links <- list(
 # NOTE: regular expressions partly depend on each other
 # they are not listed in alphabetical order
 
+regex_mitochondrial <- "^MT-.*"
+regex_ribosomal <- "^RP[SL][0-9].*"
+
+
 # matches decimal number: digit, 1!point, at least one following digit
 # ignores unit-suffix -> use for extraction of value
 regex_dec_number <- "^-{0,1}\\d{1,}\\.{1}\\d{1,}"
@@ -991,7 +995,7 @@ regex_pxl_area <-
 regex_pxl_dist <- regex_pxl_area
 
 
-# matches dist_value if combined with an euol
+# matches dist_value if combined with an SI
 # does NOT, ignore suffix -> use to test euol input
 regex_si_dist <- stringr::str_c("(", regex_num_value, ")(", regex_dist_units_si, ")", sep = "")
 
@@ -1019,6 +1023,102 @@ regex_exclam2 <- stringr::str_c(regex_num_value, "!$")
 regex_exclam <- stringr::str_c(regex_exclam1, "|", regex_exclam2)
 
 regex_unit <- stringr::str_c(regex_dist_units_si, regex_pxl, regex_area_units, sep = "|")
+
+
+#' Regular Expressions for Data Validation and Parsing
+#'
+#' A list of regular expressions commonly used for parsing and validating data inputs.
+#'
+#' @format A named list of character vectors, each containing a regular expression:
+#' \describe{
+#'   \item{area}{Matches area values including units (e.g., "px", "cm2").}
+#'   \item{area_si}{Matches area values with SI units only (e.g., "cm2").}
+#'   \item{area_units}{Matches area unit abbreviations (e.g., "px", "cm2").}
+#'   \item{area_units_si}{Matches area units with SI abbreviations only (e.g., "cm2").}
+#'   \item{dec_number}{Matches decimal numbers (e.g., "1.23").}
+#'   \item{dist}{Matches distance values either in pixels or SI units.}
+#'   \item{dist_units_si}{Matches distance unit abbreviations with SI units only (e.g., "cm", "m").}
+#'   \item{exclam}{Matches values followed by an exclamation mark and optional unit.}
+#'   \item{exclam1}{Matches values with units followed by an exclamation mark.}
+#'   \item{exclam2}{Matches values followed by an exclamation mark.}
+#'   \item{mitochondrial}{Matches mitochondrial gene names starting with "MT-".}
+#'   \item{num_value}{Matches numeric values, including decimal and scientific notation.}
+#'   \item{number}{Matches integer numbers (e.g., "123").}
+#'   \item{percentage}{Matches percentage values (e.g., "50%").}
+#'   \item{pxl}{Matches pixel units ("px").}
+#'   \item{pxl_area}{Matches pixel area values.}
+#'   \item{pxl_dec_num}{Matches pixel values with decimal numbers.}
+#'   \item{pxl_dist}{Matches pixel distance values.}
+#'   \item{pxl_num}{Matches pixel values with integer numbers.}
+#'   \item{ribosomal}{Matches ribosomal protein genes (e.g., "RPL", "RPS").}
+#'   \item{scientific_notation}{Matches numbers in scientific notation (e.g., "1e-3").}
+#'   \item{si_dist}{Matches SI unit distance values.}
+#'   \item{unit}{Matches unit abbreviations including pixels and SI units.}
+#' }
+#' @examples
+#' regexes$mitochondrial
+#' regexes$number
+#' @export
+#' @name regexes
+regexes <- list(
+  area = stringr::str_c("(", regex_num_value, ")(", regex_area_units, ")", sep = ""),
+  area_si = stringr::str_c("(", regex_num_value, ")(", regex_area_units_si, ")", sep = ""),
+  area_units = stringr::str_c(uol_si_abbr, "2", sep = "") %>%
+    c("px") %>%
+    stringr::str_c("$") %>%
+    stringr::str_c(collapse = "|"),
+  area_units_si = stringr::str_c(uol_si_abbr, "2", sep = "") %>%
+    stringr::str_c("$") %>%
+    stringr::str_c(collapse = "|"),
+  dec_number = "^-{0,1}\\d{1,}\\.{1}\\d{1,}",
+  dist = stringr::str_c(
+    stringr::str_c(regex_pxl_dist),
+    stringr::str_c(regex_si_dist),
+    sep = "|"
+  ),
+  dist_units_si = stringr::str_c(string = base::unname(uol_si_abbr), "$", collapse = "|"),
+  exclam = stringr::str_c(regex_exclam1, "|", regex_exclam2),
+  exclam1 = stringr::str_c(
+    "(", regex_num_value, ")",
+    "(", stringr::str_c(c(uol_si_abbr, "px"), collapse = "|"), ")",
+    "!$"
+  ),
+  exclam2 = stringr::str_c(regex_num_value, "!$"),
+  mitochondrial = "^MT-.*",
+  num_value = stringr::str_c(
+    "(", regex_scientific_notation, ")|",
+    "(", regex_number, ")|",
+    "(", regex_dec_number, ")"
+  ),
+  number = "^-{0,1}\\d{1,}(?!.*\\.)",
+  percentage = stringr::str_c("(", regex_num_value, ")%$", sep = ""),
+  pxl = "px$",
+  pxl_area = stringr::str_c(
+    stringr::str_c(regex_number, regex_pxl, sep = ""),
+    stringr::str_c(regex_dec_number, regex_pxl, sep = ""),
+    regex_pxl_num,
+    regex_pxl_dec_num,
+    sep = "|"
+  ),
+  pxl_dec_num = stringr::str_c(regex_dec_number, "$", sep = ""),
+  pxl_dist = stringr::str_c(
+    stringr::str_c(regex_number, regex_pxl, sep = ""),
+    stringr::str_c(regex_dec_number, regex_pxl, sep = ""),
+    regex_pxl_num,
+    regex_pxl_dec_num,
+    sep = "|"
+  ),
+  pxl_num = stringr::str_c(regex_number, "$", sep = ""),
+  ribosomal = "^RP[SL][0-9].*",
+  scientific_notation = "-{0,1}[0-9]*e(\\+|-)[0-9]*",
+  si_dist = stringr::str_c("(", regex_num_value, ")(", regex_dist_units_si, ")", sep = ""),
+  unit = stringr::str_c(regex_dist_units_si, regex_pxl, regex_area_units, sep = "|")
+)
+
+
+
+
+
 
 # relateToImageAnnotation names
 rtia_names <-

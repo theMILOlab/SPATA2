@@ -563,24 +563,31 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   n_mols <- purrr::map_dbl(.x = assay_names, .f = ~ nMolecules(object, assay_name = .x))
   n_obs <- nObs(object) # also in case no matrix available
 
-  cat("SPATA2 object of size:", n_obs, "x", n_mols, "(observations x molecules)\n")
+  cat("SPATA2 object of size:", n_obs, "x", sum(n_mols), "(observations x molecules)\n")
   cat("Sample name:", object@sample, "\n")
   cat("Platform:", object@platform, "\n")
-  cat("Contains", length(assays), ifelse(length(assays) > 1, "assays:", "assay:"), assays, "\n")
+  #cat("Contains", length(assays), ifelse(length(assays) > 1, "assays:\n", "assay:\n"), stringr::str_c(assays, collapse = "\n"))
+  cat(paste0("Molecular assays (", length(assays), "):"))
+
   for(i in seq_along(assay_names)){
 
     assay_name <- assay_names[i]
     ma <- getAssay(object, assay_name = assay_name)
     mnames <- getMatrixNames(object, assay_name = assay_name)
     mnames[mnames == ma@active_mtr] <- paste0(mnames[mnames == ma@active_mtr], " (active)")
-    cat(paste0(ifelse(length(mnames)>1, "Matrices", "Matrix"), " for assay: ", assay_name))
-    cat(paste0("\n -",stringr::str_c(mnames, collapse = "\n -")))
+    mnames <- stringr::str_c("- ", mnames)
+    nm <- length(mnames)
+
+    cat(paste0("\n", i, ". Assay of ", nrow(ma@mtr_counts), " ", ma@modality, "s with ",  nm, ifelse(nm == 1, " matrix ", " matrices:"), "\n"))
+    #cat(paste0("\nMatrices", " for assay: ", assay_name, "(", length(mnames), ")"))
+    cat(stringr::str_c(mnames, collapse = "\n"))
+    #cat(paste0("\n -",stringr::str_c(mnames, collapse = "\n -")))
 
   }
 
   mvars <- setdiff(colnames(getMetaDf(object)), "barcodes")
   n_mvars <- length(mvars)
-  if(n_mvars > 10){ mvars <- paste0(mvars[1:10], " ...")}
+  if(n_mvars > 10){ mvars <- paste0(stringr::str_c(mvars[1:10], collapse = ", "), " ...")}
   cat(paste0("\nMeta variables (", n_mvars, "): ", paste(mvars, collapse=", "), "\n"))
 
   if (length(getSpatialAnnotations(object)) > 0) {
@@ -3139,11 +3146,19 @@ strongH5 <- function(text){
 #' @title Subset SPATA2 object with barcodes
 #'
 #' @description Creates a subset of the [`SPATA2`] object by using a list
-#' of barcodes. This function is the working horse behind all functions that manipulate
-#' the number of observations in the object.
+#' of barcodes and/or molecules. This function is the working horse behind all functions that manipulate
+#' the number of observations and molecules in the object.
 #'
-#' @param barcodes Character vector. The barcodes of the observations that are
-#' supposed to be \bold{kept}.
+#' @param barcodes Character vector or `NULL`. Names the observations of interest.
+#' @param molecules Character vector or `NULL`. Names the molecules of interest.
+#' @param opt Character value. Decides how the input for `barcodes` and `molecules`
+#' is handled.
+#'
+#'  \itemize{
+#'    \item{*'keep'*}: The specified barcodes and/or molecules are \bold{kept} (default).
+#'    \item{*'remove'*}: The specified barcodes and/or molecules are \bold{removed}.
+#'    }
+#'
 #' @param spatial_proc Logical value. Indicates whether the new sub-object is
 #' processed spatially. If `TRUE`, a new tissue outline is identified based
 #' on the remaining observations via [`identifyTissueOutline()`]. Then,
@@ -3153,10 +3168,13 @@ strongH5 <- function(text){
 #' If `FALSE`, these processing steps are skipped. Generally speaking, this is
 #' not recommended. Only set to `FALSE`, if you know what you're doing.
 #'
+#' Only relevant, if `barcodes` is not `NULL`.
+#'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @details Unused levels of factor variables in the feature data.frame are dropped.
+#' @details After removal of observations, unused levels of factor variables in the feature data.frame are dropped.
+#' Analysis results are not affected.
 #'
 #' @seealso [`removeObs()`], [`splitSpataObject()`], [`cropSpataObject()`], [`filterSpataObject()`]
 #'
@@ -3251,109 +3269,227 @@ strongH5 <- function(text){
 #' plotSurface(object_cropped, color_by = "bayes_space") + orig_frame
 #'
 subsetSpataObject <- function(object,
-                              barcodes,
+                              barcodes = NULL,
+                              molecules = NULL,
                               spatial_proc = TRUE,
+                              opt = "keep",
                               verbose = NULL){
 
   hlpr_assign_arguments(object)
 
-  bcs_keep <- barcodes
-
-  # coordinates data.frame
-  object <-
-    getCoordsDf(object, as_is = TRUE) %>%
-    dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
-    setCoordsDf(object, coords_df = ., force = TRUE)
-
-  # feature df
-  object <-
-    getMetaDf(object) %>%
-    dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
-    dplyr::mutate(
-      dplyr::across(
-        .cols = dplyr::where(base::is.factor),
-        .fns = base::droplevels
-      )
-    ) %>%
-    setMetaDf(object = object, meta_df = .)
-
-  # assays
-  for(assay_name in getAssayNames(object)){
-
-    ma <- getAssay(object, assay_name = assay_name)
-
-    ma@mtr_counts <- ma@mtr_counts[, bcs_keep]
-
-    for(nm in base::names(ma@mtr_proc)){
-
-      ma@mtr_proc[[nm]] <- ma@mtr_proc[[nm]][, bcs_keep]
-
-    }
-
-    if(containsCNV(object) & ma@modality == "gene"){
-
-      bcs_keep_cnv <-
-        bcs_keep[bcs_keep %in% base::colnames(ma@analysis$cnv$cnv_mtr)]
-
-      ma@analysis$cnv$cnv_mtr <-
-        ma@analysis$cnv$cnv_mtr[, bcs_keep_cnv]
-
-    }
-
-    object <- setAssay(object, assay = ma)
-
-  }
-
-  n_bcsp <- nObs(object)
-
-  if(base::isTRUE(spatial_proc)){
-
-    object <- identifyTissueOutline(object)
-    tissue_sections <- getTissueSections(object)
-
-    # keep only spatial annotations that intersect with or or located on at least one
-    # tissue section of the remaining tissue sections
-    spat_anns <-
-      getSpatialAnnotations(object, add_image = FALSE, add_barcodes = FALSE) %>%
-      purrr::keep(.p = function(spat_ann){
-
-        spat_ann_outline_df <- spat_ann@area$outer
-
-        on_section <-
-          purrr::map_lgl(
-            .x = tissue_sections,
-            .f = function(section){
-
-              section_outline_df <-
-                getTissueOutlineDf(object, section_subset = section)
-
-              locs <-
-                sp::point.in.polygon(
-                  point.x = spat_ann_outline_df$x_orig,
-                  point.y = spat_ann_outline_df$y_orig,
-                  pol.x = section_outline_df$x_orig,
-                  pol.y = section_outline_df$y_orig
-                )
-
-              out <- base::any(locs == 1)
-
-              return(out)
-
-            }
-          )
-
-        return(any(on_section))
-
-      })
-
-    object@spatial@annotations <- spat_anns
-
-  }
-
-  confuns::give_feedback(
-    msg = glue::glue("{n_bcsp} barcodes remaining."),
-    verbose = verbose
+  confuns::check_one_of(
+    input = opt,
+    against = c("keep", "remove")
   )
+
+  if(!is.character(barcodes) & !is.character(molecules)){
+
+    stop("Either argument of `barcodes` or `molecules` must be a character vector.")
+
+  }
+
+  # subset by barcodes
+  if(is.character(barcodes)){
+
+    coords_df <- getCoordsDf(object, as_is = TRUE)
+
+    confuns::check_one_of(
+      input = barcodes,
+      against = coords_df$barcodes
+    )
+
+    if(opt == "keep"){
+
+      bcs_keep <- barcodes
+
+      bcs_rm <- barcodes[!bcs_keep %in% coords_df$barcodes]
+
+      confuns::give_feedback(
+        msg = glue::glue("Keeping {length(barcodes)} observation(s)."),
+        verbose = verbose
+      )
+
+    } else if(opt == "remove") {
+
+      bcs_rm <- barcodes
+
+      confuns::give_feedback(
+        msg = glue::glue("Removing {length(bcs_rm)} observation(s)."),
+        verbose = verbose
+      )
+
+    }
+
+    if(length(bcs_rm) >= 1){
+
+      # coordinates data.frame
+      object <-
+        dplyr::filter(coords_df, barcodes %in% {{bcs_keep}}) %>%
+        setCoordsDf(object, coords_df = ., force = TRUE)
+
+      # feature df
+      object <-
+        getMetaDf(object) %>%
+        dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
+        dplyr::mutate(
+          dplyr::across(
+            .cols = dplyr::where(base::is.factor),
+            .fns = base::droplevels
+          )
+        ) %>%
+        setMetaDf(object = object, meta_df = .)
+
+      # assays
+      for(assay_name in getAssayNames(object)){
+
+        ma <- getAssay(object, assay_name = assay_name)
+
+        ma@mtr_counts <- ma@mtr_counts[, bcs_keep]
+
+        for(nm in base::names(ma@mtr_proc)){
+
+          ma@mtr_proc[[nm]] <- ma@mtr_proc[[nm]][, bcs_keep]
+
+        }
+
+        if(containsCNV(object) & ma@modality == "gene"){
+
+          bcs_keep_cnv <-
+            bcs_keep[bcs_keep %in% base::colnames(ma@analysis$cnv$cnv_mtr)]
+
+          ma@analysis$cnv$cnv_mtr <-
+            ma@analysis$cnv$cnv_mtr[, bcs_keep_cnv]
+
+        }
+
+        object <- setAssay(object, assay = ma)
+
+      }
+
+      n_bcsp <- nObs(object)
+
+      if(base::isTRUE(spatial_proc)){
+
+        object <- identifyTissueOutline(object)
+        tissue_sections <- getTissueSections(object)
+
+        # keep only spatial annotations that intersect with or or located on at least one
+        # tissue section of the remaining tissue sections
+        spat_anns <-
+          getSpatialAnnotations(object, add_image = FALSE, add_barcodes = FALSE) %>%
+          purrr::keep(.p = function(spat_ann){
+
+            spat_ann_outline_df <- spat_ann@area$outer
+
+            on_section <-
+              purrr::map_lgl(
+                .x = tissue_sections,
+                .f = function(section){
+
+                  section_outline_df <-
+                    getTissueOutlineDf(object, section_subset = section)
+
+                  locs <-
+                    sp::point.in.polygon(
+                      point.x = spat_ann_outline_df$x_orig,
+                      point.y = spat_ann_outline_df$y_orig,
+                      pol.x = section_outline_df$x_orig,
+                      pol.y = section_outline_df$y_orig
+                    )
+
+                  out <- base::any(locs == 1)
+
+                  return(out)
+
+                }
+              )
+
+            return(any(on_section))
+
+          })
+
+        object@spatial@annotations <- spat_anns
+
+      }
+
+      if(opt == "remove"){
+
+        confuns::give_feedback(
+          msg = glue::glue("{n_bcsp} observations remain."),
+          verbose = verbose
+        )
+
+      }
+
+    }
+
+  }
+
+  # subset by molecules
+  if(is.character(molecules)){
+
+    confuns::check_one_of(
+      input = molecules,
+      against = getVarTypeList(object)$molecules,
+      fdb.opt = 2,
+      ref.opt.2 = "molecules in this object"
+    )
+
+    moltypes_input <- getMoleculeTypeList(object, molecules = molecules)
+    moltypes_all <- getMoleculeTypeList(object)
+
+    for(assay_name in base::names(moltypes_input)){
+
+      ma <- getAssay(object, assay_name = assay_name)
+
+      if(opt == "keep"){
+
+        mols_keep <- moltypes_input[[assay_name]]
+
+        confuns::give_feedback(
+          msg = glue::glue("Keeping {length(mols_keep)} {ma@modality}s."),
+          verbose = verbose
+        )
+
+
+      } else if(opt == "remove"){
+
+        molecules_input <- moltypes_input[[assay_name]]
+        molecules_all <- moltypes_all[[assay_name]]
+
+        mols_keep <- molecules_all[!molecules_all %in% molecules_input]
+
+        confuns::give_feedback(
+          msg = glue::glue("Keeping {length(mols_keep)} {ma@modality}s."),
+          verbose = verbose
+        )
+
+      }
+
+      # subset count matrix
+      ma@mtr_counts <- ma@mtr_counts[mols_keep, ]
+
+      # subset processed matrices
+      if(!purrr::is_empty(ma@mtr_proc)){
+
+        ma@mtr_proc <- purrr::map(.x = ma@mtr_proc, .f = ~ .x[mols_keep, ])
+
+      }
+
+      if(opt == "remove"){
+
+        confuns::give_feedback(
+          msg = glue::glue("{length(mols_keep)} {ma@modality}s remain."),
+          verbose = verbose
+        )
+
+      }
+
+      object <- setAssay(object, assay = ma)
+
+    }
+
+  }
 
   returnSpataObject(object)
 

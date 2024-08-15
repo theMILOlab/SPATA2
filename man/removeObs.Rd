@@ -27,7 +27,9 @@ spatial annotations are tested on being located on either of the remaining
 tissue sections. If they are not, they are removed.
 
 If \code{FALSE}, these processing steps are skipped. Generally speaking, this is
-not recommended. Only set to \code{FALSE}, if you know what you're doing.}
+not recommended. Only set to \code{FALSE}, if you know what you're doing.
+
+Only relevant, if \code{barcodes} is not \code{NULL}.}
 
 \item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
@@ -51,7 +53,8 @@ Remove unwanted \link[=concept_observations]{observations} from the object.
 }
 }
 \details{
-Unused levels of factor variables in the feature data.frame are dropped.
+After removal of observations, unused levels of factor variables in the feature data.frame are dropped.
+Analysis results are not affected.
 }
 \examples{
 library(SPATA2)

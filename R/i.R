@@ -1532,8 +1532,6 @@ identifyVariableMolecules <- function(object,
 
   vf <-
     Seurat::CreateSeuratObject(counts = count_mtr) %>%
-    Seurat::NormalizeData() %>%
-    Seurat::ScaleData() %>%
     Seurat::FindVariableFeatures(object = ., nfeatures = n_mol, selection.method = method, ...) %>%
     Seurat::VariableFeatures()
 

@@ -228,7 +228,7 @@ recDbscanMinPts <- function(object){
 
   if(containsMethod(object, method = "Visium")){
 
-    out <- 4
+    out <- 3
 
   } else if(containsMethod(object, method = "MERFISH")){
 
@@ -897,6 +897,35 @@ removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
 
 #' @rdname removeMolecules
 #' @export
+removeGenesMitochondrial <- function(object, verbose = NULL, ...){
+
+  genes <-
+    getGenes(object) %>%
+    stringr::str_subset(pattern = regexes$mitochondrial)
+
+  object <- removeGenes(object, genes = genes, ...)
+
+  object <- returnSpataObject(object)
+
+}
+
+#' @rdname removeMolecules
+#' @export
+removeGenesRibosomal <- function(object, verbose = NULL, ...){
+
+  genes <-
+    getGenes(object) %>%
+    stringr::str_subset(pattern = regexes$ribosomal)
+
+  object <- removeGenes(object, genes = genes, ...)
+
+  object <- returnSpataObject(object)
+
+}
+
+
+#' @rdname removeMolecules
+#' @export
 removeGenesStress <- function(object, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -909,12 +938,7 @@ removeGenesStress <- function(object, verbose = NULL){
   count_mtr <- getCountMatrix(object)
 
   genes_rm <-
-    c(
-      base::rownames(count_mtr)[base::grepl("^RPL", base::rownames(count_mtr))],
-      base::rownames(count_mtr)[base::grepl("^RPS", base::rownames(count_mtr))],
-      base::rownames(count_mtr)[base::grepl("^MT-", base::rownames(count_mtr))],
       c('JUN','FOS','ZFP36','ATF3','HSPA1A","HSPA1B','DUSP1','EGR1','MALAT1')
-    )
 
   genes_rm <- genes_rm[genes_rm %in% base::rownames(count_mtr)]
 
@@ -929,6 +953,7 @@ removeGenesStress <- function(object, verbose = NULL){
   returnSpataObject(object)
 
 }
+
 
 #' @rdname removeMolecules
 #' @export
@@ -1056,26 +1081,30 @@ removeMetaFeatures <- function(object, feature_names){
 
 }
 
-#' @title Remove molecules from the `SPATA2` object
+#' @title Remove molecules from the SPATA2 object
 #'
-#' @description Functions that removes molecules from the `SPATA2` object by removing
+#' @description Functions that remove molecules from the `SPATA2` object by removing
 #' them from count matrix and all processed matrices of the respective \link[MolecularAssay]{assay}.
 #'
 #'  \itemize{
-#'   \item{`removeMolecules()`:}{ Removes user specified molecules}
+#'   \item{`removeMolecules()`:}{ Removes user specified molecules.}
 #'   \item{`removeMoleculesZeroCounts()`:}{ Removes molecules that do not have a single count
 #'   across all observations.}
 #'   }
 #'
-#' Wrappers for transriptomic assay:
+#' Wrappers for transcriptomic assay:
 #'
 #'  \itemize{
 #'   \item{`removeGenes()`:}{ Removes user specified genes.}
+#'   \item{`removeGenesMitochondrial()`:}{ Removes mitochondrial genes.}
+#'   \item{`removeGenesRibosomal()`:}{ Removes ribosomal genes.}
+#'   \item{`removeGenesStress()`:}{ Removes stress related genes.}
 #'   \item{`removeGenesZeroCounts()`:}{ Removes genes that do not have a single count
 #'   across all observations.}
-#'   \item{`removeGenesStress()`:}{ Removes mitochondrial and stress related genes.}
+#'
 #'   }
 #'
+#' @param genes Character vector. Names of molecules to remove.
 #' @param genes Character vector. Names of genes to remove.
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
@@ -1085,8 +1114,7 @@ removeMetaFeatures <- function(object, feature_names){
 #'
 #' @details This step affects the matrices of the object and thus all subsequent
 #' analysis steps. Analysis steps that have already been conducted are not affected!
-#' This includes clustering, DEA, GSEA etc. It is advisable to integrate this
-#' step as early as possible in the processing pipeline.
+#' It is advisable to integrate this step as early as possible in the processing pipeline.
 #'
 #' @export
 #'
@@ -1240,11 +1268,9 @@ removeObsZeroCounts <- function(object,
 
   barcodes <- getBarcodes(object)
 
-  count_mtr <-
-    getCountMatrix(object, assay_name = assay_name) %>%
-    base::as.matrix()
+  count_mtr <- getCountMatrix(object, assay_name = assay_name)
 
-  no_counts <- base::colSums(count_mtr, na.rm = TRUE)
+  no_counts <- Matrix::colSums(count_mtr, na.rm = TRUE)
 
   keep <- base::names(no_counts[no_counts!=0])
 
@@ -1264,7 +1290,7 @@ removeObsZeroCounts <- function(object,
       verbose = verbose
     )
 
-    object <- subsetByBarcodes(object, spatial_proc = spatial_proc, barcodes = keep, verbose = verbose)
+    object <- subsetSpataObject(object, spatial_proc = spatial_proc, barcodes = keep, verbose = verbose)
 
   }
 

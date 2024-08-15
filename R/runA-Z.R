@@ -202,8 +202,8 @@ runBayesSpaceClustering <- function(object,
       n.HVGs = n.HVGs,
       skip.PCA = skip.PCA,
       log.normalize = log.normalize,
-      assay.type = assay.type,
-      BSPARAM = BSPARAM
+     # BSPARAM = BSPARAM,
+      assay.type = assay.type
     )
 
   if(base::length(qs) >= 2){

@@ -9,8 +9,8 @@
 S4 class that represents spatial data. This includes the spatial
 positions of \emph{\link[=concept_observations]{observations}}, a set of histological images from one
 tissue slide or several consecutive slides of one and the same tissue portion as well
-as additional spatial aspects such as \emph{\link[=concept_spatial_annotations]{spatial annotations}}
-or \emph{\link[=concept_spatial_trajectories]{spatial trajectories}}.
+as additional spatial aspects such as \emph{\link[=SpatialAnnotation]{spatial annotations}}
+or \emph{\link[=SpatialTrajectory]{spatial trajectories}}.
 }
 \section{Slots}{
 

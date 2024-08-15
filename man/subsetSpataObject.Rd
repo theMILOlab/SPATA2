@@ -4,14 +4,22 @@
 \alias{subsetSpataObject}
 \title{Subset SPATA2 object with barcodes}
 \usage{
-subsetSpataObject(object, barcodes, spatial_proc = TRUE, verbose = NULL)
+subsetSpataObject(
+  object,
+  barcodes = NULL,
+  molecules = NULL,
+  spatial_proc = TRUE,
+  opt = "keep",
+  verbose = NULL
+)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{barcodes}{Character vector. The barcodes of the observations that are
-supposed to be \bold{kept}.}
+\item{barcodes}{Character vector or \code{NULL}. Names the observations of interest.}
+
+\item{molecules}{Character vector or \code{NULL}. Names the molecules of interest.}
 
 \item{spatial_proc}{Logical value. Indicates whether the new sub-object is
 processed spatially. If \code{TRUE}, a new tissue outline is identified based
@@ -20,7 +28,17 @@ spatial annotations are tested on being located on either of the remaining
 tissue sections. If they are not, they are removed.
 
 If \code{FALSE}, these processing steps are skipped. Generally speaking, this is
-not recommended. Only set to \code{FALSE}, if you know what you're doing.}
+not recommended. Only set to \code{FALSE}, if you know what you're doing.
+
+Only relevant, if \code{barcodes} is not \code{NULL}.}
+
+\item{opt}{Character value. Decides how the input for \code{barcodes} and \code{molecules}
+is handled.
+
+\itemize{
+\item{\emph{'keep'}}: The specified barcodes and/or molecules are \bold{kept} (default).
+\item{\emph{'remove'}}: The specified barcodes and/or molecules are \bold{removed}.
+}}
 
 \item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
@@ -32,11 +50,12 @@ The updated input object, containing the added, removed or computed results.
 }
 \description{
 Creates a subset of the \code{\link{SPATA2}} object by using a list
-of barcodes. This function is the working horse behind all functions that manipulate
-the number of observations in the object.
+of barcodes and/or molecules. This function is the working horse behind all functions that manipulate
+the number of observations and molecules in the object.
 }
 \details{
-Unused levels of factor variables in the feature data.frame are dropped.
+After removal of observations, unused levels of factor variables in the feature data.frame are dropped.
+Analysis results are not affected.
 }
 \examples{
 library(SPATA2)
