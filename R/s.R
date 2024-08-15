@@ -578,7 +578,7 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
     mnames <- stringr::str_c("- ", mnames)
     nm <- length(mnames)
 
-    cat(paste0("\n", i, ". Assay: (", nrow(ma@mtr_counts), " ", ma@modality, "s) with ",  nm, ifelse(nm == 1, " matrix ", " matrices:"), "\n"))
+    cat(paste0("\n", i, ". Assay of ", nrow(ma@mtr_counts), " ", ma@modality, "s with ",  nm, ifelse(nm == 1, " matrix ", " matrices:"), "\n"))
     #cat(paste0("\nMatrices", " for assay: ", assay_name, "(", length(mnames), ")"))
     cat(stringr::str_c(mnames, collapse = "\n"))
     #cat(paste0("\n -",stringr::str_c(mnames, collapse = "\n -")))
@@ -3438,7 +3438,7 @@ subsetSpataObject <- function(object,
     moltypes_input <- getMoleculeTypeList(object, molecules = molecules)
     moltypes_all <- getMoleculeTypeList(object)
 
-    for(assay_name in moltypes){
+    for(assay_name in base::names(moltypes_input)){
 
       ma <- getAssay(object, assay_name = assay_name)
 
@@ -3447,7 +3447,7 @@ subsetSpataObject <- function(object,
         mols_keep <- moltypes_input[[assay_name]]
 
         confuns::give_feedback(
-          msg = glue::glue("Keeping {length(mols_keep)} {ma@modality}(s)."),
+          msg = glue::glue("Keeping {length(mols_keep)} {ma@modality}s."),
           verbose = verbose
         )
 
@@ -3460,7 +3460,7 @@ subsetSpataObject <- function(object,
         mols_keep <- molecules_all[!molecules_all %in% molecules_input]
 
         confuns::give_feedback(
-          msg = glue::glue("Keeping {length(mols_keep)} {ma@modality}(s)."),
+          msg = glue::glue("Keeping {length(mols_keep)} {ma@modality}s."),
           verbose = verbose
         )
 
