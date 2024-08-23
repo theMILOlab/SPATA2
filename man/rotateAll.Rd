@@ -10,7 +10,7 @@
 \alias{rotateSpatialTrajectories}
 \title{Rotate image and coordinates}
 \usage{
-rotateAll(object, angle, clockwise = TRUE)
+rotateAll(object, angle, clockwise = TRUE, verbose = NULL)
 
 rotateImage(
   object,
@@ -46,16 +46,16 @@ are rotated. Should range from 1-359.}
 \item{clockwise}{Logical value. If \code{TRUE}, rotation is performed
 in clockwise direction. If \code{FALSE}, the other way round.}
 
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
 \item{img_name}{Character value. The name of the image of interest.
 If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{...}{Additional arguments given to \code{give_feedback()}.}
-
-\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
 }
 \description{
 The \verb{rotate*()} family rotates the current image

@@ -41,9 +41,9 @@ object <- example_data$object_UKF275T_diet
 
 getImageNames(object)
 
-plotImage(object, img_name = "normres") # fails
+plotImage(object, img_name = "normres") # fails, does not exist
 
-object <- renameImage(object, img_name = "normres", new_img_name = "normres")
+object <- renameImage(object, img_name = "image1", new_img_name = "normres")
 
 plotImage(object, img_name = "normres")
 

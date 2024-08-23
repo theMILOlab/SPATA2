@@ -823,7 +823,7 @@ setMethod(
 
     if(base::isTRUE(ref)){
 
-      out <- c(object@name_img_ref, out)
+      out <- unique(c(object@name_img_ref, out))
 
     }
 

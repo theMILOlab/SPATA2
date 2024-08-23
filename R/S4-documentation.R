@@ -495,7 +495,7 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #' @slot active_mtr Character string indicating which matrix to extract and
 #' use by default.
 #' @slot analysis List of analysis results where each element can represent
-#' a different analysis aspect.
+#' a different analysis aspect such as \link[=runDEA]{DEA} or \link[=runCNV]{CNV}.
 #' @slot meta_var Data.frame of meta data for the variables of this assay - the molecules.
 #' @slot mtr_counts Matrix object storing raw counts from the assay. Rownames
 #' should corresponds to the molecule names. Colnames should correspond to the
