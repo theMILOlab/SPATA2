@@ -2336,7 +2336,8 @@ resizingTextGrob <- function(...){
 #' @keywords internal
 returnSpataObject <- function(object){
 
-  if(methods::is(object, class2 = "SPATA2")){
+  if(methods::is(object, class2 = "SPATA2") &
+     !base::isFALSE(base::options("spata2_logfile"))){
 
     sc <- base::sys.calls()
 
@@ -2373,7 +2374,7 @@ returnSpataObject <- function(object){
 
       for(arg_name in base::names(formal_args)) {
 
-        if(arg_name %in% base::names(provided_args)) {
+        if(arg_name %in% base::names(provided_args)){
 
           args_input[[arg_name]] <- provided_args[[arg_name]]
 
@@ -2384,6 +2385,55 @@ returnSpataObject <- function(object){
         }
 
       }
+
+      args_input[["..."]] <- NULL
+      args_input[["object"]] <- NULL
+
+      args_input <-
+        purrr::imap(
+          .x = args_input,
+          .f = function(inp, n){
+
+            if(class(inp) == "call"){
+
+              inp_value <- base::eval(expr = inp, envir = .GlobalEnv)
+
+              if(length(inp_value) == 1 & !is.list(inp_value)){
+
+                out <- inp_value
+
+              } else {
+
+                out <- inp
+
+              }
+
+            } else if(class(inp) == "name"){
+
+              inp_value <-
+                base::parse(text = inp) %>%
+                base::eval(envir = ce)
+
+              if(length(inp_value) == 1 & !is.list(inp_value)){
+
+                out <- inp_value
+
+              } else {
+
+                out <- inp
+
+              }
+
+            } else {
+
+              out <- inp
+
+            }
+
+            return(out)
+
+          }
+        )
 
       new_logfile_entry <-
         tibble::tibble(
