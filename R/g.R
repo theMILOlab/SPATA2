@@ -558,8 +558,6 @@ ggpLayerCaptureArea <- function(object,
   # capture ranges
   cr <- getCaptureArea(object, img_name = img_name, unit = "px")
 
-  object <
-
   out <- list()
 
   if("rect" %in% opt){
@@ -2172,7 +2170,11 @@ ggpLayerRect <- function(object = "object",
                          img_name = activeImage(object),
                          ...){
 
-  object <- activateImageInt(object, img_name = img_name)
+  if(containsHistoImages(object)){
+
+    object <- activateImageInt(object, img_name = img_name)
+
+  }
 
   # process range input
   pri <-

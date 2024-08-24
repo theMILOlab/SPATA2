@@ -12,11 +12,13 @@ identifyPixelContent(object, ...)
 
 \S4method{identifyPixelContent}{SPATA2}(
   object,
+  method = "otsu",
   img_name = activeImage(object),
+  sigma = 0,
   percentile = 0,
   compactness_factor = 10,
   superpixel = 600,
-  eps = 0.005,
+  eps = 1.414 * 2,
   minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
   verbose = TRUE
@@ -24,11 +26,13 @@ identifyPixelContent(object, ...)
 
 \S4method{identifyPixelContent}{SpatialData}(
   object,
+  method = "otsu",
+  sigma = 0,
   img_name = activeImage(object),
   percentile = 0,
   compactness_factor = 10,
   superpixel = 1000,
-  eps = 0.005,
+  eps = 1.414 * 2214,
   minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
   verbose = TRUE
@@ -36,10 +40,12 @@ identifyPixelContent(object, ...)
 
 \S4method{identifyPixelContent}{HistoImage}(
   object,
+  method = "otsu",
+  sigma = 0,
   percentile = 0,
   compactness_factor = 10,
   superpixel = 1000,
-  eps = 0.005,
+  eps = 1.414 * 2214,
   minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
   verbose = TRUE
@@ -47,11 +53,13 @@ identifyPixelContent(object, ...)
 
 \S4method{identifyPixelContent}{Image}(
   object,
+  method = "otsu",
+  sigma = 0,
   percentile = 0,
   compactness_factor = 10,
   superpixel = 1000,
   frgmt_threshold = c(0.001, 0.05),
-  eps = 0.005,
+  eps = 1.414 * 2214,
   minPts = 0.005,
   verbose = TRUE,
   ...
@@ -63,9 +71,17 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
+\item{method}{Character value. The method to use. Either \emph{'otsu'} or \emph{'sps'}. See details
+for more information. Defaults to \emph{'otsu'}. (\emph{'sps'} takes significantly longer, only
+recommened if \emph{'otsu'} does not provide any useful results).}
+
 \item{img_name}{Character value. The name of the image of interest.
 If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
+
+\item{sigma}{Numeric value specifying the standard deviation for the Gaussian
+blur applied to the grayscale image. Higher values result in more smoothing. \code{0} skips
+smoothing. Default is \code{0}.}
 
 \item{percentile}{Numeric value between 0 and 100 (inclusive) specifying the percentile
 threshold for background color determination. If bigger than 0, it determines
@@ -89,12 +105,17 @@ improve the output but increase runtime.}
 \item{eps}{Numeric value specifying the value of \code{eps} parameter used in \code{dbscan::dbscan()}
 when applied on the tissue pixels. If the value is less than 1, it is calculated
 as a percentage of the width or height of the image, depending on which is larger.
-If the value is greater than or equal to 1, it is taken as an absolute value.}
+If the value is greater than or equal to 1, it is taken as an absolute value.
+
+Defaults to 1.414\emph{2}2, twice the distance between two diagonally adjacent pixels in a
+uniform pixel space.}
 
 \item{minPts}{Numeric value specifying the value of \code{minPts} parameter used in \code{dbscan::dbscan()}
 when applied on the tissue pixels identified as potential tissue. If the value is less than 1,
 it is calculated as a percentage of the width or height of the image, depending on which is larger.
-If the value is greater than or equal to 1, it is taken as an absolute value.}
+If the value is greater than or equal to 1, it is taken as an absolute value.
+
+Defaults to 0.005, which is 0.5\% of the total number of pixels.}
 
 \item{frgmt_threshold}{Numeric vector of length 2 specifying the range of the number of pixels
 an identified non-background-object in the image must have to be considered a tissue fragment. Objects with a lower number
@@ -116,9 +137,9 @@ variables.
 \item{\emph{pixel}:}{ character. Pixel index.}
 \item{\emph{width}:}{ numeric. Pixel position on horizontal axis of the image.}
 \item{\emph{height}:}{ numeric. Pixel position on the vertical axis of the image.}
-\item{\emph{clusterK2}:}{ character. Either \emph{'background'} or \emph{'tissue'}.}
+\item{\emph{clusterK2}:}{ character. Either \emph{'background'} or \emph{'tissue'}. (if \emph{method = 'sps'})}
 \item{\emph{colTiss#} :}{ numeric. Numeric variables that correspond to the color dimensions
-of the image mask based on which the clustering of \emph{clusterK2} was conducted.}
+of the image mask based on which the clustering of \emph{clusterK2} was conducted. (if \emph{method = 'sps'})}
 \item{\emph{clusterDBSCAN}:}{ character. Cluster results of dbscan::dbscan() after removal
 of background pixels.}
 \item{\emph{clusterDBSCAN_size}:}{numeric. Size of each dbscan cluster.}
@@ -133,18 +154,31 @@ Determines the type of content displayed by each pixel in the image,
 categorizing it as tissue from tissue segments or fragments, artifacts, or background.
 }
 \details{
-If \code{percentile} is not 0, the \code{\link[=background_white]{background_white()}} function processes the
-image by identifying the most frequently occurring colors setting their RGB values
-to 1, effectively turning them white (assuming that the image is in grayscale,
-with 1 representing white). The \code{percentile} parameter allows you to adjust the
-sensitivity of the background removal, allowing for more precise isolation of the main subject.
+This function classifies pixels in an image as tissue, background, or artifacts using two primary methods:
+Otsu's method or Superpixel Segmentation (SPS), followed by DBSCAN clustering for refinement.
+
+\itemize{
+\item \strong{Otsu's Method:} Applies global thresholding to separate tissue from the background
+using Otsu's method, which minimizes intra-class variance.
+Parameters that affect the output: \code{sigma}
+\item \strong{Superpixel Segmentation (SPS):} Divides the image into superpixels using the SLIC algorithm.
+Superpixels are classified into tissue or background using k-means clustering.
+Parameters that affect the output: \code{percentile}, \code{compactness_factor}, \code{superpixel}
+}
+
+The resulting binary image is refined with DBSCAN clustering to identify contiguous
+tissue sections, fragments, and artifacts.
 }
 \note{
 If \code{img_name} specifies multiple images, the function
 iterates over all of them. If it is \code{NULL} the active image is picked.
 }
+\references{
+Nobuyuki Otsu, "A threshold selection method from gray-level histograms".
+IEEE Trans. Sys., Man., Cyber. 9 (1): 62-66. doi:10.1109/TSMC.1979.4310076 (1979)
+}
 \seealso{
-For subsequent image processing: \code{\link[=identifyTissueOutline]{identifyTissueOutline()}},\code{\link[=identifyBackgroundColor]{identifyBackgroundColor()}}.
+For subsequent image processing: \code{\link{identifyTissueOutline(..., method = 'image')}}.
 For visualization of results: \code{\link[=plotImageMask]{plotImageMask()}}, \code{\link[=plotPixelContent]{plotPixelContent()}}.
 For extraction of results: \code{\link[=getPixelDf]{getPixelDf()}}.
 }

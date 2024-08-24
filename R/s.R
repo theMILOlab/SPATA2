@@ -594,6 +594,7 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   if(nImages(object) != 0){
 
     img_names <- getImageNames(object)
+
     img_names <-
       purrr::map_chr(
         .x = img_names,
@@ -613,7 +614,7 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
       )
 
     idx_active <- which(img_names == activeImage(object))
-    img_names[idx_active] <- stringr::str_c(img_name[idx_active], " (active)")
+    img_names[idx_active] <- stringr::str_c(img_names[idx_active], " (active)")
 
     cat(paste0("\nImages (", nImages(object), "):\n"))
     cat(stringr::str_c("- ", img_names) %>% stringr::str_c(., collapse = "\n"))
@@ -3336,17 +3337,17 @@ subsetSpataObject <- function(object,
     if(opt == "keep"){
 
       bcs_keep <- barcodes
-
-      bcs_rm <- barcodes[!bcs_keep %in% coords_df$barcodes]
+      bcs_rm <- coords_df$barcodes[!coords_df$barcodes %in% bcs_keep]
 
       confuns::give_feedback(
-        msg = glue::glue("Keeping {length(barcodes)} observation(s)."),
+        msg = glue::glue("Keeping {length(bcs_keep)} observation(s)."),
         verbose = verbose
       )
 
     } else if(opt == "remove") {
 
       bcs_rm <- barcodes
+      bcs_keep <- coords_df$barcodes[!coords_df$barcodes %in% bcs_rm]
 
       confuns::give_feedback(
         msg = glue::glue("Removing {length(bcs_rm)} observation(s)."),

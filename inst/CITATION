@@ -1,0 +1,25 @@
+citHeader("To cite this package in publications, please use the following:")
+bib <- bibentry(
+  bibtype = "Article",
+  title = "Inferring histology-associated gene expression gradients in spatial transcriptomic studies",
+  author = c(
+    person("Jan", "Kueckelhaus"),
+    person("Simon", "Frerich"),
+    person("Jasim", "Kada-Benotmane"),
+    person("Christina", "Koupourtidou"),
+    person("Jovica", "Ninkovic"),
+    person("Martin", "Dichgans"),
+    person("Juergen", "Beck"),
+    person("Oliver", "Schnell"),
+    person("Dieter Henrik", "Heiland")
+  ),
+  journal = "Nature Communications",
+  year = 2024,
+  volume = 15,
+  pages = "7280",
+  doi = "10.1038/s41467-024-50904-x"
+)
+
+citEntry <- list(citation = bib)
+
+citEntry

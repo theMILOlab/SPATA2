@@ -405,6 +405,9 @@ setMethod(
 #' @description Determines the type of content displayed by each pixel in the image,
 #' categorizing it as tissue from tissue segments or fragments, artifacts, or background.
 #'
+#' @param method Character value. The method to use. Either *'otsu'* or *'sps'*. See details
+#' for more information. Defaults to *'otsu'*. (*'sps'* takes significantly longer, only
+#' recommened if *'otsu'* does not provide any useful results).
 #' @param superpixel Numeric value specifying the number of superpixels to compute.
 #' Given as an argument to `$spixel_segmentation()` function. Increased values can
 #' improve the output but increase runtime.
@@ -414,10 +417,17 @@ setMethod(
 #' when applied on the tissue pixels. If the value is less than 1, it is calculated
 #' as a percentage of the width or height of the image, depending on which is larger.
 #' If the value is greater than or equal to 1, it is taken as an absolute value.
+#'
+#' Defaults to 1.414*2*2, twice the distance between two diagonally adjacent pixels in a
+#' uniform pixel space.
+#'
 #' @param minPts Numeric value specifying the value of `minPts` parameter used in `dbscan::dbscan()`
 #' when applied on the tissue pixels identified as potential tissue. If the value is less than 1,
 #' it is calculated as a percentage of the width or height of the image, depending on which is larger.
 #' If the value is greater than or equal to 1, it is taken as an absolute value.
+#'
+#' Defaults to 0.005, which is 0.5% of the total number of pixels.
+#'
 #' @param frgmt_threshold Numeric vector of length 2 specifying the range of the number of pixels
 #' an identified non-background-object in the image must have to be considered a tissue fragment. Objects with a lower number
 #' of pixels than the minimum threshold are considered artifacts, and objects with a higher number
@@ -425,6 +435,7 @@ setMethod(
 #' it is calculated as a percentage of the total number of pixels in the image.
 #' If a threshold value is greater than or equal to 1, it is taken as an absolute value.
 #'
+#' @inherit make_binary_image params
 #' @inherit background_white params details
 #' @inherit argument_dummy params
 #'
@@ -432,9 +443,29 @@ setMethod(
 #' iterates over all of them. If it is `NULL` the active image is picked.
 #'
 #' @seealso
-#' For subsequent image processing: [`identifyTissueOutline()`],[`identifyBackgroundColor()`].
+#' For subsequent image processing: [`identifyTissueOutline(..., method = 'image')`].
 #' For visualization of results: [`plotImageMask()`], [`plotPixelContent()`].
 #' For extraction of results: [`getPixelDf()`].
+#'
+#' @details
+#' This function classifies pixels in an image as tissue, background, or artifacts using two primary methods:
+#' Otsu's method or Superpixel Segmentation (SPS), followed by DBSCAN clustering for refinement.
+#'
+#' \itemize{
+#'   \item \strong{Otsu's Method:} Applies global thresholding to separate tissue from the background
+#'    using Otsu's method, which minimizes intra-class variance.
+#'    Parameters that affect the output: `sigma`
+#'   \item \strong{Superpixel Segmentation (SPS):} Divides the image into superpixels using the SLIC algorithm.
+#'    Superpixels are classified into tissue or background using k-means clustering.
+#'    Parameters that affect the output: `percentile`, `compactness_factor`, `superpixel`
+#' }
+#'
+#' The resulting binary image is refined with DBSCAN clustering to identify contiguous
+#' tissue sections, fragments, and artifacts.
+#'
+#' @references
+#' Nobuyuki Otsu, "A threshold selection method from gray-level histograms".
+#' IEEE Trans. Sys., Man., Cyber. 9 (1): 62-66. doi:10.1109/TSMC.1979.4310076 (1979)
 #'
 #' @return The method for class `Image` returns a data.frame of the following
 #' variables.
@@ -443,9 +474,9 @@ setMethod(
 #'  \item{*pixel*:}{ character. Pixel index.}
 #'  \item{*width*:}{ numeric. Pixel position on horizontal axis of the image.}
 #'  \item{*height*:}{ numeric. Pixel position on the vertical axis of the image.}
-#'  \item{*clusterK2*:}{ character. Either *'background'* or *'tissue'*.}
+#'  \item{*clusterK2*:}{ character. Either *'background'* or *'tissue'*. (if *method = 'sps'*)}
 #'  \item{*colTiss#* :}{ numeric. Numeric variables that correspond to the color dimensions
-#'  of the image mask based on which the clustering of *clusterK2* was conducted.}
+#'  of the image mask based on which the clustering of *clusterK2* was conducted. (if *method = 'sps'*)}
 #'  \item{*clusterDBSCAN*:}{ character. Cluster results of dbscan::dbscan() after removal
 #'  of background pixels.}
 #'  \item{*clusterDBSCAN_size*:}{numeric. Size of each dbscan cluster.}
@@ -467,11 +498,13 @@ setMethod(
   f = "identifyPixelContent",
   signature = "SPATA2",
   definition = function(object,
+                        method = "otsu",
                         img_name = activeImage(object),
+                        sigma = 0,
                         percentile = 0,
                         compactness_factor = 10,
                         superpixel = 600,
-                        eps = 0.005,
+                        eps = 1.414*2,
                         minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
@@ -487,6 +520,8 @@ setMethod(
     sp_data <-
       identifyPixelContent(
         object = sp_data,
+        method = method,
+        sigma = sigma,
         img_name = img_name,
         percentile = percentile,
         compactness_factor = compactness_factor,
@@ -510,11 +545,13 @@ setMethod(
   f = "identifyPixelContent",
   signature = "SpatialData",
   definition = function(object,
+                        method = "otsu",
+                        sigma = 0,
                         img_name = activeImage(object),
                         percentile = 0,
                         compactness_factor = 10,
                         superpixel = 1000,
-                        eps = 0.005,
+                        eps = 1.414*2214,
                         minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
@@ -533,6 +570,8 @@ setMethod(
       hist_img <-
         identifyPixelContent(
           object = hist_img,
+          sigma = sigma,
+          method = method,
           percentile = percentile,
           compactness_factor = compactness_factor,
           superpixel = superpixel,
@@ -556,10 +595,12 @@ setMethod(
   f = "identifyPixelContent",
   signature = "HistoImage",
   definition = function(object,
+                        method = "otsu",
+                        sigma = 0,
                         percentile = 0,
                         compactness_factor = 10,
                         superpixel = 1000,
-                        eps = 0.005,
+                        eps = 1.414*2214,
                         minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
@@ -578,6 +619,8 @@ setMethod(
     pxl_df_out <-
       identifyPixelContent(
         object = object@image,
+        sigma = sigma,
+        method = method,
         percentile = percentile,
         compactness_factor = compactness_factor,
         superpixel = superpixel,
@@ -605,11 +648,13 @@ setMethod(
   f = "identifyPixelContent",
   signature = "Image",
   definition = function(object,
+                        method = "otsu",
+                        sigma = 0,
                         percentile = 0,
                         compactness_factor = 10,
                         superpixel = 1000,
                         frgmt_threshold = c(0.001, 0.05),
-                        eps = 0.005,
+                        eps = 1.414*2214,
                         minPts = 0.005,
                         verbose = TRUE,
                         ...){
@@ -618,138 +663,6 @@ setMethod(
 
     # extract image data and create base pixel df
     img_dims <- base::dim(image_orig@.Data)
-
-    # use greyscaled image, if desired
-    if(FALSE){
-
-      # temporarily padd image to square for clahe()
-      image_orig <- padd_image(image_orig)
-
-      # use greyscale and enhance contrast, then reduce to original dims
-      EBImage::colorMode(image_orig) <- EBImage::Grayscale
-      image_orig <- EBImage::clahe(image_orig)
-
-    }
-
-    if(base::length(img_dims) == 3){
-
-      n <- img_dims[3]
-
-    } else {
-
-      n <- 1
-
-    }
-
-    pxl_df_base <-
-      tidyr::expand_grid(
-        width = 1:img_dims[1],
-        height = 1:img_dims[2]
-      )
-
-    pxl_df_base[["pixel"]] <- stringr::str_c("px", 1:base::nrow(pxl_df_base))
-
-    pxl_df_base <- dplyr::select(pxl_df_base, pixel, width, height)
-
-    # increase contrast by setting potential background pixels to white
-    if(percentile != 0){
-
-      image_proc <- background_white(image_orig, percentile = percentile)
-
-    } else {
-
-      image_proc <- image_orig
-
-    }
-
-
-    # use slicap to create a binary image with a tissue mask
-    if (!requireNamespace("SuperpixelImageSegmentation", quietly = TRUE)) {
-      stop("Please install 'SuperpixelImageSegmentation' to identify the pixel content")
-    }
-    init <- SuperpixelImageSegmentation::Image_Segmentation$new()
-
-    spx_masks <-
-      init$spixel_segmentation(
-        input_image = image_proc,
-        method = "slic",
-        compactness_factor = compactness_factor,
-        superpixel = superpixel,
-        verbose = verbose,
-        # can not be adjusted
-        AP_data = TRUE,
-        kmeans_method = "kmeans",
-        adjust_centroids_and_return_masks = TRUE
-      )
-
-    # potentially problematic:
-    # assumes that all background pixel are identified as one cluster (what if heterogeneous background?)
-    # assumes that the background is the cluster with the highest area / number of pixels
-    # (as the tissue is usually composed of several different clusters each being small in size)
-    # masks are presented in white (white value = 1, black value = 0)
-    # ---> pick mask with highest mean to obtain background cluster
-    mm <- purrr::map_dbl(spx_masks[["masks"]], .f = base::mean)
-
-    mask_tissue <- base::which(mm == base::max(mm))
-
-    image_mask <- EBImage::as.Image(spx_masks[["masks"]][[mask_tissue]])
-
-    # extract the color values of the processed image
-    for(i in 1:n){
-
-      if (!requireNamespace("reshape", quietly = TRUE)) {
-        stop("Please install 'reshape'")
-      }
-
-      temp_df <-
-        reshape::melt(image_mask@.Data[ , ,i]) %>%
-        magrittr::set_colnames(value = c("width", "height", stringr::str_c("colTiss", i))) %>%
-        tibble::as_tibble()
-
-      pxl_df_base <-
-        dplyr::left_join(x = pxl_df_base, y = temp_df, by = c("width", "height")) %>%
-        dplyr::filter(width <= img_dims[1], height <= img_dims[2])
-
-    }
-
-    # cluster color values with k = 2 in order to get background and tissue cluster
-    k_out <-
-      stats::kmeans(
-        x = base::as.matrix(dplyr::select(pxl_df_base, dplyr::starts_with("colTiss"))),
-        centers = 2
-      )
-
-    pxl_df_base$clusterK2 <- base::as.character(k_out$cluster)
-
-    # identify background based on mean color intensity
-    background_cluster <-
-      dplyr::group_by(pxl_df_base, clusterK2) %>%
-      dplyr::summarise(
-        dplyr::across(
-          .cols = dplyr::starts_with("col"),
-          .fns = base::mean
-        )
-      )
-
-    background_cluster[["rowMean"]] <-
-      dplyr::select(background_cluster, dplyr::starts_with("col")) %>%
-      base::as.matrix() %>%
-      base::rowMeans()
-
-    background_cluster_group <-
-      dplyr::filter(background_cluster, rowMean == base::max(rowMean, na.rm = TRUE)) %>%
-      dplyr::pull(clusterK2)
-
-    pxl_df_base <-
-      dplyr::mutate(
-        .data = pxl_df_base,
-        clusterK2 =
-          dplyr::if_else(
-            condition = clusterK2 == {background_cluster_group},
-            true = "background",
-            false = "tissue"
-          )
-      )
 
     if(eps < 1){
 
@@ -763,24 +676,202 @@ setMethod(
 
     }
 
-    # cluster pixel based on dbscan to identify possible tissue fragments
-    pxl_df_tissue <-
-      # 1. identify and remove background pixel, such that alleged tissue pixel remain
-      dplyr::mutate(.data = pxl_df_base, background = clusterK2 == "background") %>%
-      dplyr::filter(!background) %>%
-      # 2. identify different tissue sections / parted tissue fragments / artefacts by ...
-      # 2.1 ...running dbscan to identify contiguous pixel groups
-      add_dbscan_variable(
-        eps = eps,
-        minPts = minPts,
-        name = "clusterDBSCAN",
-        x = "width",
-        y = "height"
-      ) %>%
-      # 2.2 ... quantifying their size by counting the pixels per DSCAN group
-      dplyr::group_by(clusterDBSCAN) %>%
-      dplyr::mutate(clusterDBSCAN_size = dplyr::n()) %>%
-      dplyr::ungroup()
+    # start algorithm
+    if(method == "sps"){
+
+      # use greyscaled image, if desired
+      if(FALSE){
+
+        # temporarily padd image to square for clahe()
+        image_orig <- padd_image(image_orig)
+
+        # use greyscale and enhance contrast, then reduce to original dims
+        EBImage::colorMode(image_orig) <- EBImage::Grayscale
+        image_orig <- EBImage::clahe(image_orig)
+
+      }
+
+      if(base::length(img_dims) == 3){
+
+        n <- img_dims[3]
+
+      } else {
+
+        n <- 1
+
+      }
+
+      pxl_df_base <-
+        tidyr::expand_grid(
+          width = 1:img_dims[1],
+          height = 1:img_dims[2]
+        )
+
+      pxl_df_base[["pixel"]] <- stringr::str_c("px", 1:base::nrow(pxl_df_base))
+
+      pxl_df_base <- dplyr::select(pxl_df_base, pixel, width, height)
+
+      # increase contrast by setting potential background pixels to white
+      if(percentile != 0){
+
+        image_proc <- background_white(image_orig, percentile = percentile)
+
+      } else {
+
+        image_proc <- image_orig
+
+      }
+
+
+      # use slicap to create a binary image with a tissue mask
+      if (!requireNamespace("SuperpixelImageSegmentation", quietly = TRUE)) {
+        stop("Please install 'SuperpixelImageSegmentation' to identify the pixel content")
+      }
+
+      init <- SuperpixelImageSegmentation::Image_Segmentation$new()
+
+      spx_masks <-
+        init$spixel_segmentation(
+          input_image = image_proc,
+          method = "slic",
+          compactness_factor = compactness_factor,
+          superpixel = superpixel,
+          verbose = verbose,
+          # can not be adjusted
+          AP_data = TRUE,
+          kmeans_method = "kmeans",
+          adjust_centroids_and_return_masks = TRUE
+        )
+
+      # potentially problematic:
+      # assumes that all background pixel are identified as one cluster (what if heterogeneous background?)
+      # assumes that the background is the cluster with the highest area / number of pixels
+      # (as the tissue is usually composed of several different clusters each being small in size)
+      # masks are presented in white (white value = 1, black value = 0)
+      # ---> pick mask with highest mean to obtain background cluster
+      mm <- purrr::map_dbl(spx_masks[["masks"]], .f = base::mean)
+
+      mask_tissue <- base::which(mm == base::max(mm))
+
+      image_mask <- EBImage::as.Image(spx_masks[["masks"]][[mask_tissue]])
+
+      # extract the color values of the processed image
+      for(i in 1:n){
+
+        if (!requireNamespace("reshape", quietly = TRUE)) {
+          stop("Please install 'reshape'")
+        }
+
+        temp_df <-
+          reshape::melt(image_mask@.Data[ , ,i]) %>%
+          magrittr::set_colnames(value = c("width", "height", stringr::str_c("colTiss", i))) %>%
+          tibble::as_tibble()
+
+        pxl_df_base <-
+          dplyr::left_join(x = pxl_df_base, y = temp_df, by = c("width", "height")) %>%
+          dplyr::filter(width <= img_dims[1], height <= img_dims[2])
+
+      }
+
+      # cluster color values with k = 2 in order to get background and tissue cluster
+      k_out <-
+        stats::kmeans(
+          x = base::as.matrix(dplyr::select(pxl_df_base, dplyr::starts_with("colTiss"))),
+          centers = 2
+        )
+
+      pxl_df_base$clusterK2 <- base::as.character(k_out$cluster)
+
+      # identify background based on mean color intensity
+      background_cluster <-
+        dplyr::group_by(pxl_df_base, clusterK2) %>%
+        dplyr::summarise(
+          dplyr::across(
+            .cols = dplyr::starts_with("col"),
+            .fns = base::mean
+          )
+        )
+
+      background_cluster[["rowMean"]] <-
+        dplyr::select(background_cluster, dplyr::starts_with("col")) %>%
+        base::as.matrix() %>%
+        base::rowMeans()
+
+      background_cluster_group <-
+        dplyr::filter(background_cluster, rowMean == base::max(rowMean, na.rm = TRUE)) %>%
+        dplyr::pull(clusterK2)
+
+      pxl_df_base <-
+        dplyr::mutate(
+          .data = pxl_df_base,
+          clusterK2 =
+            dplyr::if_else(
+              condition = clusterK2 == {background_cluster_group},
+              true = "background",
+              false = "tissue"
+            )
+        )
+
+      # cluster pixel based on dbscan to identify possible tissue fragments
+      pxl_df_tissue <-
+        # 1. identify and remove background pixel, such that alleged tissue pixel remain
+        dplyr::mutate(.data = pxl_df_base, background = clusterK2 == "background") %>%
+        dplyr::filter(!background) %>%
+        # 2. identify different tissue sections / parted tissue fragments / artefacts by ...
+        # 2.1 ...running dbscan to identify contiguous pixel groups
+        add_dbscan_variable(
+          eps = eps,
+          minPts = minPts,
+          name = "clusterDBSCAN",
+          x = "width",
+          y = "height"
+        ) %>%
+        # 2.2 ... quantifying their size by counting the pixels per DSCAN group
+        dplyr::group_by(clusterDBSCAN) %>%
+        dplyr::mutate(clusterDBSCAN_size = dplyr::n()) %>%
+        dplyr::ungroup()
+
+      pxl_df_method <-
+        dplyr::left_join(
+          x = pxl_df_base,
+          y = pxl_df_tissue[c("pixel", "background", "clusterDBSCAN", "clusterDBSCAN_size")],
+          by = "pixel"
+        )
+
+    } else if(method == "otsu") {
+
+      pxl_df_base <-
+        object %>%
+        #EBImage::flip() %>%
+        EBImage::transpose() %>%
+        make_binary_image(sigma = sigma) %>%
+        make_pixel_dataframe() # creates background variable
+
+      pxl_df_tissue <-
+        dplyr::filter(pxl_df_base, !background) %>%
+        # 2. identify different tissue sections / parted tissue fragments / artefacts by ...
+        # 2.1 ...running dbscan to identify contiguous pixel groups
+        add_dbscan_variable(
+          eps = eps,
+          minPts = minPts,
+          name = "clusterDBSCAN",
+          x = "width",
+          y = "height"
+        ) %>%
+        # 2.2 ... quantifying their size by counting the pixels per DSCAN group
+        dplyr::group_by(clusterDBSCAN) %>%
+        dplyr::mutate(clusterDBSCAN_size = dplyr::n()) %>%
+        dplyr::ungroup() %>%
+        dplyr::select(-background)
+
+      pxl_df_method <-
+        dplyr::left_join(
+          x = pxl_df_base,
+          y = pxl_df_tissue[c("pixel", "clusterDBSCAN", "clusterDBSCAN_size")],
+          by = "pixel"
+        )
+
+    }
 
     # set the frgmt threshold as an absolute measure based on the input
     threshold <- c(0, 0)
@@ -803,12 +894,8 @@ setMethod(
 
     # add results to base pxl_df
     pxl_df <-
-      dplyr::left_join(
-        x = pxl_df_base,
-        y = pxl_df_tissue[c("pixel", "background", "clusterDBSCAN", "clusterDBSCAN_size")],
-        by = "pixel"
-      ) %>%
       dplyr::mutate(
+        .data = pxl_df_method,
         content = dplyr::case_when(
           clusterDBSCAN == "0" ~ "artefact",
           !background & clusterDBSCAN_size > {threshold[2]} ~ stringr::str_c("tissue_section", clusterDBSCAN),
@@ -819,7 +906,6 @@ setMethod(
         content_type = stringr::str_remove(string = content, pattern = "\\d*$")
       ) %>%
       dplyr::arrange(dplyr::desc(content_type))
-
 
     pxl_df_out <-
       purrr::map_dfr(
@@ -2679,17 +2765,9 @@ isFeature <- function(object, feature){
 #' @export
 isNumericVariable <- function(object, variable){
 
-  all_numeric_vars <-
-    c(
-      getGenes(object),
-      getGeneSets(object),
-      getFeatureNames(object, of_class = "numeric") %>% base::unname()
-    )
-
-  out <- variable %in% all_numeric_vars
+  out <- is.numeric(joinWithVariables(object, variables = variable)[[variable]])
 
   return(out)
-
 
 }
 
