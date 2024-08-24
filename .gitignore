@@ -35,7 +35,6 @@ spata2-releases
 graphics/
 specific_requests
 .gitignore
-docs
 gifs
 review
 debug
