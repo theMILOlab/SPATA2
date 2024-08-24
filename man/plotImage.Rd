@@ -6,7 +6,7 @@
 \alias{plotImage,SpatialData-method}
 \alias{plotImage,HistoImage-method}
 \alias{plotImage,Image-method}
-\title{Plot image with ggplot2}
+\title{Plot histology image}
 \usage{
 plotImage(object, ...)
 

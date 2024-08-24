@@ -24,14 +24,12 @@ asSPATA2(object, ...)
   sample_name,
   platform = "Undefined",
   assay_name = NULL,
-  image_name = NULL,
-  image_dir = NULL,
+  assay_modality = NULL,
+  img_name = NULL,
+  img_scale_fct = "lowres",
   transfer_meta_data = TRUE,
   transfer_dim_red = TRUE,
-  count_mtr_name = "counts",
-  proc_mtr_name = "scale.data",
-  modality = "gene",
-  scale_with = "lowres",
+  dim_red_naming = list(pca = "pca", tsne = "tsne", umap = "umap"),
   verbose = TRUE
 )
 }
@@ -50,20 +48,19 @@ of \code{names(spatial_methods)}.}
 \item{assay_name}{Character. The name of the Seurat assay containing the matrices of interest.
 If NULL, Seurat's default assay is used.}
 
-\item{image_name}{Character. The name of the image in the Seurat object to be transferred.
+\item{assay_modality}{Character or \code{NULL}. The \link[=concept_molecular_modalities]{molecular modality}
+modality of the assay data (e.g., "gene"). If \code{NULL}, not provided the input for \code{assay_name} is used
+as the molecular modality. This, however, is suboptimal and will likely result in many incompatibilities
+in downstream analysis. We recommend to specifiy this argument.}
+
+\item{img_name}{Character. The name of the image in the Seurat object to be transferred.
 If NULL, the function will attempt to use the only available image or throw an error if multiple images are found.}
 
-\item{image_dir}{Character. The directory where the image is stored. Default is NULL.}
+\item{img_scale_fct}{Character. The scale factor to use for image scaling if the Seurat object
+contains data from Visium. Depending on the image loaded in the Seurat object should likely
+be either \emph{'lowres'} or  \emph{'hires'}.}
 
 \item{transfer_dim_red}{Logical. If TRUE, dimensionality reduction data (PCA, t-SNE, UMAP) will be transferred. Default is TRUE.}
-
-\item{count_mtr_name}{Character. The name of the count matrix layer in the Seurat object. Default is "counts".}
-
-\item{proc_mtr_name}{Character. The name of the processed matrix layer in the Seurat object. Default is "scale.data".}
-
-\item{modality}{Character. The modality of the data (e.g., "gene"). Default is "gene".}
-
-\item{scale_with}{Character. The scale factor to use for image scaling. Default is "lowres".}
 }
 \value{
 A \code{SPATA2} object containing the converted data.
@@ -72,27 +69,101 @@ A \code{SPATA2} object containing the converted data.
 This S4 generic converts miscellaneous objects into a \code{SPATA2} object,
 transferring relevant data and metadata.
 }
+\section{From \code{Seurat}}{
+
+The \code{asSPATA2} method transforms a \code{Seurat} object into a \code{SPATA2} object, preserving and adapting key data elements such as assays, images, metadata, and dimensional reduction data. Below are the specifics of the transformation process:
+
+\itemize{
+
+\item \strong{Assays}:
+\itemize{
+\item \strong{Input}: The assay to be transferred is specified via the \code{assay_name} parameter.
+If \code{assay_name} is not provided, the active assay of the Seurat object is used.
+\item \strong{Molecular modality}: In SPATA2 every assay is associated with
+a  \link[=concept_molecular_modalities]{molecular modality}. If argument \code{assay_modality} is not provided,
+the input for \code{assay_name} is used as the molecular modality. This, however, is suboptimal and will result
+in many incompatibilities downstream.
+}
+
+\item \strong{Images}:
+\itemize{
+\item \strong{Input}: The spatial image is selected using the \code{img_name} parameter. If not specified,
+the method chooses the sole available image or prompts for selection if multiple images exist.
+\item \strong{Scale factors}: If the of the \code{Seurat} object contains scale factors
+with which the coordinates must be scaled to align with the image specify the
+respective scale factor name in \code{scale_with}.
+}
+
+\item \strong{Metadata}:
+\itemize{
+\item \strong{Input}: Observational metadata is transferred if \code{transfer_meta_data = TRUE} (the default)
+and picked from @meta.data from the \code{Seurat} object.
+}
+
+\item \strong{Dimensional Reduction Data}:
+\itemize{
+\item \strong{Input}: Dimensional reduction embeddings (PCA, t-SNE, UMAP) are transferred if \code{transfer_dim_red = TRUE} (the default). The data must be stored in the Seurat object's \code{reductions} slot with specific naming conventions:
+\itemize{
+\item \strong{PCA}: Expected in \code{reductions$pca}, with columns named \code{PC_1}, \code{PC_2}, etc., which are renamed to \code{PC1}, \code{PC2}, etc., in SPATA2.
+\item \strong{t-SNE}: Expected in \code{reductions$tsne}, with columns named \code{tSNE_1}, \code{tSNE_2}, renamed to \code{tsne1}, \code{tsne2} in SPATA2.
+\item \strong{UMAP}: Expected in \code{reductions$umap}, with columns named \code{UMAP_1}, \code{UMAP_2}, renamed to \code{umap1}, \code{umap2} in SPATA2.
+}
+\item \strong{Naming}: These embeddings must follow the specific naming conventions for compatibility with SPATA2's visualization and analysis functions.
+If the embeddings are not found or named incorrectly, warnings are issued. \code{dim_red_naming} can be used to adjust what the function expects.
+}
+
+}
+}
+
 \examples{
 
 # ----- example for Seurat conversion
 library(SPATA2)
 library(Seurat)
+library(SeuratData)
 
-seurat_object <- example_data$seurat_object
+# unhash and run the command, if not installed yet
+# SeuratData::InstallData("stxBrain")
 
-spata_object <-
+brain <- SeuratData::LoadData("stxBrain", type = "anterior1")
+brain <- SCTransform(brain, assay = "Spatial")
+brain <- RunPCA(brain, assay = "SCT", verbose = FALSE)
+brain <- FindNeighbors(brain, reduction = "pca", dims = 1:30)
+brain <- FindClusters(brain, verbose = FALSE)
+brain <- RunUMAP(brain, reduction = "pca", dims = 1:30)
+
+# use assay Spatial
+spata_object1 <-
  asSPATA2(
-  object = seurat_object,
-    sample_name = "gbm",
-    image_name = "slice1",
-    platform = "VisiumSmall",
-   modality = "gene"
-  )
+   object = brain,
+   sample_name = "mouse_brain",
+   platform = "VisiumSmall",
+   img_name = "anterior1",
+   img_scale_fct = "lowres",
+   assay_name = "Spatial",
+   assay_modality = "gene"
+   )
+
+show(spata_object1)
+
+# use assay SCT
+spata_object2 <-
+ asSPATA2(
+   object = brain,
+   sample_name = "mouse_brain",
+   platform = "VisiumSmall",
+   img_name = "anterior1",
+   img_scale_fct = "lowres",
+   assay_name = "SCT",
+   assay_modality = "gene"
+   )
+
+show(spata_object2)
 
 # with Seurat
-SpatialFeaturePlot(seurat_object, "nCounts_Spatial")
+SpatialFeaturePlot(brain, "nCount_Spatial")
 
 # with SPATA2
-plotSurface(spata_object, "nCounts_Spatial")
+plotSurface(spata_object1, "nCount_Spatial")
 
 }

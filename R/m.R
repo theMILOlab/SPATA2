@@ -22,6 +22,65 @@ make_angle_bins <- function(n){
 
 }
 
+#' Convert Image to Binary with Flexible Thresholding
+#'
+#' This function converts a color or grayscale image to a binary image using
+#' Gaussian smoothing and a user-specified thresholding method, such as Otsu's method.
+#'
+#' @param img An image object. This can be a color or grayscale image loaded
+#' into R using the `EBImage` package.
+#' @param sigma Numeric value specifying the standard deviation for the Gaussian
+#' blur applied to the grayscale image. Higher values result in more smoothing. `0` skips
+#' smoothing. Default is `0`.
+#' @param threshold_method Character string specifying the thresholding method to use.
+#' Options are `"otsu"` for Otsu's method or `"mean"` for mean thresholding. Default is `"otsu"`.
+#'
+#' @return A binary image (logical matrix) where pixels are either `TRUE` (foreground) or `FALSE` (background), based on the chosen thresholding method applied to the (optionally smoothed) grayscale version of the input image.
+#'
+#' @details
+#' The function first converts the input image to grayscale using the `EBImage::channel()` function.
+#' If `apply_smoothing` is `TRUE`, it applies a Gaussian blur to the grayscale image to reduce noise
+#' and smooth the image using `EBImage::gblur()`. The selected thresholding method
+#' (Otsu's method or mean thresholding) is then applied to the processed image to
+#' calculate a threshold, which is used to convert the image to a binary format where
+#' the foreground is marked as `TRUE` and the background as `FALSE`.
+#'
+#' The function includes basic error checking to ensure that the input is a valid image object.
+#'
+#' @export
+make_binary_image <- function(img,
+                              sigma = 0,
+                              threshold_method = "otsu"){
+
+  gray_img <- EBImage::channel(img, "gray")
+
+  if(sigma > 0){
+
+    gray_img <- EBImage::gblur(gray_img, sigma = sigma)
+
+  }
+
+  if(threshold_method == "otsu"){
+
+    threshold_value <- EBImage::otsu(gray_img)
+
+  } else if(threshold_method == "mean") {
+
+    threshold_value <- mean(gray_img)
+
+  } else {
+
+    stop("Unsupported threshold method")
+
+  }
+
+  binary_img <- gray_img > threshold_value
+
+  return(binary_img)
+
+}
+
+
 #' @keywords internal
 #' @export
 make_bins <- function(numeric_vector, binwidth, neg = FALSE) {

@@ -19,6 +19,7 @@ articles:
   installation: installation.html
   molecular-variables: molecular-variables.html
   newslog: newslog.html
+  package-compatibility: package-compatibility.html
   plotting-surface: plotting-surface.html
   spata-data: spata-data.html
   spatial-annotation-screening: spatial-annotation-screening.html
@@ -26,4 +27,4 @@ articles:
   spatial-segmentation: spatial-segmentation.html
   spatial-trajectory-screening: spatial-trajectory-screening.html
   using-spatial-annotations: using-spatial-annotations.html
-last_built: 2024-08-06T08:00Z
+last_built: 2024-08-24T12:12Z

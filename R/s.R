@@ -563,10 +563,12 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   n_mols <- purrr::map_dbl(.x = assay_names, .f = ~ nMolecules(object, assay_name = .x))
   n_obs <- nObs(object) # also in case no matrix available
 
-  cat("SPATA2 object of size:", n_obs, "x", sum(n_mols), "(observations x molecules)\n")
+  cat("SPATA2 object of size:", n_obs, "x", sum(n_mols), paste0("(", obsUnit(object), "s x molecules)\n"))
   cat("Sample name:", object@sample, "\n")
   cat("Platform:", object@platform, "\n")
   #cat("Contains", length(assays), ifelse(length(assays) > 1, "assays:\n", "assay:\n"), stringr::str_c(assays, collapse = "\n"))
+
+  # molecular assays
   cat(paste0("Molecular assays (", length(assays), "):"))
 
   for(i in seq_along(assay_names)){
@@ -575,13 +577,47 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
     ma <- getAssay(object, assay_name = assay_name)
     mnames <- getMatrixNames(object, assay_name = assay_name)
     mnames[mnames == ma@active_mtr] <- paste0(mnames[mnames == ma@active_mtr], " (active)")
-    mnames <- stringr::str_c("- ", mnames)
+    mnames <- stringr::str_c(" -", mnames)
     nm <- length(mnames)
 
-    cat(paste0("\n", i, ". Assay of ", nrow(ma@mtr_counts), " ", ma@modality, "s with ",  nm, ifelse(nm == 1, " matrix ", " matrices:"), "\n"))
-    #cat(paste0("\nMatrices", " for assay: ", assay_name, "(", length(mnames), ")"))
+    #cat(paste0("\n", i, ". Assay of molecular modality '", ma@modality, "' with ", nrow(ma@mtr_counts), " distinct molecules",  " and ",  nm, ifelse(nm == 1, " Matrix:", " Matrices:"), "\n"))
+    cat(paste0("\n", i, ". Assay"))
+    cat(paste0("\n Molecular modality: ", ma@modality))
+    cat(paste0("\n Distinct molecules: ", nrow(ma@mtr_counts)))
+    cat(paste0("\n ", "Matrices (", nm, "):\n"))
     cat(stringr::str_c(mnames, collapse = "\n"))
     #cat(paste0("\n -",stringr::str_c(mnames, collapse = "\n -")))
+
+  }
+
+  # images
+  if(nImages(object) != 0){
+
+    img_names <- getImageNames(object)
+
+    img_names <-
+      purrr::map_chr(
+        .x = img_names,
+        .f = function(img_name){
+
+          dims <- getImageDims(object, img_name = img_name)
+
+          dims <- paste0(dims[1], "x", dims[2], " px")
+
+          insert <- ifelse(img_name == activeImage(object), ", active", "")
+
+          out <- paste0(img_name, " (", dims, insert, ")")
+
+          return(out)
+
+        }
+      )
+
+    idx_active <- which(img_names == activeImage(object))
+    img_names[idx_active] <- stringr::str_c(img_names[idx_active], " (active)")
+
+    cat(paste0("\nImages (", nImages(object), "):\n"))
+    cat(stringr::str_c("- ", img_names) %>% stringr::str_c(., collapse = "\n"))
 
   }
 
@@ -3301,17 +3337,17 @@ subsetSpataObject <- function(object,
     if(opt == "keep"){
 
       bcs_keep <- barcodes
-
-      bcs_rm <- barcodes[!bcs_keep %in% coords_df$barcodes]
+      bcs_rm <- coords_df$barcodes[!coords_df$barcodes %in% bcs_keep]
 
       confuns::give_feedback(
-        msg = glue::glue("Keeping {length(barcodes)} observation(s)."),
+        msg = glue::glue("Keeping {length(bcs_keep)} observation(s)."),
         verbose = verbose
       )
 
     } else if(opt == "remove") {
 
       bcs_rm <- barcodes
+      bcs_keep <- coords_df$barcodes[!coords_df$barcodes %in% bcs_rm]
 
       confuns::give_feedback(
         msg = glue::glue("Removing {length(bcs_rm)} observation(s)."),

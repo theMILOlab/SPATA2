@@ -25,7 +25,20 @@ nGenes <- function(object){
 }
 
 
+#' @title Number of images
+#'
+#' @description Returns the number of images in the `SPATA2` object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric value.
+#'
+#' @export
+nImages <- function(object){
 
+  length(object@spatial@images)
+
+}
 
 #' @title Number of molecules
 #'

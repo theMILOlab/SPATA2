@@ -1609,6 +1609,165 @@ removeTissueFragments <- function(object,
 
 }
 
+#' @title Rename cluster/group names
+#'
+#' @description Allows to rename groups within a grouping variable. Make sure
+#' to rename tissue sections with `renameTissueSection()`!
+#'
+#' @inherit argument_dummy params
+#' @param ... The groups to be renamed specified according to the following
+#' syntax: \emph{'new_group_name'} \code{=} \emph{'old_group_name'}.
+#'
+#' @export
+#'
+#' @seealso [`relevelGroups()`]
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' ## Example 1 - rename normal grouping variables
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' plotSurface(object, color_by = "histology")
+#'
+#' object <-
+#'  renameGroups(
+#'   object = object,
+#'   grouping = "histology",
+#'   "hist1" = "tumor", "hist2" = "transition", "hist3" = "infiltrated"
+#'   )
+#'
+#' plotSurface(object, color_by = "histology")
+#'
+#' ## Example 2 - rename tissue secions
+#'
+#' object <- example_data$object_lmu_mci_diet
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' plotSurface(object, color_by = "tissue_section")
+#'
+#' object <-
+#'  renameTissueSection(
+#'    object = object,
+#'    "lower_hemisphere" = "tissue_section_1", "upper_hemisphere" = "tissue_section_2"
+#'    )
+#'
+#' plotSurface(object, color_by = "tissue_section")
+
+
+renameGroups <- function(object,
+                         grouping,
+                         ...,
+                         keep_levels = NULL){
+
+  deprecated(...)
+
+  rename_input <- confuns::keep_named(c(...))
+
+  if(base::length(rename_input) == 0){
+
+    msg <- renaming_hint
+
+    confuns::give_feedback(
+      msg = msg,
+      fdb.fn = "stop"
+    )
+
+  }
+
+  feature_df <- getMetaDf(object)
+
+  valid_rename_input <-
+    confuns::check_vector(
+      input = base::unname(rename_input),
+      against = base::levels(feature_df[[grouping]]),
+      fdb.fn = "warning",
+      ref.input = "groups to rename",
+      ref.against = glue::glue("all groups of feature '{grouping}'. ({renaming_hint})")
+    )
+
+  group_names <- getGroupNames(object, grouping)
+
+  rename_input <- rename_input[rename_input %in% valid_rename_input]
+
+  # rename feature
+  renamed_feature_df <-
+    dplyr::mutate(
+      .data = feature_df,
+      {{grouping}} := forcats::fct_recode(.f = !!rlang::sym(grouping), !!!rename_input)
+    )
+
+  if(grouping %in% getSpatSegmVarNames(object, verbose = FALSE)){
+
+    keep_levels <- c(keep_levels, "unnamed")
+
+  }
+
+  if(base::is.character(keep_levels)){
+
+    keep_levels <- base::unique(keep_levels)
+
+    all_levels <-
+      c(base::levels(renamed_feature_df[[grouping]]), keep_levels) %>%
+      base::unique()
+
+    renamed_feature_df[[grouping]] <-
+      base::factor(x = renamed_feature_df[[grouping]], levels = all_levels)
+
+  }
+
+  # rename dea list
+
+  for(assay_name in getAssayNames(object)){
+
+    ma <- getAssay(object, assay_name = assay_name)
+
+    if(!purrr::is_empty(ma@analysis$dea[[grouping]])){
+
+      ma@analysis$dea[[grouping]] <-
+        purrr::map(
+          .x = ma@analysis$dea[[grouping]],
+          .f = function(method){
+
+            new_df <-
+              dplyr::mutate(
+                .data = method$data,
+                {{grouping}} := forcats::fct_recode(.f = !!rlang::sym(grouping), !!!rename_input)
+              )
+
+            out <- list(data = new_df, adjustments = method$adjustments)
+
+            gsea <- method$hypeR_gsea
+
+            if(base::is.list(gsea)){
+
+              gsea <- confuns::lrename(lst = gsea, !!!rename_input)
+
+              out$hypeR_gsea <- gsea
+
+            }
+
+            return(out)
+
+          }
+        )
+
+    }
+
+    object <- setAssay(object, assay = ma)
+
+  }
+
+  object <- setMetaDf(object, meta_df = renamed_feature_df)
+
+  returnSpataObject(object)
+
+}
+
 
 #' @title Rename an image
 #'
@@ -1629,9 +1788,9 @@ removeTissueFragments <- function(object,
 #'
 #' getImageNames(object)
 #'
-#' plotImage(object, img_name = "normres") # fails
+#' plotImage(object, img_name = "normres") # fails, does not exist
 #'
-#' object <- renameImage(object, img_name = "normres", new_img_name = "normres")
+#' object <- renameImage(object, img_name = "image1", new_img_name = "normres")
 #'
 #' plotImage(object, img_name = "normres")
 #'
@@ -1843,165 +2002,62 @@ renameMetaFeatures <- function(object, ...){
 }
 
 
-#' @title Rename cluster/group names
+#' @title Rename molecular assay
 #'
-#' @description Allows to rename groups within a grouping variable. Make sure
-#' to rename tissue sections with `renameTissueSection()`!
+#' @description
+#' Renames a molecular assay. Note that the name of an assay also defines it's molecular modality.
+#' Only rename if you know what you are doing.
+#'
+#' @param assay_name The name of the assay to be renamed.
+#' @param new_assay_name The new name of the assay.
+#' @param set_signatures Logical value. If `TRUE`, the slot @@signatures of the assay is
+#' populated with a new list. The function checks if the value for `new_assay_name` is
+#' a known \link[=concept_molecular_modalites]{molecular modality} of SPATA2. If this
+#' is the case, the corresponding list of signatures is set into the slot. Else, an
+#' empty list is used.
 #'
 #' @inherit argument_dummy params
-#' @param ... The groups to be renamed specified according to the following
-#' syntax: \emph{'new_group_name'} \code{=} \emph{'old_group_name'}.
+#' @inherit update_dummy return
 #'
 #' @export
-#'
-#' @seealso [`relevelGroups()`]
-#'
-#' @examples
-#' library(SPATA2)
-#'
-#' data("example_data")
-#'
-#' ## Example 1 - rename normal grouping variables
-#'
-#' object <- example_data$object_UKF269T_diet
-#'
-#' plotSurface(object, color_by = "histology")
-#'
-#' object <-
-#'  renameGroups(
-#'   object = object,
-#'   grouping = "histology",
-#'   "hist1" = "tumor", "hist2" = "transition", "hist3" = "infiltrated"
-#'   )
-#'
-#' plotSurface(object, color_by = "histology")
-#'
-#' ## Example 2 - rename tissue secions
-#'
-#' object <- example_data$object_lmu_mci_diet
-#'
-#' object <- identifyTissueOutline(object)
-#'
-#' plotSurface(object, color_by = "tissue_section")
-#'
-#' object <-
-#'  renameTissueSection(
-#'    object = object,
-#'    "lower_hemisphere" = "tissue_section_1", "upper_hemisphere" = "tissue_section_2"
-#'    )
-#'
-#' plotSurface(object, color_by = "tissue_section")
+renameMolecularAssay <- function(object, assay_name, new_assay_name, set_signatures = FALSE){
 
+  confuns::check_one_of(
+    input = assay_name,
+    against = getAssayNames(object)
+  )
 
-renameGroups <- function(object,
-                         grouping,
-                         ...,
-                         keep_levels = NULL){
+  confuns::check_none_of(
+    input = assay_name_new,
+    against = getAssayNames(object),
+    ref.input = "`assay_name_new`",
+    ref.against = "existing molecular assays"
+  )
 
-  deprecated(...)
+  ma <- object@assays[[assay_name]]
+  ma@modality <- assay_name_new
+  object@assays[[assay_name_new]] <- ma
 
-  rename_input <- confuns::keep_named(c(...))
+  object@assays[[assay_name]] <- NULL
 
-  if(base::length(rename_input) == 0){
+  if(base::isTRUE(set_signatures)){
 
-    msg <- renaming_hint
+    if(new_assay_name %in% base::names(signatures)){
 
-    confuns::give_feedback(
-      msg = msg,
-      fdb.fn = "stop"
-    )
+      ma@signatures <- signatures[[assay_name]]
 
-  }
+    } else {
 
-  feature_df <- getMetaDf(object)
-
-  valid_rename_input <-
-    confuns::check_vector(
-      input = base::unname(rename_input),
-      against = base::levels(feature_df[[grouping]]),
-      fdb.fn = "warning",
-      ref.input = "groups to rename",
-      ref.against = glue::glue("all groups of feature '{grouping}'. ({renaming_hint})")
-    )
-
-  group_names <- getGroupNames(object, grouping)
-
-  rename_input <- rename_input[rename_input %in% valid_rename_input]
-
-  # rename feature
-  renamed_feature_df <-
-    dplyr::mutate(
-      .data = feature_df,
-      {{grouping}} := forcats::fct_recode(.f = !!rlang::sym(grouping), !!!rename_input)
-    )
-
-  if(grouping %in% getSpatSegmVarNames(object, verbose = FALSE)){
-
-    keep_levels <- c(keep_levels, "unnamed")
-
-  }
-
-  if(base::is.character(keep_levels)){
-
-    keep_levels <- base::unique(keep_levels)
-
-    all_levels <-
-      c(base::levels(renamed_feature_df[[grouping]]), keep_levels) %>%
-      base::unique()
-
-    renamed_feature_df[[grouping]] <-
-      base::factor(x = renamed_feature_df[[grouping]], levels = all_levels)
-
-  }
-
-  # rename dea list
-
-  for(assay_name in getAssayNames(object)){
-
-    ma <- getAssay(object, assay_name = assay_name)
-
-    if(!purrr::is_empty(ma@analysis$dea[[grouping]])){
-
-      ma@analysis$dea[[grouping]] <-
-        purrr::map(
-          .x = ma@analysis$dea[[grouping]],
-          .f = function(method){
-
-            new_df <-
-              dplyr::mutate(
-                .data = method$data,
-                {{grouping}} := forcats::fct_recode(.f = !!rlang::sym(grouping), !!!rename_input)
-              )
-
-            out <- list(data = new_df, adjustments = method$adjustments)
-
-            gsea <- method$hypeR_gsea
-
-            if(base::is.list(gsea)){
-
-              gsea <- confuns::lrename(lst = gsea, !!!rename_input)
-
-              out$hypeR_gsea <- gsea
-
-            }
-
-            return(out)
-
-          }
-        )
+      warning(glue::glue("`set_signatures = TRUE` but {new_assay_name} isn't a molecular modality known to SPATA2."))
+      ma@signatures <- list()
 
     }
 
-    object <- setAssay(object, assay = ma)
-
   }
-
-  object <- setMetaDf(object, meta_df = renamed_feature_df)
 
   returnSpataObject(object)
 
 }
-
 
 #' @title Rename a spatial annotation
 #'
@@ -2280,7 +2336,8 @@ resizingTextGrob <- function(...){
 #' @keywords internal
 returnSpataObject <- function(object){
 
-  if(methods::is(object, class2 = "SPATA2")){
+  if(methods::is(object, class2 = "SPATA2") &
+     !base::isFALSE(base::options("spata2_logfile"))){
 
     sc <- base::sys.calls()
 
@@ -2317,7 +2374,7 @@ returnSpataObject <- function(object){
 
       for(arg_name in base::names(formal_args)) {
 
-        if(arg_name %in% base::names(provided_args)) {
+        if(arg_name %in% base::names(provided_args)){
 
           args_input[[arg_name]] <- provided_args[[arg_name]]
 
@@ -2328,6 +2385,55 @@ returnSpataObject <- function(object){
         }
 
       }
+
+      args_input[["..."]] <- NULL
+      args_input[["object"]] <- NULL
+
+      args_input <-
+        purrr::imap(
+          .x = args_input,
+          .f = function(inp, n){
+
+            if(class(inp) == "call"){
+
+              inp_value <- base::eval(expr = inp, envir = .GlobalEnv)
+
+              if(length(inp_value) == 1 & !is.list(inp_value)){
+
+                out <- inp_value
+
+              } else {
+
+                out <- inp
+
+              }
+
+            } else if(class(inp) == "name"){
+
+              inp_value <-
+                base::parse(text = inp) %>%
+                base::eval(envir = ce)
+
+              if(length(inp_value) == 1 & !is.list(inp_value)){
+
+                out <- inp_value
+
+              } else {
+
+                out <- inp
+
+              }
+
+            } else {
+
+              out <- inp
+
+            }
+
+            return(out)
+
+          }
+        )
 
       new_logfile_entry <-
         tibble::tibble(
@@ -2602,7 +2708,7 @@ rotate_sf = function(x) matrix(c(cos(x), sin(x), -sin(x), cos(x)), 2, 2)
 #' @seealso [`flipAll()`], [`scaleAll()`]
 #'
 #' @export
-rotateAll <- function(object, angle, clockwise = TRUE){
+rotateAll <- function(object, angle, clockwise = TRUE, verbose = NULL){
 
   object <-
     rotateImage(
@@ -2617,7 +2723,7 @@ rotateAll <- function(object, angle, clockwise = TRUE){
       object = object,
       angle = angle,
       clockwise = clockwise,
-      verbose = FALSE
+      verbose = verbose
       )
 
   returnSpataObject(object)

@@ -334,6 +334,12 @@ joinWithVariables <- function(object,
 
   against <- getVariableNames(object)
 
+  confuns::check_one_of(
+    input = variables,
+    against = against,
+    fdb.fn = "warning"
+  )
+
   if(base::any(!variables %in% against)){
 
     not_found <- variables[!variables %in% against]

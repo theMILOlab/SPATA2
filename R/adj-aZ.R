@@ -823,6 +823,130 @@ asGiotto <- function(object,
 # asM-asS -----------------------------------------------------------------
 
 
+
+#' @title Transform miscellaneous objects to MolecularAssay objects
+#'
+#' @description This S4 generic converts miscellaneous objects to into a [`MolecularAssay`]
+#' object.
+#'
+#' @param object Any object for which a method has been defined.
+#'
+#' @return An object of class `MolecularAssay`
+#' @export
+#'
+setGeneric(name = "asMolecularAssay", def = function(object, ...){
+
+  standardGeneric(f = "asMolecularAssay")
+
+})
+
+#' @rdname asMolecularAssay
+#' @export
+setMethod(
+  f = "asMolecularAssay",
+  signature = "Assay5",
+  definition = function(object, modality = "undefined", active_mtr = "counts"){
+
+    ma <- MolecularAssay()
+    ma@modality <- modality
+
+    mtr_names <- base::names(object@layers)
+
+    for(mtr_name in mtr_names){
+
+      if(mtr_name == "counts"){
+
+        ma@mtr_counts <- Seurat::GetAssayData(object, layer = "counts")
+
+      } else {
+
+        ma@mtr_proc[[mtr_name]] <- SeuratObject::LayerData(object, layer = mtr_name)
+
+      }
+
+    }
+
+    ma@meta_var <-  object@meta.data
+
+    if(modality %in% base::names(signatures)){
+
+      ma@signatures <- signatures[[modality]]
+
+    } else {
+
+      warning(glue::glue("Molecular modality '{modality}' is unkonwn to SPATA2. Slot signatures remains empty."))
+
+    }
+
+    # active mtr
+    confuns::check_one_of(
+      input = active_mtr,
+      against = getMatrixNames(ma),
+      ref.input = "matrix names"
+    )
+
+    ma@active_mtr <- active_mtr
+
+    return(ma)
+
+  }
+)
+
+#' @rdname asMolecularAssay
+#' @export
+setMethod(
+  f = "asMolecularAssay",
+  signature = "SCTAssay",
+  definition = function(object, modality = "undefined", active_mtr = "counts"){
+
+    ma <- MolecularAssay()
+    ma@modality <- modality
+
+    # count matrix
+    ma@mtr_counts <- object@counts
+
+    # processed matrices
+    if(nrow(object@data) > 1 & ncol(object@data) > 1){
+
+      ma@mtr_proc$data <- object@data
+
+    }
+
+    if(nrow(object@scale.data) > 1 & ncol(object@scale.data) > 1){
+
+      ma@mtr_proc$scale.data <- object@scale.data
+
+    }
+
+    # meta var
+    ma@meta_var <- object@meta.features
+
+    # signatures
+    if(modality %in% base::names(signatures)){
+
+      ma@signatures <- signatures[[modality]]
+
+    } else {
+
+      warning(glue::glue("Molecular modality '{modality}' is unkonwn to SPATA2. Slot `signatures` remains empty."))
+
+    }
+
+    # active mtr
+    confuns::check_one_of(
+      input = active_mtr,
+      against = getMatrixNames(ma),
+      ref.input = "matrix names"
+    )
+
+    ma@active_mtr <- active_mtr
+
+    return(ma)
+
+  }
+
+)
+
 #' @title Transform SPATA2 object to Seurat object
 #'
 #' @description Transforms an `SPATA2` object to an object of class `Seurat`.
@@ -1047,41 +1171,115 @@ asSummarizedExperiment <- function(object, ...){
 #' of `names(spatial_methods)`.
 #' @param assay_name Character. The name of the Seurat assay containing the matrices of interest.
 #'  If NULL, Seurat's default assay is used.
-#' @param image_name Character. The name of the image in the Seurat object to be transferred.
+#' @param assay_modality Character or `NULL`. The \link[=concept_molecular_modalities]{molecular modality}
+#' modality of the assay data (e.g., "gene"). If `NULL`, not provided the input for `assay_name` is used
+#' as the molecular modality. This, however, is suboptimal and will likely result in many incompatibilities
+#' in downstream analysis. We recommend to specifiy this argument.
+#' @param img_name Character. The name of the image in the Seurat object to be transferred.
 #' If NULL, the function will attempt to use the only available image or throw an error if multiple images are found.
-#' @param image_dir Character. The directory where the image is stored. Default is NULL.
+#' @param img_scale_fct Character. The scale factor to use for image scaling if the Seurat object
+#' contains data from Visium. Depending on the image loaded in the Seurat object should likely
+#' be either *'lowres'* or  *'hires'*.
 #' @param transfer_meta_data Logical. If TRUE, the metadata will be transferred. Default is TRUE.
 #' @param transfer_dim_red Logical. If TRUE, dimensionality reduction data (PCA, t-SNE, UMAP) will be transferred. Default is TRUE.
-#' @param count_mtr_name Character. The name of the count matrix layer in the Seurat object. Default is "counts".
-#' @param proc_mtr_name Character. The name of the processed matrix layer in the Seurat object. Default is "scale.data".
-#' @param modality Character. The modality of the data (e.g., "gene"). Default is "gene".
-#' @param scale_with Character. The scale factor to use for image scaling. Default is "lowres".
 #' @param verbose Logical. If TRUE, progress messages will be printed. Default is TRUE.
 #'
 #' @return A `SPATA2` object containing the converted data.
+#'
+#' @section From `Seurat`:
+#' The `asSPATA2` method transforms a `Seurat` object into a `SPATA2` object, preserving and adapting key data elements such as assays, images, metadata, and dimensional reduction data. Below are the specifics of the transformation process:
+#'
+#' \itemize{
+#'
+#' \item **Assays**:
+#'   \itemize{
+#'     \item **Input**: The assay to be transferred is specified via the `assay_name` parameter.
+#'     If `assay_name` is not provided, the active assay of the Seurat object is used.
+#'     \item **Molecular modality**: In SPATA2 every assay is associated with
+#'     a  \link[=concept_molecular_modalities]{molecular modality}. If argument `assay_modality` is not provided,
+#'     the input for `assay_name` is used as the molecular modality. This, however, is suboptimal and will result
+#'     in many incompatibilities downstream.
+#'   }
+#'
+#' \item **Images**:
+#'   \itemize{
+#'     \item **Input**: The spatial image is selected using the `img_name` parameter. If not specified,
+#'      the method chooses the sole available image or prompts for selection if multiple images exist.
+#'     \item **Scale factors**: If the of the `Seurat` object contains scale factors
+#'      with which the coordinates must be scaled to align with the image specify the
+#'       respective scale factor name in `scale_with`.
+#'   }
+#'
+#' \item **Metadata**:
+#'   \itemize{
+#'     \item **Input**: Observational metadata is transferred if `transfer_meta_data = TRUE` (the default)
+#'     and picked from @@meta.data from the `Seurat` object.
+#'   }
+#'
+#' \item **Dimensional Reduction Data**:
+#'   \itemize{
+#'     \item **Input**: Dimensional reduction embeddings (PCA, t-SNE, UMAP) are transferred if `transfer_dim_red = TRUE` (the default). The data must be stored in the Seurat object's `reductions` slot with specific naming conventions:
+#'       \itemize{
+#'         \item **PCA**: Expected in `reductions$pca`, with columns named `PC_1`, `PC_2`, etc., which are renamed to `PC1`, `PC2`, etc., in SPATA2.
+#'         \item **t-SNE**: Expected in `reductions$tsne`, with columns named `tSNE_1`, `tSNE_2`, renamed to `tsne1`, `tsne2` in SPATA2.
+#'         \item **UMAP**: Expected in `reductions$umap`, with columns named `UMAP_1`, `UMAP_2`, renamed to `umap1`, `umap2` in SPATA2.
+#'       }
+#'     \item **Naming**: These embeddings must follow the specific naming conventions for compatibility with SPATA2's visualization and analysis functions.
+#'     If the embeddings are not found or named incorrectly, warnings are issued. `dim_red_naming` can be used to adjust what the function expects.
+#'   }
+#'
+#' }
 #'
 #' @examples
 #'
 #' # ----- example for Seurat conversion
 #' library(SPATA2)
 #' library(Seurat)
+#' library(SeuratData)
 #'
-#' seurat_object <- example_data$seurat_object
+#' # unhash and run the command, if not installed yet
+#' # SeuratData::InstallData("stxBrain")
 #'
-#' spata_object <-
+#' brain <- SeuratData::LoadData("stxBrain", type = "anterior1")
+#' brain <- SCTransform(brain, assay = "Spatial")
+#' brain <- RunPCA(brain, assay = "SCT", verbose = FALSE)
+#' brain <- FindNeighbors(brain, reduction = "pca", dims = 1:30)
+#' brain <- FindClusters(brain, verbose = FALSE)
+#' brain <- RunUMAP(brain, reduction = "pca", dims = 1:30)
+#'
+#' # use assay Spatial
+#' spata_object1 <-
 #'  asSPATA2(
-#'   object = seurat_object,
-#'     sample_name = "gbm",
-#'     image_name = "slice1",
-#'     platform = "VisiumSmall",
-#'    modality = "gene"
-#'   )
+#'    object = brain,
+#'    sample_name = "mouse_brain",
+#'    platform = "VisiumSmall",
+#'    img_name = "anterior1",
+#'    img_scale_fct = "lowres",
+#'    assay_name = "Spatial",
+#'    assay_modality = "gene"
+#'    )
+#'
+#' show(spata_object1)
+#'
+#' # use assay SCT
+#' spata_object2 <-
+#'  asSPATA2(
+#'    object = brain,
+#'    sample_name = "mouse_brain",
+#'    platform = "VisiumSmall",
+#'    img_name = "anterior1",
+#'    img_scale_fct = "lowres",
+#'    assay_name = "SCT",
+#'    assay_modality = "gene"
+#'    )
+#'
+#' show(spata_object2)
 #'
 #' # with Seurat
-#' SpatialFeaturePlot(seurat_object, "nCounts_Spatial")
+#' SpatialFeaturePlot(brain, "nCount_Spatial")
 #'
 #' # with SPATA2
-#' plotSurface(spata_object, "nCounts_Spatial")
+#' plotSurface(spata_object1, "nCount_Spatial")
 #'
 #' @export
 
@@ -1160,15 +1358,13 @@ setMethod(
   definition = function(object,
                         sample_name,
                         platform = "Undefined",
-                        assay_name = NULL, # Seurat assay that contains the matrices of interest. If NULL, Seurat's default assay is used.
-                        image_name = NULL,
-                        image_dir = NULL,
+                        assay_name = NULL,
+                        assay_modality = NULL,
+                        img_name = NULL,
+                        img_scale_fct = "lowres",
                         transfer_meta_data = TRUE,
                         transfer_dim_red = TRUE,
-                        count_mtr_name = "counts",
-                        proc_mtr_name = "scale.data",
-                        modality = "gene",
-                        scale_with = "lowres",
+                        dim_red_naming = list("pca" = "pca", "tsne" = "tsne", "umap" = "umap"),
                         verbose = TRUE){
 
     confuns::check_one_of(
@@ -1176,7 +1372,13 @@ setMethod(
       against = names(spatial_methods)
     )
 
-    if(platform == "Undefined"){ warning("Platform is set to 'Undefined', which is not compatible with some SPATA2 functions. Ideally choose a known platform from ``SPATA2::spatial_methods`` and define in ``platform``.") }
+    if(platform == "Undefined"){
+
+      warning(
+        "The platform, the spatial method underlying the data set, was set to 'Undefined'. This renders the object incompatible with many SPATA2 functions. Ideally choose a known platform from `validSpatialMethods()` and specify it with argument `platform`."
+        )
+
+      }
 
     # create empty SPATA2 object
     spata_object <-
@@ -1213,64 +1415,124 @@ setMethod(
 
       }
 
+    } else {
+
+      assay_name <- object@active.assay
+
     }
 
-    # check and transfer image
+    if(is.null(assay_modality)){
+
+      assay_modality <- assay_name
+
+      warning(glue::glue("`assay_modality' was not specified. Using '{assay_name}' as preliminary molecular modality. Adjust with `renameMolecularAssay()`."))
+
+    }
+
+    ma <-
+      asMolecularAssay(
+        object = Seurat::GetAssay(object, assay = assay_name),
+        modality = assay_modality
+        )
+
+    spata_object <- setAssay(spata_object, assay = ma)
+    spata_object <- activateAssay(spata_object, assay_name = assay_modality)
+
+    # check and transfer image / spatial data
     image_names <- base::names(object@images)
 
-    if(base::is.null(image_name)){
+    if(base::is.null(img_name)){
 
-      if(length(image_names) == 0){stop("Seurat object contains no image(s).")}
+      if(length(image_names) == 0){stop("Seurat object contains no image(s) / spatial data.")}
 
       else if(length(image_names) > 1) {
-          stop(paste("Seurat object contains multiple images, please specify which one to import using image_names. Available images:", paste(image_names, collapse = ", ")))
+
+        stop(paste("Seurat object contains multiple images, please specify which one to import using `image_names`. Available images:", paste(image_names, collapse = ", ")))
+
       }
 
       else if(length(image_names) == 1) {
-          image_name = image_names[1]
+
+          img_name = image_names[1]
+
       }
 
     }
 
     confuns::check_one_of(
-      input = image_name,
+      input = img_name,
       against = image_names,
       ref.opt.2 = "images in Seurat object",
       fdb.opt = 2
     )
 
-    scale_factors <- base::unclass(object@images[[image_name]]@scale.factors)
-    scale_factors["image"] = scale_factors[scale_with] # image scale factor
+    seurat_image <- object@images[[img_name]]
 
-    histo_image <- createHistoImage(
-      img_name = image_name,
-      sample = sample_name,
-      dir = image_dir,
-      img = object@images[[image_name]]@image, # currently ignoring molecules and boundaries
-      scale_factors = scale_factors,
-      verbose = verbose
-    )
+    if(class(seurat_image) == "FOV"){
 
-    scale_factors$image <- NULL
+      coordinates <-
+        Seurat::GetTissueCoordinates(seurat_image) %>%
+        dplyr::select(barcodes = cell, x_orig = x, y_orig = y)
 
-    sp_data <- createSpatialData(
-      sample = sample_name,
-      hist_img_ref = histo_image,
-      method = spatial_methods[[platform]],
-      hist_imgs = NULL,
-      coordinates = object %>% GetTissueCoordinates() %>% dplyr::rename(barcodes = cell, x_orig=x, y_orig=y), # should work without , x_orig=x, y_orig=y once setCoordsDf is updated
-      scale_factors = scale_factors,
-      )
+      # pixel scale factor
+      psf <- 1
+      attr(psf, which = "unit") <- "um/px"
 
-    spata_object <- setSpatialData(spata_object, sp_data = sp_data)
+      sp_data <-
+        createSpatialData(
+          sample = sample_name,
+          coordinates = coordinates,
+          scale_factors = list(pixel = psf),
+          method = spatial_methods[[platform]],
+          verbose = verbose
+        )
 
-    if(containsCCD(spata_object)){
+    } else if(stringr::str_detect(class(seurat_image), "Visium")){
 
-      spata_object <- computePixelScaleFactor(spata_object)
+      scale_factors <- base::unclass(object@images[[img_name]]@scale.factors)
+
+      confuns::is_value(img_scale_fct, mode = "character")
+
+      histo_image <-
+        createHistoImage(
+          img_name = img_name,
+          sample = sample_name,
+          img = object@images[[img_name]]@image,
+          scale_factors = list(image = scale_factors[[img_scale_fct]]),
+          verbose = verbose
+        )
+
+      coordinates <-
+        Seurat::GetTissueCoordinates(object) %>%
+        dplyr::rename(barcodes = cell, x_orig = x, y_orig = y)
+
+      sp_data <-
+        createSpatialData(
+          sample = sample_name,
+          hist_img_ref = histo_image,
+          method = spatial_methods[[platform]],
+          coordinates = coordinates
+        )
+
+    } else {
+
+      stop(glue::glue("Don't know how to handle spatial data in objects of class {class(seurat_iamge)}"))
 
     }
 
-    spata_object <- rotateAll(spata_object, angle = 90)
+    spata_object <- setSpatialData(spata_object, sp_data = sp_data)
+
+    if(containsMethod(spata_object, method = "Visium")){
+
+      if(containsCCD(spata_object)){
+
+        spata_object <- computePixelScaleFactor(spata_object)
+
+      }
+
+      spata_object <- rotateAll(spata_object, angle = 90, verbose = FALSE)
+
+    }
 
     # transfer obs metadata
     meta_df <-
@@ -1285,41 +1547,6 @@ setMethod(
 
     spata_object <- setMetaDf(spata_object, meta_df = meta_df)
 
-    # transfer matrices
-    count_mtr <-
-      getFromSeurat(
-        return_value = Seurat::GetAssayData(object = object, layer = count_mtr_name), # selects Seurat's default assay
-        error_handling = "stop",
-        error_ref = "count matrix"
-      )
-
-    meta_var <- as.data.frame(Seurat::GetAssay(object)@features)
-    names(meta_var)[1] <- "barcodes"
-
-    spata_object <-
-      createMolecularAssay(
-        spata_object,
-        modality = modality,
-        mtr_counts = count_mtr,
-        meta_var = meta_var,
-        activate = TRUE
-      )
-
-    proc_mtr <-
-      getFromSeurat(
-        return_value = Seurat::GetAssayData(object = object, layer = proc_mtr_name), # selects Seurat's default assay
-        error_handling = "stop",
-        error_ref = "scaled matrix",
-        error_value = NULL
-      )
-
-    spata_object <-
-      setProcessedMatrix(
-        object = spata_object,
-        proc_mtr = proc_mtr,
-        name = proc_mtr_name
-      )
-
     # transfer dim red data
     if(base::isTRUE(transfer_dim_red)){
 
@@ -1327,9 +1554,10 @@ setMethod(
       pca_df <- base::tryCatch({
 
         pca_df <-
-          base::as.data.frame(object@reductions$pca@cell.embeddings) %>%
+          base::as.data.frame(object@reductions[[dim_red_naming$pca]]@cell.embeddings) %>%
           tibble::rownames_to_column(var = "barcodes") %>%
-          dplyr::select(barcodes, dplyr::everything())
+          dplyr::select(barcodes, dplyr::everything()) %>%
+          tibble::as_tibble()
 
         base::colnames(pca_df) <- stringr::str_remove_all(base::colnames(pca_df), pattern = "_")
 
@@ -1339,7 +1567,7 @@ setMethod(
 
       error = function(error){
 
-        warning("Could not find or transfer PCA-data. Did you process the seurat-object correctly?")
+        warning("Could not find or transfer PCA-data.")
 
         return(data.frame())
 
@@ -1359,14 +1587,16 @@ setMethod(
 
         base::data.frame(
           barcodes = base::rownames(object@reductions$tsne@cell.embeddings),
-          tsne1 = object@reductions$tsne@cell.embeddings[,1],
-          tsne2 = object@reductions$tsne@cell.embeddings[,2],
+          tsne1 = object@reductions[[dim_red_naming$tsne]]@cell.embeddings[,1],
+          tsne2 = object@reductions[[dim_red_naming$tsne]]@cell.embeddings[,2],
           stringsAsFactors = FALSE
-        ) %>% tibble::remove_rownames()
+        ) %>%
+          tibble::remove_rownames() %>%
+          tibble::as_tibble()
 
       }, error = function(error){
 
-        warning("Could not find or transfer TSNE-data. Did you process the seurat-object correctly?")
+        warning("Could not find or transfer TSNE data.")
 
         return(data.frame())
 
@@ -1385,14 +1615,16 @@ setMethod(
 
         base::data.frame(
           barcodes = base::rownames(object@reductions$umap@cell.embeddings),
-          umap1 = object@reductions$umap@cell.embeddings[,1],
-          umap2 = object@reductions$umap@cell.embeddings[,2],
+          umap1 = object@reductions[[dim_red_naming$umap]]@cell.embeddings[,1],
+          umap2 = object@reductions[[dim_red_naming$umap]]@cell.embeddings[,2],
           stringsAsFactors = FALSE
-        ) %>% tibble::remove_rownames()
+        ) %>%
+          tibble::remove_rownames() %>%
+          tibble::as_tibble()
 
       }, error = function(error){
 
-        warning("Could not find or transfer UMAP-data. Did you process the seurat-object correctly?")
+        warning("Could not find or transfer UMAP data.")
 
         return(data.frame())
 
@@ -1415,9 +1647,9 @@ setMethod(
 
     }
 
-    # conclude
-    spata_object <- setBarcodes(spata_object, barcodes = getBarcodes(spata_object))
+    spata_object <- setDefault(spata_object, pt_size = 1.3)
 
+    # conclude
     confuns::give_feedback(
       msg = "Done.",
       verbose = verbose

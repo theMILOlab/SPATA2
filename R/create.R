@@ -2944,27 +2944,31 @@ createSpatialData <- function(sample,
     }) %>%
     purrr::set_names(x = ., nm = purrr::map_chr(.x = ., .f = ~ .x@name))
 
-  # set reference image
-  object@name_img_ref <- hist_img_ref@name
-  object@images[[hist_img_ref@name]] <- hist_img_ref
+  # set reference and active image
+  if(!base::is.null(hist_img_ref)){
 
-  if(base::is.null(active)){
+    object@name_img_ref <- hist_img_ref@name
+    object@images[[hist_img_ref@name]] <- hist_img_ref
 
-    active <- hist_img_ref@name
+    if(base::is.null(active)){
+
+      active <- hist_img_ref@name
+
+    }
+
+    confuns::give_feedback(
+      msg = glue::glue("Active image: '{active}'."),
+      verbose = verbose
+    )
+
+    object <-
+      activateImage(
+        object = object,
+        img_name = active,
+        verbose = FALSE
+      )
 
   }
-
-  confuns::give_feedback(
-    msg = glue::glue("Active image: '{active}'."),
-    verbose = verbose
-  )
-
-  object <-
-    activateImage(
-      object = object,
-      img_name = active,
-      verbose = FALSE
-    )
 
   # empty image slots
   if(base::isTRUE(unload)){

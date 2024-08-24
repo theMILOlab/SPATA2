@@ -16,12 +16,12 @@ This list contains predefined spatial methods for various spatial biology platfo
 \details{
 The \code{spatial_methods} list includes the following spatial methods:
 \itemize{
-\item \link{MERFISH}: A spatial method focusing on cell-level observations using the Multiplexed Error-Robust Fluorescence In Situ Hybridization technique.
+\item \link{MERFISH}: A spatial method focusing on cell-level observations using the Multiplexed Error-Robust Fluorescence In Situ Hybridization technique (MERSCOPE).
 \item \link{SlideSeqV1}: A spatial method focusing on bead-level observations using the Slide-seq V1 platform.
 \item \code{Undefined}: A default spatial method with undefined properties.
 \item \link{VisiumSmall}: A spatial method for small capture areas using the Visium platform.
 \item \link{VisiumLarge}: A spatial method for large capture areas using the Visium platform.
-\item \link{VisiumHD}: A high-density spatial method using the Visium platform.
+\item \link{VisiumHD}: A spatial method using the VisiumHD platform.
 \item \link{Xenium}: A spatial method focusing on cell-level observations using the Xenium platform.
 }
 

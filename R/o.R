@@ -1,5 +1,47 @@
 
 
+
+#' @title The observational unit
+#'
+#' @description
+#' Extracts the observational unit of the \link[`SpatialMethod`]{spatial method (platform)}
+#' of the object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#' @export
+#'
+setGeneric(name = "obsUnit", def = function(object, ...){
+
+  standardGeneric(f = "obsUnit")
+
+})
+
+#' @rdname obsUnit
+#' @export
+setMethod(
+  f = "obsUnit",
+  signature = "ANY",
+  definition = function(object){
+
+    getSpatialMethod(object)@observational_unit
+
+  }
+)
+
+#' @rdname obsUnit
+#' @export
+setMethod(
+  f = "obsUnit",
+  signature = "SpatialMethod",
+  definition = function(object){
+
+    object@observational_unit
+
+  }
+)
+
 # order -------------------------------------------------------------------
 
 #' @keywords internal

@@ -4,7 +4,7 @@
 \alias{plotImages}
 \alias{plotImages,SPATA2-method}
 \alias{plotImages,SpatialData-method}
-\title{Plot histology images (ggplot2)}
+\title{Plot histology images}
 \usage{
 plotImages(object, ...)
 

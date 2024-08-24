@@ -21,7 +21,7 @@ assays.)
 use by default.}
 
 \item{\code{analysis}}{List of analysis results where each element can represent
-a different analysis aspect.}
+a different analysis aspect such as \link[=runDEA]{DEA} or \link[=runCNV]{CNV}.}
 
 \item{\code{meta_var}}{Data.frame of meta data for the variables of this assay - the molecules.}
 

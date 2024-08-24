@@ -478,7 +478,7 @@ addAutoencoderSetUp <- function(object, mtr_name, set_up_list, ...){
 
 
 
-#' @title Add meta features
+#' @title Add meta features/variables
 #'
 #' @description Adds new externally generated \link[=concept_variables]{features}
 #' to the `SPATA2` object's meta data.

@@ -59,7 +59,7 @@ plotHistogram <- function(object,
 # plotI -------------------------------------------------------------------
 
 
-#' @title Plot image with ggplot2
+#' @title Plot histology image
 #'
 #' @description Plots the histology image with `ggplot2`.
 #'
@@ -577,7 +577,7 @@ setMethod(
   })
 
 
-#' @title Plot histology images (ggplot2)
+#' @title Plot histology images
 #'
 #' @description Plots all images registered the `SPATA2` object.
 #'
