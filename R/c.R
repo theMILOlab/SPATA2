@@ -301,91 +301,99 @@ compute_correction_factor_sas <- function(object,
                                           core,
                                           coords_df_sa = NULL){
 
-  if(base::is.null(coords_df_sa)){
+  if(containsMethod(object, "Visium")){
 
-    orig_cdf <-
-      getCoordsDfSA(
-        object = object,
-        ids = ids,
-        distance = distance,
-        core = core,
-        periphery = FALSE,
-        verbose = FALSE
-      )
-
-  } else {
-
-    orig_cdf <-
-      dplyr::filter(coords_df_sa, rel_loc != "periphery")
-
-    if(base::isFALSE(core)){
+    if(base::is.null(coords_df_sa)){
 
       orig_cdf <-
-        dplyr::filter(orig_cdf, rel_loc != "core")
+        getCoordsDfSA(
+          object = object,
+          ids = ids,
+          distance = distance,
+          core = core,
+          periphery = FALSE,
+          verbose = FALSE
+        )
+
+    } else {
+
+      orig_cdf <-
+        dplyr::filter(coords_df_sa, rel_loc != "periphery")
+
+      if(base::isFALSE(core)){
+
+        orig_cdf <-
+          dplyr::filter(orig_cdf, rel_loc != "core")
+
+      }
 
     }
 
-  }
+    smrd_cdf <-
+      dplyr::group_by(orig_cdf, id) %>%
+      dplyr::summarise(md = base::max(dist, na.rm = TRUE))
 
-  smrd_cdf <-
-    dplyr::group_by(orig_cdf, id) %>%
-    dplyr::summarise(md = base::max(dist, na.rm = TRUE))
+    unit <- base::unique(orig_cdf$dist_unit)
 
-  unit <- base::unique(orig_cdf$dist_unit)
+    fct_df <-
+      purrr::map_df(
+        .x = base::levels(smrd_cdf$id),
+        .f = function(id){
 
-  fct_df <-
-    purrr::map_df(
-      .x = base::levels(smrd_cdf$id),
-      .f = function(id){
+          distance <-
+            dplyr::filter(smrd_cdf, id == {{id}}) %>%
+            dplyr::pull(md) %>%
+            stringr::str_c(., unit)
 
-        distance <-
-          dplyr::filter(smrd_cdf, id == {{id}}) %>%
-          dplyr::pull(md) %>%
-          stringr::str_c(., unit)
-
-        buffer <-
-          as_unit(distance, unit = "px", object = object) %>%
-          base::as.numeric()
-
-        sim_cdf <-
-          simulate_complete_coords_sa(object = object, id = id, distance = distance)
-
-        outline_df <- getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = TRUE)
-
-        outer_df <- getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = FALSE)[,c("x", "y")]
-
-        buffered_outer_df <- buffer_area(outer_df, buffer = buffer)
-
-        if(base::isFALSE(core)){
+          buffer <-
+            as_unit(distance, unit = "px", object = object) %>%
+            base::as.numeric()
 
           sim_cdf <-
-            identify_obs_in_spat_ann(sim_cdf, strictly = TRUE, outline_df = outline_df, opt = "remove")
+            simulate_complete_coords_sa(object = object, id = id, distance = distance)
+
+          outline_df <- getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = TRUE)
+
+          outer_df <- getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = FALSE)[,c("x", "y")]
+
+          buffered_outer_df <- buffer_area(outer_df, buffer = buffer)
+
+          if(base::isFALSE(core)){
+
+            sim_cdf <-
+              identify_obs_in_spat_ann(sim_cdf, strictly = TRUE, outline_df = outline_df, opt = "remove")
+
+          }
+
+          sim_cdf <-
+            identify_obs_in_polygon(sim_cdf, strictly = TRUE, polygon_df = buffered_outer_df, opt = "keep")
+
+          flt_orig_cdf <-
+            getCoordsDfSA(object, ids = id, distance = distance, core = core, periphery = FALSE)
+
+          fct <- base::nrow(flt_orig_cdf) / base::nrow(sim_cdf)
+
+          out_df <-
+            tibble::tibble(
+              fct = fct,
+              nav = base::nrow(flt_orig_cdf), # n available
+              nreq = base::nrow(sim_cdf) # n required
+            )
+
+          return(out_df)
 
         }
+      )
 
-        sim_cdf <-
-          identify_obs_in_polygon(sim_cdf, strictly = TRUE, polygon_df = buffered_outer_df, opt = "keep")
+    nreq_max <- base::max(fct_df$nreq)
 
-        flt_orig_cdf <-
-          getCoordsDfSA(object, ids = id, distance = distance, core = core, periphery = FALSE)
+    out <- stats::weighted.mean(x = fct_df$fct, w = fct_df$nreq/nreq_max)
 
-        fct <- base::nrow(flt_orig_cdf) / base::nrow(sim_cdf)
+  } else {
 
-        out_df <-
-          tibble::tibble(
-            fct = fct,
-            nav = base::nrow(flt_orig_cdf), # n available
-            nreq = base::nrow(sim_cdf) # n required
-          )
+    out <- 1
 
-        return(out_df)
-
-      }
-    )
-
-  nreq_max <- base::max(fct_df$nreq)
-
-  out <- stats::weighted.mean(x = fct_df$fct, w = fct_df$nreq/nreq_max)
+  }
 
   # use
   return(out)
@@ -396,17 +404,24 @@ compute_correction_factor_sas <- function(object,
 #' @export
 compute_correction_factor_sts <- function(object, id, width = getTrajectoryLength(object, id)){
 
-  coords_df <-
-    getCoordsDfST(object, id = id, width = width) %>%
-    dplyr::filter(rel_loc == "inside")
+  if(containsMethod(object, "Visium")){
 
-  coords_df_sim <-
-    simulate_complete_coords_st(object, id = id)
+    coords_df <-
+      getCoordsDfST(object, id = id, width = width) %>%
+      dplyr::filter(rel_loc == "inside")
 
-  out <- nrow(coords_df)/nrow(coords_df_sim)
+    coords_df_sim <-
+      simulate_complete_coords_st(object, id = id)
 
-  # how can simulated coords_df be smaller than original one?
-  if(out > 1){ out <- 1}
+    out <- nrow(coords_df)/nrow(coords_df_sim)
+
+    if(out > 1){ out <- 1}
+
+  } else {
+
+    out <- 1
+
+  }
 
   return(out)
 
