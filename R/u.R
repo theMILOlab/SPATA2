@@ -468,7 +468,7 @@ update_spata2v2_to_spata2v3 <- function(object, method = NULL, verbose = TRUE){
 
 
 
-#' @title Update `SPATA2` object
+#' @title Update SPATA2 object
 #'
 #' @description Updates the input object to the newest version of the package.
 #'
@@ -1273,6 +1273,12 @@ updateSpataObject <- function(object,
     object@version <- list(major = 3, minor = 0, patch = 0)
 
   }
+
+  #
+
+  # placeholder for updates in SPATA2 v3
+
+  #
 
   # default adjustment ------------------------------------------------------
 

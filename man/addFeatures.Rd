@@ -2,7 +2,7 @@
 % Please edit documentation in R/add.R
 \name{addFeatures}
 \alias{addFeatures}
-\title{Add meta features/variables}
+\title{Add meta variables for observations}
 \usage{
 addFeatures(
   object,

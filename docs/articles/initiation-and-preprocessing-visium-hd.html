@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.1</span>
       </span>
     </div>
 
@@ -250,22 +250,25 @@ know where the edge of the tissue section is and they need to know if
 there are multiple tissue sections. This kind of data is not provided
 with the standard output of most platforms and needs to be computed.
 With spatial processing we particularly refer to the identification of
-spatial outliers - observations that are part of the data set but lie
-too far away from the contiguous tissue section to be considered part of
-the data set that is of actual interest. In case of the VisiumHD
-platform they are usually artefacts. The function
+the tissue edge and spatial outliers - observations that are part of the
+data set but lie too far away from the contiguous tissue section to be
+considered part of the data set that is of actual interest. In case of
+the VisiumHD platform they are usually artefacts. The function
 <code>identifyTissueOutline(..., method = "obs")</code> uses the <a href="https://en.wikipedia.org/wiki/DBSCAN" class="external-link">DBSCAN</a> algorithm to
 identify potential spatial outliers. The tutorial for <a href="initiate-and-preprocessing-visium.html">non-HD Visium</a>
 exemplifies that.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># this is the default input for the visium platform and has already been </span></span>
-<span><span class="co"># called in initiateSpataObjectVisium(). </span></span>
+<span><span class="co"># called in initiateSpataObjectVisiumHD(). </span></span>
 <span><span class="co"># if the results do not satisfy you, you can run it over and over again with </span></span>
 <span><span class="co"># different parameter inputs </span></span>
 <span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/identifyTissueOutline.html">identifyTissueOutline</a></span><span class="op">(</span><span class="va">object</span>, method <span class="op">=</span> <span class="st">"obs"</span>, eps <span class="op">=</span> <span class="st">"20um"</span>, minPts <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
+<span><span class="va">xrange</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"9mm"</span>, <span class="st">"11mm"</span><span class="op">)</span></span>
+<span><span class="va">yrange</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"7mm"</span>, <span class="st">"9mm"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">axes_layer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ggpLayerAxesSI.html">ggpLayerAxesSI</a></span><span class="op">(</span><span class="va">object</span>, breaks <span class="op">=</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_c.html" class="external-link">str_c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">5</span>, <span class="fl">7</span>, <span class="fl">9</span>, <span class="fl">11</span><span class="op">)</span>, <span class="st">"mm"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">rect_layer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ggpLayerRect.html">ggpLayerRect</a></span><span class="op">(</span><span class="va">object</span>, xrange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"9mm"</span>, <span class="st">"11mm"</span><span class="op">)</span>, yrange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"7mm"</span>, <span class="st">"9mm"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">rect_layer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ggpLayerRect.html">ggpLayerRect</a></span><span class="op">(</span><span class="va">object</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># left plot</span></span>
 <span><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, color_by <span class="op">=</span> <span class="st">"tissue_section"</span><span class="op">)</span> <span class="op">+</span> </span>
@@ -273,7 +276,7 @@ exemplifies that.</p>
 <span>  <span class="va">rect_layer</span></span>
 <span></span>
 <span><span class="co"># right plot (zoomed in on rectangular)</span></span>
-<span><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, color_by <span class="op">=</span> <span class="st">"tissue_section"</span>, xrange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"9mm"</span>, <span class="st">"11mm"</span><span class="op">)</span>, yrange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"7mm"</span>, <span class="st">"9mm"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, color_by <span class="op">=</span> <span class="st">"tissue_section"</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="va">axes_layer</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="initiation-and-preprocessing-visium-hd_files/figure-html/unnamed-chunk-7-1.png" width="50%"><img src="initiation-and-preprocessing-visium-hd_files/figure-html/unnamed-chunk-7-2.png" width="50%"></p>

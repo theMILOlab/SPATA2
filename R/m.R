@@ -80,6 +80,27 @@ make_binary_image <- function(img,
 
 }
 
+#' @keywords internal
+make_pixel_dataframe <- function(binary_img) {
+  # Get the dimensions of the binary image
+  dims <- dim(binary_img)
+  n_rows <- dims[1]  # Height of the image
+  n_cols <- dims[2]  # Width of the image
+
+  # Create a vector of pixel identifiers
+  pixel_ids <- paste0("px", seq_len(n_rows * n_cols))
+
+  # Create a data.frame with the coordinates and background information
+  df <- data.frame(
+    pixel = pixel_ids,
+    width = rep(seq_len(n_cols), each = n_rows),
+    height = rep(seq_len(n_rows), times = n_cols),
+    background = as.logical(as.vector(binary_img))
+  )
+
+  return(df)
+}
+
 
 #' @keywords internal
 #' @export

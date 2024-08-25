@@ -125,7 +125,8 @@ initiateSpataObject <- function(sample_name,
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
-      platform = spatial_method@name
+      platform = spatial_method@name,
+      verbose = verbose
     )
 
   # sp_data: create pseudohistoimage if no image is available
@@ -495,7 +496,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
 #' @title Initiate an object of class `SPATA2` from platform SlideSeq
 #'
 #' @description Wrapper function around the necessary content to create a
-#' `SPATA2` object from the standardized output of the [`SlideSeq`] platform.
+#' `SPATA2` object from the standardized output of the [`SlideSeqV1`] platform.
 #'
 #' @param directory_slide_seq Character value. Directory to a SlideSeq folder
 #' that contains a count matrix and bead locations.

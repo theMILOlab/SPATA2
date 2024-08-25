@@ -16,6 +16,18 @@ nCounts <- function(object, molecule, assay_name = activeAssay(object), ...){
 
 }
 
+
+#' @keywords internal
+next_divisible <- function(x, by) {
+
+  out <- ceiling(x / by) * by
+
+  return(out)
+
+}
+
+
+
 #' @rdname nMolecules
 #' @export
 nGenes <- function(object){

@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.1</span>
       </span>
     </div>
 
@@ -237,8 +237,8 @@ column <em>sp_outlier</em> which is added to the cell metadata.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># identify outliers based on the results of identifyTissueOutline()</span></span>
 <span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/identifySpatialOutliers.html">identifySpatialOutliers</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 14:18:37 Identifying spatial outliers.</span></span></code></pre>
-<pre><code><span><span class="co">## 14:18:37 Spatial outliers: 95</span></span></code></pre>
+<pre><code><span><span class="co">## 00:35:58 Identifying spatial outliers.</span></span></code></pre>
+<pre><code><span><span class="co">## 00:35:58 Spatial outliers: 95</span></span></code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show the column</span></span>
 <span><span class="fu"><a href="../reference/getCoordsDf.html">getCoordsDf</a></span><span class="op">(</span><span class="va">object</span>, variables <span class="op">=</span> <span class="st">"sp_outlier"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -425,10 +425,6 @@ identified by cell.</p>
 <span><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, color_by <span class="op">=</span> <span class="va">sparkx_genes</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, pt_clrsp <span class="op">=</span> <span class="st">"Reds 3"</span>, limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1.5</span><span class="op">)</span>, oob <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/oob.html" class="external-link">squish</a></span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="../reference/ggpLayerTissueOutline.html">ggpLayerTissueOutline</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span></code></pre></div>
 <p><img src="initiation-and-preprocessing-merfish_files/figure-html/unnamed-chunk-11-1.png" width="50%"><img src="initiation-and-preprocessing-merfish_files/figure-html/unnamed-chunk-11-2.png" width="50%"></p>
-<p>That’s it. The <code>SPATA2</code> object can be used for any
-downstream analyses such as <a href="dimensional-reduction.html">dimensional reduction</a>, <a href="clustering.html">clustering</a>, <a href="spatial-annotation-screening.html">spatial annotation
-screening</a> or <a href="spatial-trajectory-screening.html">spatial
-trajectory screening</a>. Refer to tab Tutorials for more links.</p>
 </div>
 <div class="section level2">
 <h2 id="subset-observations">6. Subset observations<a class="anchor" aria-label="anchor" href="#subset-observations"></a>

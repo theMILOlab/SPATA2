@@ -48,5 +48,5 @@ An object of class \code{SPATA2}.
 }
 \description{
 Wrapper function around the necessary content to create a
-\code{SPATA2} object from the standardized output of the \code{\link{SlideSeq}} platform.
+\code{SPATA2} object from the standardized output of the \code{\link{SlideSeqV1}} platform.
 }

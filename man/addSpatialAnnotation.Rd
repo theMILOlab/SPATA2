@@ -4,7 +4,7 @@
 \alias{addSpatialAnnotation}
 \alias{addSpatialAnnotation,SPATA2-method}
 \alias{addSpatialAnnotation,SpatialData-method}
-\title{Create and add a spatial annotation manually}
+\title{Add a spatial annotation with data input}
 \usage{
 addSpatialAnnotation(object, ...)
 

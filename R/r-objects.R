@@ -434,8 +434,8 @@ create_spatial_trajectories_descr <- list(
 
 
 #' @export
-current_spata_version <- list(major = 2, minor = 0, patch = 4)
-current_spata2_version <- list(major = 3, minor = 0, patch = 0)
+current_spata2_version <- list(major = 3, minor = 0, patch = 1)
+current_spata_version <- current_spata2_version # deprecated
 
 
 # d -----------------------------------------------------------------------
