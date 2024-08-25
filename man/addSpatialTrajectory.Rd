@@ -2,7 +2,7 @@
 % Please edit documentation in R/add.R
 \name{addSpatialTrajectory}
 \alias{addSpatialTrajectory}
-\title{Create and add a spatial trajectory}
+\title{Add a spatial trajectory with data input}
 \usage{
 addSpatialTrajectory(
   object,

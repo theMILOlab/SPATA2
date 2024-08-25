@@ -478,7 +478,7 @@ addAutoencoderSetUp <- function(object, mtr_name, set_up_list, ...){
 
 
 
-#' @title Add meta features/variables
+#' @title Add meta variables for observations
 #'
 #' @description Adds new externally generated \link[=concept_variables]{features}
 #' to the `SPATA2` object's meta data.
@@ -1477,7 +1477,7 @@ addSignature <- function(object,
 }
 
 
-#' @title Create and add a spatial annotation manually
+#' @title Add a spatial annotation with data input
 #'
 #' @description Adds spatial annotations using polygon data.frames.
 #'
@@ -1713,7 +1713,7 @@ setMethod(
   })
 
 
-#' @title Create and add a spatial trajectory
+#' @title Add a spatial trajectory with data input
 #'
 #' @description Adds a \link[=SpatialTrajectory]{spatial trajectory} using coordinate input.
 #'

@@ -2,7 +2,7 @@
 % Please edit documentation in R/s.R
 \name{saveSpataObject}
 \alias{saveSpataObject}
-\title{Save a SPATA2 object with a default directory}
+\title{Save SPATA2 object with a default directory}
 \usage{
 saveSpataObject(object, dir = NULL, verbose = NULL, ...)
 }

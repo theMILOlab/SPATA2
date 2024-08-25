@@ -2,7 +2,7 @@
 % Please edit documentation in R/u.R
 \name{updateSpataObject}
 \alias{updateSpataObject}
-\title{Update \code{SPATA2} object}
+\title{Update SPATA2 object}
 \usage{
 updateSpataObject(
   object,

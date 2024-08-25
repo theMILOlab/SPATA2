@@ -187,6 +187,56 @@ read_coords_xenium <- function(dir_coords){
 
 }
 
+
+#' Read Matrix from Folder
+#'
+#' This function reads a matrix, barcodes, and features from a specified directory
+#' and returns the matrix with appropriate row and column names.
+#'
+#' @param dir Character. The directory containing the matrix, barcodes, and features files.
+#'
+#' @return A sparse matrix with barcodes as column names and features as row names.
+#'
+#' @details The specified directory must contain the following files:
+#' \itemize{
+#'   \item{Matrix file}: A file with the extension `.mtx.gz` or `.mtx`. This file contains the count matrix in Matrix Market format.
+#'   \item{Barcodes file}: A file with the name `barcodes.tsv.gz` or `barcodes.tsv`. This file contains the barcodes for the columns of the matrix.
+#'   \item{Features file}: A file with the name `features.tsv.gz` or `features.tsv`. This file contains the features (e.g., gene names) for the rows of the matrix.
+#' }
+#'
+#' The function will search for these files in the specified directory and read them using appropriate functions. The matrix will be returned with barcodes as column names and features as row names.
+#'
+#' @examples
+#' \dontrun{
+#'   matrix_dir <- "path/to/matrix/folder"
+#'   matrix <- read_matrix_from_folder(matrix_dir)
+#'   print(matrix)
+#' }
+#'
+#' @importFrom Matrix readMM
+#' @importFrom readr read_tsv
+#' @importFrom stringr str_subset
+#' @export
+read_matrix_from_folder <- function(dir){
+
+  all_files <- base::list.files(dir, full.names = T)
+
+  dir_mtr <- stringr::str_subset(all_files, ".mtx.gz$|.mtx$")
+  dir_bcs <- stringr::str_subset(all_files, "barcodes.tsv.gz|barcodes.tsv$")
+  dir_features <- stringr::str_subset(all_files, "features.tsv.gz$|features.tsv$")
+
+  mtr <- Matrix::readMM(dir_mtr)
+  bcs <- readr::read_tsv(dir_bcs, col_names = FALSE, show_col_types = FALSE)
+  feats <- readr::read_tsv(dir_features, col_names = FALSE, show_col_types = FALSE)
+
+  colnames(mtr) <- as.character(bcs[[1]])
+  rownames(mtr) <- as.character(feats[[2]])
+
+  return(mtr)
+
+}
+
+
 #' @keywords internal
 recBinwidth <- function(...){
 
@@ -249,53 +299,7 @@ recDbscanMinPts <- function(object){
 }
 
 
-#' Read Matrix from Folder
-#'
-#' This function reads a matrix, barcodes, and features from a specified directory
-#' and returns the matrix with appropriate row and column names.
-#'
-#' @param dir Character. The directory containing the matrix, barcodes, and features files.
-#'
-#' @return A sparse matrix with barcodes as column names and features as row names.
-#'
-#' @details The specified directory must contain the following files:
-#' \itemize{
-#'   \item{Matrix file}: A file with the extension `.mtx.gz` or `.mtx`. This file contains the count matrix in Matrix Market format.
-#'   \item{Barcodes file}: A file with the name `barcodes.tsv.gz` or `barcodes.tsv`. This file contains the barcodes for the columns of the matrix.
-#'   \item{Features file}: A file with the name `features.tsv.gz` or `features.tsv`. This file contains the features (e.g., gene names) for the rows of the matrix.
-#' }
-#'
-#' The function will search for these files in the specified directory and read them using appropriate functions. The matrix will be returned with barcodes as column names and features as row names.
-#'
-#' @examples
-#' \dontrun{
-#'   matrix_dir <- "path/to/matrix/folder"
-#'   matrix <- read_matrix_from_folder(matrix_dir)
-#'   print(matrix)
-#' }
-#'
-#' @importFrom Matrix readMM
-#' @importFrom readr read_tsv
-#' @importFrom stringr str_subset
-#' @export
-read_matrix_from_folder <- function(dir){
 
-  all_files <- base::list.files(dir, full.names = T)
-
-  dir_mtr <- stringr::str_subset(all_files, ".mtx.gz$|.mtx$")
-  dir_bcs <- stringr::str_subset(all_files, "barcodes.tsv.gz|barcodes.tsv$")
-  dir_features <- stringr::str_subset(all_files, "features.tsv.gz$|features.tsv$")
-
-  mtr <- Matrix::readMM(dir_mtr)
-  bcs <- readr::read_tsv(dir_bcs, col_names = FALSE, show_col_types = FALSE)
-  feats <- readr::read_tsv(dir_features, col_names = FALSE, show_col_types = FALSE)
-
-  colnames(mtr) <- as.character(bcs[[1]])
-  rownames(mtr) <- as.character(feats[[2]])
-
-  return(mtr)
-
-}
 
 #' @title Platform dependent input recommendations
 #'
@@ -359,6 +363,407 @@ recSgsRes <- function(object, unit = getDefaultUnit(object)){
   return(out)
 
 }
+
+
+#' Reduce resolution coordinates data.frame
+#'
+#' This function reduces a data frame of spatial coordinates for Visium HD samples
+#' by summarizing and aggregating the data at the new barcode level.
+#'
+#' @param coords_df_red The output data.frame of the `prepare_coords_df_visium_hd()` function.
+#'
+#' @details
+#' The function aggregates the spatial coordinates based on the new barcodes created in the previous step.
+#' It calculates summary statistics for each new barcode group, including:
+#'
+#' \itemize{
+#'   \item \code{x_orig}, \code{y_orig}: The original `x` and `y` coordinates at the new barcode level.
+#'   \item \code{col}, \code{row}: The numeric values of the column and row groups.
+#'   \item \code{square_exp}: The theoretical number of original spots that could fall into the new aggregated spot.
+#'   \item \code{square_count}: The actual number of non-missing spots observed.
+#'   \item \code{square_perc}: The relative number of observed spots as a proportion of the theoretical number.
+#' }
+#'
+#' @return A summarized data frame with one row per new barcode, containing aggregated spatial
+#' coordinates and counts.
+#'
+#' @keywords internal
+#'
+#' @export
+reduce_coords_df_visium_hd <- function(coords_df_red, fct){
+
+  fct_sq <- fct^2
+
+  dplyr::mutate(coords_df_red, col = as.numeric(col_group), row = as.numeric(row_group)) %>%
+    dplyr::group_by(barcodes_new) %>%
+    dplyr::summarise(
+      x_orig = unique(x_orig_new), # already on new barcode level
+      y_orig = unique(y_orig_new),
+      col = unique(col),
+      row = unique(row), # already on new barcode level
+      square_exp = {{fct_sq}},
+      square_count = sum(!is.na(barcodes)),
+      square_perc = (square_count/square_exp)*100
+    ) %>%
+    dplyr::ungroup()
+
+}
+
+
+#' @title Reduce resolution for Visium HD data
+#'
+#' @description This function reduces the spatial resolution of Visium HD data by aggregating spatial
+#' spots into larger units, recalculating the count matrix, and generating a new `SPATA2`
+#' object with the reduced resolution.
+#'
+#' @param res_new The new, lower spatial resolution in micrometers (um). It must
+#' be greater than the current resolution and divisible by the current resolution.
+#' Provide as \link[=concept_distance_measure]{distance measure}.
+#' @param new_sample_name Character string for the name of the new sample after
+#' resolution reduction. Default is `"{sample_name}_redResHD"`. Given to `glue::glue()`
+#' to create the final name.
+#' @param genes Character vector specifying which genes to include in the reduced
+#' object. Reducing the number of genes can dramatically spead up the process.
+#' See [`identifyVariableMolecules()`] and examples.
+#' @param batch_size Integer specifying the number of spatial spots to process in each batch. Default is `1000`.
+#' @param workers Integer specifying the number of parallel workers to use for processing. Default is `1`,
+#' which defaults to no parallel workers. If `2` or more, the `furrr` package
+#' is required.
+#' @param ... Additional arguments passed to other methods.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @note Only works on `SPATA2` object for \link[=SpatialMethod]{platform} [`VisiumHD`].
+#'
+#' @details
+#' The `reduceResolutionVisuiumHD()` function reduces the spatial resolution of a Visium HD
+#' dataset by aggregating neighboring spots into larger units and recalculating the count
+#' matrix for the new resolution. The process involves the following key steps:
+#'
+#' \itemize{
+#'   \item \strong{Resolution check:} Ensures the new resolution (`res_new`) is greater
+#'   than the current resolution and is divisible by it.
+
+#'   \item \strong{Coordinate preparation:} Uses the [`prepare_coords_df_visium_hd()`]
+#'   function to adjust the spatial coordinates, creating a grid where both row and
+#'   column counts are divisible by a factor derived from the resolution change. This
+#'   function also ensures equal row and column lengths and predicts missing coordinates.
+#'
+#'   \item \strong{Resolution reduction:} Applies the [`reduce_coords_df_visium_hd()`]
+#'   function to aggregate the prepared coordinates at the new resolution. This function
+#'   groups the data by new barcodes, summarizes the spot counts, and calculates the
+#'   theoretical versus actual number of spots in each aggregated unit.
+#'
+#'   (Since tissue is rarely a perfect rectangle, the new grid of squares often
+#'   contains squares that, if located at the edge of the tissue, contain aggregated
+#'   data of the fewer resolution squares if located on the tissue edge. This
+#'   information is stored in the meta variables *n_square_exp*, *n_square_actual* and *n_square_perc*.
+#'   See examples.)
+#'
+#'   \item \strong{Count matrix summarization:} The count matrix
+#'   is recalculated by **summing** up the counts of each new square. This step is
+#'   optimized with parallel processing if multiple workers are specified.
+#'
+#'   \item \strong{SPATA2 object creation:} A new `SPATA2` object is generated
+#'   with the reduced resolution data, including updated spatial data and metadata.
+#'
+#' }
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' # download example object
+#' object <- downloadSpataObject("HumanPancreasHD", update = FALSE)
+#'
+#' # create the grid layer for visualization
+#' grid_layer <- ggpLayerGridVisiumHD(object, res = "32um", line_size = 0.1, line_alpha = 0.1)
+#'
+#' xrange <- c("9.25mm", "9.75mm")
+#' yrange <- c("5.5mm", "6mm")
+#'
+#' plotSurface(object, unit = "mm") +
+#'   grid_layer +
+#'   ggpLayerRect(object, xrange = xrange, yrange = yrange)
+#'
+#' plotSurface(object, xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.1) +
+#'   grid_layer +
+#'   ggpLayerScaleBarSI(object, sb_dist = "32um", sb_pos = c("9.7mm", "5.75mm"), text_nudge_y = -7.5)
+#'
+#' # identify top 100 genes for the sake of this example
+#' object <- identifyVariableMolecules(object, method = "vst", n_mol = 100)
+#' genes <- getVariableMolecules(object, method = "vst")
+#'
+#' # reduce resolution
+#' object_red <- reduceResolutionVisiumHD(object, res_new = "32um", genes = genes, workers = 4)
+#'
+#' # show new position of aggregated squares
+#' plotSurface(object_red, unit = "mm") +
+#'   grid_layer +
+#'   ggpLayerRect(object, xrange = xrange, yrange = yrange)
+#'
+#' plotSurface(object_red, xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.2) +
+#'   grid_layer +
+#'   ggpLayerScaleBarSI(object, sb_dist = "32um", sb_pos = c("9.7mm", "5.75mm"), text_nudge_y = -7.5)
+#'
+#' # show the percentage of squares
+#' plotSurface(object_red, color_by = "square_perc", unit = "mm", limits = c(0, 100), oob = scales::squish) +
+#'   ggpLayerRect(object, xrange = xrange, yrange = yrange)
+#'
+#' # note how several new squares do not contain 4 but 3 to 1 spots due to the tissue edge
+#' plotSurface(object, xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.1) +
+#'   grid_layer +
+#'   ggpLayerScaleBarSI(object, sb_dist = "32um", sb_pos = c("9.7mm", "5.75mm"), text_nudge_y = -7)
+#'
+#' # visualize with 'square_perc' and compare
+#' plotSurface(object_red, color_by = "square_perc", xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.2) +
+#'   grid_layer +
+#'   ggpLayerScaleBarSI(object, sb_dist = "32um", sb_pos = c("9.7mm", "5.75mm"), text_nudge_y = -7)
+#'
+#' # filter if you want to
+#' object_red_flt <- filterSpataObject(object_red, square_perc == 100)
+#'
+#' plotSurface(object_red_flt, color_by = "square_perc")
+#'
+#' # not filtered
+#' plotSurface(object_red, color_by = "square_perc", xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.2) +
+#'   grid_layer +
+#'   labs(subtitle = "Not filtered")
+#'
+#' # filtered
+#' plotSurface(object_red_flt, color_by = "square_perc", xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.2) +
+#'   grid_layer +
+#'   labs(subtitle = "Filtered")
+#' }
+
+reduceResolutionVisiumHD <- function(object,
+                                     res_new,
+                                     new_sample_name = "{sample_name}_redResHD",
+                                     genes = getGenes(object),
+                                     batch_size = 1000,
+                                     workers = 1,
+                                     verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  # test input
+  containsMethod(object, method = "VisiumHD")
+
+  confuns::is_value(x = workers, mode = "numeric")
+  workers <- as.integer(workers)
+
+  if(workers > 1){
+
+    check_cran_packages(pkgs_req = "furrr")
+
+  }
+
+  is_dist(input = res_new, error = TRUE)
+
+  # start
+  sample_name <- getSampleName(object)
+
+  sm <- getSpatialMethod(object)
+
+  res_new <- as_unit(res_new, unit = "um", object = object)
+  res_now <- as_unit(sm@method_specifics$square_res, unit = "um", object = object)
+
+  num_res_new <- as.numeric(res_new)
+  num_res_now <- as.numeric(res_now)
+
+  if(!(res_new > res_now)){
+
+    stop(glue::glue("`res_new` must be bigger than current resolution, which is {res_now}um."))
+
+  } else if((num_res_new %% num_res_now) != 0){
+
+    stop(glue::glue("`res_new` must be divisible by the current resolution, which {res_now}um"))
+
+  }
+
+  fct <- num_res_new/num_res_now
+
+  coords_df <- getCoordsDf(object)
+
+  # prepare coordinates data.frame for reduction of resolution
+  coords_df_prep <-
+    prepare_coords_df_visium_hd(coords_df, fct = fct) %>%
+    dplyr::filter(!is.na(barcodes))
+
+  # reduce resolution
+  coords_df_red <-
+    reduce_coords_df_visium_hd(coords_df_prep, fct = fct) %>%
+    dplyr::mutate(
+      row_idx = dplyr::row_number(),
+      summary_batch = as.numeric(cut(row_idx, breaks = {{batch_size}}))
+    )
+
+  count_mtr <- getCountMatrix(object)[genes, ]
+
+  pb <- confuns::create_progress_bar(dplyr::n_distinct(coords_df_red$summary_batch))
+
+  confuns::give_feedback(
+    msg = "Preparing summary batches.",
+    verbose = verbose
+  )
+
+  summary_batches <-
+    dplyr::left_join(
+      x = coords_df_red[, c("barcodes_new", "summary_batch")],
+      y = coords_df_prep[,c("barcodes", "barcodes_new")],
+      by = "barcodes_new"
+    ) %>%
+    dplyr::group_by(summary_batch) %>%
+    dplyr::group_split() %>%
+    purrr::map(.f = function(df){
+
+      if(isTRUE(verbose)){
+
+        pb$tick()
+
+      }
+
+      barcode_df <- df[, c("barcodes", "barcodes_new")]
+      barcode_mtr <- count_mtr[, barcode_df$barcodes]
+
+      out <- list(df = barcode_df, mtr = barcode_mtr)
+
+      return(out)
+
+    })
+
+  n_batches <- length(summary_batches)
+
+  confuns::give_feedback(
+    msg = "Summarizing counts.",
+    verbose = verbose
+  )
+
+  # with multiple workers
+  if(workers > 1){
+
+    future::plan(strategy = future::multisession, workers = workers)
+
+    chunks <-
+      furrr:::make_chunks(n_batches, n_workers = workers) %>%
+      purrr::map(.x = ., .f = ~ summary_batches[.x])
+
+    confuns::give_feedback(
+      msg = glue::glue("Using {workers} workers."),
+      verbose = verbose
+    )
+
+    # with progress bar
+    if(isTRUE(verbose)){
+
+      progressr::handlers("txtprogressbar")
+
+      confuns::give_feedback(
+        msg = "Already working on it. Progress bar might need some time to be updated",
+        verbose = TRUE
+      )
+
+      count_list <-
+        progressr::with_progress({
+
+          p <- progressr::progressor(steps = n_batches)
+
+          count_list <- # the value of the expression
+            furrr::future_map(
+              .x = chunks, # list of chunks of batches
+              .f = function(chunk){
+
+                purrr::map(
+                  .x = chunk, # chunk of batches
+                  .f = function(batch){
+
+                    p()
+                    summarize_batch_reduce_visium_hd(batch)
+
+                  }
+                )
+
+              }
+            )
+
+        })
+
+      count_list <- purrr::flatten(count_list)
+
+    } else {
+
+      count_list <-
+        purrr::map(
+          .x = chunks,
+          .f = ~ purrr::map(.x, .f = ~ summarize_batch_reduce_visium_hd(.x))
+        ) %>%
+        purrr::flatten()
+
+    }
+
+  } else { # one loop
+
+    count_list <-
+      purrr::map(
+        .x = summary_batches,
+        .f = ~ summarize_batch_reduce_visium_hd(.x),
+        .progress = verbose
+      )
+
+  }
+
+  confuns::give_feedback(
+    msg = "Done.",
+    verbose = verbose
+  )
+
+  # merge to one count matrix
+  count_mtr_new <- do.call(what = cbind, args = count_list)
+
+  # create new SPATA2 object
+  coords_df <- dplyr::select(coords_df_red, barcodes = barcodes_new, col, row, x_orig, y_orig)
+  meta_df <- dplyr::select(coords_df_red, barcodes = barcodes_new, dplyr::starts_with("square"))
+
+  object_red <-
+    initiateSpataObject(
+      sample_name = glue::glue(new_sample_name),
+      coords_df = coords_df,
+      count_mtr = count_mtr_new,
+      modality = "gene",
+      verbose = FALSE
+    )
+
+  # spatial data can be transferred with some adjustments
+  sp_data <- getSpatialData(object)
+  sp_data@coordinates <- coords_df
+
+  # adjust resolution and cdd
+  sp_data@method@method_specifics$square_res <- res_new
+  sp_data@method@method_specifics$ccd <- res_new
+
+  # transfer defaults
+  default <- object@obj_info$instructions$default
+  object_red@obj_info$instructions$default <- default
+
+  object_red@obj_info$instructions$default@pt_size <-
+    object_red@obj_info$instructions$default@pt_size * (fct/1.5)
+
+  # set data
+  object_red <- setSpatialData(object_red, sp_data = sp_data)
+  object_red <- setMetaDf(object_red, meta_df = meta_df)
+
+  object_red <- identifyTissueOutline(object_red)
+
+  returnSpataObject(object_red)
+
+}
+
+
+
 
 #' @title Rename SPATA2 object
 #'
@@ -2362,6 +2767,7 @@ returnSpataObject <- function(object){
 
       # extract the arguments provided in the call expression
       provided_args <- base::as.list(init_call)[-1]  # exclude the function name
+      provided_args <- confuns::keep_named(provided_args)
 
       # capture formal arguments of the function
       formal_args <-
@@ -2420,7 +2826,7 @@ returnSpataObject <- function(object){
 
               } else {
 
-                out <- inp
+                out <- NULL
 
               }
 

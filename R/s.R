@@ -3,7 +3,7 @@
 
 # save --------------------------------------------------------------------
 
-#' @title Save a SPATA2 object with a default directory
+#' @title Save SPATA2 object with a default directory
 #'
 #' @description Saves the [`SPATA2`] object under a default directory.
 #'
@@ -3532,3 +3532,62 @@ subsetSpataObject <- function(object,
 }
 
 
+
+
+#' Summarize and reduce Visium HD data by batch
+#'
+#' This function processes and reduces spatial transcriptomics data from a Visium HD batch.
+#' It aggregates gene expression data across specified barcodes, groups the data by a new set of barcodes,
+#' and returns a summarized matrix.
+#'
+#' @param batch A list containing the following elements:
+#'   \itemize{
+#'     \item \code{mtr}: A matrix (sparse or dense) of gene expression counts, with genes as rows and barcodes as columns.
+#'     \item \code{df}: A data frame containing barcode information, including a column named \emph{barcodes} and a column named \emph{barcodes_new} for the grouping operation.
+#'   }
+#'
+#' @return A matrix containing the aggregated gene expression data, with genes as columns and the new barcodes as rows.
+#'   The values in the matrix represent the sum of gene expression counts for each gene across the grouped barcodes.
+#'
+#' @details
+#' The function performs the following steps:
+#' \enumerate{
+#'   \item Subsets the count matrix to include only the barcodes listed in the data frame.
+#'   \item Converts the subsetted count matrix to a data frame and merges it with the barcode data frame.
+#'   \item Groups the data by the new barcode identifiers and sums the gene expression counts across these groups.
+#'   \item Converts the summarized data back into a matrix format for further analysis.
+#' }
+#'
+#' @keywords internal
+summarize_batch_reduce_visium_hd <- function(batch){
+
+  count_mtr <- batch$mtr
+  barcode_df <- batch$df
+
+  genes <- rownames(count_mtr)
+
+  count_df <-
+    count_mtr[, barcode_df$barcodes] %>%
+    Matrix::as.matrix() %>%
+    base::t() %>%
+    base::as.data.frame()
+
+  count_df$barcodes <- rownames(count_df)
+  rownames(count_df) <- NULL
+
+  out <-
+    dplyr::left_join(x = barcode_df, y = count_df, by = "barcodes") %>%
+    dplyr::group_by(barcodes_new) %>%
+    dplyr::summarise(
+      dplyr::across(
+        .cols = dplyr::all_of(genes),
+        .fns = ~ sum(.x, na.rm = TRUE)
+      )
+    ) %>%
+    tibble::column_to_rownames(var = "barcodes_new") %>%
+    Matrix::as.matrix() %>%
+    base::t() %>%
+    Matrix::Matrix()
+
+  return(out)
+}

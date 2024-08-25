@@ -847,118 +847,75 @@ ggpLayerExprEstimatesSAS <- function(object,
 
 }
 
-#' @title Add SAS screening direction
+
+#' @title Add a grid to VisiumHD surface plots
 #'
-#' @description Visualizes the screenining direction of an \link[=spatialAnnotationScreening]{SAS}
-#' set up on top of a surface plots. See examples.
+#' @description Adds a grid overlay to VisiumHD spatial data at a specified resolution.
+#' This function is designed to work specifically with VisiumHD data within a `SPATA2` object.
+#'
+#' @param res \link[=concept_distance_measure]{Distance measure.} A value specifying the desired resolution for the grid.
+#' This resolution must be greater than the current resolution and divisible by the current resolution.
 #'
 #' @inherit argument_dummy params
-#' @inherit ggpLayerExprEstimatesSAS params
 #'
-#' @details
-#' **In contrast** to [`ggpLayerExprEstimates()`], which visualizes
-#' the precise positions of the expression estimates, `ggpLayerScreeningDiretionSAS()` visualizes
-#' only the concept, the idea, of the screening direction. This is particularly useful, if the screening
-#' set up includes multiple annotations in one tissue section, where `ggpLayerExprEstimates()` fails
-#' to visualize the combined expression estimates.
+#' @inherit ggpLayer_dummy return
+#'
+#' @inherit reduceResolutionVisiumHD examples
 #'
 #' @export
-#'
-#' @examples
-#' library(SPATA2)
-#'
-#' data("example_data")
-#'
-#' object <- example_data$object_UKF313T_diet
-#'
-#' ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"))
-#'
-#' plotImage(object) +
-#'   ggpLayerSpatAnnOutline(object, ids = ids, fill = "lightgrey") +
-#'   ggpLayerScreeningDirectionSAS(object, ids = ids, line_size = 0.5)
-#'
-#'
-ggpLayerScreeningDirectionSAS <- function(object,
-                                          ids,
-                                          distance = "dte",
-                                          line_alpha = 1,
-                                          line_color = "black",
-                                          line_size = 1,
-                                          line_type = "solid",
-                                          verbose = NULL,
-                                          ...){
-  seed <- 123
-  nmx <- 50
+ggpLayerGridVisiumHD <- function(object,
+                                 res,
+                                 line_alpha = 0.9,
+                                 line_clr = "black",
+                                 line_size = 1,
+                                 img_name = activeImage(object)){
 
-  hlpr_assign_arguments(object)
-  deprecated(...)
+  containsMethod(object, method = "VisiumHD")
 
-  crange <- getCoordsRange(object)
+  sm <- getSpatialMethod(object)
 
-  coords_df_px <-
-    getCoordsDfSA(object, ids = ids, distance = distance, core0 = TRUE)
+  res_new <- as_unit(res, unit = "um", object = object)
+  res_now <- as_unit(sm@method_specifics$square_res, unit = "um", object = object)
 
-  coords_df_px <-
-    dplyr::filter(
-      .data = coords_df_px,
-      dplyr::between(x, left = crange$x[1], right = crange$x[2]),
-      dplyr::between(y, left = crange$y[1], right = crange$y[2])
-    ) %>%
-    dplyr::mutate(dist = scales::rescale(dist, to = c(1,nmx)))
+  num_res_new <- as.numeric(res_new)
+  num_res_now <- as.numeric(res_now)
 
-  base::set.seed(seed)
+  if(!(res_new > res_now)){
 
-  rn <- stats::rnorm(n = 100, mean = 0.5, sd = 0.25)
+    stop(glue::glue("`res_new` must be bigger than current resolution, which is {res_now}um."))
 
-  pb <- confuns::create_progress_bar(total = base::nrow(coords_df_px))
+  } else if((num_res_new %% num_res_now) != 0){
 
-  enh_df <-
-    purrr::map_df(
-      .x = coords_df_px$barcodes,
-      .f = function(bc){
+    stop(glue::glue("`res_new` must be divisible by the current resolution, which {res_now}um"))
 
-        if(base::isTRUE(verbose)){
+  }
 
-          pb$tick()
+  fct <- num_res_new/num_res_now
 
-        }
+  isf <- getScaleFactor(object, fct_name = "image", img_name = img_name)
 
-        bc_df <- dplyr::filter(coords_df_px, barcodes == {{bc}})
+  coords_df <- getCoordsDf(object)
 
-        n <- base::round(bc_df$dist, digits = 0)
+  # prepare coordinates data.frame for reduction of resolution
+  coords_df_prep <-
+    prepare_coords_df_visium_hd(coords_df, fct = fct)
 
-        base::set.seed(seed)
-        rn_use <- base::sample(rn, size = n, replace = F)
-
-        if(n > 0){
-
-          tibble::tibble(
-            barcodes = stringr::str_c(bc_df$barcodes, n),
-            x = bc_df$x + rn_use,
-            y = bc_df$y + rn_use
-          )
-
-        } else {
-
-          NULL
-
-        }
-
-      }
-    )
+  # reduce resolution
+  coords_df_red <-
+    reduce_coords_df_visium_hd(coords_df_prep, fct = fct) %>%
+    dplyr::mutate(x = x_orig * {{isf}}, y = y_orig * {{isf}})
 
   out <-
-    ggplot2::geom_density2d(
-      data = enh_df,
+    ggplot2::geom_tile(
+      data = coords_df_red,
       mapping = ggplot2::aes(x = x, y = y),
+      fill = NA,
       alpha = line_alpha,
-      color = line_color,
-      linetype = line_type,
+      color = line_clr,
       linewidth = line_size
     )
 
   return(out)
-
 }
 
 
@@ -1919,13 +1876,14 @@ setMethod(
 
     out[["coord_equal"]]$default <- TRUE
 
-    if(unit %in% validUnitsOfLengthSI() | base::isTRUE(add_labs)){
+    if(unit %in% validUnitsOfLengthSI()){
+
 
       out[["axes"]] <-
         ggpLayerAxesSI(
           object = object,
           unit = unit,
-          add_labs = add_labs,
+          add_labs = TRUE,
           xrange = xrange,
           yrange = yrange,
           breaks = breaks
@@ -2663,6 +2621,121 @@ ggpLayerScaleBarSI <- function(object,
 
   return(add_on_list)
 
+
+}
+
+
+#' @title Add SAS screening direction
+#'
+#' @description Visualizes the screenining direction of an \link[=spatialAnnotationScreening]{SAS}
+#' set up on top of a surface plots. See examples.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggpLayerExprEstimatesSAS params
+#'
+#' @details
+#' **In contrast** to [`ggpLayerExprEstimates()`], which visualizes
+#' the precise positions of the expression estimates, `ggpLayerScreeningDiretionSAS()` visualizes
+#' only the concept, the idea, of the screening direction. This is particularly useful, if the screening
+#' set up includes multiple annotations in one tissue section, where `ggpLayerExprEstimates()` fails
+#' to visualize the combined expression estimates.
+#'
+#' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"))
+#'
+#' plotImage(object) +
+#'   ggpLayerSpatAnnOutline(object, ids = ids, fill = "lightgrey") +
+#'   ggpLayerScreeningDirectionSAS(object, ids = ids, line_size = 0.5)
+#'
+#'
+ggpLayerScreeningDirectionSAS <- function(object,
+                                          ids,
+                                          distance = "dte",
+                                          line_alpha = 1,
+                                          line_color = "black",
+                                          line_size = 1,
+                                          line_type = "solid",
+                                          verbose = NULL,
+                                          ...){
+  seed <- 123
+  nmx <- 50
+
+  hlpr_assign_arguments(object)
+  deprecated(...)
+
+  crange <- getCoordsRange(object)
+
+  coords_df_px <-
+    getCoordsDfSA(object, ids = ids, distance = distance, core0 = TRUE)
+
+  coords_df_px <-
+    dplyr::filter(
+      .data = coords_df_px,
+      dplyr::between(x, left = crange$x[1], right = crange$x[2]),
+      dplyr::between(y, left = crange$y[1], right = crange$y[2])
+    ) %>%
+    dplyr::mutate(dist = scales::rescale(dist, to = c(1,nmx)))
+
+  base::set.seed(seed)
+
+  rn <- stats::rnorm(n = 100, mean = 0.5, sd = 0.25)
+
+  pb <- confuns::create_progress_bar(total = base::nrow(coords_df_px))
+
+  enh_df <-
+    purrr::map_df(
+      .x = coords_df_px$barcodes,
+      .f = function(bc){
+
+        if(base::isTRUE(verbose)){
+
+          pb$tick()
+
+        }
+
+        bc_df <- dplyr::filter(coords_df_px, barcodes == {{bc}})
+
+        n <- base::round(bc_df$dist, digits = 0)
+
+        base::set.seed(seed)
+        rn_use <- base::sample(rn, size = n, replace = F)
+
+        if(n > 0){
+
+          tibble::tibble(
+            barcodes = stringr::str_c(bc_df$barcodes, n),
+            x = bc_df$x + rn_use,
+            y = bc_df$y + rn_use
+          )
+
+        } else {
+
+          NULL
+
+        }
+
+      }
+    )
+
+  out <-
+    ggplot2::geom_density2d(
+      data = enh_df,
+      mapping = ggplot2::aes(x = x, y = y),
+      alpha = line_alpha,
+      color = line_color,
+      linetype = line_type,
+      linewidth = line_size
+    )
+
+  return(out)
 
 }
 

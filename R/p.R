@@ -211,6 +211,125 @@ pixel_df_to_image <- function(pxl_df){
 }
 
 
+#' Prepare coordinates data.frame for decreasing resolution
+#'
+#' This function prepares a data frame of spatial coordinates for Visium HD
+#' analysis by adjusting the coordinates to form a grid of evenly sized squares
+#' and grouping them into larger aggregate squares. It ensures the grid dimensions
+#' are divisible by a given factor, and it predicts missing coordinates.
+#'
+#' @param coords_df A data frame containing the original spatial coordinates.
+#' It must include columns `row`, `col`, `x_orig`, and `y_orig` representing the
+#' spatial grid positions and original coordinates.
+#' @param fct An integer factor by which the dimensions of the grid should be divisible.
+#' This ensures the grid can be evenly divided into larger squares.
+#'
+#' @details
+#' The function adjusts the input coordinates to form a perfect rectangular
+#' grid of squares and groups them into larger squares based on the provided factor (`fct`).
+#' It ensures that both the row and column counts are divisible by `fct` by expanding
+#' the grid if necessary. The function then assigns new groupings to these aggregated
+#' squares and predicts missing `x` and `y` coordinates using linear models based
+#' on the original coordinates. The output is a data frame that includes these new
+#' groupings and predicted coordinates.
+#'
+#' The main steps include:
+#' \itemize{
+#'   \item Calculating scaling factors for the columns and rows.
+#'   \item Adjusting the grid to ensure divisibility by `fct` and equal lengths of rows and columns.
+#'   \item Creating new row and column groups and generating corresponding barcodes.
+#'   \item Predicting missing `x` and `y` coordinates using linear models.
+#' }
+#'
+#' @return A data frame with adjusted spatial coordinates, new row and column groupings,
+#' predicted coordinates, and updated barcodes.
+#'
+#' @keywords internal
+#'
+#' @export
+prepare_coords_df_visium_hd <- function(coords_df, fct){
+
+  sf_col <- mean(coords_df$col/coords_df$x_orig, na.rm = TRUE)
+  sf_row <- mean(coords_df$row/coords_df$y_orig, na.rm = TRUE)
+
+  # create a perfect rectangle of squares in order not to shift row/cols into uneven numbers
+  minr <- min(coords_df$row)
+  maxr <- max(coords_df$row)
+
+  minc <- min(coords_df$col)
+  maxc <- max(coords_df$col)
+
+  seq_row <- minr:maxr
+  seq_col <- minc:maxc
+
+  lsr <- length(seq_row)
+  lsc <- length(seq_col)
+
+  # ensure divisibility by fct
+  if(lsr %% fct != 0){
+
+    lsr_new <- next_divisible(lsr, by = fct)
+    maxr <- maxr + (lsr_new - lsr)
+    seq_row <- minr:maxr
+    lsr <- length(seq_row)
+
+  }
+
+  if(lsc %% fct != 0){
+    lsc_new <- next_divisible(lsc, by = fct)
+    maxc <- maxc + (lsc_new - lsc)
+    seq_col <- minc:maxc
+    lsc <- length(seq_col)
+  }
+
+  # ensure equal length of row and col
+  if(lsr > lsc){
+
+    ldif <- lsr - lsc
+    maxc <- maxc + ldif
+    seq_col <- minc:maxc
+
+  } else if(lsc > lsr){
+
+    ldif <- lsc - lsr
+    maxr <- maxr + ldif
+    seq_row <- minr:maxr
+
+  }
+
+  cdf_complete <-
+    tidyr::expand_grid(row = {{seq_row}}, col = {{seq_col}}) %>%
+    dplyr::left_join(x = ., y = coords_df, by = c("row", "col"))
+
+  # create groups of new aggregated squares
+  breaks_row <- seq(min(cdf_complete$row), max(cdf_complete$row), by = fct)
+  breaks_col <- seq(min(cdf_complete$col), max(cdf_complete$col), by = fct)
+
+  coords_df_out <-
+    dplyr::mutate(
+      .data = cdf_complete,
+      row_group = cut(x = row, breaks = length(breaks_row), include.lowest = TRUE, right = FALSE),
+      col_group = cut(x = col, breaks = length(breaks_col), include.lowest = TRUE, right = FALSE),
+      row_new = base::as.numeric(row_group),
+      col_new = base::as.numeric(col_group),
+      barcodes_new = stringr::str_c("r", row_new, "c", col_new)
+    )
+
+  # predict missing coordinates an summarizes by new meta barcodes
+  lm_model_x <- lm(x_orig ~ col, data = coords_df_out, na.action = na.exclude)
+  lm_model_y <- lm(y_orig ~ row, data = coords_df_out, na.action = na.exclude)
+
+  coords_df_out$predicted_x <- predict(lm_model_x, newdata = coords_df_out)
+  coords_df_out$predicted_y <- predict(lm_model_y, newdata = coords_df_out)
+
+  coords_df_out <-
+    dplyr::group_by(coords_df_out, barcodes_new) %>%
+    dplyr::mutate(x_orig_new = mean(predicted_x), y_orig_new = mean(predicted_y))
+
+  return(coords_df_out)
+
+
+}
 
 
 # print -------------------------------------------------------------------
