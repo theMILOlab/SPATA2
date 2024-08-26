@@ -198,6 +198,7 @@ read_coords_xenium <- function(dir_coords){
 #' @return A sparse matrix with barcodes as column names and features as row names.
 #'
 #' @details The specified directory must contain the following files:
+#'
 #' \itemize{
 #'   \item{Matrix file}: A file with the extension `.mtx.gz` or `.mtx`. This file contains the count matrix in Matrix Market format.
 #'   \item{Barcodes file}: A file with the name `barcodes.tsv.gz` or `barcodes.tsv`. This file contains the barcodes for the columns of the matrix.
@@ -207,6 +208,7 @@ read_coords_xenium <- function(dir_coords){
 #' The function will search for these files in the specified directory and read them using appropriate functions. The matrix will be returned with barcodes as column names and features as row names.
 #'
 #' @examples
+#'
 #' \dontrun{
 #'   matrix_dir <- "path/to/matrix/folder"
 #'   matrix <- read_matrix_from_folder(matrix_dir)
@@ -457,7 +459,7 @@ reduce_coords_df_visium_hd <- function(coords_df_red, fct){
 #'
 #'   (Since tissue is rarely a perfect rectangle, the new grid of squares often
 #'   contains squares that, if located at the edge of the tissue, contain aggregated
-#'   data of the fewer resolution squares if located on the tissue edge. This
+#'   data of the fewer resolution squares than if not located on the tissue edge. This
 #'   information is stored in the meta variables *n_square_exp*, *n_square_actual* and *n_square_perc*.
 #'   See examples.)
 #'
@@ -470,10 +472,12 @@ reduce_coords_df_visium_hd <- function(coords_df_red, fct){
 #'
 #' }
 #'
+#' The assignment of barcodes under high resolution and new barcodes under which
+#' they have been aggrated is stored in a list in slot `object@obj_info$reduceResolutionVisiumHD$aggregated_barcodes`.
+#'
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' library(SPATA2)
 #' library(SPATAData)
 #'
@@ -538,7 +542,14 @@ reduce_coords_df_visium_hd <- function(coords_df_red, fct){
 #' plotSurface(object_red_flt, color_by = "square_perc", xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.2) +
 #'   grid_layer +
 #'   labs(subtitle = "Filtered")
-#' }
+#'
+#' # reconstruct the aggregated barcode assignment
+#' reconstructed_df <-
+#'   purrr::imap_dfr(
+#'     .x = object@obj_info$reduceResolutionVisiumHD$aggregated_barcodes,
+#'     .f = ~ tibble::tibble(barcodes_aggr = .x, barcodes_red = .y)
+#'   )
+#'
 
 reduceResolutionVisiumHD <- function(object,
                                      res_new,
@@ -756,6 +767,14 @@ reduceResolutionVisiumHD <- function(object,
   object_red <- setSpatialData(object_red, sp_data = sp_data)
   object_red <- setMetaDf(object_red, meta_df = meta_df)
 
+  # store aggregation results
+  object@obj_info$reduceResolutionVisiumHD$aggregated_barcodes <-
+    dplyr::group_by(coords_df_prep, barcodes_new) %>%
+    dplyr::group_split() %>%
+    purrr::set_names(nm = purrr::map_chr(.x = ., .f = ~ unique(.x[["barcodes_new"]]))) %>%
+    purrr::map(.f = ~ as.character(.x[["barcodes"]]))
+
+  # new spatial outline
   object_red <- identifyTissueOutline(object_red)
 
   returnSpataObject(object_red)
@@ -2795,51 +2814,63 @@ returnSpataObject <- function(object){
       args_input[["..."]] <- NULL
       args_input[["object"]] <- NULL
 
+
       args_input <-
-        purrr::imap(
-          .x = args_input,
-          .f = function(inp, n){
+        tryCatch({
 
-            if(class(inp) == "call"){
+          args_input <-
+            purrr::imap(
+              .x = args_input,
+              .f = function(inp, n){
 
-              inp_value <- base::eval(expr = inp, envir = .GlobalEnv)
+                if(class(inp) == "call"){
 
-              if(length(inp_value) == 1 & !is.list(inp_value)){
+                  inp_value <- base::eval(expr = inp, envir = .GlobalEnv)
 
-                out <- inp_value
+                  if(length(inp_value) == 1 & !is.list(inp_value)){
 
-              } else {
+                    out <- inp_value
 
-                out <- inp
+                  } else {
+
+                    out <- inp
+
+                  }
+
+                } else if(class(inp) == "name"){
+
+                  inp_value <-
+                    base::parse(text = inp) %>%
+                    base::eval(envir = ce)
+
+                  if(length(inp_value) == 1 & !is.list(inp_value)){
+
+                    out <- inp_value
+
+                  } else {
+
+                    out <- NULL
+
+                  }
+
+                } else {
+
+                  out <- inp
+
+                }
+
+                return(out)
 
               }
+            )
 
-            } else if(class(inp) == "name"){
+          args_input
 
-              inp_value <-
-                base::parse(text = inp) %>%
-                base::eval(envir = ce)
+        }, error = function(error){
 
-              if(length(inp_value) == 1 & !is.list(inp_value)){
+          list("unforseen_error" = error$message)
 
-                out <- inp_value
-
-              } else {
-
-                out <- NULL
-
-              }
-
-            } else {
-
-              out <- inp
-
-            }
-
-            return(out)
-
-          }
-        )
+        })
 
       new_logfile_entry <-
         tibble::tibble(

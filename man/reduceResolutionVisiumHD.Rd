@@ -71,7 +71,7 @@ theoretical versus actual number of spots in each aggregated unit.
 
 (Since tissue is rarely a perfect rectangle, the new grid of squares often
 contains squares that, if located at the edge of the tissue, contain aggregated
-data of the fewer resolution squares if located on the tissue edge. This
+data of the fewer resolution squares than if not located on the tissue edge. This
 information is stored in the meta variables \emph{n_square_exp}, \emph{n_square_actual} and \emph{n_square_perc}.
 See examples.)
 
@@ -83,6 +83,9 @@ optimized with parallel processing if multiple workers are specified.
 with the reduced resolution data, including updated spatial data and metadata.
 
 }
+
+The assignment of barcodes under high resolution and new barcodes under which
+they have been aggrated is stored in a list in slot \code{object@obj_info$reduceResolutionVisiumHD$aggregated_barcodes}.
 }
 \note{
 Only works on \code{SPATA2} object for \link[=SpatialMethod]{platform} \code{\link{VisiumHD}}.
@@ -154,4 +157,12 @@ plotSurface(object_red_flt, color_by = "square_perc", xrange = xrange, yrange = 
   grid_layer +
   labs(subtitle = "Filtered")
 }
+
+# reconstruct the aggregated barcode assignment
+reconstructed_df <-
+  purrr::imap_dfr(
+    .x = object@obj_info$reduceResolutionVisiumHD$aggregated_barcodes,
+    .f = ~ tibble::tibble(barcodes_aggr = .x, barcodes_red = .y)
+  )
+
 }

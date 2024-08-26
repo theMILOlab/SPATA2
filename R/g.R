@@ -4046,7 +4046,8 @@ ggpLayerZoom <- function(object = NULL,
                          expand_y = c(0,0),
                          round = 2,
                          n_breaks = 5,
-                         unit = NULL){
+                         unit = NULL,
+                         img_name = activeImage(object)){
 
   if(base::length(n_breaks) == 1){
 
