@@ -1516,7 +1516,7 @@ setMethod(
 
     } else {
 
-      stop(glue::glue("Don't know how to handle spatial data in objects of class {class(seurat_iamge)}"))
+      stop(glue::glue("Don't know how to handle spatial data in objects of class {class(seurat_image)}"))
 
     }
 

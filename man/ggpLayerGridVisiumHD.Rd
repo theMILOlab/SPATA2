@@ -105,4 +105,12 @@ plotSurface(object_red_flt, color_by = "square_perc", xrange = xrange, yrange = 
   grid_layer +
   labs(subtitle = "Filtered")
 }
+
+# reconstruct the aggregated barcode assignment
+reconstructed_df <-
+  purrr::imap_dfr(
+    .x = object@obj_info$reduceResolutionVisiumHD$aggregated_barcodes,
+    .f = ~ tibble::tibble(barcodes_aggr = .x, barcodes_red = .y)
+  )
+
 }

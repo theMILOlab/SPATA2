@@ -564,8 +564,19 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   n_obs <- nObs(object) # also in case no matrix available
 
   cat("SPATA2 object of size:", n_obs, "x", sum(n_mols), paste0("(", obsUnit(object), "s x molecules)\n"))
+
+  platform <- object@platform
+
+  if(platform == "VisiumHD"){
+
+    platform <- paste0(platform, " (Resolution: ", object@spatial@method@method_specifics$square_res, ")")
+
+  }
+
+  cat("Platform:", platform, "\n")
   cat("Sample name:", object@sample, "\n")
-  cat("Platform:", object@platform, "\n")
+
+
   #cat("Contains", length(assays), ifelse(length(assays) > 1, "assays:\n", "assay:\n"), stringr::str_c(assays, collapse = "\n"))
 
   # molecular assays
@@ -3564,30 +3575,40 @@ summarize_batch_reduce_visium_hd <- function(batch){
   count_mtr <- batch$mtr
   barcode_df <- batch$df
 
-  genes <- rownames(count_mtr)
+  if(nrow(barcode_df) == 1){ # only one barcode -> count_mtr is a numeric vector
 
-  count_df <-
-    count_mtr[, barcode_df$barcodes] %>%
-    Matrix::as.matrix() %>%
-    base::t() %>%
-    base::as.data.frame()
+    out <- Matrix::Matrix(count_mtr)
+    rownames(out) <- names(count_mtr)
+    colnames(out) <- barcode_df$barcodes_new
 
-  count_df$barcodes <- rownames(count_df)
-  rownames(count_df) <- NULL
+  } else {
 
-  out <-
-    dplyr::left_join(x = barcode_df, y = count_df, by = "barcodes") %>%
-    dplyr::group_by(barcodes_new) %>%
-    dplyr::summarise(
-      dplyr::across(
-        .cols = dplyr::all_of(genes),
-        .fns = ~ sum(.x, na.rm = TRUE)
-      )
-    ) %>%
-    tibble::column_to_rownames(var = "barcodes_new") %>%
-    Matrix::as.matrix() %>%
-    base::t() %>%
-    Matrix::Matrix()
+    genes <- rownames(count_mtr)
+
+    count_df <-
+      count_mtr[, barcode_df$barcodes] %>%
+      Matrix::as.matrix() %>%
+      base::t() %>%
+      base::as.data.frame()
+
+    count_df$barcodes <- rownames(count_df)
+    rownames(count_df) <- NULL
+
+    out <-
+      dplyr::left_join(x = barcode_df, y = count_df, by = "barcodes") %>%
+      dplyr::group_by(barcodes_new) %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::all_of(genes),
+          .fns = ~ sum(.x, na.rm = TRUE)
+        )
+      ) %>%
+      tibble::column_to_rownames(var = "barcodes_new") %>%
+      Matrix::as.matrix() %>%
+      base::t() %>%
+      Matrix::Matrix()
+
+  }
 
   return(out)
 }

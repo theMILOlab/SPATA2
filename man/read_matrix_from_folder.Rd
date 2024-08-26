@@ -18,6 +18,7 @@ and returns the matrix with appropriate row and column names.
 }
 \details{
 The specified directory must contain the following files:
+
 \itemize{
 \item{Matrix file}: A file with the extension \code{.mtx.gz} or \code{.mtx}. This file contains the count matrix in Matrix Market format.
 \item{Barcodes file}: A file with the name \code{barcodes.tsv.gz} or \code{barcodes.tsv}. This file contains the barcodes for the columns of the matrix.
@@ -27,6 +28,7 @@ The specified directory must contain the following files:
 The function will search for these files in the specified directory and read them using appropriate functions. The matrix will be returned with barcodes as column names and features as row names.
 }
 \examples{
+
 \dontrun{
   matrix_dir <- "path/to/matrix/folder"
   matrix <- read_matrix_from_folder(matrix_dir)

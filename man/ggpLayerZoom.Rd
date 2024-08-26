@@ -12,7 +12,8 @@ ggpLayerZoom(
   expand_y = c(0, 0),
   round = 2,
   n_breaks = 5,
-  unit = NULL
+  unit = NULL,
+  img_name = activeImage(object)
 )
 }
 \arguments{
@@ -29,6 +30,10 @@ x-coordinate 500px. If \code{NULL}, the original range is used.}
 
 \item{unit}{Character value. Overwrites the unit of the x- and y-axis. (If \code{NULL},
 the defalt, the unit for the respective axis is taken from \code{xrange} and \code{yrange} input.)}
+
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
