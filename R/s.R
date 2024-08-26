@@ -936,6 +936,45 @@ simulate_complete_coords_sa <- function(object, id, distance){
       ) %>%
       dplyr::select(barcodes, x, y)
 
+  } else if(containsMethod(object, method_name = "MERFISH")){
+
+      sa_range <-
+      getSpatAnnRange(object, id = id) %>%
+      map(.f = function(r){
+
+        c(
+          floor(r[1]),
+          ceiling(r[2])
+        )
+
+      })
+
+    tot_dist <-
+      as_pixel(distance, object = object, add_attr = FALSE) %>%
+      base::ceiling(x = .)
+
+    # Grid borders and dimensions
+    left_border <- sa_range$x[1] - tot_dist
+    right_border <- sa_range$x[2] + tot_dist
+    lower_border <- sa_range$y[1] - tot_dist
+    upper_border <- sa_range$y[2] + tot_dist
+    grid_area <- (right_border - left_border) * (upper_border - lower_border)
+
+    # Density of cells within TissueOutline (cells per pixel)
+    cpp <- SPATA2::nObs(object) / SPATA2::getTissueArea(object, unit = "px")[[1]]
+
+    # Assumed cells in whole grid (basd on averaged density of cells in TissueOutline)
+    n_cells_assumed = round(grid_area*cpp)
+
+    # Obtain coordinates for assumed number of cells within grid broders (cells are equally spaced)
+    n_cells_per_side <- sqrt(n_cells_assumed)
+    coords_df <- 
+            expand.grid(x = seq(left_border, right_border, length.out = n_cells_per_side), 
+                        y = seq(lower_border, upper_border, length.out = n_cells_per_side)
+                      ) %>% dplyr::mutate(barcodes = str_c("barcode", dplyr::row_number())
+                      ) %>% dplyr::select(barcodes, x, y
+                      ) %>% dplyr::slice(., 1:n_cells_assumed)
+  
   } else {
 
     stop("No method for this experiment set up exists.")
@@ -2683,14 +2722,26 @@ spatialAnnotationScreening <- function(object,
   coords_df_flt <-
     dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
 
-  cf <-
-    compute_correction_factor_sas(
-      object = object,
-      ids = ids,
-      distance = distance,
-      core = core,
-      coords_df_sa = coords_df_flt
-      )
+  cf <- list(…)[[“cf”]]
+  
+  if(is.null(cf)){ 
+    
+    cf <-
+      compute_correction_factor_sas(
+        object = object,
+        ids = ids,
+        distance = distance,
+        core = core,
+        coords_df_sa = coords_df_flt
+        )
+  
+  } else { 
+    
+    confuns::is_value(cf, mode = "numeric")
+
+    stopifnot(cf > 0 & cf <= 1) # cannot be > 1
+  
+  }
 
   coords_df_flt <-
     joinWithVariables(
