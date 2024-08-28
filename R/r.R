@@ -169,6 +169,8 @@ read_coords_visium <- function(dir_coords){
 
   }
 
+  coords_df <- dplyr::mutate(coords_df, exclude = in_tissue == 0)
+
   return(coords_df)
 
 }
@@ -392,17 +394,17 @@ recSgsRes <- function(object, unit = getDefaultUnit(object)){
 #' @keywords internal
 #'
 #' @export
-reduce_coords_df_visium_hd <- function(coords_df_red, fct){
+reduce_coords_df_visium_hd <- function(coords_df_prep, fct){
 
   fct_sq <- fct^2
 
-  dplyr::mutate(coords_df_red, col = as.numeric(col_group), row = as.numeric(row_group)) %>%
+  dplyr::mutate(coords_df_prep, col = as.numeric(col_group), row = as.numeric(row_group)) %>%
     dplyr::group_by(barcodes_new) %>%
     dplyr::summarise(
-      x_orig = unique(x_orig_new), # already on new barcode level
-      y_orig = unique(y_orig_new),
+      x_orig = mean(x_orig),
+      y_orig = mean(y_orig),
       col = unique(col),
-      row = unique(row), # already on new barcode level
+      row = unique(row),
       square_exp = {{fct_sq}},
       square_count = sum(!is.na(barcodes)),
       square_perc = (square_count/square_exp)*100
@@ -418,9 +420,9 @@ reduce_coords_df_visium_hd <- function(coords_df_red, fct){
 #' spots into larger units, recalculating the count matrix, and generating a new `SPATA2`
 #' object with the reduced resolution.
 #'
-#' @param res_new The new, lower spatial resolution in micrometers (um). It must
-#' be greater than the current resolution and divisible by the current resolution.
-#' Provide as \link[=concept_distance_measure]{distance measure}.
+#' @param res_new \link[=concept_distance_measure]{Distance measure}.
+#' The new spatial resolution in micrometers (um). It must
+#' be lower than the current resolution and divisible by the current resolution.
 #' @param new_sample_name Character string for the name of the new sample after
 #' resolution reduction. Default is `"{sample_name}_redResHD"`. Given to `glue::glue()`
 #' to create the final name.
@@ -439,7 +441,7 @@ reduce_coords_df_visium_hd <- function(coords_df_red, fct){
 #' @note Only works on `SPATA2` object for \link[=SpatialMethod]{platform} [`VisiumHD`].
 #'
 #' @details
-#' The `reduceResolutionVisuiumHD()` function reduces the spatial resolution of a Visium HD
+#' The `reduceResolutionVisiumHD()` function reduces the spatial resolution of a Visium HD
 #' dataset by aggregating neighboring spots into larger units and recalculating the count
 #' matrix for the new resolution. The process involves the following key steps:
 #'
@@ -596,18 +598,30 @@ reduceResolutionVisiumHD <- function(object,
 
   }
 
+  confuns::give_feedback(
+    msg = glue::glue("Reducing resolution of VisiumHD sample to {res_new}um."),
+    verbose = verbose
+  )
+
   fct <- num_res_new/num_res_now
 
   coords_df <- getCoordsDf(object)
+  barcodes_orig <- coords_df$barcodes
 
   # prepare coordinates data.frame for reduction of resolution
-  coords_df_prep <-
-    prepare_coords_df_visium_hd(coords_df, fct = fct) %>%
-    dplyr::filter(!is.na(barcodes))
+  coords_df_prep_all <-
+    prepare_coords_df_visium_hd(getCoordsDf(object, exclude = FALSE), fct = fct) %>%
+    dplyr::mutate(barcodes_new = as.character(barcodes_new))
+
+  coords_df_prep_flt <-
+    dplyr::filter(coords_df_prep_all, !is.na(barcodes) & barcodes %in% {{barcodes_orig}})
 
   # reduce resolution
-  coords_df_red <-
-    reduce_coords_df_visium_hd(coords_df_prep, fct = fct) %>%
+  coords_df_red_all <-
+    reduce_coords_df_visium_hd(coords_df_prep_all, fct = fct)
+
+  coords_df_red_flt <-
+    reduce_coords_df_visium_hd(coords_df_prep_flt, fct = fct) %>%
     dplyr::mutate(
       row_idx = dplyr::row_number(),
       summary_batch = as.numeric(cut(row_idx, breaks = {{batch_size}}))
@@ -615,7 +629,7 @@ reduceResolutionVisiumHD <- function(object,
 
   count_mtr <- getCountMatrix(object)[genes, ]
 
-  pb <- confuns::create_progress_bar(dplyr::n_distinct(coords_df_red$summary_batch))
+  pb <- confuns::create_progress_bar(total = dplyr::n_distinct(coords_df_red_flt$summary_batch))
 
   confuns::give_feedback(
     msg = "Preparing summary batches.",
@@ -624,8 +638,8 @@ reduceResolutionVisiumHD <- function(object,
 
   summary_batches <-
     dplyr::left_join(
-      x = coords_df_red[, c("barcodes_new", "summary_batch")],
-      y = coords_df_prep[,c("barcodes", "barcodes_new")],
+      x = coords_df_red_flt[, c("barcodes_new", "summary_batch")],
+      y = coords_df_prep_flt[,c("barcodes", "barcodes_new")],
       by = "barcodes_new"
     ) %>%
     dplyr::group_by(summary_batch) %>%
@@ -736,8 +750,15 @@ reduceResolutionVisiumHD <- function(object,
   count_mtr_new <- do.call(what = cbind, args = count_list)
 
   # create new SPATA2 object
-  coords_df <- dplyr::select(coords_df_red, barcodes = barcodes_new, col, row, x_orig, y_orig)
-  meta_df <- dplyr::select(coords_df_red, barcodes = barcodes_new, dplyr::starts_with("square"))
+  coords_df <-
+    dplyr::select(coords_df_red_all, barcodes = barcodes_new, col, row, x_orig, y_orig) %>%
+    dplyr::mutate(
+      exclude = !barcodes %in% coords_df_red_flt$barcodes_new,
+      col = col-1, # original data starts with 0...
+      row = row-1
+      )
+
+  meta_df <- dplyr::select(coords_df_red_flt, barcodes = barcodes_new, dplyr::starts_with("square"))
 
   object_red <-
     initiateSpataObject(
@@ -745,6 +766,7 @@ reduceResolutionVisiumHD <- function(object,
       coords_df = coords_df,
       count_mtr = count_mtr_new,
       modality = "gene",
+      spatial_method = "VisiumHD",
       verbose = FALSE
     )
 
@@ -768,8 +790,8 @@ reduceResolutionVisiumHD <- function(object,
   object_red <- setMetaDf(object_red, meta_df = meta_df)
 
   # store aggregation results
-  object@obj_info$reduceResolutionVisiumHD$aggregated_barcodes <-
-    dplyr::group_by(coords_df_prep, barcodes_new) %>%
+  object_red@obj_info$reduceResolutionVisiumHD$aggregated_barcodes <-
+    dplyr::group_by(coords_df_prep_all, barcodes_new) %>%
     dplyr::group_split() %>%
     purrr::set_names(nm = purrr::map_chr(.x = ., .f = ~ unique(.x[["barcodes_new"]]))) %>%
     purrr::map(.f = ~ as.character(.x[["barcodes"]]))

@@ -78,9 +78,9 @@
 
 
 
-#' A list of a slot named *VisiumSmall*, which contains the data.frame of all
-#' barcoded spots of 6.5mm capture area and a slot named *VisiumLarge* which
-#' contains the barcoded spots of the 11mm capture area.
+#' A list of a slot named *VisiumSmall*, which contains a list of data.frames of all
+#' barcoded spots of 6.5mm capture area and a slot named *VisiumLarge* which a list of
+#' data.frames that contain the barcoded spots of the 11mm capture area.
 #'
 #'  @docType data
 #'  @usage data(visium_spots)

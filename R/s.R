@@ -569,7 +569,10 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
 
   if(platform == "VisiumHD"){
 
-    platform <- paste0(platform, " (Resolution: ", object@spatial@method@method_specifics$square_res, ")")
+    res <- as_unit(object@spatial@method@method_specifics$square_res, unit = "um")
+    res_ref <- paste0(extract_value(res), "um")
+
+    platform <- paste0(platform, " (Resolution: ", res_ref, ")")
 
   }
 
@@ -617,6 +620,16 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
 
           insert <- ifelse(img_name == activeImage(object), ", active", "")
 
+          if(containsImage(object, img_name = img_name)){
+
+            insert <- paste0(insert, ", loaded")
+
+          } else {
+
+            insert <- paste0(insert, ", not loaded")
+
+          }
+
           out <- paste0(img_name, " (", dims, insert, ")")
 
           return(out)
@@ -627,7 +640,7 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
     idx_active <- which(img_names == activeImage(object))
     img_names[idx_active] <- stringr::str_c(img_names[idx_active], " (active)")
 
-    cat(paste0("\nImages (", nImages(object), "):\n"))
+    cat(paste0("\nRegistered images (", nImages(object), "):\n"))
     cat(stringr::str_c("- ", img_names) %>% stringr::str_c(., collapse = "\n"))
 
   }

@@ -9,6 +9,9 @@ initiateSpataObjectVisiumHD(
   directory_visium,
   square_res = "16um",
   mtr = "filtered",
+  genes = NULL,
+  workers = 1,
+  batch_size = 1000,
   img_active = "lowres",
   img_ref = "lowres",
   verbose = TRUE
@@ -19,16 +22,31 @@ initiateSpataObjectVisiumHD(
 
 \item{directory_visium}{Character. The directory containing the Visium output files.}
 
-\item{square_res}{Character. The square resolution from which to load the data. One of *c('16um', '8um', '2um').
-See details for more.}
+\item{square_res}{Character. The square resolution from which to load the data. While \emph{c('16um', '8um', '2um')}
+are the default resolutions, \code{\link[=reduceResolutionVisiumHD]{reduceResolutionVisiumHD()}} is applied if the input
+deviates from these three input options. See section \emph{Visium HD Resolution} for more information.}
 
 \item{mtr}{Character. Specifies which matrix to use, either "filtered" or "raw". Default is "filtered".}
+
+\item{genes}{Character or \code{NULL}. If character, specifies beforehand which genes to keep in the count
+matrix. If \code{NULL}, the default, all genes are kept.}
+
+\item{workers}{Integer specifying the number of parallel workers to use for processing. Default is \code{1},
+which defaults to no parallel workers. If \code{2} or more, the \code{furrr} package
+is required.}
+
+\item{batch_size}{Integer specifying the number of spatial spots to process in each batch. Default is \code{1000}.}
 
 \item{img_active}{Character. The active image to use, either "lowres" or "hires". Default is "lowres".}
 
 \item{img_ref}{Character. The reference image to use, either "lowres" or "hires". Default is "lowres".}
 
-\item{verbose}{Logical. If TRUE, progress messages are printed. Default is TRUE.}
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
+\item{inherit}{argument_dummy params}
 }
 \value{
 A \code{SPATA2} object the VisiumHD platform.
@@ -69,3 +87,18 @@ It is crucial to install the package \code{arrow} in a way that \code{\link[arro
 are several ways. Installing the package with \code{install.packages('arrow', repos = 'https://apache.r-universe.dev')}
 worked reliably for us.
 }
+\section{Visium HD Resolution}{
+
+The input for \code{square_res} can deviate from the standard resolution options as long as it is an
+even number divisible by one of the standard resolutions. In such cases, data from the next possible
+lower resolution is read, and \code{\link[=reduceResolutionVisiumHD]{reduceResolutionVisiumHD()}} is applied to aggregate the data.
+For example, if \code{square_res = '6um'}, data is retrieved from \emph{~/binned_outputs/square_002um}
+and then aggregated accordingly. The same applies if \verb{square_res = 10um}. If \verb{square_res = 24um},
+data is read from \emph{~/binned_outputs/square_008um}; if \verb{square_res = 32um}, data is read from
+\emph{~/binned_outputs/square_016um}, and so on. If the required folder is missing, data from the
+next higher resolution folder is used if possible, else an error is thrown.
+
+Note, that aggregating counts by resolution can take a considerable amount of time. Consider prefiltering
+the raw counts using \code{genes} and/or increasing the number of cores to use with \code{workers}.
+}
+

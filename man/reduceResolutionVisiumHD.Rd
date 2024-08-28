@@ -18,9 +18,9 @@ reduceResolutionVisiumHD(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{res_new}{The new, lower spatial resolution in micrometers (um). It must
-be greater than the current resolution and divisible by the current resolution.
-Provide as \link[=concept_distance_measure]{distance measure}.}
+\item{res_new}{\link[=concept_distance_measure]{Distance measure}.
+The new spatial resolution in micrometers (um). It must
+be lower than the current resolution and divisible by the current resolution.}
 
 \item{new_sample_name}{Character string for the name of the new sample after
 resolution reduction. Default is \code{"{sample_name}_redResHD"}. Given to \code{glue::glue()}
@@ -91,7 +91,6 @@ they have been aggrated is stored in a list in slot \code{object@obj_info$reduce
 Only works on \code{SPATA2} object for \link[=SpatialMethod]{platform} \code{\link{VisiumHD}}.
 }
 \examples{
-\dontrun{
 library(SPATA2)
 library(SPATAData)
 
@@ -156,7 +155,6 @@ plotSurface(object_red, color_by = "square_perc", xrange = xrange, yrange = yran
 plotSurface(object_red_flt, color_by = "square_perc", xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.2) +
   grid_layer +
   labs(subtitle = "Filtered")
-}
 
 # reconstruct the aggregated barcode assignment
 reconstructed_df <-

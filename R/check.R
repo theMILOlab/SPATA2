@@ -1673,6 +1673,32 @@ check_spata_df <- function(spata_df){
 }
 
 
+check_square_res <- function(square_res){
+
+  is_dist(square_res, error = TRUE)
+
+  if(extract_unit(square_res) != "um"){
+
+    stop("Input for `square_res` must be provided in microns (um).")
+
+  }
+
+  res_val <- extract_value(square_res)
+
+  if(res_val %% 2 != 0){
+
+    stop("Input for `square_res` must be divisible by 2.")
+
+  }
+
+  valid_options <-
+    purrr::map_lgl(.x = visiumHD_resolutions, .f = function(res_test){ res_val %% res_test == 0}) %>%
+    purrr::keep(.p = isTRUE)
+
+  return(names(valid_options))
+
+}
+
 
 #' @title Check summarized trajectory data.frame
 #'

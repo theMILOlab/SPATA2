@@ -9,7 +9,7 @@ ggpLayerGridVisiumHD(
   res,
   line_alpha = 0.9,
   line_clr = "black",
-  line_size = 1,
+  line_size = 0.5,
   img_name = activeImage(object)
 )
 }
@@ -18,7 +18,7 @@ ggpLayerGridVisiumHD(
 objects of classes for which a method has been defined.}
 
 \item{res}{\link[=concept_distance_measure]{Distance measure.} A value specifying the desired resolution for the grid.
-This resolution must be greater than the current resolution and divisible by the current resolution.}
+This resolution must be lower than or equal to the current resolution and divisible by the current resolution.}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
@@ -39,7 +39,6 @@ Adds a grid overlay to VisiumHD spatial data at a specified resolution.
 This function is designed to work specifically with VisiumHD data within a \code{SPATA2} object.
 }
 \examples{
-\dontrun{
 library(SPATA2)
 library(SPATAData)
 
@@ -104,7 +103,6 @@ plotSurface(object_red, color_by = "square_perc", xrange = xrange, yrange = yran
 plotSurface(object_red_flt, color_by = "square_perc", xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.2) +
   grid_layer +
   labs(subtitle = "Filtered")
-}
 
 # reconstruct the aggregated barcode assignment
 reconstructed_df <-

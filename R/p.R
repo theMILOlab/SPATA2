@@ -249,10 +249,19 @@ pixel_df_to_image <- function(pxl_df){
 #' @export
 prepare_coords_df_visium_hd <- function(coords_df, fct){
 
-  sf_col <- mean(coords_df$col/coords_df$x_orig, na.rm = TRUE)
-  sf_row <- mean(coords_df$row/coords_df$y_orig, na.rm = TRUE)
+  if(min(coords_df$col) == 0){
 
-  # create a perfect rectangle of squares in order not to shift row/cols into uneven numbers
+    coords_df$col <- coords_df$col + 1
+
+  }
+
+  if(min(coords_df$row) == 0){
+
+    coords_df$row <- coords_df$row + 1
+
+  }
+
+  # ensure a perfect rectangle of squares in order not to shift row/cols into uneven numbers
   minr <- min(coords_df$row)
   maxr <- max(coords_df$row)
 
@@ -312,22 +321,33 @@ prepare_coords_df_visium_hd <- function(coords_df, fct){
       col_group = cut(x = col, breaks = length(breaks_col), include.lowest = TRUE, right = FALSE),
       row_new = base::as.numeric(row_group),
       col_new = base::as.numeric(col_group),
-      barcodes_new = stringr::str_c("r", row_new, "c", col_new)
+      barcodes_new = stringr::str_c("c", (col_new-1), "r", (row_new-1))
     )
 
-  # predict missing coordinates an summarizes by new meta barcodes
-  lm_model_x <- lm(x_orig ~ col, data = coords_df_out, na.action = na.exclude)
-  lm_model_y <- lm(y_orig ~ row, data = coords_df_out, na.action = na.exclude)
+  # predict missing coordinates and summarize by new meta barcodes
+  lm_model_x <- lm(x_orig ~ col + row, data = coords_df_out, na.action = na.exclude)
+  lm_model_y <- lm(y_orig ~ row + col, data = coords_df_out, na.action = na.exclude)
 
   coords_df_out$predicted_x <- predict(lm_model_x, newdata = coords_df_out)
   coords_df_out$predicted_y <- predict(lm_model_y, newdata = coords_df_out)
 
   coords_df_out <-
-    dplyr::group_by(coords_df_out, barcodes_new) %>%
-    dplyr::mutate(x_orig_new = mean(predicted_x), y_orig_new = mean(predicted_y))
+    dplyr::mutate(
+      .data = coords_df_out,
+      x_na = is.na(x_orig),
+      y_na = is.na(y_orig),
+      x_orig = dplyr::if_else(x_na, predicted_x, x_orig),
+      y_orig = dplyr::if_else(y_na, predicted_y, y_orig)
+      ) %>%
+    dplyr::ungroup()
+
+  coords_df_out$barcodes_new <-
+    factor(
+      x = coords_df_out$barcodes_new,
+      levels = sample(unique(coords_df_out$barcodes_new))
+      )
 
   return(coords_df_out)
-
 
 }
 

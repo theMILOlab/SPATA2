@@ -4,7 +4,7 @@
 \alias{reduce_coords_df_visium_hd}
 \title{Reduce resolution coordinates data.frame}
 \usage{
-reduce_coords_df_visium_hd(coords_df_red, fct)
+reduce_coords_df_visium_hd(coords_df_prep, fct)
 }
 \arguments{
 \item{coords_df_red}{The output data.frame of the \code{prepare_coords_df_visium_hd()} function.}

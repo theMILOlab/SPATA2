@@ -854,7 +854,7 @@ ggpLayerExprEstimatesSAS <- function(object,
 #' This function is designed to work specifically with VisiumHD data within a `SPATA2` object.
 #'
 #' @param res \link[=concept_distance_measure]{Distance measure.} A value specifying the desired resolution for the grid.
-#' This resolution must be greater than the current resolution and divisible by the current resolution.
+#' This resolution must be lower than or equal to the current resolution and divisible by the current resolution.
 #'
 #' @inherit argument_dummy params
 #'
@@ -867,55 +867,23 @@ ggpLayerGridVisiumHD <- function(object,
                                  res,
                                  line_alpha = 0.9,
                                  line_clr = "black",
-                                 line_size = 1,
-                                 img_name = activeImage(object)){
+                                 line_size = 0.5,
+                                 img_name = activeImage(object)
+                                 ){
 
-  containsMethod(object, method = "VisiumHD")
-
-  sm <- getSpatialMethod(object)
-
-  res_new <- as_unit(res, unit = "um", object = object)
-  res_now <- as_unit(sm@method_specifics$square_res, unit = "um", object = object)
-
-  num_res_new <- as.numeric(res_new)
-  num_res_now <- as.numeric(res_now)
-
-  if(!(res_new > res_now)){
-
-    stop(glue::glue("`res_new` must be bigger than current resolution, which is {res_now}um."))
-
-  } else if((num_res_new %% num_res_now) != 0){
-
-    stop(glue::glue("`res_new` must be divisible by the current resolution, which {res_now}um"))
-
-  }
-
-  fct <- num_res_new/num_res_now
-
-  isf <- getScaleFactor(object, fct_name = "image", img_name = img_name)
-
-  coords_df <- getCoordsDf(object)
-
-  # prepare coordinates data.frame for reduction of resolution
-  coords_df_prep <-
-    prepare_coords_df_visium_hd(coords_df, fct = fct)
-
-  # reduce resolution
-  coords_df_red <-
-    reduce_coords_df_visium_hd(coords_df_prep, fct = fct) %>%
-    dplyr::mutate(x = x_orig * {{isf}}, y = y_orig * {{isf}})
+  grid_df <- getGridVisiumHD(object, res = res, img_name = img_name)
 
   out <-
-    ggplot2::geom_tile(
-      data = coords_df_red,
-      mapping = ggplot2::aes(x = x, y = y),
-      fill = NA,
+    ggplot2::geom_segment(
+      mapping = ggplot2::aes(x = x, y = y, xend = xend, yend = yend),
+      data = grid_df,
       alpha = line_alpha,
       color = line_clr,
       linewidth = line_size
     )
 
   return(out)
+
 }
 
 

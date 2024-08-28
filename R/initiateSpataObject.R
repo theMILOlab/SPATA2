@@ -115,9 +115,9 @@ initiateSpataObject <- function(sample_name,
   barcodes_coords <- coords_df[["barcodes"]]
   barcodes_counts <- base::colnames(count_mtr)
 
-  if(!base::all(barcodes_coords %in% barcodes_counts)){
+  if(!base::all(barcodes_counts %in% barcodes_coords)){
 
-    stop("All barcodes from `coords_df` must be present in `counts_mtr`.")
+    stop("All barcodes from `count_mtr` must be present in `coords_df`.")
 
   }
 
@@ -980,12 +980,16 @@ initiateSpataObjectVisium <- function(sample_name,
 #'
 #' @param sample_name Character. The name of the sample.
 #' @param directory_visium Character. The directory containing the Visium output files.
-#' @param square_res Character. The square resolution from which to load the data. One of *c('16um', '8um', '2um').
-#' See details for more.
+#' @param square_res Character. The square resolution from which to load the data. While *c('16um', '8um', '2um')*
+#' are the default resolutions, [`reduceResolutionVisiumHD()`] is applied if the input
+#' deviates from these three input options. See section *Visium HD Resolution* for more information.
 #' @param mtr Character. Specifies which matrix to use, either "filtered" or "raw". Default is "filtered".
+#' @param genes Character or `NULL`. If character, specifies beforehand which genes to keep in the count
+#' matrix. If `NULL`, the default, all genes are kept.
 #' @param img_active Character. The active image to use, either "lowres" or "hires". Default is "lowres".
 #' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
-#' @param verbose Logical. If TRUE, progress messages are printed. Default is TRUE.
+#' @param inherit argument_dummy params
+#' @inherit reduceResolutionVisiumHD params
 #'
 #' @return A `SPATA2` object the VisiumHD platform.
 #'
@@ -1020,12 +1024,28 @@ initiateSpataObjectVisium <- function(sample_name,
 #' The function will check for these files and process them to create a `SPATA2` object. It reads the count matrix, loads the spatial data,
 #' and initializes the `SPATA2` object with the necessary metadata and settings.
 #'
+#' @section Visium HD Resolution:
+#' The input for `square_res` can deviate from the standard resolution options as long as it is an
+#' even number divisible by one of the standard resolutions. In such cases, data from the next possible
+#' lower resolution is read, and [`reduceResolutionVisiumHD()`] is applied to aggregate the data.
+#' For example, if `square_res = '6um'`, data is retrieved from \emph{~/binned_outputs/square_002um}
+#' and then aggregated accordingly. The same applies if `square_res = 10um`. If `square_res = 24um`,
+#' data is read from \emph{~/binned_outputs/square_008um}; if `square_res = 32um`, data is read from
+#' \emph{~/binned_outputs/square_016um}, and so on. If the required folder is missing, data from the
+#' next higher resolution folder is used if possible, else an error is thrown.
+#'
+#' Note, that aggregating counts by resolution can take a considerable amount of time. Consider prefiltering
+#' the raw counts using `genes` and/or increasing the number of cores to use with `workers`.
+#'
 #' @export
 #'
 initiateSpataObjectVisiumHD <- function(sample_name,
                                         directory_visium,
                                         square_res = "16um",
                                         mtr = "filtered",
+                                        genes = NULL,
+                                        workers = 1,
+                                        batch_size = 1000,
                                         img_active = "lowres",
                                         img_ref = "lowres",
                                         verbose = TRUE){
@@ -1035,19 +1055,56 @@ initiateSpataObjectVisiumHD <- function(sample_name,
     verbose = verbose
   )
 
+  is_dist(square_res, error = TRUE)
+  input_square_res <- as_unit(square_res, unit = "um")
+
+  res_options <- check_square_res(square_res)
+  n_opts <- length(res_options)
+
   # validate and process input directory
   dir <- base::normalizePath(directory_visium)
 
-  square_pattern <- stringr::str_c("binned_outputs\\/.*", square_res)
+  for(i in 1:n_opts){
 
-  files <-
-    base::list.files(dir, recursive = TRUE, full.names = TRUE) %>%
-    stringr::str_subset(pattern = square_pattern)
+    res_opt <- res_options[i]
 
-  out_folder <-
-    stringr::str_extract(files, pattern = square_pattern) %>%
-    base::unique() %>%
-    base::file.path(directory_visium, .)
+    square_pattern <- stringr::str_c("binned_outputs\\/.*", res_opt)
+
+    files <-
+      base::list.files(dir, recursive = TRUE, full.names = TRUE) %>%
+      stringr::str_subset(pattern = square_pattern)
+
+    out_folder <-
+      stringr::str_extract(files, pattern = square_pattern) %>%
+      base::unique() %>%
+      base::file.path(directory_visium, .)
+
+    if(length(out_folder) == 1){
+
+      confuns::give_feedback(
+        msg = glue::glue("Found ~ binned_outputs\\ for resolution {res_opt}."),
+        verbose = verbose
+      )
+
+      break()
+
+    } else if(length(out_folder) == 0 & (i+1) <= n_opts){
+
+      next_opt <- res_options[(i+1)]
+
+      confuns::give_feedback(
+        msg = glue::glue("Did not find folder for resolution {res_opt}. Trying {next_opt}."),
+        verbose = verbose
+      )
+
+    } else {
+
+      stop(glue::glue("Could not find appropriate ~ binned_outputs\\ folder to create SPATA2 object for resolution {square_res}."))
+
+    }
+
+  }
+
 
   if(base::length(out_folder) != 1){
 
@@ -1060,7 +1117,7 @@ initiateSpataObjectVisiumHD <- function(sample_name,
   sp_data <-
     createSpatialDataVisiumHD(
       dir = out_folder,
-      square_res = square_res,
+      square_res = res_opt, # use definition from last loop
       sample = sample_name,
       img_ref = img_ref,
       img_active = img_active,
@@ -1088,11 +1145,16 @@ initiateSpataObjectVisiumHD <- function(sample_name,
 
   mtr_path <- out_files[stringr::str_detect(out_files, pattern = mtr_pattern)]
 
+  ref_path <-
+    stringr::str_remove(mtr_path, directory_visium) %>%
+    paste0("~", .)
+
   if(base::length(mtr_path) > 1){
 
-    warning("Multiple matrices found. Picking first.")
-
     mtr_path <- mtr_path[1]
+    ref_path <- ref_path[1]
+
+    warning(glue::glue("Multiple matrices found. Picking first. {ref_path}"))
 
   } else if(base::length(mtr_path) == 0){
 
@@ -1101,11 +1163,28 @@ initiateSpataObjectVisiumHD <- function(sample_name,
   }
 
   confuns::give_feedback(
-    msg = glue::glue("Reading count matrix from '{mtr_path}'."),
+    msg = glue::glue("Reading count matrix from '{ref_path}'."),
     verbose = verbose
   )
 
   count_mtr <- Seurat::Read10X_h5(filename = mtr_path)
+
+  if(is.character(genes)){
+
+    confuns::check_one_of(
+      input = genes,
+      against = rownames(count_mtr),
+      fdb.fn = "warning",
+      fdb.opt = 2,
+      ref.opt.2 = "genes in count matrix",
+      trunc.at = 0
+    )
+
+    genes <- genes[genes %in% rownames(count_mtr)]
+
+    count_mtr <- count_mtr[genes, ]
+
+  }
 
   # create SPATA2 object
   object <-
@@ -1144,7 +1223,23 @@ initiateSpataObjectVisiumHD <- function(sample_name,
   # set default
   object <- setDefault(object, pt_size = getSpotSize(object), use_scattermore = TRUE)
 
-  object <- identifyTissueOutline(object, verbose = verbose)
+  if(square_res %in% names(visiumHD_resolutions)){
+
+    object <- identifyTissueOutline(object, verbose = verbose)
+
+  } else {
+
+    object <-
+      reduceResolutionVisiumHD(
+        object = object,
+        res_new = input_square_res,
+        new_sample_name = sample_name,
+        workers = workers,
+        batch_size = batch_size,
+        verbose = verbose
+        )
+
+  }
 
   returnSpataObject(object)
 

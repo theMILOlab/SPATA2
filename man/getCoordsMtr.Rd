@@ -4,7 +4,12 @@
 \alias{getCoordsMtr}
 \title{Obtain coordinates matrix}
 \usage{
-getCoordsMtr(object, img_name = activeImage(object), orig = FALSE)
+getCoordsMtr(
+  object,
+  img_name = activeImage(object),
+  orig = FALSE,
+  exclude = TRUE
+)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,

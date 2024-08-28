@@ -1412,15 +1412,18 @@ setMethod(
       eps = as_pixel(eps, object = object)
 
       # for complete tissue
+      mtr <- getCoordsMtr(object, orig = TRUE)
+      mtr[,1] <- as.numeric(mtr[,1])
+      mtr[,2] <- as.numeric(mtr[,2])
+
       object@outline[["tissue_whole"]] <-
-        getCoordsMtr(object, orig = TRUE) %>%
-        concaveman::concaveman(points = ., concavity = concavity) %>%
+        concaveman::concaveman(points = mtr, concavity = concavity) %>%
         tibble::as_tibble() %>%
         magrittr::set_colnames(value = c("x_orig", "y_orig"))
 
       # for possible sections
       coords_df <-
-        getCoordsDf(object) %>%
+        getCoordsDf(object, exclude = TRUE) %>%
         add_dbscan_variable(
           eps = as_pixel(input = eps, object),
           minPts = minPts,
@@ -1471,12 +1474,12 @@ setMethod(
       coords_df$tissue_section <- base::factor(coords_df$tissue_section)
 
       # return coords_df! ; not coords_df_flt
-      object <-
-        setCoordsDf(
-          object = object,
-          coords_df = dplyr::select(coords_df, -x, -y),
-          force = TRUE
-          )
+      object@coordinates <-
+        dplyr::left_join(
+          x = object@coordinates,
+          y = coords_df[,c("barcodes", "tissue_section")],
+          by = "barcodes"
+        )
 
     }
 

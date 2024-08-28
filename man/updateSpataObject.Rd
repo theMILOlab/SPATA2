@@ -4,29 +4,19 @@
 \alias{updateSpataObject}
 \title{Update SPATA2 object}
 \usage{
-updateSpataObject(
-  object,
-  method = NULL,
-  sample_name = NULL,
-  n_pcs = 30,
-  verbose = TRUE,
-  ....
-)
+updateSpataObject(object, method = NULL, verbose = TRUE, ....)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{method}{Character value or \code{NULL}. If \code{NULL}, the functions tests whether
-the barcodes of the input object can be mapped to either of the VisiumSmall or VisiumLarge
+the barcodes of the input object can be mapped to either of the \code{VisiumSmall} or \code{VisiumLarge}
 platform. If this does not succeed you must specify the argument. In that case it
-should be one of \code{base::names(spatial_methods)}.}
+should be one of \code{base::names(spatial_methods)}.
 
-\item{sample_name}{Character value. The name of the input object.}
-
-\item{n_pcs}{Numeric value or \code{NULL}. If numeric, specifies the number of
-principal components to use. If \code{NULL}, all principal components are used
-(as computed with \code{\link[=runPCA]{runPCA()}}).}
+Only relevant for updating from SPATA2v2 to SPATA2v3. v3.0.0 and above should not
+face any problems regarding this.}
 
 \item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
@@ -42,6 +32,6 @@ The updated input object, containing the added, removed or computed results.
 Updates the input object to the newest version of the package.
 }
 \note{
-\code{n_pcs} and \code{sample_name} only are if the input object derives from
-the old \code{SPATA} (not \code{SPATA2}) package!
+\code{SPATA2} objects of version < 2.0.0 can not be updated any longer. If you have such an object
+and want to transfer the data, please raise an issue at github.
 }
