@@ -10,14 +10,7 @@ updateS4(object, ...)
 
 \S4method{updateS4}{SpatialMethod}(object, method_name)
 
-\S4method{updateS4}{spata2}(
-  object,
-  method = NULL,
-  sample_name = NULL,
-  n_pcs = 30,
-  verbose = TRUE,
-  ....
-)
+\S4method{updateS4}{spata2}(object, method = NULL, verbose = TRUE, ....)
 }
 \arguments{
 \item{object}{The S4 object.}

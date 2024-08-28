@@ -3195,15 +3195,12 @@ createSpatialDataVisium <- function(dir,
   xmean <- base::mean(coords_df$x_orig, na.rm = TRUE)
   ymean <- base::mean(coords_df$y_orig, na.rm = TRUE)
 
-  coords_df <-
-    dplyr::filter(coords_df, in_tissue == 1) %>%
-    dplyr::select(-in_tissue)
-
-  if(base::any(coords_df$barcodes %in% visium_spots$VisiumSmall$barcode)){
+  if(base::any(coords_df$barcodes %in% visium_spots$VisiumSmall$opt1$barcode) |
+     base::any(coords_df$barcodes %in% visium_spots$VisiumSmall$opt2$barcode)){
 
     method <- spatial_methods[["VisiumSmall"]]
 
-  } else if(base::any(coords_df$barcodes %in% visium_spots$VisiumLarge$barcode)){
+  } else if(base::any(coords_df$barcodes %in% visium_spots$VisiumLarge$opt1$barcode)){
 
     method <- spatial_methods[["VisiumLarge"]]
 
@@ -3276,7 +3273,7 @@ createSpatialDataVisium <- function(dir,
   # compute pixel scale factor to
   object <- computePixelScaleFactor(object, verbose = verbose)
 
-  # set capture area
+  # compute capture area
   isf <- getScaleFactor(object, fct_name = "image", img_name = img_active)
 
   if(method@name == "VisiumSmall"){
@@ -3421,10 +3418,6 @@ createSpatialDataVisiumHD <- function(dir,
 
   xmean <- base::mean(coords_df$x_orig, na.rm = TRUE)
   ymean <- base::mean(coords_df$y_orig, na.rm = TRUE)
-
-  coords_df <-
-    dplyr::filter(coords_df, in_tissue == 1) %>%
-    dplyr::select(-in_tissue)
 
   # compute spot size
   spot_size <-

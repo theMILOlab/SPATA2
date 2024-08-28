@@ -1214,6 +1214,7 @@ threshold_scattermore <- 100000
 
 # V -----------------------------------------------------------------------
 
+visiumHD_resolutions <- c("16um" =  16, "8um" = 8, "2um" = 2)
 
 #' VisiumHD Spatial Method
 #'

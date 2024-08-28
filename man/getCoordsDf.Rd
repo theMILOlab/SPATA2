@@ -21,6 +21,7 @@ getCoordsDf(object, ...)
   object,
   img_name = activeImage(object),
   scale = TRUE,
+  exclude = TRUE,
   wh = FALSE,
   as_is = FALSE,
   ...
@@ -39,6 +40,12 @@ variables that are merged to the coordinates data.frame via \code{\link[=joinWit
 \item{img_name}{Only relevant if the \code{\link{SPATA2}} object contains images. If so,
 specifies the name of the image to which the original coordinates are scaled.
 If \code{NULL}, defaults to the active image.}
+
+\item{exclude}{Logical. If \code{TRUE}, observations that are no longer part of the dataset
+(but still exist in the coordinates data frame for potential use in spatial computations)
+will be excluded and removed before returning the data frame.}
+
+\item{as_is}{Logical. If \code{TRUE}, no processing and coordinate scaling is conducted at all.}
 }
 \value{
 Data.frame that, among others, contains at least the

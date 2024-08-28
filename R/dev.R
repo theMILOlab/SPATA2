@@ -587,8 +587,11 @@ addMetaDataObs <- function(object,
   all_existing_var_names <- setdiff(x = colnames(meta_df), y = vars_rm)
 
   if(is.null(var_names)){
+
     var_names <- all_var_names
+
   } else if(is.character(var_names)) {
+
     var_names <- setdiff(x = var_names, y = vars_rm)
 
     confuns::check_one_of(
@@ -597,20 +600,42 @@ addMetaDataObs <- function(object,
       fdb.opt = 2,
       ref.opt.2 = "column names of `meta_obs_df`"
     )
+
   } else {
+
     stop("Input for `var_names` must be of class character or `NULL`.")
+
   }
+
+  all_vars_list <- getVarTypeList(object)
+
+  all_non_meta_vars <-
+    confuns::lselect(all_vars_list, -meta_features) %>%
+    purrr::flatten_chr()
 
   confuns::check_none_of(
     input = var_names,
-    against = all_existing_var_names,
+    against = all_non_meta_vars,
+    ref.input = "of variables to add",
+    ref.against = "in non-meta variables of this SPATA2 object. Overwriting not allowed. Please change the variable name"
+  )
+
+  all_meta_vars <- all_vars_list$meta_features
+
+  confuns::check_none_of(
+    input = var_names,
+    against = all_meta_vars,
+    ref.input = "of variables to add",
+    ref.against = "meta variables/features",
     overwrite = overwrite
   )
 
   meta_df <- dplyr::select(meta_df, -dplyr::any_of(var_names))
 
   if(!"barcodes" %in% colnames(meta_obs_df)){
+
     stop(glue::glue("Require variable 'barcodes' in input for `meta_obs_df` as key for safe merging."))
+
   }
 
   meta_df_new <- dplyr::left_join(x = meta_df, y = meta_obs_df[, c("barcodes", var_names)], by = "barcodes")

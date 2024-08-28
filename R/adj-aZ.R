@@ -1037,15 +1037,53 @@ asSingleCellExperiment <- function(object,
 
     keep <- Matrix::colSums(count_mtr, na.rm = TRUE) > 0
 
-    spot_df <- visium_spots[[object@platform]][,c("barcode", "row", "col")]
+    coords_df <- getCoordsDf(object)
+
+    if(any(!c("col", "row" %in% colnames(coords_df)))){
+
+      coords_df$col <- NULL
+      coords_df$row <- NULL
+
+      visium_coords_list <- purrr::flatten(visium_spots)
+
+      merged_vars <- FALSE
+      for(vc_df in visium_coords_list){
+
+        if(length(intersect(vc_df$barcode, coords_df$barcodes)) >= 1){
+
+          coords_df <-
+            dplyr::left_join(
+              x = coords_df,
+              y = vc_df[,c("barcode", "col", "row")],
+              by = c("barcodes" = "barcode")
+            )
+
+          confuns::give_feedback(
+            msg = "Using 'col' and 'row' from `visium_spots`.",
+            verbose = verbose
+          )
+
+          merged_vars <- TRUE
+
+        }
+
+      }
+
+      if(!merged_vars){
+
+        stop("Could not find valid `col` and/or `row` variables.")
+
+      }
+
+    }
 
     colD <-
-      getCoordsDf(object) %>%
       dplyr::transmute(
+        .data = coords_df,
         spot = barcodes,
         in_tissue = 1L,
-        #row = row,
-        #col = col,
+        row = row,
+        col = col,
         imagerow = y_orig,
         imagecol = x_orig
       ) %>%

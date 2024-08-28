@@ -701,6 +701,10 @@ getCoordsCenter <- function(object){
 #' @param img_name Only relevant if the [`SPATA2`] object contains images. If so,
 #' specifies the name of the image to which the original coordinates are scaled.
 #' If `NULL`, defaults to the active image.
+#' @param exclude Logical. If `TRUE`, observations that are no longer part of the dataset
+#' (but still exist in the coordinates data frame for potential use in spatial computations)
+#' will be excluded and removed before returning the data frame.
+#' @param as_is Logical. If `TRUE`, no processing and coordinate scaling is conducted at all.
 #' @param ... Additional arguments given to [`joinWithVariables()`] if argument
 #' `variables` is specified.
 #' @inherit argument_dummy params
@@ -783,6 +787,7 @@ setMethod(
   definition = function(object,
                         img_name = activeImage(object),
                         scale = TRUE,
+                        exclude = TRUE,
                         wh = FALSE,
                         as_is = FALSE,
                         ...){
@@ -794,6 +799,12 @@ setMethod(
       out <- coords_df
 
     } else {
+
+      if("exclude" %in% colnames(coords_df) & isTRUE(exclude)){ # only apply if exclude is a variable
+
+        coords_df <- dplyr::filter(coords_df, !exclude)
+
+      }
 
       if(base::isTRUE(scale)){
 
@@ -1745,10 +1756,11 @@ getCoordsDfST <- function(object,
 #'
 getCoordsMtr <- function(object,
                          img_name = activeImage(object),
-                         orig = FALSE){
+                         orig = FALSE,
+                         exclude = TRUE){
 
   coords_mtr <-
-    getCoordsDf(object)[, c("barcodes", "x_orig", "y_orig")] %>%
+    getCoordsDf(object, exclude = exclude)[, c("barcodes", "x_orig", "y_orig")] %>%
     dplyr::select(barcodes, x = x_orig , y = y_orig) %>%
     tibble::column_to_rownames(var = "barcodes") %>%
     base::as.matrix()
@@ -2478,6 +2490,210 @@ getGenesInteractive <- function(object){
   return(genes)
 
 }
+
+
+#' @title Obtain grid information
+#'
+#' @description Generates a data.frame of grid elements for visualizing a grid overlay
+#' on VisiumHD spatial data.
+#'
+#' @param res A \link[=concept_distance_measure]{distance value} specifying the desired
+#' resolution for the grid in micrometers (e.g., "32um"). The resolution must be greater
+#' than or equal to the current resolution and divisible by the current resolution.
+#'
+#' @inherit argument_dummy params
+#'
+#' @keywords internal
+#' @export
+#'
+#' @return A data frame with the following columns:
+#' \itemize{
+#'   \item{idx}{: A character vector representing the identifier for each segment, typically indicating the row or column number (e.g., "row_9").}
+#'   \item{x}{: A numeric vector representing the x-coordinate of the starting point of the segment.}
+#'   \item{y}{: A numeric vector representing the y-coordinate of the starting point of the segment.}
+#'   \item{xend}{: A numeric vector representing the x-coordinate of the ending point of the segment.}
+#'   \item{yend}{: A numeric vector representing the y-coordinate of the ending point of the segment.}
+#'   \item{just}{: A character vector indicating the orientation of the segment (e.g., "horizontal").}
+#' }
+#'
+getGridVisiumHD <- function(object, res, img_name = activeImage(object)){
+
+  containsMethod(object, method = "VisiumHD", error = TRUE)
+
+  sm <- getSpatialMethod(object)
+
+  res <- as_unit(res, unit = "um", object = object)
+  res_now <- as_unit(sm@method_specifics$square_res, unit = "um", object = object)
+
+  num_res <- as.numeric(res)
+  num_res_now <- as.numeric(res_now)
+
+  if(!(res >= res_now)){
+
+    stop(glue::glue("`res` must be lower or equal to the current resolution, which is {res_now}um."))
+
+  } else if((num_res %% num_res_now) != 0){
+
+    stop(glue::glue("`res` must be divisible by the current resolution, which {res_now}um"))
+
+  }
+
+  # half of the center to center distance
+  ccd <- getCCD(object, unit = "px")
+  ccdh <- ccd/2
+
+  isf <- getScaleFactor(object, img_name = img_name, fct_name = "image")
+
+  cdf <- getCoordsDf(object, exclude = FALSE)
+  cdf$col <- cdf$col + 1
+  cdf$row <- cdf$row + 1
+
+  # ----- hlines
+
+  dfh <-
+    dplyr::group_by(cdf, row) %>%
+    dplyr::mutate(is_xmin = x == min(x), is_xmax = x == max(x)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(is_xmin | is_xmax) %>%
+    dplyr::select(row, col, x, y, is_xmin, is_xmax)
+
+  dfh_xmin <-
+    dplyr::filter(dfh, is_xmin) %>%
+    dplyr::mutate(x = x - {{ccdh}}, y = y - {{ccdh}}) %>% # y - ccdh -> segment drawn below point
+    dplyr::select(row, x, y)
+
+  dfh_xmax <-
+    dplyr::filter(dfh, is_xmax) %>%
+    dplyr::mutate(xend = x + {{ccdh}}, yend = y - {{ccdh}}) %>%
+    dplyr::select(row, xend, yend)
+
+  dfh_complete <-
+    dplyr::left_join(x = dfh_xmin, y = dfh_xmax, by = "row") %>%
+    dplyr::filter(row != max(row)) %>% # ceiling of top row is displayed by border rectangle
+    dplyr::mutate(just = "horizontal", type = "segment", idx = paste0("row_", row)) %>%
+    dplyr::select(idx, x, y, xend, yend, just, type)
+
+
+  # ----- vlines
+
+  dfv <-
+    dplyr::group_by(cdf, col) %>%
+    dplyr::mutate(is_ymin = y == min(y), is_ymax = y == max(y)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(is_ymin | is_ymax) %>%
+    dplyr::select(row, col, x, y, is_ymin, is_ymax)
+
+  dfv_ymin <-
+    dplyr::filter(dfv, is_ymin) %>%
+    dplyr::mutate(x = x + {{ccdh}}, y = y - {{ccdh}}) %>%# x - ccdh -> segment drawn on right side of the point
+    dplyr::select(col, x, y)
+
+  dfv_ymax <-
+    dplyr::filter(dfv, is_ymax) %>%
+    dplyr::mutate(xend = x + {{ccdh}}, yend = y + {{ccdh}}) %>%
+    dplyr::select(col, xend, yend)
+
+  dfv_complete <-
+    dplyr::left_join(x = dfv_ymin, y = dfv_ymax, by = "col") %>%
+    dplyr::arrange(col) %>%
+    dplyr::mutate(just = "vertical", type = "segment", idx = paste0("col_", col)) %>%
+    dplyr::select(idx, x, y, xend, yend, just, type)
+
+
+  # ---- merge segments
+  every_nth <- num_res/num_res_now
+
+  seq_subset_h <- reduce_vec(x = 1:nrow(dfh_complete), nth = every_nth, start.with = 1)
+  seq_subset_v <- reduce_vec(x = 1:nrow(dfv_complete), nth = every_nth, start.with = 1)
+
+  dfh_out <- dfh_complete[seq_subset_h, ]
+  dfv_out <- dfv_complete[seq_subset_v, ]
+
+  dfh_out <- dfh_out[-1,]
+  dfv_out <- dfv_out[-1,]
+
+  df_grid <- rbind(dfh_out, dfv_out)
+
+  return(df_grid)
+
+}
+
+
+prolong_hsegm <- function(df, xrange) {
+
+  req_x <- xrange[1]
+  req_x_end <- xrange[2]
+
+  # Compute the slope of the vector
+  slope <- (df$yend - df$y) / (df$xend - df$x)
+
+  # Calculate the new y based on req_x using the point-slope form of a line
+  new_y <- df$y + slope * (req_x - df$x)
+
+  # Calculate the new y_end based on req_x_end using the point-slope form of a line
+  new_y_end <- df$yend + slope * (req_x_end - df$xend)
+
+  # Create a new data.frame with the updated coordinates
+  updated_df <- data.frame(
+    x = req_x,
+    xend = req_x_end,
+    y = new_y,
+    yend = new_y_end
+  )
+
+  return(updated_df)
+}
+
+prolong_vsegm <- function(df, yrange) {
+
+  req_y <- yrange[1]
+  req_y_end <- yrange[2]
+
+  # Compute the slope of the vector
+  slope <- (df$yend - df$y) / (df$xend - df$x)
+
+  # Calculate the new x based on req_y using the point-slope form of a line
+  new_x <- df$x + (req_y - df$y) / slope
+
+  # Calculate the new x_end based on req_y_end using the point-slope form of a line
+  new_x_end <- df$xend + (req_y_end - df$yend) / slope
+
+  # Create a new data.frame with the updated coordinates
+  updated_df <- data.frame(
+    x = new_x,
+    xend = new_x_end,
+    y = req_y,
+    yend = req_y_end
+  )
+
+  return(updated_df)
+}
+
+adjust_segment_lengths <- function(df) {
+
+  # Function to calculate the length of each segment
+  calculate_length <- function(x, xend, y, yend) {
+    sqrt((xend - x)^2 + (yend - y)^2)
+  }
+
+  # Calculate the lengths of each segment
+  df$length <- mapply(calculate_length, df$x, df$xend, df$y, df$yend)
+
+  # Determine the maximum length
+  max_length <- max(df$length)
+
+  # Adjust the segments to the maximum length
+  df <- df %>%
+    dplyr::mutate(
+      factor = max_length / length,
+      xend = x + (xend - x) * factor,
+      yend = y + (yend - y) * factor
+    ) %>%
+    dplyr::select(-length, -factor)  # Clean up temporary columns
+
+  return(df)
+}
+
 
 #' @title Obtain variable names that group data points
 #'
