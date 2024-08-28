@@ -441,7 +441,7 @@ reduce_coords_df_visium_hd <- function(coords_df_prep, fct){
 #' @note Only works on `SPATA2` object for \link[=SpatialMethod]{platform} [`VisiumHD`].
 #'
 #' @details
-#' The `reduceResolutionVisuiumHD()` function reduces the spatial resolution of a Visium HD
+#' The `reduceResolutionVisiumHD()` function reduces the spatial resolution of a Visium HD
 #' dataset by aggregating neighboring spots into larger units and recalculating the count
 #' matrix for the new resolution. The process involves the following key steps:
 #'
