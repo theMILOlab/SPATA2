@@ -301,99 +301,123 @@ compute_correction_factor_sas <- function(object,
                                           core,
                                           coords_df_sa = NULL){
 
-  if(containsMethod(object, "Visium")){
+  if(base::is.null(coords_df_sa)){
 
-    if(base::is.null(coords_df_sa)){
-
-      orig_cdf <-
-        getCoordsDfSA(
-          object = object,
-          ids = ids,
-          distance = distance,
-          core = core,
-          periphery = FALSE,
-          verbose = FALSE
-        )
-
-    } else {
-
-      orig_cdf <-
-        dplyr::filter(coords_df_sa, rel_loc != "periphery")
-
-      if(base::isFALSE(core)){
-
-        orig_cdf <-
-          dplyr::filter(orig_cdf, rel_loc != "core")
-
-      }
-
-    }
-
-    smrd_cdf <-
-      dplyr::group_by(orig_cdf, id) %>%
-      dplyr::summarise(md = base::max(dist, na.rm = TRUE))
-
-    unit <- base::unique(orig_cdf$dist_unit)
-
-    fct_df <-
-      purrr::map_df(
-        .x = base::levels(smrd_cdf$id),
-        .f = function(id){
-
-          distance <-
-            dplyr::filter(smrd_cdf, id == {{id}}) %>%
-            dplyr::pull(md) %>%
-            stringr::str_c(., unit)
-
-          buffer <-
-            as_unit(distance, unit = "px", object = object) %>%
-            base::as.numeric()
-
-          sim_cdf <-
-            simulate_complete_coords_sa(object = object, id = id, distance = distance)
-
-          outline_df <- getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = TRUE)
-
-          outer_df <- getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = FALSE)[,c("x", "y")]
-
-          buffered_outer_df <- buffer_area(outer_df, buffer = buffer)
-
-          if(base::isFALSE(core)){
-
-            sim_cdf <-
-              identify_obs_in_spat_ann(sim_cdf, strictly = TRUE, outline_df = outline_df, opt = "remove")
-
-          }
-
-          sim_cdf <-
-            identify_obs_in_polygon(sim_cdf, strictly = TRUE, polygon_df = buffered_outer_df, opt = "keep")
-
-          flt_orig_cdf <-
-            getCoordsDfSA(object, ids = id, distance = distance, core = core, periphery = FALSE)
-
-          fct <- base::nrow(flt_orig_cdf) / base::nrow(sim_cdf)
-
-          out_df <-
-            tibble::tibble(
-              fct = fct,
-              nav = base::nrow(flt_orig_cdf), # n available
-              nreq = base::nrow(sim_cdf) # n required
-            )
-
-          return(out_df)
-
-        }
+    orig_cdf <-
+      getCoordsDfSA(
+        object = object,
+        ids = ids,
+        distance = distance,
+        core = core,
+        periphery = FALSE,
+        verbose = FALSE
       )
-
-    nreq_max <- base::max(fct_df$nreq)
-
-    out <- stats::weighted.mean(x = fct_df$fct, w = fct_df$nreq/nreq_max)
 
   } else {
 
-    out <- 1
+    orig_cdf <-
+      dplyr::filter(coords_df_sa, rel_loc != "periphery")
+
+    if(base::isFALSE(core)){
+
+      orig_cdf <-
+        dplyr::filter(orig_cdf, rel_loc != "core")
+
+    }
 
   }
+
+  smrd_cdf <-
+    dplyr::group_by(orig_cdf, id) %>%
+    dplyr::summarise(md = base::max(dist, na.rm = TRUE))
+
+  unit <- base::unique(orig_cdf$dist_unit)
+
+  fct_df <-
+    purrr::map_df(
+      .x = base::levels(smrd_cdf$id),
+      .f = function(id){
+
+        distance <-
+          dplyr::filter(smrd_cdf, id == {{id}}) %>%
+          dplyr::pull(md) %>%
+          stringr::str_c(., unit)
+
+        buffer <-
+          as_unit(
+            distance,
+            unit = "px",
+            object = object
+          ) %>% base::as.numeric()
+
+        sim_cdf <- simulate_complete_coords_sa(
+          object = object,
+          id = id,
+          distance = distance
+        )
+
+        outline_df <- getSpatAnnOutlineDf(
+          object,
+          id = id,
+          outer = TRUE,
+          inner = TRUE
+        )
+
+        outer_df <- getSpatAnnOutlineDf(
+          object,
+          id = id,
+          outer = TRUE,
+          inner = FALSE
+        )[, c("x", "y")]
+
+        buffered_outer_df <- buffer_area(outer_df, buffer = buffer)
+
+        if(base::isFALSE(core)){
+
+          sim_cdf <-
+            identify_obs_in_spat_ann(
+              sim_cdf,
+              strictly = TRUE,
+              outline_df = outline_df,
+              opt = "remove"
+            )
+
+        }
+
+        sim_cdf <-
+          identify_obs_in_polygon(
+            sim_cdf,
+            strictly = TRUE,
+            polygon_df = buffered_outer_df,
+            opt = "keep"
+          )
+
+        flt_orig_cdf <-
+          getCoordsDfSA(
+            object,
+            ids = id,
+            distance = distance,
+            core = core,
+            periphery = FALSE
+          )
+
+        fct <- base::nrow(flt_orig_cdf) / base::nrow(sim_cdf)
+
+        out_df <-
+          tibble::tibble(
+            fct = fct,
+            nav = base::nrow(flt_orig_cdf), # n available
+            nreq = base::nrow(sim_cdf) # n required
+          )
+
+        return(out_df)
+
+      }
+    )
+
+  nreq_max <- base::max(fct_df$nreq)
+
+  out <- stats::weighted.mean(x = fct_df$fct, w = fct_df$nreq/nreq_max)
 
   # use
   return(out)
