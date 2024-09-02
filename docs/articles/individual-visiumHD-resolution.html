@@ -179,11 +179,19 @@ package.</p>
 <span></span>
 <span><span class="co"># show object</span></span>
 <span><span class="va">object</span></span></code></pre></div>
+<<<<<<< HEAD
 <pre><code><span><span class="co">## An object of class SPATA2</span></span>
 <span><span class="co">## Sample: HumanPancreasHD </span></span>
 <span><span class="co">## Size: 106574 x 18085 (spots x molecules)</span></span>
 <span><span class="co">## Memory: 663.77 Mb</span></span>
 <span><span class="co">## Platform: VisiumHD (Resolution: 16um) </span></span>
+=======
+<pre><code><span><span class="co">## Object of class SPATA2</span></span>
+<span><span class="co">## Overall size: 106574 x 18085 (spots x molecules)</span></span>
+<span><span class="co">## Memory used: ~ 663.77 Mb </span></span>
+<span><span class="co">## Platform: VisiumHD (Resolution: 16um) </span></span>
+<span><span class="co">## Sample name: HumanPancreasHD </span></span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span><span class="co">## Molecular assays (1):</span></span>
 <span><span class="co">## 1. Assay</span></span>
 <span><span class="co">##  Molecular modality: gene</span></span>
@@ -286,11 +294,19 @@ parallel processing. Set the parameter to your liking.</p>
 <span></span>
 <span><span class="co"># show object</span></span>
 <span><span class="va">object_32um</span></span></code></pre></div>
+<<<<<<< HEAD
 <pre><code><span><span class="co">## An object of class SPATA2</span></span>
 <span><span class="co">## Sample: HumanPancreasHD_redResHD </span></span>
 <span><span class="co">## Size: 27300 x 100 (spots x molecules)</span></span>
 <span><span class="co">## Memory: 103.94 Mb</span></span>
 <span><span class="co">## Platform: VisiumHD (Resolution: 32um) </span></span>
+=======
+<pre><code><span><span class="co">## Object of class SPATA2</span></span>
+<span><span class="co">## Overall size: 27300 x 100 (spots x molecules)</span></span>
+<span><span class="co">## Memory used: ~ 103.59 Mb </span></span>
+<span><span class="co">## Platform: VisiumHD (Resolution: 32um) </span></span>
+<span><span class="co">## Sample name: HumanPancreasHD_redResHD </span></span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span><span class="co">## Molecular assays (1):</span></span>
 <span><span class="co">## 1. Assay</span></span>
 <span><span class="co">##  Molecular modality: gene</span></span>
@@ -314,7 +330,10 @@ See below under 4. Meta data of the reduction process.</p>
 <span><span class="co"># right plot</span></span>
 <span><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_32um</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span>, unit <span class="op">=</span> <span class="st">"mm"</span>, pt_size <span class="op">=</span> <span class="fl">0.2</span>, pt_clr <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="va">grid_layer_zoomed</span> <span class="op">+</span> </span>
+<<<<<<< HEAD
 <span>  <span class="co">#ggpLayerGridVisiumHD(object_32um, "32um", line_clr = "green") +</span></span>
+=======
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span>  <span class="va">scale_bar_layer</span></span></code></pre></div>
 <p><img src="individual-visiumHD-resolution_files/figure-html/unnamed-chunk-8-1.png" width="50%"><img src="individual-visiumHD-resolution_files/figure-html/unnamed-chunk-8-2.png" width="50%">
 Moreover, you can initiate the <code>SPATA2</code> object directly with
@@ -342,18 +361,31 @@ the data, acces the dataset <a href="https://www.10xgenomics.com/datasets/visium
 <code class="sourceCode R"><span><span class="va">object_24um</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu"><a href="../reference/initiateSpataObjectVisiumHD.html">initiateSpataObjectVisiumHD</a></span><span class="op">(</span></span>
 <span>    sample_name <span class="op">=</span> <span class="st">"PancreasHD_24um"</span>, </span>
+<<<<<<< HEAD
 <span>    directory_visium <span class="op">=</span> <span class="va">dir</span>,<span class="st">"my/path/to/VisiumHD_Pancreas"</span>, </span>
+=======
+<span>    directory_visium <span class="op">=</span> <span class="st">"my/path/to/VisiumHD_Pancreas"</span>, </span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span>    square_res <span class="op">=</span> <span class="st">"24um"</span>, </span>
 <span>    workers <span class="op">=</span> <span class="fl">1</span>, </span>
 <span>    genes <span class="op">=</span> <span class="va">genes_keep</span> <span class="co"># for this example</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
+<<<<<<< HEAD
 <span><span class="va">object_24um</span></span></code></pre></div>
 <pre><code><span><span class="co">## An object of class SPATA2</span></span>
 <span><span class="co">## Sample: PancreasHD_24um </span></span>
 <span><span class="co">## Size: 48076 x 100 (spots x molecules)</span></span>
 <span><span class="co">## Memory: 167.35 Mb</span></span>
 <span><span class="co">## Platform: VisiumHD (Resolution: 24um) </span></span>
+=======
+<span><span class="va">object</span></span></code></pre></div>
+<pre><code><span><span class="co">## Object of class SPATA2</span></span>
+<span><span class="co">## Overall size: 48038 x 100 (spots x molecules)</span></span>
+<span><span class="co">## Memory used: ~ 166.65 Mb </span></span>
+<span><span class="co">## Platform: VisiumHD (Resolution: 24um) </span></span>
+<span><span class="co">## Sample name: PancreasHD_24um </span></span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span><span class="co">## Molecular assays (1):</span></span>
 <span><span class="co">## 1. Assay</span></span>
 <span><span class="co">##  Molecular modality: gene</span></span>
@@ -389,6 +421,7 @@ reduction process as keys. Use the function
 <span><span class="va">reconstr_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/unwindAggregation.html">unwindAggregation</a></span><span class="op">(</span><span class="va">object_32um</span>, var_names <span class="op">=</span> <span class="st">"square_count"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">reconstr_df</span></span></code></pre></div>
+<<<<<<< HEAD
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 176,400 × 3</span></span></span>
 <span><span class="co">##    barcodes              barcodes_aggr square_count</span></span>
 <span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
@@ -403,6 +436,22 @@ reduction process as keys. Use the function
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span> s_016um_00020_00000-1 c0r10                   <span style="color: #BB0000;">NA</span></span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span> s_016um_00020_00001-1 c0r10                   <span style="color: #BB0000;">NA</span></span></span>
 <span><span class="co">## <span style="color: #949494;"># ℹ 176,390 more rows</span></span></span></code></pre>
+=======
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 44,100 × 3</span></span></span>
+<span><span class="co">##    barcodes     barcodes_aggr       square_count</span></span>
+<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;named list&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 1</span> <span style="color: #949494;">&lt;chr [4]&gt;</span>    aggregated_barcodes           <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 2</span> <span style="color: #949494;">&lt;chr [4]&gt;</span>    aggregated_barcodes           <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 3</span> <span style="color: #949494;">&lt;chr [4]&gt;</span>    aggregated_barcodes           <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> <span style="color: #949494;">&lt;chr [4]&gt;</span>    aggregated_barcodes           <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span> <span style="color: #949494;">&lt;chr [4]&gt;</span>    aggregated_barcodes           <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 6</span> <span style="color: #949494;">&lt;chr [4]&gt;</span>    aggregated_barcodes           <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span> <span style="color: #949494;">&lt;chr [4]&gt;</span>    aggregated_barcodes           <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 8</span> <span style="color: #949494;">&lt;chr [4]&gt;</span>    aggregated_barcodes           <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 9</span> <span style="color: #949494;">&lt;chr [4]&gt;</span>    aggregated_barcodes           <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span> <span style="color: #949494;">&lt;chr [4]&gt;</span>    aggregated_barcodes           <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">## <span style="color: #949494;"># ℹ 44,090 more rows</span></span></span></code></pre>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 </div>
 <div class="section level2">
 <h2 id="meta-data-of-the-reduction-process">5. Meta data of the reduction process<a class="anchor" aria-label="anchor" href="#meta-data-of-the-reduction-process"></a>
@@ -455,7 +504,11 @@ artificially reduced to 16um by
 <span><span class="va">object_16um</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu"><a href="../reference/initiateSpataObjectVisiumHD.html">initiateSpataObjectVisiumHD</a></span><span class="op">(</span></span>
 <span>    sample_name <span class="op">=</span> <span class="st">"PancreasHD_16um"</span>, </span>
+<<<<<<< HEAD
 <span>    directory_visium <span class="op">=</span> <span class="va">dir</span>,<span class="co">#"my/path/to/VisiumHD_Pancreas", # adjust to your directory</span></span>
+=======
+<span>    directory_visium <span class="op">=</span> <span class="st">"my/path/to/VisiumHD_Pancreas"</span>, <span class="co"># adjust to your directory</span></span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span>    square_res <span class="op">=</span> <span class="st">"16um"</span>, </span>
 <span>    genes <span class="op">=</span> <span class="va">genes_keep</span> <span class="co"># reduce size for the sake of this experiment</span></span>
 <span>  <span class="op">)</span></span>
@@ -463,7 +516,11 @@ artificially reduced to 16um by
 <span><span class="va">object_8um</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu"><a href="../reference/initiateSpataObjectVisiumHD.html">initiateSpataObjectVisiumHD</a></span><span class="op">(</span></span>
 <span>    sample_name <span class="op">=</span> <span class="st">"PancreasHD_8um"</span>, </span>
+<<<<<<< HEAD
 <span>    directory_visium <span class="op">=</span> <span class="va">dir</span>,<span class="co">#"my/path/to/VisiumHD_Pancreas", </span></span>
+=======
+<span>    directory_visium <span class="op">=</span> <span class="st">"my/path/to/VisiumHD_Pancreas"</span>, </span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span>    square_res <span class="op">=</span> <span class="st">"8um"</span>,</span>
 <span>    genes <span class="op">=</span> <span class="va">genes_keep</span></span>
 <span>  <span class="op">)</span></span>
@@ -487,12 +544,21 @@ the artificially created 16um resolution object with *_art*.</p>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
 <span><span class="co">##   barcodes                col   row     x     y   INS   VIP</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<<<<<<< HEAD
 <span><span class="co">## <span style="color: #BCBCBC;">1</span> s_016um_00000_00170-1   248     0  354.  120.     0     0</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">2</span> s_016um_00000_00171-1   247     0  353.  120.     2     0</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">3</span> s_016um_00000_00207-1   211     0  329.  120.     1     0</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">4</span> s_016um_00000_00208-1   210     0  328.  120.     1     0</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">5</span> s_016um_00000_00209-1   209     0  327.  120.     0     0</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">6</span> s_016um_00000_00210-1   208     0  327.  120.     1     0</span></span>
+=======
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> s_016um_00000_00170-1   170     0  354.  120.     0     0</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> s_016um_00000_00171-1   171     0  353.  120.     2     0</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> s_016um_00000_00207-1   207     0  329.  120.     1     0</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> s_016um_00000_00208-1   208     0  328.  120.     1     0</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> s_016um_00000_00209-1   209     0  327.  120.     0     0</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> s_016um_00000_00210-1   210     0  327.  120.     1     0</span></span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span></span>
 <span><span class="va">counts16um_art</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu"><a href="../reference/getCoordsDf.html">getCoordsDf</a></span><span class="op">(</span><span class="va">object_16um_art</span>, variables <span class="op">=</span> <span class="va">example_genes</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -503,19 +569,32 @@ the artificially created 16um resolution object with *_art*.</p>
 <span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
 <span><span class="co">##   barcodes   col   row x_art y_art INS_art VIP_art</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<<<<<<< HEAD
 <span><span class="co">## <span style="color: #BCBCBC;">1</span> c0r269       0   269  187.  304.       0       0</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">2</span> c0r270       0   270  187.  305.       0       0</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">3</span> c0r271       0   271  187.  305.       0       0</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">4</span> c100r0     100     0  253.  121.     130       0</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">5</span> c100r1     100     1  253.  122.      26       0</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">6</span> c100r10    100    10  253.  128.       0       0</span></span></code></pre></div>
+=======
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> c0r322       0   322  471.  337.       0       0</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> c0r323       0   323  471.  338.       0       0</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> c0r324       0   324  471.  338.       0       0</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> c0r325       0   325  471.  339.       0       0</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> c0r326       0   326  471.  340.       0       0</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> c0r327       0   327  471.  340.       0       0</span></span></code></pre></div>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <p>Note, that <code><a href="../reference/reduceResolutionVisiumHD.html">reduceResolutionVisiumHD()</a></code> creates new
 barcodes! While it would certainly possible to mimic the 10X naming
 convention for VisiumHD, easier is to just join the count data using the
 spatial variables <em>col</em> and <em>row</em> as keys.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># merge both data.frame by col/row key</span></span>
+<<<<<<< HEAD
 <span><span class="va">df_compare</span> <span class="op">&lt;-</span> </span>
+=======
+<span><span class="va">counts_compare</span> <span class="op">&lt;-</span> </span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span></span>
 <span>    x <span class="op">=</span> <span class="va">counts16um_orig</span>, </span>
 <span>    y <span class="op">=</span> <span class="va">counts16um_art</span>, </span>
@@ -523,25 +602,41 @@ spatial variables <em>col</em> and <em>row</em> as keys.</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="co"># top left</span></span>
+<<<<<<< HEAD
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">df_compare</span>, mapping <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">INS</span>, y <span class="op">=</span> <span class="va">INS_art</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+=======
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">counts_compare</span>, mapping <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">INS</span>, y <span class="op">=</span> <span class="va">INS_art</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html" class="external-link">geom_smooth</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"lm"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="co"># top right</span></span>
+<<<<<<< HEAD
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">df_compare</span>, mapping <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">VIP</span>, y <span class="op">=</span> <span class="va">VIP_art</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+=======
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">counts_compare</span>, mapping <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">VIP</span>, y <span class="op">=</span> <span class="va">VIP_art</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html" class="external-link">geom_smooth</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"lm"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="co"># bottom left</span></span>
+<<<<<<< HEAD
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">df_compare</span>, mapping <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">x_art</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+=======
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">counts_compare</span>, mapping <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">x_art</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html" class="external-link">geom_smooth</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"lm"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="co"># bottom right </span></span>
+<<<<<<< HEAD
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">df_compare</span>, mapping <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">x_art</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+=======
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">counts_compare</span>, mapping <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">x_art</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html" class="external-link">geom_smooth</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"lm"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> </span></code></pre></div>
@@ -552,11 +647,19 @@ the algorithm. Spatial coordinates are actually exactly the same. For
 statistic hardliner the exact correlations:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># INS </span></span>
+<<<<<<< HEAD
 <span><span class="fu"><a href="https://rdrr.io/r/stats/cor.test.html" class="external-link">cor.test</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">df_compare</span><span class="op">$</span><span class="va">INS</span>, y <span class="op">=</span> <span class="va">df_compare</span><span class="op">$</span><span class="va">INS_art</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">##  Pearson's product-moment correlation</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## data:  df_compare$INS and df_compare$INS_art</span></span>
+=======
+<span><span class="fu"><a href="https://rdrr.io/r/stats/cor.test.html" class="external-link">cor.test</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">counts_compare</span><span class="op">$</span><span class="va">INS</span>, y <span class="op">=</span> <span class="va">counts_compare</span><span class="op">$</span><span class="va">INS_art</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">##  Pearson's product-moment correlation</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## data:  counts_compare$INS and counts_compare$INS_art</span></span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span><span class="co">## t = 36799, df = 106572, p-value &lt; 2.2e-16</span></span>
 <span><span class="co">## alternative hypothesis: true correlation is not equal to 0</span></span>
 <span><span class="co">## 95 percent confidence interval:</span></span>
@@ -566,11 +669,19 @@ statistic hardliner the exact correlations:</p>
 <span><span class="co">## 0.9999607</span></span></code></pre>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># VIP </span></span>
+<<<<<<< HEAD
 <span><span class="fu"><a href="https://rdrr.io/r/stats/cor.test.html" class="external-link">cor.test</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">df_compare</span><span class="op">$</span><span class="va">VIP</span>, y <span class="op">=</span> <span class="va">df_compare</span><span class="op">$</span><span class="va">VIP_art</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">##  Pearson's product-moment correlation</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## data:  df_compare$VIP and df_compare$VIP_art</span></span>
+=======
+<span><span class="fu"><a href="https://rdrr.io/r/stats/cor.test.html" class="external-link">cor.test</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">counts_compare</span><span class="op">$</span><span class="va">VIP</span>, y <span class="op">=</span> <span class="va">counts_compare</span><span class="op">$</span><span class="va">VIP_art</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">##  Pearson's product-moment correlation</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## data:  counts_compare$VIP and counts_compare$VIP_art</span></span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span><span class="co">## t = 54844, df = 106572, p-value &lt; 2.2e-16</span></span>
 <span><span class="co">## alternative hypothesis: true correlation is not equal to 0</span></span>
 <span><span class="co">## 95 percent confidence interval:</span></span>
@@ -580,11 +691,19 @@ statistic hardliner the exact correlations:</p>
 <span><span class="co">## 0.9999823</span></span></code></pre>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># x coordinates </span></span>
+<<<<<<< HEAD
 <span><span class="fu"><a href="https://rdrr.io/r/stats/cor.test.html" class="external-link">cor.test</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">df_compare</span><span class="op">$</span><span class="va">x</span>, y <span class="op">=</span> <span class="va">df_compare</span><span class="op">$</span><span class="va">x_art</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">##  Pearson's product-moment correlation</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## data:  df_compare$x and df_compare$x_art</span></span>
+=======
+<span><span class="fu"><a href="https://rdrr.io/r/stats/cor.test.html" class="external-link">cor.test</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">counts_compare</span><span class="op">$</span><span class="va">x</span>, y <span class="op">=</span> <span class="va">counts_compare</span><span class="op">$</span><span class="va">x_art</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">##  Pearson's product-moment correlation</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## data:  counts_compare$x and counts_compare$x_art</span></span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span><span class="co">## t = 1.832e+09, df = 106572, p-value &lt; 2.2e-16</span></span>
 <span><span class="co">## alternative hypothesis: true correlation is not equal to 0</span></span>
 <span><span class="co">## 95 percent confidence interval:</span></span>
@@ -594,11 +713,19 @@ statistic hardliner the exact correlations:</p>
 <span><span class="co">##   1</span></span></code></pre>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># y coordinates </span></span>
+<<<<<<< HEAD
 <span><span class="fu"><a href="https://rdrr.io/r/stats/cor.test.html" class="external-link">cor.test</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">df_compare</span><span class="op">$</span><span class="va">y</span>, y <span class="op">=</span> <span class="va">df_compare</span><span class="op">$</span><span class="va">y_art</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">##  Pearson's product-moment correlation</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## data:  df_compare$y and df_compare$y_art</span></span>
+=======
+<span><span class="fu"><a href="https://rdrr.io/r/stats/cor.test.html" class="external-link">cor.test</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">counts_compare</span><span class="op">$</span><span class="va">y</span>, y <span class="op">=</span> <span class="va">counts_compare</span><span class="op">$</span><span class="va">y_art</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">##  Pearson's product-moment correlation</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## data:  counts_compare$y and counts_compare$y_art</span></span>
+>>>>>>> 99de33d (v3.1.0 restored 1)
 <span><span class="co">## t = 2070105284, df = 106572, p-value &lt; 2.2e-16</span></span>
 <span><span class="co">## alternative hypothesis: true correlation is not equal to 0</span></span>
 <span><span class="co">## 95 percent confidence interval:</span></span>

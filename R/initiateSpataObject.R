@@ -718,7 +718,6 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' @param mtr Character. Specifies which matrix to use, either "filtered" or "raw". Default is "filtered".
 #' @param img_active Character. The active image to use, either "lowres" or "hires". Default is "lowres".
 #' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "hires".
-#'
 #' @inherit createSpatialData params
 #' @inherit argument_dummy params
 #'
@@ -999,7 +998,6 @@ initiateSpataObjectVisium <- function(sample_name,
 #' matrix. If `NULL`, the default, all genes are kept.
 #' @param img_active Character. The active image to use, either "lowres" or "hires". Default is "lowres".
 #' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "hires".
-#'
 #' @inherit reduceResolutionVisiumHD params
 #' @inherit createSpatialData params
 #' @inherit argument_dummy params

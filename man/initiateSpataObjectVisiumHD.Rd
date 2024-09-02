@@ -13,7 +13,11 @@ initiateSpataObjectVisiumHD(
   workers = 1,
   batch_size = 1000,
   img_active = "lowres",
+<<<<<<< HEAD
   img_ref = "hires",
+=======
+  img_ref = "lowres",
+>>>>>>> 99de33d (v3.1.0 restored 1)
   resize_images = NULL,
   unload = TRUE,
   verbose = TRUE
