@@ -2,24 +2,27 @@
 % Please edit documentation in R/setA-Z.R
 \name{setCaptureArea}
 \alias{setCaptureArea}
+\alias{setCaptureArea,SPATA2-method}
+\alias{setCaptureArea,SpatialData-method}
 \title{Set capture area}
 \usage{
-setCaptureArea(object, x = NULL, y = NULL)
+setCaptureArea(object, ...)
+
+\S4method{setCaptureArea}{SPATA2}(object, capture_area, ...)
+
+\S4method{setCaptureArea}{SpatialData}(object, capture_area, ...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{x, y}{Vectors of length two that correspond to the range of the
-respective axis. If \code{NULL}, the respective range stays as is.}
+\item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{capture_area}{Data.frame of vertices .with x_orig and y_orig variables}
 }
 \description{
 Sets the capture area for objects from platforms with
 a specific capture area / field of view.
-}
-\note{
-The spatial methods \emph{VisiumSmall} and \emph{VisiumLarge} have a capture
-area by default. You can override it but it is not recommended.
 }
 \seealso{
 \code{\link[=getCaptureArea]{getCaptureArea()}}

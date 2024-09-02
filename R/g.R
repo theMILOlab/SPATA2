@@ -545,34 +545,29 @@ ggpLayerAxesSI <- function(object,
 #'  ggpLayerCaptureArea(object, opt = "crop")
 #'
 ggpLayerCaptureArea <- function(object,
-                                opt = c("rect"),
-                                rect_alpha = 0.9,
-                                rect_clr = "black",
-                                rect_line_type = "solid",
-                                rect_size = 1,
-                                expand_rect = 0.025,
+                                opt = c("outline"),
+                                line_clr = "black",
+                                line_type = "solid",
+                                line_size = 1,
                                 expand_x = ggplot2::waiver(),
                                 expand_y = ggplot2::waiver(),
                                 img_name = activeImage(object)){
 
   # capture ranges
-  cr <- getCaptureArea(object, img_name = img_name, unit = "px")
+  ca <- getCaptureArea(object, img_name = img_name)
 
   out <- list()
 
-  if("rect" %in% opt){
+  if("outline" %in% opt){
 
-    out[["rect"]] <-
-      ggpLayerRect(
-        object = object,
-        xrange = cr$x,
-        yrange = cr$y,
-        alpha = rect_alpha,
-        color = rect_clr,
+    out[["outline"]] <-
+      ggplot2::geom_polygon(
+        data = ca,
+        mapping = ggplot2::aes(x = x, y = y),
         fill = NA,
-        size = rect_size,
-        linetype = rect_line_type,
-        img_name = img_name
+        color = line_clr,
+        linetype = line_type,
+        linewidth = line_size
       )
 
   }
@@ -582,8 +577,8 @@ ggpLayerCaptureArea <- function(object,
     out[["crop"]] <-
       ggpLayerZoom(
         object = object,
-        xrange = cr$x,
-        yrange = cr$y,
+        xrange = ca$x,
+        yrange = ca$y,
         expand_x = expand_x,
         expand_y = expand_y,
         img_name = img_name
@@ -1714,6 +1709,7 @@ setMethod(
       xspec <- FALSE
       xrange <-
         getCaptureArea(object)[["x"]] %>%
+        range() %>%
         as_pixel(input = ., object = object)
 
     } else {
@@ -1728,6 +1724,7 @@ setMethod(
       yspec <- FALSE
       yrange <-
         getCaptureArea(object)[["y"]] %>%
+        range() %>%
         as_pixel(input = ., object = object)
 
     } else {

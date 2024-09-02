@@ -1,5 +1,38 @@
 
 
+#' @export
+#' @keywords internal
+objectMemoryUsage <- function(object, digits = 2){
+
+  mem_used <-
+    utils::object.size(object) %>%
+    as.numeric()
+
+  if(mem_used > 10^9){
+
+    mem_used <- mem_used/10^9
+    suf <- "Gb"
+
+  } else if(mem_used > 10^6){
+
+    mem_used <- mem_used/10^6
+    suf <- "Mb"
+
+  } else if(mem_used > 10^3){
+
+    mem_used <- mem_used/10^3
+    suf <- "Kb"
+
+  } else {
+
+    suf <- "bytes"
+
+  }
+
+  cat(paste0("Memory usage: ", round(mem_used, digits = digits), " ", suf))
+
+}
+
 
 #' @title The observational unit
 #'

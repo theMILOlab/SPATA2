@@ -7,43 +7,44 @@
 \alias{writeImage,HistoImage-method}
 \title{Write image to disk}
 \usage{
-writeImage(object, img_dir, ...)
+writeImage(object, ...)
 
 \S4method{writeImage}{SPATA2}(
   object,
   img_name,
-  img_dir = NULL,
+  img_dir,
   overwrite = FALSE,
   transform = FALSE,
-  ...
+  verbose = NULL
 )
 
 \S4method{writeImage}{SpatialData}(
   object,
   img_name,
-  igm_dir = NULL,
+  img_dir,
   overwrite = FALSE,
   transform = FALSE,
-  verbose = TRUE,
-  ...
+  verbose = TRUE
 )
 
 \S4method{writeImage}{HistoImage}(
   object,
-  img_dir = NULL,
+  img_dir,
   overwrite = FALSE,
   transform = FALSE,
-  verbose = TRUE,
-  ...
+  verbose = TRUE
 )
 }
 \arguments{
-\item{img_dir}{A character string specifying the directory where the image should be saved. If \code{NULL},
-the image is written to the current image directory as obtained by \code{\link[=getImageDir]{getImageDir()}}.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Additional arguments passed to \code{EBImage::writeImage}.}
 
 \item{img_name}{A character string specifying the name of the image.}
+
+\item{img_dir}{A character string specifying the directory where the image should be saved. If \code{NULL},
+the image is written to the current image directory as obtained by \code{\link[=getImageDir]{getImageDir()}}.}
 
 \item{overwrite}{Logical. If \code{TRUE}, existing files with the same name in the specified directory will be overwritten.}
 
@@ -54,6 +55,11 @@ Defaults to \code{FALSE}. Only set to \code{TRUE} if you \strong{do not} reassig
 If \code{transform} is \code{TRUE} and you reassign the object, the transformed image will be saved, but the
 object itself will not reflect these changes (e.g., the transformation will not be undone in the object).
 This can lead to discrepancies between the saved image and the object’s internal state.}
+
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 As pointed out in details, this function can be used to just write an image to disk while simultaneously storing the results

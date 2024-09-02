@@ -5,11 +5,11 @@
 align_grid_with_coordinates <- function(coords_df) {
 
   # calculate the correlations
-  ccx <- cor(coords_df$x, coords_df$col)
-  cry <- cor(coords_df$y, coords_df$row)
+  ccx <- cor(coords_df$x_orig, coords_df$col)
+  cry <- cor(coords_df$y_orig, coords_df$row)
 
-  crx <- cor(coords_df$x, coords_df$row)
-  ccy <- cor(coords_df$y, coords_df$col)
+  crx <- cor(coords_df$x_orig, coords_df$row)
+  ccy <- cor(coords_df$y_orig, coords_df$col)
 
   # create temporary variables for col and row to hold adjustments
   coords_df$temp_col <- coords_df$col
@@ -58,8 +58,8 @@ align_grid_with_coordinates <- function(coords_df) {
   coords_df$col <- coords_df$temp_col
   coords_df$row <- coords_df$temp_row
 
-  coords_df$col <- NULL
-  coords_df$row <- NULL
+  coords_df$temp_col <- NULL
+  coords_df$temp_row <- NULL
 
   # return the adjusted data frame
   return(coords_df)
@@ -118,38 +118,49 @@ complete_visium_coords_df <- function(coords_df, method, square_res = NULL){
 
   } else if(method == "VisiumHD"){
 
-    confuns::check_one_of(
-      input = square_res,
-      against = names(visiumHD_ranges)
-    )
+    if(square_res %in% names(visiumHD_ranges)){
 
-    ranges <- visiumHD_ranges[[square_res]]
+      ranges <- visiumHD_ranges[[square_res]]
 
-    complete_coords_df <-
-      tidyr::expand_grid(
-        col = seq(ranges$col[1], ranges$col[2], by = 1),
-        row = seq(ranges$row[1], ranges$row[2], by = 1)
-      )
+      complete_coords_df <-
+        tidyr::expand_grid(
+          col = seq(ranges$col[1], ranges$col[2], by = 1),
+          row = seq(ranges$row[1], ranges$row[2], by = 1)
+        )
 
-    coords_df <-
-      dplyr::left_join(x = complete_coords_df, y = coords_df, by = c("col", "row")) %>%
-      dplyr::mutate(
-        barcodes = dplyr::if_else(is.na(barcodes), true = paste0("new_bc_col", col, "row", row), false = barcodes)
-      )
+      coords_df <-
+        dplyr::left_join(x = complete_coords_df, y = coords_df, by = c("col", "row")) %>%
+        dplyr::mutate(
+          barcodes = dplyr::if_else(is.na(barcodes), true = paste0("new_bc_col", col, "row", row), false = barcodes)
+        )
+
+    } else {
+
+      # created with reduceResolutionVisumHD
+
+    }
 
   }
 
   # add exclude for not used spots
   if(!"exclude" %in% colnames(coords_df)){
 
-    coords_df$exclude <- FALSE
+    if("in_tissue" %in% colnames(coords_df)){
+
+      coords_df$exclude <- coords_df$in_tissue == 0
+
+    } else {
+
+      coords_df$exclude <- FALSE
+
+    }
 
   }
 
   coords_df <-
     dplyr::mutate(
       .data = coords_df,
-      exclude = dplyr::if_else(is.na(x_orig) | is.na(y_orig), true = "exclude", false = exclude)
+      exclude = dplyr::if_else(is.na(x_orig) | is.na(y_orig), true = TRUE, false = exclude)
     )
 
   # predict missing pixel position
@@ -211,6 +222,11 @@ setMethod(
     # concept is similar for all visium platforms
     if(stringr::str_detect(method_obj@name, pattern = "Visium")){
 
+      isf <- getScaleFactor(object, fct_name = "image")
+
+      buffer <- as.numeric(getCCD(object, unit = "px")*1.125/isf)
+
+
       # ensure that the coordinates data.frame is complete
       coords_df <-
         complete_visium_coords_df(
@@ -219,6 +235,8 @@ setMethod(
           square_res = method_obj@method_specifics$square_res
         )
 
+      coords_df <- align_grid_with_coordinates(coords_df)
+
       # make capture area
       idx1 <-
         dplyr::filter(coords_df, col == min(col)) %>%
@@ -226,11 +244,17 @@ setMethod(
         dplyr::select(x_orig, y_orig) %>%
         dplyr::mutate(idx = 1)
 
+      idx1$x_orig <- idx1$x_orig-buffer
+      idx1$y_orig <- idx1$y_orig-buffer
+
       idx2 <-
         dplyr::filter(coords_df, col == min(col)) %>%
         dplyr::filter(row == max(row)) %>%
         dplyr::select(x_orig, y_orig) %>%
         dplyr::mutate(idx = 2)
+
+      idx2$x_orig <- idx2$x_orig-buffer
+      idx2$y_orig <- idx2$y_orig+buffer
 
       idx3 <-
         dplyr::filter(coords_df, row == max(row)) %>%
@@ -238,11 +262,17 @@ setMethod(
         dplyr::select(x_orig, y_orig) %>%
         dplyr::mutate(idx = 1)
 
+      idx3$x_orig <- idx3$x_orig+buffer
+      idx3$y_orig <- idx3$y_orig+buffer
+
       idx4 <-
         dplyr::filter(coords_df, row == min(row)) %>%
         dplyr::filter(col == max(col)) %>%
         dplyr::select(x_orig, y_orig) %>%
         dplyr::mutate(idx = 1)
+
+      idx4$x_orig <- idx4$x_orig+buffer
+      idx4$y_orig <- idx4$y_orig-buffer
 
       capture_area <-
         purrr::map_dfr(.x = list(idx1, idx2, idx3, idx4), .f = ~ .x)
@@ -283,20 +313,27 @@ setMethod(
 
 # reduceResolution --------------------------------------------------------
 
-# visiumHD_ranges
 # getGridVisiumHD
-getGridList <- function(object, res, img_name = activeImage(object)){
+getGridVisiumHD <- function(object, res, img_name = activeImage(object)){
 
-  res_new <- as_unit(res_new, unit = "um", object = object)
+  sm <- getSpatialMethod(object)
+
+  is_dist_si(res, error = TRUE)
+
+  res_new <- as_unit(res, unit = "um", object = object)
   res_now <- as_unit(sm@method_specifics$square_res, unit = "um", object = object)
 
   num_res_new <- as.numeric(res_new)
   num_res_now <- as.numeric(res_now)
 
   if(!(res_new >= res_now)){
+
     stop(glue::glue("`res_new` must be lower or equal to the current resolution, which is {res_now}um."))
+
   } else if((num_res_new %% num_res_now) != 0){
+
     stop(glue::glue("`res_new` must be divisible by the current resolution, which is {res_now}um"))
+
   }
 
   # half of the center to center distance
@@ -304,88 +341,58 @@ getGridList <- function(object, res, img_name = activeImage(object)){
 
   isf <- getScaleFactor(object, img_name = img_name, fct_name = "image")
 
+  coords_df <- getCoordsDf(object, as_is = TRUE)
+
   # start with fct = 1 and subset the segments later with every_nth
-  cdp <- prepare_coords_df_visium_hd(coords_df, fct = 1) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(x = x_orig_new * isf, y = y_orig_new * isf)
-
-  # ----- rectangular
-  # col is reversed scale: from right to left! switch min/max
-  vlb <- cdp[cdp$row == min(cdp$row) & cdp$col == max(cdp$col), c("x", "y")]
-  vlb[["x"]] <- vlb[["x"]] - ccdh
-  vlb[["y"]] <- vlb[["y"]] - ccdh
-
-  vrb <- cdp[cdp$row == min(cdp$row) & cdp$col == min(cdp$col), c("x", "y")]
-  vrb[["x"]] <- vrb[["x"]] + ccdh
-  vrb[["y"]] <- vrb[["y"]] - ccdh
-
-  vlt <- cdp[cdp$row == max(cdp$row) & cdp$col == max(cdp$col), c("x", "y")]
-  vlt[["x"]] <- vlt[["x"]] - ccdh
-  vlt[["y"]] <- vlt[["y"]] + ccdh
-
-  vrt <- cdp[cdp$row == max(cdp$row) & cdp$col == min(cdp$col), c("x", "y")]
-  vrt[["x"]] <- vrt[["x"]] + ccdh
-  vrt[["y"]] <- vrt[["y"]] + ccdh
-
-  df_rect <- data.frame(
-    xmin = vlb[["x"]],
-    xmax = vrt[["x"]],
-    ymin = vlb[["y"]],
-    ymax = vlt[["y"]]
-  )
+  cdp <-
+    prepare_coords_df_visium_hd(coords_df, fct = 1) %>%
+    dplyr::mutate(x = x_orig*{isf}, y = y_orig * {isf})
 
   # ----- hlines
-  df_hlines <- tidyr::expand_grid(
-    row = unique(cdp$row),
-    xmin = numeric(1),
-    xmax = numeric(1),
-    ymin = numeric(1),
-    ymax = numeric(1)
-  )
-
-  dfh <- dplyr::group_by(cdp, row) %>%
+  dfh <-
+    dplyr::group_by(cdp, row) %>%
     dplyr::mutate(is_xmin = x == min(x), is_xmax = x == max(x)) %>%
     dplyr::ungroup() %>%
     dplyr::filter(is_xmin | is_xmax) %>%
     dplyr::select(row, col, x, y, is_xmin, is_xmax)
 
-  dfh_xmin <- dplyr::filter(dfh, is_xmin) %>%
+  dfh_xmin <-
+    dplyr::filter(dfh, is_xmin) %>%
     dplyr::mutate(x = x - {{ccdh}}, y = y + {{ccdh}}) %>% # + ccdh -> segment drawn above point
     dplyr::select(row, x, y)
 
-  dfh_xmax <- dplyr::filter(dfh, is_xmax) %>%
+  dfh_xmax <-
+    dplyr::filter(dfh, is_xmax) %>%
     dplyr::mutate(xend = x + {{ccdh}}, yend = y + {{ccdh}}) %>%
     dplyr::select(row, xend, yend)
 
-  dfh_complete <- dplyr::left_join(x = dfh_xmin, y = dfh_xmax, by = "row") %>%
+  dfh_complete <-
+    dplyr::left_join(x = dfh_xmin, y = dfh_xmax, by = "row") %>%
     dplyr::filter(row != max(row)) %>% # ceiling of top row is displayed by border rectangle
     dplyr::mutate(just = "horizontal", type = "segment", idx = paste0("row_", row)) %>%
     dplyr::select(idx, x, y, xend, yend, just, type)
 
   # ----- vlines
-  df_hlines <- tidyr::expand_grid(
-    col = unique(cdp$col),
-    xmin = numeric(1),
-    xmax = numeric(1),
-    ymin = numeric(1),
-    ymax = numeric(1)
-  )
 
-  dfv <- dplyr::group_by(cdp, col) %>%
+  dfv <-
+    dplyr::group_by(cdp, col) %>%
     dplyr::mutate(is_ymin = y == min(y), is_ymax = y == max(y)) %>%
     dplyr::ungroup() %>%
     dplyr::filter(is_ymin | is_ymax) %>%
     dplyr::select(row, col, x, y, is_ymin, is_ymax)
 
-  dfv_ymin <- dplyr::filter(dfv, is_ymin) %>%
+  dfv_ymin <-
+    dplyr::filter(dfv, is_ymin) %>%
     dplyr::mutate(x = x - {{ccdh}}, y = y - {{ccdh}}) %>% # x - ccdh -> segment drawn on left side of the point
     dplyr::select(col, x, y)
 
-  dfv_ymax <- dplyr::filter(dfv, is_ymax) %>%
+  dfv_ymax <-
+    dplyr::filter(dfv, is_ymax) %>%
     dplyr::mutate(xend = x - {{ccdh}}, yend = y + {{ccdh}}) %>%
     dplyr::select(col, xend, yend)
 
-  dfv_complete <- dplyr::left_join(x = dfv_ymin, y = dfv_ymax, by = "col") %>%
+  dfv_complete <-
+    dplyr::left_join(x = dfv_ymin, y = dfv_ymax, by = "col") %>%
     dplyr::arrange(col) %>%
     dplyr::filter(col != min(col)) %>%
     dplyr::mutate(just = "vertical", type = "segment", idx = paste0("col_", col)) %>%
@@ -394,13 +401,10 @@ getGridList <- function(object, res, img_name = activeImage(object)){
   # ---- merge segments
   every_nth <- num_res_new / num_res_now
 
-  dfh_out <- dfh_complete[seq(1, nrow(dfh_complete), by = every_nth), ]
-  dfv_out <- dfv_complete[seq(1, nrow(dfv_complete), by = every_nth), ]
+  dfh_out <- dfh_complete[reduce_vec(1:nrow(dfh_complete), nth = every_nth), ]
+  dfv_out <- dfv_complete[reduce_vec(1:nrow(dfh_complete), nth = every_nth), ]
 
-  df_grid <- rbind(dfh_out, dfv_out)
-
-  # return output
-  out <- list(border = df_rect, segments = df_grid)
+  out <- rbind(dfh_out, dfv_out)
 
   return(out)
 }
@@ -467,8 +471,6 @@ unwindAggregation <- function(object, var_names = NULL){
 
 }
 
-
-# -> initiateSpataObjectVisium/HD + resize_with;
 
 # resizeImage -------------------------------------------------------------
 
@@ -627,7 +629,7 @@ setMethod(
     } else {
 
       confuns::give_feedback(
-        msg = glue::glue("Resizing image '{img_name_new}'."),
+        msg = glue::glue("Resizing image '{img_name_new}' with factor {resize_fct}."),
         verbose = verbose
       )
 
@@ -744,6 +746,8 @@ resize_image <- function(image, resize_fct = NULL, image_dims = NULL) {
 #' @param overwrite Logical. If `TRUE`, existing files with the same name in the specified directory will be overwritten.
 #' @param ... Additional arguments passed to `EBImage::writeImage`.
 #'
+#' @inherit argument_dummy params
+#'
 #' @details
 #'
 #' The `writeImage()` function writes the image associated with the specified `img_name` to the given
@@ -816,8 +820,7 @@ resize_image <- function(image, resize_fct = NULL, image_dims = NULL) {
 #' @rdname writeImage
 #' @export
 
-
-setGeneric(name = "writeImage", def = function(object, img_dir, ...){
+setGeneric(name = "writeImage", def = function(object, ...){
 
   standardGeneric(f = "writeImage")
 
@@ -830,10 +833,12 @@ setMethod(
   signature = "SPATA2",
   definition = function(object,
                         img_name,
-                        img_dir = NULL,
+                        img_dir,
                         overwrite = FALSE,
                         transform = FALSE,
-                        ...){
+                        verbose = NULL){
+
+    hlpr_assign_arguments(object)
 
     sp_data <- getSpatialData(object)
 
@@ -844,13 +849,13 @@ setMethod(
         img_name = img_name,
         overwrite = overwrite,
         transform = transform,
-        verbose = verbose,
-        ...)
+        verbose = verbose
+        )
 
     object <- setSpatialData(object, sp_data = sp_data)
 
     # save function call in logfile
-    object <- returnSpataObjet(object)
+    object <- returnSpataObject(object)
 
     invisible(object)
 
@@ -864,11 +869,11 @@ setMethod(
   signature = "SpatialData",
   definition = function(object,
                         img_name,
-                        igm_dir = NULL,
+                        img_dir,
                         overwrite = FALSE,
                         transform = FALSE,
-                        verbose = TRUE,
-                        ...){
+                        verbose = TRUE
+                        ){
 
     hist_img <- getHistoImage(object, img_name = img_name)
 
@@ -878,10 +883,10 @@ setMethod(
         img_dir = img_dir,
         transform = transform,
         overwrite = overwrite,
-        verbose = verbose,
-        ...)
+        verbose = verbose
+        )
 
-    object <- setHistoImage(object = object, hist_img = hist_imt)
+    object <- setHistoImage(object = object, hist_img = hist_img)
 
     invisible(object)
 
@@ -894,13 +899,17 @@ setMethod(
   f = "writeImage",
   signature = "HistoImage",
   definition = function(object,
-                        img_dir = NULL,
+                        img_dir,
                         overwrite = FALSE,
                         transform = FALSE,
-                        verbose = TRUE,
-                        ...){
+                        verbose = TRUE
+                        ){
 
-    containsImage(object, error = TRUE)
+    if(!containsImage(object)){
+
+      object <- loadImage(object, verbose = verbose)
+
+    }
 
     image <- object@image
 
@@ -916,7 +925,7 @@ setMethod(
 
       if(length(img_dir) == 0){
 
-        stop("Argument img_dir = NULL but no image directory found.")
+        stop("Argument `img_dir = NULL` but no image directory found. Set with `setImageDir()`.")
 
       }
 
@@ -924,7 +933,7 @@ setMethod(
 
     if(file.exists(img_dir) & !isTRUE(overwrite)){
 
-      stop("File direcotry img_dir already exists. Set overwrite = TRUE to allow overwriting.")
+      stop(glue::glue("File directory (img_dir) already exists. Set overwrite = TRUE to allow overwriting."))
 
     }
 
@@ -933,12 +942,14 @@ setMethod(
       verbose = verbose
     )
 
-    EBImage::writeImage(x = image, files = img_dir, ...)
+    EBImage::writeImage(x = image, files = img_dir)
 
     confuns::give_feedback(
       msg = "Done.",
       verbose = verbose
     )
+
+    object@dir <- img_dir
 
     # prevent ever decreasing reduction in image size since the resizing
     # is applied during loading of the image

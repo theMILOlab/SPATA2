@@ -4,25 +4,20 @@
 \alias{getCaptureArea}
 \title{Obtain capture area}
 \usage{
-getCaptureArea(object, img_name = activeImage(object), unit = NULL)
+getCaptureArea(object, ...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{img_name}{Character value. The name of the image of interest.
-If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
-be one of \code{\link[=getImageNames]{getImageNames()}}.}
-
-\item{unit}{If character, forces the output unit of the capture area.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 List of two length two vectors named \emph{x} and \emph{y}. Values correspond
 to the range of the capture area along the respective axis.
 }
 \description{
-Extracts the frame in which data points are plotted
-by default.
+Extracts the frame in which data points are expected.
 }
 \seealso{
 \code{\link[=setCaptureArea]{setCaptureArea()}}

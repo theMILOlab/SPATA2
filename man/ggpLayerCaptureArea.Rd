@@ -6,12 +6,10 @@
 \usage{
 ggpLayerCaptureArea(
   object,
-  opt = c("rect"),
-  rect_alpha = 0.9,
-  rect_clr = "black",
-  rect_line_type = "solid",
-  rect_size = 1,
-  expand_rect = 0.025,
+  opt = c("outline"),
+  line_clr = "black",
+  line_type = "solid",
+  line_size = 1,
   expand_x = ggplot2::waiver(),
   expand_y = ggplot2::waiver(),
   img_name = activeImage(object)
@@ -23,7 +21,10 @@ objects of classes for which a method has been defined.}
 
 \item{opt}{Combination of \emph{'rect'} and/or \emph{'crop'}.}
 
-\item{rect_alpha}{The alpha transparency level of the rectangle's border}
+\item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
+\emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
 
 \item{expand_x, expand_y}{Given to \code{expand} of \code{ggplot2::scale_x/y_continuous()}.}
 

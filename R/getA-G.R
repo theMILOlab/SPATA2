@@ -412,10 +412,8 @@ getBarcodeSpotDistances <- function(object,
 
 #' @title Obtain capture area
 #'
-#' @description Extracts the frame in which data points are plotted
-#' by default.
+#' @description Extracts the frame in which data points are expected.
 #'
-#' @param unit If character, forces the output unit of the capture area.
 #' @inherit argument_dummy params
 #'
 #' @return List of two length two vectors named *x* and *y*. Values correspond
@@ -423,30 +421,45 @@ getBarcodeSpotDistances <- function(object,
 #'
 #' @seealso [`setCaptureArea()`]
 #'
+#' @rdname getCaptureaArea
 #' @export
+setGeneric(name = "getCaptureArea", def = function(object, ...){
 
-getCaptureArea <- function(object, img_name = activeImage(object), unit = NULL){
+  standardGeneric("getCaptureArea")
 
-  isf <- getScaleFactor(object, fct_name = "image", img_name = img_name)
+})
 
-  ca <-
-    purrr::map(
-      .x = getSpatialMethod(object)@capture_area,
-      .f = ~ .x * {{isf}}
-    ) %>%
-    purrr::set_names(nm = c("x", "y"))
+#' @rdname getCaptureArea
+#' @export
+setMethod(
+  f = "getCaptureArea",
+  signature = "SPATA2",
+  definition = function(object, img_name = activeImage(object), ...){
 
-  if(base::is.character(unit)){
-
-    ca <- purrr::map(.x = ca, .f = ~ as_unit(input = .x, unit = unit, object = object))
+    getSpatialData(object) %>%
+      getCaptureArea(object = ., img_name = img_name)
 
   }
+)
 
-  return(ca)
+#' @rdname getCaptureArea
+#' @export
+setMethod(
+  f = "getCaptureArea",
+  signature = "SpatialData",
+  definition = function(object, img_name = activeImage(object), ...){
 
-}
+    ca <- object@capture_area
 
+    isf <- getScaleFactor(object, img_name = img_name, fct_name = "image")
 
+    ca$x <- ca$x_orig * isf
+    ca$y <- ca$y_orig * isf
+
+    return(ca)
+
+  }
+)
 
 #' @title Obtain center to center distance
 #'

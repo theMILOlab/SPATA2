@@ -171,6 +171,8 @@ read_coords_visium <- function(dir_coords){
 
   coords_df <- dplyr::mutate(coords_df, exclude = in_tissue == 0)
 
+  coords_df <- align_grid_with_coordinates(coords_df)
+
   return(coords_df)
 
 }
@@ -478,80 +480,6 @@ reduce_coords_df_visium_hd <- function(coords_df_prep, fct){
 #' they have been aggrated is stored in a list in slot `object@obj_info$reduceResolutionVisiumHD$aggregated_barcodes`.
 #'
 #' @export
-#'
-#' @examples
-#' library(SPATA2)
-#' library(SPATAData)
-#'
-#' # download example object
-#' object <- downloadSpataObject("HumanPancreasHD", update = FALSE)
-#'
-#' # create the grid layer for visualization
-#' grid_layer <- ggpLayerGridVisiumHD(object, res = "32um", line_size = 0.1, line_alpha = 0.1)
-#'
-#' xrange <- c("9.25mm", "9.75mm")
-#' yrange <- c("5.5mm", "6mm")
-#'
-#' plotSurface(object, unit = "mm") +
-#'   grid_layer +
-#'   ggpLayerRect(object, xrange = xrange, yrange = yrange)
-#'
-#' plotSurface(object, xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.1) +
-#'   grid_layer +
-#'   ggpLayerScaleBarSI(object, sb_dist = "32um", sb_pos = c("9.7mm", "5.75mm"), text_nudge_y = -7.5)
-#'
-#' # identify top 100 genes for the sake of this example
-#' object <- identifyVariableMolecules(object, method = "vst", n_mol = 100)
-#' genes <- getVariableMolecules(object, method = "vst")
-#'
-#' # reduce resolution
-#' object_red <- reduceResolutionVisiumHD(object, res_new = "32um", genes = genes, workers = 4)
-#'
-#' # show new position of aggregated squares
-#' plotSurface(object_red, unit = "mm") +
-#'   grid_layer +
-#'   ggpLayerRect(object, xrange = xrange, yrange = yrange)
-#'
-#' plotSurface(object_red, xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.2) +
-#'   grid_layer +
-#'   ggpLayerScaleBarSI(object, sb_dist = "32um", sb_pos = c("9.7mm", "5.75mm"), text_nudge_y = -7.5)
-#'
-#' # show the percentage of squares
-#' plotSurface(object_red, color_by = "square_perc", unit = "mm", limits = c(0, 100), oob = scales::squish) +
-#'   ggpLayerRect(object, xrange = xrange, yrange = yrange)
-#'
-#' # note how several new squares do not contain 4 but 3 to 1 spots due to the tissue edge
-#' plotSurface(object, xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.1) +
-#'   grid_layer +
-#'   ggpLayerScaleBarSI(object, sb_dist = "32um", sb_pos = c("9.7mm", "5.75mm"), text_nudge_y = -7)
-#'
-#' # visualize with 'square_perc' and compare
-#' plotSurface(object_red, color_by = "square_perc", xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.2) +
-#'   grid_layer +
-#'   ggpLayerScaleBarSI(object, sb_dist = "32um", sb_pos = c("9.7mm", "5.75mm"), text_nudge_y = -7)
-#'
-#' # filter if you want to
-#' object_red_flt <- filterSpataObject(object_red, square_perc == 100)
-#'
-#' plotSurface(object_red_flt, color_by = "square_perc")
-#'
-#' # not filtered
-#' plotSurface(object_red, color_by = "square_perc", xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.2) +
-#'   grid_layer +
-#'   labs(subtitle = "Not filtered")
-#'
-#' # filtered
-#' plotSurface(object_red_flt, color_by = "square_perc", xrange = xrange, yrange = yrange, unit = "mm", pt_size = 0.2) +
-#'   grid_layer +
-#'   labs(subtitle = "Filtered")
-#'
-#' # reconstruct the aggregated barcode assignment
-#' reconstructed_df <-
-#'   purrr::imap_dfr(
-#'     .x = object@obj_info$reduceResolutionVisiumHD$aggregated_barcodes,
-#'     .f = ~ tibble::tibble(barcodes_aggr = .x, barcodes_red = .y)
-#'   )
-#'
 
 reduceResolutionVisiumHD <- function(object,
                                      res_new,
@@ -790,7 +718,7 @@ reduceResolutionVisiumHD <- function(object,
   object_red <- setMetaDf(object_red, meta_df = meta_df)
 
   # store aggregation results
-  object@obj_info$aggregation$barcodes <-
+  object_red@obj_info$aggregation$barcodes <-
     dplyr::group_by(coords_df_prep_all, barcodes_new) %>%
     dplyr::group_split() %>%
     purrr::set_names(nm = purrr::map_chr(.x = ., .f = ~ unique(.x[["barcodes_new"]]))) %>%

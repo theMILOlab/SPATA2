@@ -476,12 +476,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
 
   crange <- getCoordsRange(object)
 
-  object <-
-    setCaptureArea(
-      object = object,
-      x = as_millimeter(crange$x, object = object),
-      y = as_millimeter(crange$y, object = object)
-      )
+  object <- computeCaptureArea(object)
 
   confuns::give_feedback(
     msg = "Estimated field of view (capture area) bases on cell coordinates. Specify with `setCaptureaArea()`.",
@@ -706,6 +701,8 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
       pt_size = 1.5, # many beads of small size
       use_scattermore = TRUE
     )
+
+  object <- computeCaptureArea(object)
 
   returnSpataObject(object)
 
@@ -973,6 +970,8 @@ initiateSpataObjectVisium <- function(sample_name,
 
   # default processing
   object <- identifyTissueOutline(object, verbose = verbose)
+
+  object <- computeCaptureArea(object)
 
   returnSpataObject(object)
 
@@ -1253,6 +1252,8 @@ initiateSpataObjectVisiumHD <- function(sample_name,
 
   }
 
+  object <- computeCaptureArea(object)
+
   returnSpataObject(object)
 
 }
@@ -1350,17 +1351,12 @@ initiateSpataObjectXenium <- function(sample_name,
 
   base::options(scipen = 999)
 
-  object <-
-    setCaptureArea(
-      object = object,
-      x = getCoordsRange(object)$x %>% as_millimeter(object = object),
-      y = getCoordsRange(object)$y %>% as_millimeter(object = object)
-    )
-
   object <- identifyTissueOutline(object, verbose = verbose)
 
   # set default
   object <- setDefault(object, use_scattermore = TRUE, display_image = FALSE, pt_size = 0.1)
+
+  object <- computeCaptureArea(object)
 
   returnSpataObject(object)
 
