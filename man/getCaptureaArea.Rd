@@ -7,20 +7,26 @@
 \title{Obtain capture area}
 \usage{
 getCaptureArea(object, ...)
+<<<<<<< HEAD:man/getCaptureArea.Rd
 
 \S4method{getCaptureArea}{SPATA2}(object, img_name = activeImage(object), ...)
 
 \S4method{getCaptureArea}{SpatialData}(object, img_name = activeImage(object), ...)
+=======
+>>>>>>> 3ccaf32 (v3.1.0 2):man/getCaptureaArea.Rd
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+<<<<<<< HEAD:man/getCaptureArea.Rd
 
 \item{img_name}{Character value. The name of the image of interest.
 If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
+=======
+>>>>>>> 3ccaf32 (v3.1.0 2):man/getCaptureaArea.Rd
 }
 \value{
 List of two length two vectors named \emph{x} and \emph{y}. Values correspond
