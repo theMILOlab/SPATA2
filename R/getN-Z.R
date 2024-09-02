@@ -968,7 +968,7 @@ setMethod(
 #' @description Extracts the name/ID of the \code{SPATA2} object
 #' in form of a single character value.
 #'
-#' @inherit check_object params
+#' @inherit argument_dummy params
 #'
 #' @return A character value.
 #'

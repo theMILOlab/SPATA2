@@ -5,35 +5,6 @@ NULL
 
 # check_a -----------------------------------------------------------------
 
-#' @title Check barcodes of all matrices and data.frames
-#' @keywords internal
-#' @inherit check_object params
-
-check_all_barcodes <- function(object){
-
-  sample_name <- getSampleNames(object)
-
-  confuns::is_value(x = sample_name, mode = "character")
-
-
-  object@data <- purrr::map(.x = object@data,
-                            .f = hlpr_add_barcode_suffix,
-                            sample_name = sample_name)
-
-  object@dim_red <- purrr::map(.x = object@dim_red,
-                               .f = hlpr_add_barcode_suffix,
-                               sample_name = sample_name)
-
-  object@coordinates <- hlpr_add_barcode_suffix(input = object@coordinates,
-                                                sample_name = sample_name)
-
-  object@fdata <- hlpr_add_barcode_suffix(input = object@fdata,
-                                          sample_name = sample_name)
-
-  return(object)
-
-}
-
 
 
 #' @title Check assign input
@@ -1268,15 +1239,19 @@ check_new_variable_name <- function(object, new_name, overwrite = NULL){
 
 # check_o -----------------------------------------------------------------
 
-#' Check spata object input
-#'
-#' @param object A valid spata-object.
-#'
+
 #' @export
 #' @keywords internal
 check_object <- function(object){
 
-  # to do
+  ver_cur <- version_string(current_spata2_version)
+  ver_obj <- version_string(object@version)
+
+  if(!identical(ver_cur, ver_obj)){
+
+    warning(glue::glue("SPATA2 object is of version {ver_obj}. Current SPATA2 version is {ver_cur}. Please use `updateSpataObject()`."))
+
+  }
 
 }
 

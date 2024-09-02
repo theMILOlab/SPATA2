@@ -790,7 +790,7 @@ reduceResolutionVisiumHD <- function(object,
   object_red <- setMetaDf(object_red, meta_df = meta_df)
 
   # store aggregation results
-  object_red@obj_info$reduceResolutionVisiumHD$aggregated_barcodes <-
+  object@obj_info$aggregation$barcodes <-
     dplyr::group_by(coords_df_prep_all, barcodes_new) %>%
     dplyr::group_split() %>%
     purrr::set_names(nm = purrr::map_chr(.x = ., .f = ~ unique(.x[["barcodes_new"]]))) %>%
@@ -1065,6 +1065,8 @@ setMethod(
 #'
 #' @param img_name Character value. The image to remove. Must neither be
 #' the active nor the reference image.
+#' @param resize_fct Numeric value or `NULL`. If numeric, used to adjust the
+#' resolution in which the image is dealt with via [`resizeImage()`].
 #'
 #' @inherit createHistoImage params
 #' @inherit argument_dummy params
@@ -1090,6 +1092,7 @@ setMethod(
                         img = NULL,
                         dir = NULL,
                         unload = TRUE,
+                        resize_fct = NULL,
                         process = FALSE,
                         overwrite = FALSE,
                         verbose = TRUE){
@@ -1102,6 +1105,7 @@ setMethod(
         dir = dir,
         img = img,
         img_name = img_name,
+        resize_fct = resize_fct,
         unload = unload,
         process = process,
         overwrite = overwrite,
@@ -1125,6 +1129,7 @@ setMethod(
                         img = NULL,
                         dir = NULL,
                         unload = FALSE,
+                        resize_fct = NULL,
                         process = FALSE,
                         overwrite = FALSE,
                         verbose = TRUE){
@@ -1149,6 +1154,17 @@ setMethod(
         scale_factors = list(),
         verbose = verbose
       )
+
+    if(is.numeric(resize_fct)){
+
+      hist_img <-
+        resizeImage(
+          object = hist_img,
+          resize_fct = resize_fct,
+          verbose = verbose
+        )
+
+    }
 
     if(base::isTRUE(process)){
 

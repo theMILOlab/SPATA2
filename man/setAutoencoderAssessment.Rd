@@ -7,7 +7,8 @@
 setAutoencoderAssessment(object, assessment_list, of_sample = "")
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{assessment_list}{Named list with slots \code{$df} and \code{$set_up}.}
 }

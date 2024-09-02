@@ -391,11 +391,8 @@ setDefault <- function(object, ...){
 
 #' @title Set default instructions
 #'
-#' @inherit check_object params
-#'
-#' @return A spata-object again containing the default spata-instructions.
-#' Everything that previously has been adjusted with \code{adjustDefaultInstructions()}
-#' is overwritten.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
 #' @export
 #' @keywords internal

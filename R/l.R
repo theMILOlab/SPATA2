@@ -319,7 +319,22 @@ setMethod(
       duration = 20
     )
 
-    object@image <- EBImage::readImage(files = object@dir)
+    image <- EBImage::readImage(files = object@dir)
+
+    resize_fct <- object@transformations$resize_fct
+
+    if(is.numeric(resize_fct)){
+
+      image <-
+        resize_image(
+          image = image,
+          resize_fct = resize_fct,
+          image_dims = object@image_info$dims
+        )
+
+    }
+
+    object@image <- image
 
     return(object)
 

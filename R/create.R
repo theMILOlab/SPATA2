@@ -2889,6 +2889,13 @@ createSpatialMethod <- function(...){
 #'  \item{*Visium*:}{ Either *'lowres'* or *'hires'*.}
 #' }
 #'
+#' @param resize_images A named list of numeric values between 0-1 used to resize
+#' the respective image as indicated by the slot name. E.g `resize_images = list(hires = 0.5)`
+#' resizes the hires image to 50% of its original scale.
+#'
+#' @param unload Logical value. If `TRUE`, every image except for the active image
+#' is \link[=unloadImages]{unloaded.}
+#'
 #' @param meta List of meta data regarding the tissue.
 #' @param misc List of miscellaneous information.
 #' @param sample Character value. The sample name of the tissue.
@@ -2905,11 +2912,12 @@ createSpatialData <- function(sample,
                               hist_img_ref = NULL,
                               hist_imgs = list(),
                               active = NULL,
-                              unload = TRUE,
                               coordinates = tibble::tibble(),
                               meta = list(),
                               method = SpatialMethod(),
                               scale_factors = list(),
+                              resize_images = NULL,
+                              unload = TRUE,
                               misc = list(),
                               verbose = TRUE,
                               ...){
@@ -2965,8 +2973,30 @@ createSpatialData <- function(sample,
       activateImage(
         object = object,
         img_name = active,
+        unload = FALSE,
         verbose = FALSE
       )
+
+  }
+
+  # resize if desired
+  if(confuns::is_list(resize_images)){
+
+    resize_images <- confuns::keep_named(resize_images)
+
+    for(img_name in names(resize_images)){
+
+      object <-
+        resizeImage(
+          object = object,
+          img_name = img_name,
+          img_name_new = img_name,
+          resize_fct = resize_images[[img_name]],
+          overwrite = TRUE,
+          verbose = verbose
+        )
+
+    }
 
   }
 
@@ -3133,6 +3163,8 @@ createSpatialDataVisium <- function(dir,
                                     sample,
                                     img_ref = "lowres",
                                     img_active = "lowres",
+                                    resize_images = NULL,
+                                    unload = TRUE,
                                     meta = list(),
                                     misc = list(),
                                     verbose = TRUE){
@@ -3262,7 +3294,8 @@ createSpatialDataVisium <- function(dir,
       hist_img_ref = img_list[[img_ref]],
       hist_imgs = img_list[req_images[req_images != img_ref]],
       active = img_active,
-      unload = TRUE,
+      unload = unload,
+      resize_images = resize_images,
       coordinates = coords_df,
       method = method,
       meta = meta,
@@ -3272,39 +3305,6 @@ createSpatialDataVisium <- function(dir,
 
   # compute pixel scale factor to
   object <- computePixelScaleFactor(object, verbose = verbose)
-
-  # compute capture area
-  isf <- getScaleFactor(object, fct_name = "image", img_name = img_active)
-
-  if(method@name == "VisiumSmall"){
-
-    # scale to orig with isf
-    half <- as_pixel(input = "3.25mm", object = object)/isf
-
-  } else if(method@name == "VisiumLarge"){
-
-    # scale to orig with isf
-    half <- as_pixel(input = "5.5mm", object = object)/isf
-
-  }
-
-  if(method@name == "VisiumSmall"){
-
-    object@method@capture_area <-
-      list(
-        x_orig = c(xmean-half, xmean + half),
-        y_orig = c(ymean-half*1.045, ymean + half*1.045)
-      )
-
-  } else if(method@name == "VisiumLarge"){
-
-    object@method@capture_area <-
-      list(
-        x_orig = c(xmean-half*1.045, xmean + half*1.045),
-        y_orig = c(ymean-half*1.025, ymean + half*1.025)
-      )
-
-  }
 
   return(object)
 
@@ -3317,6 +3317,8 @@ createSpatialDataVisiumHD <- function(dir,
                                       square_res,
                                       img_ref = "lowres",
                                       img_active = "lowres",
+                                      resize_images = NULL,
+                                      unload = FALSE,
                                       meta = list(),
                                       misc = list(),
                                       verbose = TRUE){
@@ -3416,9 +3418,6 @@ createSpatialDataVisiumHD <- function(dir,
 
   coords_df <- read_coords_visium(dir_coords)
 
-  xmean <- base::mean(coords_df$x_orig, na.rm = TRUE)
-  ymean <- base::mean(coords_df$y_orig, na.rm = TRUE)
-
   # compute spot size
   spot_size <-
     scale_factors$fiducial_diameter_fullres *
@@ -3431,15 +3430,6 @@ createSpatialDataVisiumHD <- function(dir,
   method@method_specifics[["ccd"]] <- square_res
   method@method_specifics[["square_res"]] <- square_res
 
-  # half capture area in pixel_orig
-  half_ca <- (3250*(1/scale_factors$microns_per_pixel))*1.025
-
-  method@capture_area <-
-    list(
-      x_orig = c(xmean-half_ca, xmean+half_ca),
-      y_orig = c(ymean-half_ca, ymean+half_ca)
-    )
-
   # create output
   sp_data <-
     createSpatialData(
@@ -3447,7 +3437,8 @@ createSpatialDataVisiumHD <- function(dir,
       hist_img_ref = img_list[[img_ref]],
       hist_imgs = img_list[req_images[req_images != img_ref]],
       active = img_active,
-      unload = TRUE,
+      unload = unlaod,
+      resize_images = resize_images,
       coordinates = coords_df,
       method = method,
       meta = meta,

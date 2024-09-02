@@ -454,7 +454,7 @@ add_xy <- function(df, x = "x", y = "y"){
 
 #' @title Add the set up of a neural network
 #'
-#' @inherit check_object params
+#' @inherit argument_dummy params
 #' @param set_up_list A named list with slots \code{$activation, $bottleneck, $dropout, $epochs, $layers}.
 #'
 #' @return A `SPATA2` object.

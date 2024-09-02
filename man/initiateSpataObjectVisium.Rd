@@ -10,6 +10,8 @@ initiateSpataObjectVisium(
   mtr = "filtered",
   img_active = "lowres",
   img_ref = "lowres",
+  resize_images = NULL,
+  unload = TRUE,
   verbose = TRUE
 )
 }
@@ -24,7 +26,17 @@ initiateSpataObjectVisium(
 
 \item{img_ref}{Character. The reference image to use, either "lowres" or "hires". Default is "lowres".}
 
-\item{verbose}{Logical. If TRUE, progress messages are printed. Default is TRUE.}
+\item{resize_images}{A named list of numeric values between 0-1 used to resize
+the respective image as indicated by the slot name. E.g \code{resize_images = list(hires = 0.5)}
+resizes the hires image to 50\% of its original scale.}
+
+\item{unload}{Logical value. If \code{TRUE}, every image except for the active image
+is \link[=unloadImages]{unloaded.}}
+
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 A \code{SPATA2} object containing data from the Visium platform. More precise,

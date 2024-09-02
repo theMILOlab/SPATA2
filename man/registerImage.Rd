@@ -17,6 +17,7 @@ registerImage(object, ...)
   img = NULL,
   dir = NULL,
   unload = TRUE,
+  resize_fct = NULL,
   process = FALSE,
   overwrite = FALSE,
   verbose = TRUE
@@ -28,6 +29,7 @@ registerImage(object, ...)
   img = NULL,
   dir = NULL,
   unload = FALSE,
+  resize_fct = NULL,
   process = FALSE,
   overwrite = FALSE,
   verbose = TRUE
@@ -51,6 +53,9 @@ the active nor the reference image.}
 \item{img}{An image. Must be usable with \code{EBImage::as.Image()}.}
 
 \item{dir}{Character value. The directory from where to retrieve the image.}
+
+\item{resize_fct}{Numeric value or \code{NULL}. If numeric, used to adjust the
+resolution in which the image is dealt with via \code{\link[=resizeImage]{resizeImage()}}.}
 
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 

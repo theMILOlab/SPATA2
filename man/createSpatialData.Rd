@@ -14,11 +14,12 @@ createSpatialData(
   hist_img_ref = NULL,
   hist_imgs = list(),
   active = NULL,
-  unload = TRUE,
   coordinates = tibble::tibble(),
   meta = list(),
   method = SpatialMethod(),
   scale_factors = list(),
+  resize_images = NULL,
+  unload = TRUE,
   misc = list(),
   verbose = TRUE,
   ...
@@ -46,6 +47,8 @@ createSpatialDataVisium(
   sample,
   img_ref = "lowres",
   img_active = "lowres",
+  resize_images = NULL,
+  unload = TRUE,
   meta = list(),
   misc = list(),
   verbose = TRUE
@@ -57,6 +60,8 @@ createSpatialDataVisiumHD(
   square_res,
   img_ref = "lowres",
   img_active = "lowres",
+  resize_images = NULL,
+  unload = FALSE,
   meta = list(),
   misc = list(),
   verbose = TRUE
@@ -87,6 +92,13 @@ Coordinates should align with the tissue outline of the reference \code{HistoIma
 multiplied withe its coordinate scale factor in slot @scale_factors$coords.}
 
 \item{meta}{List of meta data regarding the tissue.}
+
+\item{resize_images}{A named list of numeric values between 0-1 used to resize
+the respective image as indicated by the slot name. E.g \code{resize_images = list(hires = 0.5)}
+resizes the hires image to 50\% of its original scale.}
+
+\item{unload}{Logical value. If \code{TRUE}, every image except for the active image
+is \link[=unloadImages]{unloaded.}}
 
 \item{misc}{List of miscellaneous information.}
 

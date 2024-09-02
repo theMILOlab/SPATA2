@@ -1214,7 +1214,18 @@ threshold_scattermore <- 100000
 
 # V -----------------------------------------------------------------------
 
+#' @export
+#' @keywords internal
 visiumHD_resolutions <- c("16um" =  16, "8um" = 8, "2um" = 2)
+
+#' @export
+#' @keywords internal
+visiumHD_ranges <-
+  list(
+    "16um" = list(col = c(0, 418), row = c(0, 418)),
+    "8um" = list(col = c(0, 837), row = c(0, 837)),
+    "2um" = list(col = c(0, 3349), row = c(0, 3349))
+  )
 
 #' VisiumHD Spatial Method
 #'

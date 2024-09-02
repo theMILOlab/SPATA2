@@ -121,6 +121,7 @@ Collate:
     'u.R'
     'unused.R'
     'v.R'
+    'v3_1_0.R'
     'w.R'
 Depends: 
     R (>= 3.5)
@@ -130,4 +131,3 @@ References:
     Dichgans, M., Beck, J., Schnell, O., & Heiland, D. H. (2024). 
     Inferring histology-associated gene expression gradients in spatial transcriptomic studies. 
     Nature Communications, 15, 7280. https://doi.org/10.1038/s41467-024-50904-x
-

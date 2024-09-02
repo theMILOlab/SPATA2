@@ -17,6 +17,9 @@ or \emph{\link[=SpatialTrajectory]{spatial trajectories}}.
 \describe{
 \item{\code{annotations}}{list. List of objects of class \code{\link{SpatialAnnotation}}.}
 
+\item{\code{capture_area}}{data.frame. Data.frame of vertices that define the capture area
+or the field of view.}
+
 \item{\code{coordinates}}{data.frame. Data.frame that stores information about identified
 or known entities located on the imaged tissue, such as cells or capture spots.}
 

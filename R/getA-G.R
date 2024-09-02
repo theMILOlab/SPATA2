@@ -2071,7 +2071,7 @@ getDefault <- function(object, arg){
 
 #' @title Obtain default argument inputs
 #'
-#' @inherit check_object params
+#' @inherit argument_dummy params
 #'
 #' @return S4 object containing all default argument inputs. Or the respective
 #' default in case of \code{getDefault()}.
@@ -2296,7 +2296,7 @@ getGenes <- function(object,
 #' @description Extracts the gene sets (gene signatures) stored in the transcriptomic
 #' assay.
 #'
-#' @inherit check_object params
+#' @inherit argument_dummy params
 #'
 #' @return Either a named list or a data.frame with variables *ont* and *gene*.
 #' @export

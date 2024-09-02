@@ -52,7 +52,7 @@ spots into larger units, recalculating the count matrix, and generating a new \c
 object with the reduced resolution.
 }
 \details{
-The \code{reduceResolutionVisuiumHD()} function reduces the spatial resolution of a Visium HD
+The \code{reduceResolutionVisiumHD()} function reduces the spatial resolution of a Visium HD
 dataset by aggregating neighboring spots into larger units and recalculating the count
 matrix for the new resolution. The process involves the following key steps:
 

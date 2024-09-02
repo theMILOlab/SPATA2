@@ -721,7 +721,9 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' @param mtr Character. Specifies which matrix to use, either "filtered" or "raw". Default is "filtered".
 #' @param img_active Character. The active image to use, either "lowres" or "hires". Default is "lowres".
 #' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
-#' @param verbose Logical. If TRUE, progress messages are printed. Default is TRUE.
+#'
+#' @inherit createSpatialData params
+#' @inherit argument_dummy params
 #'
 #' @return A `SPATA2` object containing data from the Visium platform. More precise,
 #' depending on the set up used to create the raw data it is of either spatial method:
@@ -775,6 +777,8 @@ initiateSpataObjectVisium <- function(sample_name,
                                       mtr = "filtered",
                                       img_active = "lowres",
                                       img_ref = "lowres",
+                                      resize_images = NULL,
+                                      unload = TRUE,
                                       verbose = TRUE){
 
   confuns::give_feedback(
@@ -871,6 +875,8 @@ initiateSpataObjectVisium <- function(sample_name,
       sample = sample_name,
       img_ref = img_ref,
       img_active = img_active,
+      resize_images = resize_images,
+      unload = unload,
       verbose = verbose
     )
 
@@ -988,8 +994,10 @@ initiateSpataObjectVisium <- function(sample_name,
 #' matrix. If `NULL`, the default, all genes are kept.
 #' @param img_active Character. The active image to use, either "lowres" or "hires". Default is "lowres".
 #' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
-#' @param inherit argument_dummy params
+#'
 #' @inherit reduceResolutionVisiumHD params
+#' @inherit createSpatialData params
+#' @inherit argument_dummy params
 #'
 #' @return A `SPATA2` object the VisiumHD platform.
 #'
@@ -1048,6 +1056,8 @@ initiateSpataObjectVisiumHD <- function(sample_name,
                                         batch_size = 1000,
                                         img_active = "lowres",
                                         img_ref = "lowres",
+                                        resize_images = NULL,
+                                        unload = TRUE,
                                         verbose = TRUE){
 
   confuns::give_feedback(
@@ -1121,6 +1131,8 @@ initiateSpataObjectVisiumHD <- function(sample_name,
       sample = sample_name,
       img_ref = img_ref,
       img_active = img_active,
+      resize_images = resize_images,
+      unload = unload,
       verbose = verbose
     )
 
