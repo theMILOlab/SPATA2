@@ -539,7 +539,7 @@ ggpLayerAxesSI <- function(object,
 #' object <- loadExampleObject("UKF275T")
 #'
 #' plotImage(object) +
-#'  ggpLayerCaptureArea(object, opt = "rect")
+#'  ggpLayerCaptureArea(object, opt = "outline")
 #'
 #' plotImage(object) +
 #'  ggpLayerCaptureArea(object, opt = "crop")

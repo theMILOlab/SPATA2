@@ -2,15 +2,25 @@
 % Please edit documentation in R/getA-G.R
 \name{getCaptureArea}
 \alias{getCaptureArea}
+\alias{getCaptureArea,SPATA2-method}
+\alias{getCaptureArea,SpatialData-method}
 \title{Obtain capture area}
 \usage{
 getCaptureArea(object, ...)
+
+\S4method{getCaptureArea}{SPATA2}(object, img_name = activeImage(object), ...)
+
+\S4method{getCaptureArea}{SpatialData}(object, img_name = activeImage(object), ...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 }
 \value{
 List of two length two vectors named \emph{x} and \emph{y}. Values correspond

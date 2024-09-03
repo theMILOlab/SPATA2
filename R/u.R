@@ -515,6 +515,8 @@ updateSpataObject <- function(object,
 
   } else {
 
+    assign("x.temp.var.updating.spata2.obj.x", value = T, envir = .GlobalEnv)
+
     # SPATA2v2 -> SPATA2v3
     if(object@version$major == 2){
 
@@ -529,7 +531,33 @@ updateSpataObject <- function(object,
 
     }
 
-    # SPATA2v3 ... placeholder
+    # SPATA2v3.0.4 -> SPATA2v3.1.0
+    if(object@version$major == 3 &
+       object@version$minor == 0){
+
+      # update SpatialData & SpatialMethod
+      sp_data <-
+        transfer_slot_content(
+          donor = getSpatialData(object),
+          recipient = SpatialData(),
+          verbose = FALSE
+        )
+
+      sp_data@method <-
+        transfer_slot_content(
+          donor = sp_data@method,
+          recipient = SpatialMethod(),
+          verbose = FALSE
+        )
+
+      object <- setSpatialData(object, sp_data = sp_data)
+
+      # compute capture area
+      object <- computeCaptureArea(object)
+
+      object@version <- list(major = 3, minor = 1, patch = 0)
+
+    }
 
     # default adjustment ------------------------------------------------------
 
@@ -554,6 +582,8 @@ updateSpataObject <- function(object,
       msg = glue::glue("Object updated. New version: {version}"),
       verbose = verbose
     )
+
+    rm(x.temp.var.updating.spata2.obj.x, envir = .GlobalEnv)
 
     returnSpataObject(object)
 

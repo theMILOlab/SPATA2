@@ -538,18 +538,130 @@ setMethod(f = "show", signature = "ANY", definition = function(object){
 })
 
 #' @export
-setMethod(f = "show", signature = "SpatialMethod", definition = function(object){
+setMethod("show", "HistoImage", function(object) {
 
-  out <-
-    purrr::map(
-      .x = methods::slotNames(object),
-      .f = ~ methods::slot(object, name = .x)
-    ) %>%
-    purrr::set_names(nm = methods::slotNames(object))
+  cat("An object of class HistoImage\n")
+  objectMemoryUsage(object)
 
-  return(out)
+  cat("Name: ", object@name, "\n")
+  cat("Sample: ", object@sample, "\n")
+  cat("Active: ", object@active, "\n")
+  cat("Reference: ", object@reference, "\n")
+  cat("Aligned: ", object@aligned, "\n")
+  cat("Background color: ", object@bg_color, "\n")
+
+  if (!is.null(object@dir)) {
+
+    cat("Image directory: ", object@dir, "\n")
+
+  } else {
+
+    cat("Image directory: Not set\n")
+
+  }
+
+  if (!is.null(object@image)) {
+
+    cat("Image dimensions (WxHxC): ", paste(dim(object@image), collapse = " x "), "\n")
+
+  } else {
+
+    cat("Image: Not loaded\n")
+
+  }
+
+  # Print scale factors
+  cat("Scale factors:\n")
+  max_len_sf <- max(nchar(names(object@scale_factors)))
+
+  for (name in names(object@scale_factors)) {
+    val <- object@scale_factors[[name]]
+    add <- ""
+
+    if (name == "pixel") {
+      add <- paste0(" (", attr(val, which = "unit"), ")")
+    }
+
+    cat(sprintf("  %-*s : %s%s\n", max_len_sf, name, round(val, digits = 4), add))
+  }
+
+
+  # Print transformations
+  cat("Transformations:\n")
+  max_len_trans <- max(nchar(names(object@transformations)))
+
+  for (name in names(object@transformations)) {
+
+    value <- object@transformations[[name]]
+
+    if (is.list(value)) {
+
+      cat(sprintf("  %-*s :\n", max_len_trans, name))
+      max_len_sub <- max(nchar(names(value)))
+
+      for (subname in names(value)) {
+
+        cat(sprintf("    %-*s : %s\n", max_len_sub, subname, value[[subname]]))
+
+      }
+
+    } else {
+
+      cat(sprintf("  %-*s : %s\n", max_len_trans, name, value))
+
+    }
+  }
+
+  # Print outline information
+  if (length(object@outline) > 0) {
+    cat("Outline information:\n")
+    for (name in names(object@outline)) {
+      cat("  ", name, ": ", nrow(object@outline[[name]]), " vertices\n")
+    }
+  } else {
+    cat("Outline: None\n")
+  }
+
+  # Print pixel content
+  if (length(object@pixel_content) > 0) {
+    cat("Pixel content: ", length(levels(object@pixel_content)), " categories\n")
+  } else {
+    cat("Pixel content: Not set\n")
+  }
+
+  # Print overlap
+  cat("Overlap: ", object@overlap, "\n")
+})
+
+
+#' @export
+setMethod("show", "MolecularAssay", function(object) {
+
+  cat("An object of class MolecularAssay\n")
+  objectMemoryUsage(object)
+
+  cat("Modality: ", object@modality, "\n")
+  cat("Active matrix: ", object@active_mtr, "\n")
+
+  cat("Count matrix:\n")
+  if (nrow(object@mtr_counts) == 0 || ncol(object@mtr_counts) == 0) {
+    cat("  No count matrix available.\n")
+  } else {
+    cat("  Dimensions: ", nrow(object@mtr_counts), " x ", ncol(object@mtr_counts), "\n")
+  }
+
+  cat("Processed matrices:\n")
+  if (length(object@mtr_proc) == 0) {
+    cat("  No processed matrices available.\n")
+  } else {
+    cat("  Available matrices:\n")
+    for (mtr_name in names(object@mtr_proc)) {
+      cat("    - ", mtr_name, "\n")
+    }
+  }
 
 })
+
 
 #' @export
 setMethod(f = "show", signature = "SPATA2", definition = function(object){
@@ -563,7 +675,10 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   n_mols <- purrr::map_dbl(.x = assay_names, .f = ~ nMolecules(object, assay_name = .x))
   n_obs <- nObs(object) # also in case no matrix available
 
-  cat("SPATA2 object of size:", n_obs, "x", sum(n_mols), paste0("(", obsUnit(object), "s x molecules)\n"))
+  cat("An object of class SPATA2\n")
+  cat("Sample:", object@sample, "\n")
+  cat("Size:", n_obs, "x", sum(n_mols), paste0("(", obsUnit(object), "s x molecules)\n"))
+  objectMemoryUsage(object)
 
   platform <- object@platform
 
@@ -577,8 +692,6 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   }
 
   cat("Platform:", platform, "\n")
-  cat("Sample name:", object@sample, "\n")
-
 
   #cat("Contains", length(assays), ifelse(length(assays) > 1, "assays:\n", "assay:\n"), stringr::str_c(assays, collapse = "\n"))
 
@@ -661,13 +774,27 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
 })
 
 #' @export
-setMethod(f = "show", signature = "SpatialAnnotation", definition = function(object){
+setMethod("show", "SpatialAnnotation", function(object) {
 
-  tags <- confuns::scollapse(object@tags, sep = ", ", last = ", ")
+  cat("An object of class SpatialAnnotation\n")
+  cat("ID: ", object@id, "\n")
+  cat("Sample: ", object@sample, "\n")
+  objectMemoryUsage(object)
+  cat("Tags: ", paste(object@tags, collapse = ", "), "\n")
 
-  writeLines(glue::glue("An object of class '{class(object)}' with id = '{object@id}'. \n Tags: {tags}."))
+  cat("Area information:\n")
+  for (name in names(object@area)) {
+    cat("  ", name, ": ", nrow(object@area[[name]]), " vertices\n")
+  }
+
+  if (!is.null(object@image)) {
+    cat("Cropped image dimensions (WxHxC): ", paste(dim(object@image), collapse = " x "), "\n")
+  } else {
+    cat("Cropped image: Not available until extraction.\n")
+  }
 
 })
+
 
 #' @title Show color palettes and spectra
 #'

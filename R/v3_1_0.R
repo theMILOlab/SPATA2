@@ -77,7 +77,7 @@ complete_visium_coords_df <- function(coords_df, method, square_res = NULL){
       coords_df <-
         dplyr::left_join(
           x = dplyr::select(visium_spots$VisiumSmall$opt1, barcode, col, row),
-          y = dplyr::select(coords_df, -col, -row),
+          y = dplyr::select(coords_df, -dplyr::any_of(x = c("col", "row"))),
           by = c("barcode" = "barcodes")
         ) %>%
         dplyr::rename(barcodes = barcode)
@@ -87,7 +87,7 @@ complete_visium_coords_df <- function(coords_df, method, square_res = NULL){
       coords_df <-
         dplyr::left_join(
           x = dplyr::select(visium_spots$VisiumSmall$opt2, barcode, col, row),
-          y = dplyr::select(coords_df, -col, -row),
+          y = dplyr::select(coords_df, -dplyr::any_of(x = c("col", "row"))),
           by = c("barcode" = "barcodes")
         ) %>%
         dplyr::rename(barcodes = barcode)
@@ -105,7 +105,7 @@ complete_visium_coords_df <- function(coords_df, method, square_res = NULL){
       coords_df <-
         dplyr::left_join(
           x = dplyr::select(visium_spots$VisiumLarge$opt1, barcode, col = array_col, row = array_row),
-          y = dplyr::select(coords_df, -col, -row),
+          y = dplyr::select(coords_df, -dplyr::any_of(x = c("col", "row"))),
           by = c("barcode" = "barcodes")
         ) %>%
         dplyr::rename(barcodes = barcode)
@@ -371,8 +371,36 @@ setMethod(
 
 # reduceResolution --------------------------------------------------------
 
-# getGridVisiumHD
-getGridVisiumHD <- function(object, res, img_name = activeImage(object)){
+#' @title Generate grid segments for Visium HD data
+#'
+#' @description Generates grid segments at a specified resolution for Visium HD data.
+#' The grid can be used to visualize or process the spatial layout of the Visium HD data.
+#'
+#' @param res Character string specifying the desired resolution (e.g., "10um").
+#' The resolution must be lower or equal to the current resolution of the data and divisible by the current resolution.
+#' @inherit argument_dummy params
+#'
+#' @return A data frame containing the grid segments with their start and end coordinates (x, y, xend, yend),
+#' segment type (horizontal or vertical), and other relevant information.
+#'
+#' @details
+#' The function performs the following steps:
+#' \itemize{
+#'   \item Verifies the desired resolution is compatible with the current resolution of the Visium HD data.
+#'   \item Computes the grid segments based on the resolution and spatial layout of the data.
+#'   \item Scales the grid segments to match the image's scale factor.
+#' }
+#'
+#' @examples
+#' \dontrun{
+#' object <- downloadSpataObject("HumanPancreasHD")
+#' grid_df <- getGridVisiumHD(object, res = "32um")
+#' plotGrid(grid_df) # Assuming a function that plots the grid
+#' }
+#'
+#' @export
+
+getGridVisiumHDx <- function(object, res, img_name = activeImage(object)){
 
   sm <- getSpatialMethod(object)
 

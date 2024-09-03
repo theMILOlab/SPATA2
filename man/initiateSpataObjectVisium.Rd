@@ -90,3 +90,11 @@ identified in the resulting \code{SPATA2} object, which contains two assays. One
 modality \emph{gene} and of of molecular modality \emph{protein}.
 }
 
+\section{Row and column indices}{
+
+Visium spot coordinates come with column and row indices. The functions \code{initiateSpataObjectVisium()}
+and \code{initiateSpataObjectVisiumHD()} ensure that \emph{col} aligns with the direction of the x-coordinates and
+that \emph{row} aligns with the direction of the y-coordinates. If they do not, they are adjusted accordingly.
+Hence, these variables should not be used as keys for data merging.
+}
+

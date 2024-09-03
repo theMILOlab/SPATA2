@@ -421,7 +421,6 @@ getBarcodeSpotDistances <- function(object,
 #'
 #' @seealso [`setCaptureArea()`]
 #'
-#' @rdname getCaptureaArea
 #' @export
 setGeneric(name = "getCaptureArea", def = function(object, ...){
 

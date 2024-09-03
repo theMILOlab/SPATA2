@@ -767,6 +767,12 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' identified in the resulting `SPATA2` object, which contains two assays. One of molecular
 #' modality *gene* and of of molecular modality *protein*.
 #'
+#' @section Row and column indices:
+#' Visium spot coordinates come with column and row indices. The functions `initiateSpataObjectVisium()`
+#' and `initiateSpataObjectVisiumHD()` ensure that *col* aligns with the direction of the x-coordinates and
+#' that *row* aligns with the direction of the y-coordinates. If they do not, they are adjusted accordingly.
+#' Hence, these variables should not be used as keys for data merging.
+#'
 #' @export
 #'
 initiateSpataObjectVisium <- function(sample_name,
@@ -1041,6 +1047,12 @@ initiateSpataObjectVisium <- function(sample_name,
 #'
 #' Note, that aggregating counts by resolution can take a considerable amount of time. Consider prefiltering
 #' the raw counts using `genes` and/or increasing the number of cores to use with `workers`.
+#'
+#' @section Row and column indices:
+#' Visium spot coordinates come with column and row indices. The functions `initiateSpataObjectVisium()`
+#' and `initiateSpataObjectVisiumHD()` ensure that *col* aligns with the direction of the x-coordinates and
+#' that *row* aligns with the direction of the y-coordinates. If they do not, they are adjusted accordingly.
+#' Hence, these variables should not be used as keys for data merging.
 #'
 #' @export
 #'

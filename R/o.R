@@ -29,7 +29,7 @@ objectMemoryUsage <- function(object, digits = 2){
 
   }
 
-  cat(paste0("Memory usage: ", round(mem_used, digits = digits), " ", suf))
+  cat(paste0("Memory: ", round(mem_used, digits = digits), " ", suf, "\n"))
 
 }
 

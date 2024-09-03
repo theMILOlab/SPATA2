@@ -109,3 +109,11 @@ Note, that aggregating counts by resolution can take a considerable amount of ti
 the raw counts using \code{genes} and/or increasing the number of cores to use with \code{workers}.
 }
 
+\section{Row and column indices}{
+
+Visium spot coordinates come with column and row indices. The functions \code{initiateSpataObjectVisium()}
+and \code{initiateSpataObjectVisiumHD()} ensure that \emph{col} aligns with the direction of the x-coordinates and
+that \emph{row} aligns with the direction of the y-coordinates. If they do not, they are adjusted accordingly.
+Hence, these variables should not be used as keys for data merging.
+}
+

@@ -1247,7 +1247,8 @@ check_object <- function(object){
   ver_cur <- version_string(current_spata2_version)
   ver_obj <- version_string(object@version)
 
-  if(!identical(ver_cur, ver_obj)){
+  if(!identical(ver_cur, ver_obj) &
+     !exists(x = "x.temp.var.updating.spata2.obj.x", envir = .GlobalEnv)){
 
     warning(glue::glue("SPATA2 object is of version {ver_obj}. Current SPATA2 version is {ver_cur}. Please use `updateSpataObject()`."))
 
