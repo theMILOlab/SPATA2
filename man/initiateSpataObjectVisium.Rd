@@ -9,7 +9,7 @@ initiateSpataObjectVisium(
   directory_visium,
   mtr = "filtered",
   img_active = "lowres",
-  img_ref = "lowres",
+  img_ref = "hires",
   resize_images = NULL,
   unload = TRUE,
   verbose = TRUE

@@ -168,6 +168,124 @@ close_area_df <- function(df){
 
 
 
+
+#' @export
+#' @keywords internal
+complete_visium_coords_df <- function(coords_df, method, square_res = NULL){
+
+  if(method == "VisiumSmall"){
+
+    if(any(coords_df$barcodes %in% visium_spots$VisiumSmall$opt1$barcode)){
+
+      coords_df <-
+        dplyr::left_join(
+          x = dplyr::select(visium_spots$VisiumSmall$opt1, barcode, col, row),
+          y = dplyr::select(coords_df, -dplyr::any_of(x = c("col", "row"))),
+          by = c("barcode" = "barcodes")
+        ) %>%
+        dplyr::rename(barcodes = barcode)
+
+    } else if(any(coords_df$barcodes %in% visium_spots$VisiumSmall$opt2$barcode)){
+
+      coords_df <-
+        dplyr::left_join(
+          x = dplyr::select(visium_spots$VisiumSmall$opt2, barcode, col, row),
+          y = dplyr::select(coords_df, -dplyr::any_of(x = c("col", "row"))),
+          by = c("barcode" = "barcodes")
+        ) %>%
+        dplyr::rename(barcodes = barcode)
+
+    } else {
+
+      warning("Could not find matching spot data.frame for VisiumSmall data set. Please reaise an issue at github.")
+
+    }
+
+  } else if(method == "VisiumLarge"){
+
+    if(any(coords_df$barcodes %in% visium_spots$VisiumLarge$opt1$barcode)){
+
+      coords_df <-
+        dplyr::left_join(
+          x = dplyr::select(visium_spots$VisiumLarge$opt1, barcode, col = array_col, row = array_row),
+          y = dplyr::select(coords_df, -dplyr::any_of(x = c("col", "row"))),
+          by = c("barcode" = "barcodes")
+        ) %>%
+        dplyr::rename(barcodes = barcode)
+
+    } else {
+
+      warning("Could not find matching spot data.frame for VisiumLarge data set. Please reaise an issue at github.")
+
+    }
+
+  } else if(method == "VisiumHD"){
+
+    if(square_res %in% names(visiumHD_ranges)){
+
+      ranges <- visiumHD_ranges[[square_res]]
+
+      complete_coords_df <-
+        tidyr::expand_grid(
+          col = seq(ranges$col[1], ranges$col[2], by = 1),
+          row = seq(ranges$row[1], ranges$row[2], by = 1)
+        )
+
+      coords_df <-
+        dplyr::left_join(x = complete_coords_df, y = coords_df, by = c("col", "row")) %>%
+        dplyr::mutate(
+          barcodes = dplyr::if_else(is.na(barcodes), true = paste0("new_bc_col", col, "row", row), false = barcodes)
+        )
+
+    } else {
+
+      # created with reduceResolutionVisumHD
+
+    }
+
+  }
+
+  # add exclude for not used spots
+  if(!"exclude" %in% colnames(coords_df)){
+
+    if("in_tissue" %in% colnames(coords_df)){
+
+      coords_df$exclude <- coords_df$in_tissue == 0
+
+    } else {
+
+      coords_df$exclude <- FALSE
+
+    }
+
+  }
+
+  coords_df <-
+    dplyr::mutate(
+      .data = coords_df,
+      exclude = dplyr::if_else(is.na(x_orig) | is.na(y_orig), true = TRUE, false = exclude)
+    )
+
+  # predict missing pixel position
+  lmx <- stats::lm(formula = x_orig ~ col + row, data = coords_df, na.action = na.exclude)
+  lmy <- stats::lm(formula = y_orig ~ row + col, data = coords_df, na.action = na.exclude)
+
+  coords_df$x_pred <- stats::predict(lmx, newdata = coords_df)
+  coords_df$y_pred <- stats::predict(lmy, newdata = coords_df)
+
+  coords_df <-
+    dplyr::mutate(
+      .data = coords_df,
+      x_orig = dplyr::if_else(is.na(x_orig), true = x_pred, false = x_orig),
+      y_orig = dplyr::if_else(is.na(y_orig), true = y_pred, false = y_orig)
+    ) %>%
+    dplyr::select(-x_pred, -y_pred)
+
+  # return output
+  return(coords_df)
+
+}
+
 # compute_ ----------------------------------------------------------------
 
 #' @title Compute angle between two points
@@ -617,6 +735,188 @@ compute_relative_variation <- function(gradient){
 
 # computeC ----------------------------------------------------------------
 
+
+#' @title Compute capture area
+#' @description Computes and updates the capture area (field of view).
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' The `computeCaptureArea` function calculates the capture area for the spatial data based
+#' on the specific method used. The process differs slightly depending on whether the
+#' spatial method is a Visium platform or another type:
+#'
+#' \itemize{
+#'   \item For Visium platforms:
+#'     \itemize{
+#'       \item The coordinates data frame is first ensured to be complete using `complete_visium_coords_df`.
+#'       \item A buffer is added around the capture area to account for the physical spacing between capture areas, calculated using the center-to-center distance (`CCD`).
+#'       \item The capture area is defined by the four corners (vertices) of the bounding box around the coordinates, adjusted by the buffer.
+#'     }
+#'   \item For non-Visium platforms:
+#'     \itemize{
+#'       \item The capture area is calculated as the range of the x and y coordinates, defining a simple bounding box.
+#'     }
+#' }
+#'
+#' After computing the capture area, it is stored in the `@capture_area` slot of the [`SpatialData`].
+#'
+#' @export
+
+setGeneric(name = "computeCaptureArea", def = function(object, ...){
+
+  standardGeneric(f = "computeCaptureArea")
+
+})
+
+#' @rdname computeCaptureArea
+#' @export
+setMethod(
+  f = "computeCaptureArea",
+  signature = "SPATA2" ,
+  definition = function(object, ...){
+
+    sp_data <- getSpatialData(object)
+
+    sp_data <- computeCaptureArea(sp_data)
+
+    object <- setSpatialData(object, sp_data = sp_data)
+
+    returnSpataObject(object)
+
+  }
+)
+
+#' @rdname computeCaptureArea
+#' @export
+setMethod(
+  f = "computeCaptureArea",
+  signature = "SpatialData" ,
+  definition = function(object, ...){
+
+    coords_df <- getCoordsDf(object, as_is = TRUE)
+
+    method_obj <- object@method
+
+    # concept is similar for all visium platforms
+    if(stringr::str_detect(method_obj@name, pattern = "Visium")){
+
+      isf <- getScaleFactor(object, fct_name = "image")
+
+      buffer <- as.numeric(getCCD(object, unit = "px")*1.125/isf)
+
+      # ensure that the coordinates data.frame is complete
+      coords_df <-
+        complete_visium_coords_df(
+          coords_df = coords_df,
+          method = method_obj@name,
+          square_res = method_obj@method_specifics$square_res
+        )
+
+      coords_df <- align_grid_with_coordinates(coords_df)
+
+      # make capture area
+      # idx1
+      x1 <-
+        dplyr::filter(coords_df, col == min(col)) %>%
+        dplyr::filter(y_orig == min(y_orig)) %>%
+        dplyr::pull(x_orig)
+
+      x1 <- x1 - buffer
+
+      y1 <-
+        dplyr::filter(coords_df, row == min(row)) %>%
+        dplyr::filter(x_orig == min(x_orig)) %>%
+        dplyr::pull(y_orig)
+
+      y1 <- y1 - buffer
+
+      idx1 <- tibble::tibble(x_orig = x1, y_orig = y1, idx = 1)
+
+      # idx2
+      x2 <-
+        dplyr::filter(coords_df, col == min(col)) %>%
+        dplyr::filter(y_orig == max(y_orig)) %>%
+        dplyr::pull(x_orig)
+
+      x2 <- x2 - buffer
+
+      y2 <-
+        dplyr::filter(coords_df, row == max(row)) %>%
+        dplyr::filter(x_orig == min(x_orig)) %>%
+        dplyr::pull(y_orig)
+
+      y2 <- y2 + buffer
+
+      idx2 <- tibble::tibble(x_orig = x2, y_orig = y2, idx = 2)
+
+      # idx3
+      x3 <-
+        dplyr::filter(coords_df, col == max(col)) %>%
+        dplyr::filter(y_orig == max(y_orig)) %>%
+        dplyr::pull(x_orig)
+
+      x3 <- x3 + buffer
+
+      y3 <-
+        dplyr::filter(coords_df, row == max(row)) %>%
+        dplyr::filter(x_orig == max(x_orig)) %>%
+        dplyr::pull(y_orig)
+
+      y3 <- y3 + buffer
+
+      idx3 <- tibble::tibble(x_orig = x3, y_orig = y3, idx = 3)
+
+      # idx4
+      x4 <-
+        dplyr::filter(coords_df, col == max(col)) %>%
+        dplyr::filter(y_orig == min(y_orig)) %>%
+        dplyr::pull(x_orig)
+
+      x4 <- x4 + buffer
+
+      y4 <-
+        dplyr::filter(coords_df, row == min(row)) %>%
+        dplyr::filter(x_orig == max(x_orig)) %>%
+        dplyr::pull(y_orig)
+
+      y4 <- y4 - buffer
+
+      idx4 <- tibble::tibble(x_orig = x4, y_orig = y4, idx = 4)
+
+      # combine all indices to form the capture area
+      capture_area <-
+        purrr::map_dfr(.x = list(idx1, idx2, idx3, idx4), .f = ~ .x)
+
+    } else {
+
+      range_list <-
+        list(
+          x_orig = range(coords_df$x_orig),
+          y_orig = range(coords_df$y_orig)
+        )
+
+      x_min <- range_list$x_orig[1]
+      x_max <- range_list$x_orig[2]
+      y_min <- range_list$y_orig[1]
+      y_max <- range_list$y_orig[2]
+
+      capture_area <-
+        tibble::tibble(
+          x = c(x_min, x_min, x_max, x_max),
+          y = c(y_min, y_max, y_min, y_max),
+          idx = 1:4
+        )
+
+    }
+
+    object@capture_area <- capture_area
+
+    return(object)
+
+  }
+)
 
 #' @title Compute chromosomal damage
 #'
@@ -1262,12 +1562,7 @@ cropSpataObject <- function(object,
 
   if(base::isTRUE(adjust_capture_area)){
 
-    object_cropped <-
-      setCaptureArea(
-        object = object_cropped,
-        x = as_unit(xrange, unit = unit, object = object),
-        y = as_unit(yrange, unit = unit, object = object)
-      )
+    object_cropped <- computeCaptureArea(object_cropped)
 
   }
 

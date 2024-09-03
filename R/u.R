@@ -12,7 +12,7 @@
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @seealso [`loadImage()`],[`loadImages()`]
+#' @seealso [`loadImage()`],[`loadImages()`], [`getImageDir()`]
 #'
 #' @export
 #'
@@ -82,7 +82,7 @@ setMethod(
     } else {
 
       confuns::give_feedback(
-        msg = " No image directory found and/or the directory does not exist on this device. Did not unload image {object@name}.",
+        msg = "No image directory found and/or the directory does not exist on this device. Did not unload image {object@name}.",
         verbose = verbose
       )
 
@@ -172,7 +172,56 @@ setMethod(
   }
 )
 
+#' @title Map aggregated to pre-aggregated barcodes
+#'
+#' @details This function reconstructs the original barcodes before the aggregation
+#' process was applied. It retrieves the pre-aggregation state of the data and,
+#' if specified, adds selected metadata variables.
+#'
+#' @param var_names Optional. A character vector specifying the names of metadata variables to include in the output.
+#' If \code{NULL}, only the original and aggregated barcodes are returned.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A \code{data.frame} containing the original barcodes (\code{barcodes_orig}),
+#' the corresponding aggregated barcodes (\code{barcodes_aggr}), and any additional
+#' metadata variables specified in \code{var_names}.
+#'
+#' @seealso \code{\link{reduceResolutionVisiumHD}} for aggregating barcodes by reducing resolution
+#' in VisiumHD data sets.
+#'
+#' @export
+unwindAggregation <- function(object, var_names = NULL){
 
+  if(purrr::is_empty(object@obj_info$aggregation)){
+
+    stop("No aggregation info found to unwind.")
+
+  }
+
+  if(is.character(var_names)){
+
+    meta_df <-
+      getMetaDf(object) %>%
+      dplyr::select(barcodes, dplyr::all_of(var_names))
+
+  } else {
+
+    meta_df <- getMetaDf(object)[, "barcodes"]
+
+  }
+
+  reconstructed_df <-
+    purrr::imap_dfr(
+      .x = object@obj_info$aggregation$barcodes,
+      .f = ~ tibble::tibble(barcodes_orig = .x, barcodes_aggr = .y)
+    ) %>%
+    dplyr::left_join(x = ., y = meta_df, by = c("barcodes_aggr" = "barcodes")) %>%
+    dplyr::select(barcodes = barcodes_orig, barcodes_aggr, dplyr::everything())
+
+  return(reconstructed_df)
+
+}
 
 
 
@@ -549,6 +598,12 @@ updateSpataObject <- function(object,
           recipient = SpatialMethod(),
           verbose = FALSE
         )
+
+      if(stringr::str_detect(sp_data@method@name, pattern = "Visium")){
+
+        sp_data@method <- spatial_methods[[sp_data@method@name]]
+
+      }
 
       object <- setSpatialData(object, sp_data = sp_data)
 

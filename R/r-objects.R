@@ -1229,17 +1229,15 @@ visiumHD_ranges <-
 
 #' VisiumHD Spatial Method
 #'
-#' This object abstracts the VisiumHD spatial method, which is a high-density version of the Visium platform.
+#' This object abstracts the VisiumHD spatial method, which is a high-resolution version of the Visium platform.
 #'
 #' @details
 #' The `VisiumHD` object is based on the `SpatialMethod` class and contains the following specifications:
 #' \itemize{
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
-#'     \item \code{capture_area_sides}: A list specifying the dimensions of the capture area with elements \code{x} and \code{y}, both set to "6.25mm".
 #'     \item \code{ccd}: Center to center distance, which is a character value.
 #'     \item \code{square_res}: Square resolution, which is a character value.
-#'     \item \code{fiducial_frame_sides}: A list specifying the dimensions of the fiducial frame with elements \code{x} and \code{y}, both set to "8mm".
 #'   }
 #'   \item \code{observational_unit}: The unit of observation, which is "spot".
 #'   \item \code{unit}: The SI unit used, which is "mm".
@@ -1252,7 +1250,7 @@ VisiumHD <-
   SpatialMethod(
     method_specifics =
       list(
-        capture_area_sides = list(x = "6.25mm", y = "6.25mm"),
+        capture_area_side_lengths = list(x = "6.5mm", y = "6.5mm"),
         ccd = character(1),
         square_res = character(1),
         fiducial_frame_sides = list(x = "8mm", y = "8mm")
@@ -1273,18 +1271,8 @@ VisiumHD <-
 #' \itemize{
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
-#'     \item \code{capture_area}: A list specifying the coordinates of the capture area:
-#'       \itemize{
-#'          \item \code{x}: A vector with coordinates "0.75mm" and "11.75mm".
-#'          \item \code{y}: A vector with coordinates "0.75mm" and "11.75mm".
-#'       }
 #'     \item \code{ccd}: Center to center distance of "100um".
 #'     \item \code{diameter}: Diameter of each spot is "55um".
-#'     \item \code{fiducial_frame}: A list with the following elements:
-#'       \itemize{
-#'         \item \code{x}: A vector with coordinates "0mm" and "12.5mm".
-#'         \item \code{y}: A vector with coordinates "0mm" and "12.5mm".
-#'       }
 #'     }
 #'   \item \code{observational_unit}: The unit of observation, which is "spot".
 #'   \item \code{unit}: The SI unit used, which is "mm".
@@ -1297,7 +1285,7 @@ VisiumLarge <-
   SpatialMethod(
     method_specifics =
       list(
-        capture_area = list(x = c("0.75mm", "11.75mm"), y = c("0.75mm", "11.75mm")),
+        capture_area_side_lengths = list(x = "11mm", y = "11mm"),
         ccd = "100um",
         diameter = "55um",
         fiducial_frame = list(x = c("0mm", "12.5mm"), y = c("0mm", "12.5mm"))
@@ -1318,18 +1306,8 @@ VisiumLarge <-
 #' \itemize{
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
-#'     \item \code{capture_area_frame}: A list specifying the coordinates of the capture area:
-#'       \itemize{
-#'         \item \code{x}: A vector with coordinates "0.75mm" and "7.25mm".
-#'         \item \code{y}: A vector with coordinates "0.75mm" and "7.25mm".
-#'       }
 #'     \item \code{ccd}: Center to center distance of "100um".
 #'     \item \code{diameter}: Diameter of each spot is "55um".
-#'     \item \code{fiducial_frame}: A list with the following elements:
-#'       \itemize{
-#'         \item \code{x}: A vector with coordinates "0mm" and "8mm".
-#'         \item \code{y}: A vector with coordinates "0mm" and "8mm".
-#'       }
 #'     }
 #'   \item \code{observational_unit}: The unit of observation, which is "spot".
 #'   \item \code{unit}: The SI unit used, which is "mm".
@@ -1342,7 +1320,7 @@ VisiumSmall <-
   SpatialMethod(
     method_specifics =
       list(
-        capture_area_frame = list(x = c("0.75mm", "7.25mm"), y = c("0.75mm", "7.25mm")),
+        capture_area_side_lengths = list(x = "6.5mm", y = "6.5mm"),
         ccd = "100um",
         diameter = "55um",
         fiducial_frame = list(x = c("0mm", "8mm"), y = c("0mm", "8mm"))

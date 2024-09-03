@@ -2705,6 +2705,257 @@ setMethod(
 )
 
 
+resize_image <- function(image, resize_fct = NULL, image_dims = NULL) {
+
+  if(is.null(image_dims)){
+
+    image_dims <- dim(image)
+    resized_image <- EBImage::resize(image, w = image_dims[1]*resize_fct)
+
+  } else {
+
+    resized_image <- EBImage::resize(image, w = image_dims[1], h = image_dims[2])
+
+  }
+
+  return(resized_image)
+
+}
+
+
+#' @title Resize image
+#'
+#' @description Saves the instructions to use and store the resized version of an
+#' image to optimize resolution and memory usage.
+#' @param resize_fct The value should be a positive number between 0 and 1, representing the proportion by which the image should be resized.
+#' For example, `0.5` will resize the image to 50% of its original dimensions.
+#' @param img_name Character value. The image to be resized.
+#' @param img_name_new
+#' A character string or glue instruction, specifying the name for the resized image.
+#' If character, a new, additional image is registered. Set to FALSE if you want the resized image to be registered under the original image name.
+#'
+#' Defaults to `img_name_new = {img_name}_{resize_fct}`.
+#'
+#' @param apply_to_transl Logical. If TRUE, the resizing will also be applied to
+#' instructions on how to translate the image as set with `alignImage()` and/or `alignImageInteractive()`.
+#' (If you have not conducted any alignment so far, this won't have an effect.)
+#'
+#' @details
+#' This function sets instructions on how to deal with the size of the image. By default, any
+#' image registered in the SPATA2 object manually or during initiation with, for instance, `initiateSpataObjectVisium()`
+#' is registered with the original size (width x height) as stored on the disk on your device. R is not
+#' particularly efficient when it comes to handling images of a certain size. This resizing functionality
+#' allows you to adjust the size in which the image is handled when used in order to optimize the ratio
+#' between image resolution and computational performance.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`loadImage()`], [`writeImage()`]
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' object <- downloadSpataObject("UKF313T")
+#'
+#' # contains two images
+#' getImageNames(object)
+#'
+#' # Resize the "hires" image by a factor of 0.5 and update the object
+#' object <- resizeImage(object, img_name = "hires", resize_with = 0.5)
+#'
+#' # Now the object contains three images
+#' getImageNames(object)
+#'
+#' # Note how both 'registered images' draw from the same directory
+#' # This is possible since the instruction to resize the image is applied
+#' # during loadImage()
+#'
+#' getImageDir(object, img_name = "lowres") # dir 1
+#' getImageDir(object, img_name = "hires") # dir 2
+#' getImageDir(object, img_name = "hires_0.5") # dir 2
+#'
+#' # ---> Check out writeImage() to store information of downloaded SPATA2 objects on your disk
+#'
+#' # Show the results: plot the original and resized image
+#' plotImage(object, img_name = "hires") +
+#' plotImage(object, img_name = "hires_0.5") # by default, resized images are renamed
+#'
+#' @rdname resizeImage
+#' @export
+
+setGeneric(name = "resizeImage", def = function(object, ...){
+
+  standardGeneric(f = "resizeImage")
+
+})
+
+#' @rdname resizeImage
+#' @export
+setMethod(
+  f = "resizeImage",
+  signature = "SPATA2",
+  definition = function(object,
+                        img_name,
+                        resize_fct,
+                        img_name_new = "{img_name}_{resize_fct}",
+                        apply_to_transl = TRUE,
+                        overwrite = FALSE,
+                        verbose = NULL){
+
+    hlpr_assign_arguments(object)
+
+    sp_data <- getSpatialData(object)
+
+    sp_data <-
+      resizeImage(
+        object = sp_data,
+        img_name = img_name,
+        resize_fct = resize_fct,
+        img_name_new = img_name_new,
+        apply_to_transl = apply_to_transl,
+        overwrite = overwrite,
+        verbose = verbose
+      )
+
+    object <- setSpatialData(object, sp_data = sp_data)
+
+    returnSpataObject(object)
+
+  }
+)
+
+
+#' @rdname resizeImage
+#' @export
+setMethod(
+  f = "resizeImage",
+  signature = "SpatialData",
+  definition = function(object,
+                        img_name,
+                        resize_fct,
+                        img_name_new = "{img_name}_{resize_fct}",
+                        apply_to_transl = TRUE,
+                        overwrite = FALSE,
+                        verbose = TRUE,
+                        ...){
+
+    # check input
+    containsHistoImages(object, error = TRUE)
+
+    confuns::check_one_of(
+      input = img_name,
+      against = names(object@images)
+    )
+
+    # extract container
+    hist_img <- getHistoImage(object, img_name = img_name)
+
+    img_name_new <- glue::glue(img_name_new)
+
+    if(img_name_new != img_name){
+
+      confuns::check_none_of(
+        input = img_name_new,
+        against = names(object@images),
+        ref.against = "registered images",
+        overwrite = overwrite
+      )
+
+      confuns::give_feedback(
+        msg = glue::glue("Registering new resized version of image '{img_name}': '{img_name_new}'."),
+        verbose = verbose
+      )
+
+      # prepare everything for a new container
+      hist_img@active <- FALSE
+      hist_img@reference <- FALSE
+      hist_img@name <- img_name_new
+
+    } else {
+
+      confuns::give_feedback(
+        msg = glue::glue("Resizing image '{img_name_new}' with factor {resize_fct}."),
+        verbose = verbose
+      )
+
+    }
+
+    # apply resizing
+    hist_img <-
+      resizeImage(
+        object = hist_img,
+        resize_fct = resize_fct,
+        apply_to_transl = apply_to_transl,
+        verbose = verbose
+      )
+
+    if(img_name_new != activeImage(object) &
+       containsImage(hist_img)){
+
+      hist_img <- unloadImage(hist_img, verbose = FALSE)
+
+    }
+
+    # set results
+    object <- setHistoImage(object, hist_img = hist_img)
+
+    return(object)
+
+  }
+)
+
+#' @rdname resizeImage
+#' @export
+setMethod(
+  f = "resizeImage",
+  signature = "HistoImage",
+  definition = function(object,
+                        resize_fct,
+                        apply_to_transl = TRUE,
+                        verbose = TRUE,
+                        ...){
+
+    stopifnot(resize_fct > 0 & resize_fct < 1)
+
+    # store information
+    object@transformations$resize_fct <- resize_fct
+
+    # apply
+
+    # --- to image
+    if(containsImage(object)){
+
+      object@image <- resize_image(object@image, resize_fct = resize_fct)
+
+    }
+
+    object@image_info$dims[1:2] <-  object@image_info$dims[1:2]*resize_fct
+
+    # --- to scale factors
+    object@scale_factors <-
+      purrr::map(.x = object@scale_factors, .f = ~ .x * resize_fct)
+
+    # --- to transf
+    if(apply_to_transl){
+
+      object@transformations$translate <-
+        purrr::map(.x = object@transformations$translate, .f = ~ .x * resize_fct)
+
+    }
+
+    # --- to pixel content and bg_color
+    object@pixel_content <- factor()
+    object@bg_color <- character()
+
+    return(object)
+
+  }
+)
+
+
 #' @title Used for GeomSegmentFixed
 #' @keywords internal
 resizingSegmentsGrob <- function(...){

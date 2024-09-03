@@ -18,18 +18,8 @@ The \code{VisiumLarge} object is based on the \code{SpatialMethod} class and con
 \itemize{
 \item \code{method_specifics}: A list with the following elements:
 \itemize{
-\item \code{capture_area}: A list specifying the coordinates of the capture area:
-\itemize{
-\item \code{x}: A vector with coordinates "0.75mm" and "11.75mm".
-\item \code{y}: A vector with coordinates "0.75mm" and "11.75mm".
-}
 \item \code{ccd}: Center to center distance of "100um".
 \item \code{diameter}: Diameter of each spot is "55um".
-\item \code{fiducial_frame}: A list with the following elements:
-\itemize{
-\item \code{x}: A vector with coordinates "0mm" and "12.5mm".
-\item \code{y}: A vector with coordinates "0mm" and "12.5mm".
-}
 }
 \item \code{observational_unit}: The unit of observation, which is "spot".
 \item \code{unit}: The SI unit used, which is "mm".

@@ -7,7 +7,7 @@ Authors@R: as.person(c(
     "Simon Frerich [ctb]",
     "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]" 
   ))
-Description: This package provides a framework of functions and shiny-applications to make it as easy  and intuitive as possible to work with spatial gene expression data. 
+Description: This package provides a framework of functions and shiny-applications to make it as easy  and intuitive as possible to work with spatial expression data. 
 Encoding: UTF-8
 LazyData: true
 License: GPL-3
@@ -121,7 +121,6 @@ Collate:
     'u.R'
     'unused.R'
     'v.R'
-    'v3_1_0.R'
     'w.R'
 Depends: 
     R (>= 3.5)

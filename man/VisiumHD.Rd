@@ -11,17 +11,15 @@ An object of class \code{SpatialMethod} of length 1.
 VisiumHD
 }
 \description{
-This object abstracts the VisiumHD spatial method, which is a high-density version of the Visium platform.
+This object abstracts the VisiumHD spatial method, which is a high-resolution version of the Visium platform.
 }
 \details{
 The \code{VisiumHD} object is based on the \code{SpatialMethod} class and contains the following specifications:
 \itemize{
 \item \code{method_specifics}: A list with the following elements:
 \itemize{
-\item \code{capture_area_sides}: A list specifying the dimensions of the capture area with elements \code{x} and \code{y}, both set to "6.25mm".
 \item \code{ccd}: Center to center distance, which is a character value.
 \item \code{square_res}: Square resolution, which is a character value.
-\item \code{fiducial_frame_sides}: A list specifying the dimensions of the fiducial frame with elements \code{x} and \code{y}, both set to "8mm".
 }
 \item \code{observational_unit}: The unit of observation, which is "spot".
 \item \code{unit}: The SI unit used, which is "mm".

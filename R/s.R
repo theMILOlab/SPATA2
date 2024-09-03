@@ -1111,8 +1111,6 @@ simulate_complete_coords_st <- function(object, id){
         y = c(tfp1.1[2], tfp1.2[2], tfp2.1[2], tfp2.2[2])
       )
 
-    ca <- getCaptureArea(object, unit = "px")
-
     sim_range <-
       list(
         x = base::range(trajectory_frame$x),
@@ -1142,10 +1140,7 @@ simulate_complete_coords_st <- function(object, id){
       identify_obs_in_polygon(coords_df = ., polygon_df = trajectory_frame, strictly = TRUE, opt = "trajectory_frame") %>%
       dplyr::filter(trajectory_frame) %>%
       dplyr::mutate(
-        rel_loc = "inside",
-        capture_area =
-          dplyr::between(x, left = ca$x[1], right = ca$x[2]) &
-          dplyr::between(y, left = ca$y[1], right = ca$y[2])
+        rel_loc = "inside"
       )
 
   } else {

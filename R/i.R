@@ -2778,6 +2778,39 @@ isNumericVariable <- function(object, variable){
 
 # isS ---------------------------------------------------------------------
 
+#' @title General test for SPATA2 object
+#'
+#' @description
+#' Logical test of an object being interpretable as a [`SPATA2`] object.
+#'
+#' @inherit argument_dummy params
+#' @param warn,error Logical values, allowing the function to throw warnings
+#' or errors. If `FALSE`, the default, only a logical value is returned.
+#'
+#' @return Logical value.
+#'
+#' @export
+#'
+isSPATA2 <- function(object, warn = TRUE, error = FALSE){
+
+  out <- all(class(object) == "SPATA2")
+
+  if(isTRUE(out) & isTRUE(warn)){
+
+    check_object(object)
+
+  }
+
+  if(isFALSE(out) & isTRUE(error)){
+
+    stop("Input object is not of class `SPATA2`.")
+
+  }
+
+  return(out)
+
+}
+
 #' @export
 #' @keywords internal
 isSpatialTrajectory <- function(object){

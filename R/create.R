@@ -5584,7 +5584,7 @@ createSpatialTrajectories <- function(object){
             )
 
           object <-
-            setTrajectory(
+            setSpatialTrajectory(
               object = object,
               trajectory = spat_traj,
               overwrite = FALSE
