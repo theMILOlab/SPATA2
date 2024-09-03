@@ -971,8 +971,6 @@ initiateSpataObjectVisium <- function(sample_name,
   # default processing
   object <- identifyTissueOutline(object, verbose = verbose)
 
-  object <- computeCaptureArea(object)
-
   returnSpataObject(object)
 
 }

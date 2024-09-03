@@ -21,17 +21,17 @@ align_grid_with_coordinates <- function(coords_df) {
 
   } else if (ccx < -0.9) {
     # invert col to align positively with x
-    coords_df$temp_col <- max(coords_df$temp_col) + min(coords_df$temp_col) - coords_df$temp_col
+    coords_df$temp_col <- max(coords_df$col) + min(coords_df$col) - coords_df$col
 
   } else if (crx > 0.9) {
     # swap col and row, as row aligns positively with x
     coords_df <- coords_df %>%
-      dplyr::mutate(temp_col = temp_row, temp_row = col)
+      dplyr::mutate(temp_col = row)
 
   } else if (crx < -0.9) {
     # swap and then invert col to align with x
     coords_df <- coords_df %>%
-      dplyr::mutate(temp_col = max(temp_row) + min(temp_row) - temp_row, temp_row = col)
+      dplyr::mutate(temp_col = max(row) + min(row) - row)
 
   }
 
@@ -41,17 +41,17 @@ align_grid_with_coordinates <- function(coords_df) {
 
   } else if (cry < -0.9) {
     # invert row to align positively with y
-    coords_df$temp_row <- max(coords_df$temp_row) + min(coords_df$temp_row) - coords_df$temp_row
+    coords_df$temp_row <- max(coords_df$row) + min(coords_df$row) - coords_df$row
 
   } else if (ccy > 0.9) {
     # swap col and row, as col aligns positively with y
     coords_df <- coords_df %>%
-      dplyr::mutate(temp_row = temp_col, temp_col = row)
+      dplyr::mutate(temp_row = col)
 
   } else if (ccy < -0.9) {
     # swap and then invert row to align with y
     coords_df <- coords_df %>%
-      dplyr::mutate(temp_row = max(temp_col) + min(temp_col) - temp_col, temp_col = row)
+      dplyr::mutate(temp_row = max(col) + min(col) - col)
 
   }
 
@@ -184,6 +184,35 @@ complete_visium_coords_df <- function(coords_df, method, square_res = NULL){
 }
 
 
+
+#' @title Compute capture area
+#' @description Computes and updates the capture area (field of view).
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' The `computeCaptureArea` function calculates the capture area for the spatial data based
+#' on the specific method used. The process differs slightly depending on whether the
+#' spatial method is a Visium platform or another type:
+#'
+#' \itemize{
+#'   \item For Visium platforms:
+#'     \itemize{
+#'       \item The coordinates data frame is first ensured to be complete using `complete_visium_coords_df`.
+#'       \item A buffer is added around the capture area to account for the physical spacing between capture areas, calculated using the center-to-center distance (`CCD`).
+#'       \item The capture area is defined by the four corners (vertices) of the bounding box around the coordinates, adjusted by the buffer.
+#'     }
+#'   \item For non-Visium platforms:
+#'     \itemize{
+#'       \item The capture area is calculated as the range of the x and y coordinates, defining a simple bounding box.
+#'     }
+#' }
+#'
+#' After computing the capture area, it is stored in the `@capture_area` slot of the [`SpatialData`].
+#'
+#' @export
+
 setGeneric(name = "computeCaptureArea", def = function(object, ...){
 
   standardGeneric(f = "computeCaptureArea")
@@ -226,7 +255,6 @@ setMethod(
 
       buffer <- as.numeric(getCCD(object, unit = "px")*1.125/isf)
 
-
       # ensure that the coordinates data.frame is complete
       coords_df <-
         complete_visium_coords_df(
@@ -238,42 +266,75 @@ setMethod(
       coords_df <- align_grid_with_coordinates(coords_df)
 
       # make capture area
-      idx1 <-
+      # idx1
+      x1 <-
         dplyr::filter(coords_df, col == min(col)) %>%
-        dplyr::filter(row == min(row)) %>%
-        dplyr::select(x_orig, y_orig) %>%
-        dplyr::mutate(idx = 1)
+        dplyr::filter(y_orig == min(y_orig)) %>%
+        dplyr::pull(x_orig)
 
-      idx1$x_orig <- idx1$x_orig-buffer
-      idx1$y_orig <- idx1$y_orig-buffer
+      x1 <- x1 - buffer
 
-      idx2 <-
-        dplyr::filter(coords_df, col == min(col)) %>%
-        dplyr::filter(row == max(row)) %>%
-        dplyr::select(x_orig, y_orig) %>%
-        dplyr::mutate(idx = 2)
-
-      idx2$x_orig <- idx2$x_orig-buffer
-      idx2$y_orig <- idx2$y_orig+buffer
-
-      idx3 <-
-        dplyr::filter(coords_df, row == max(row)) %>%
-        dplyr::filter(col == max(col)) %>%
-        dplyr::select(x_orig, y_orig) %>%
-        dplyr::mutate(idx = 1)
-
-      idx3$x_orig <- idx3$x_orig+buffer
-      idx3$y_orig <- idx3$y_orig+buffer
-
-      idx4 <-
+      y1 <-
         dplyr::filter(coords_df, row == min(row)) %>%
-        dplyr::filter(col == max(col)) %>%
-        dplyr::select(x_orig, y_orig) %>%
-        dplyr::mutate(idx = 1)
+        dplyr::filter(x_orig == min(x_orig)) %>%
+        dplyr::pull(y_orig)
 
-      idx4$x_orig <- idx4$x_orig+buffer
-      idx4$y_orig <- idx4$y_orig-buffer
+      y1 <- y1 - buffer
 
+      idx1 <- tibble::tibble(x_orig = x1, y_orig = y1, idx = 1)
+
+      # idx2
+      x2 <-
+        dplyr::filter(coords_df, col == min(col)) %>%
+        dplyr::filter(y_orig == max(y_orig)) %>%
+        dplyr::pull(x_orig)
+
+      x2 <- x2 - buffer
+
+      y2 <-
+        dplyr::filter(coords_df, row == max(row)) %>%
+        dplyr::filter(x_orig == min(x_orig)) %>%
+        dplyr::pull(y_orig)
+
+      y2 <- y2 + buffer
+
+      idx2 <- tibble::tibble(x_orig = x2, y_orig = y2, idx = 2)
+
+      # idx3
+      x3 <-
+        dplyr::filter(coords_df, col == max(col)) %>%
+        dplyr::filter(y_orig == max(y_orig)) %>%
+        dplyr::pull(x_orig)
+
+      x3 <- x3 + buffer
+
+      y3 <-
+        dplyr::filter(coords_df, row == max(row)) %>%
+        dplyr::filter(x_orig == max(x_orig)) %>%
+        dplyr::pull(y_orig)
+
+      y3 <- y3 + buffer
+
+      idx3 <- tibble::tibble(x_orig = x3, y_orig = y3, idx = 3)
+
+      # idx4
+      x4 <-
+        dplyr::filter(coords_df, col == max(col)) %>%
+        dplyr::filter(y_orig == min(y_orig)) %>%
+        dplyr::pull(x_orig)
+
+      x4 <- x4 + buffer
+
+      y4 <-
+        dplyr::filter(coords_df, row == min(row)) %>%
+        dplyr::filter(x_orig == max(x_orig)) %>%
+        dplyr::pull(y_orig)
+
+      y4 <- y4 - buffer
+
+      idx4 <- tibble::tibble(x_orig = x4, y_orig = y4, idx = 4)
+
+      # combine all indices to form the capture area
       capture_area <-
         purrr::map_dfr(.x = list(idx1, idx2, idx3, idx4), .f = ~ .x)
 
@@ -305,9 +366,6 @@ setMethod(
 
   }
 )
-
-# ggpLayerCaptureArea
-
 
 
 
@@ -410,33 +468,24 @@ getGridVisiumHD <- function(object, res, img_name = activeImage(object)){
 }
 
 
-# ggpLayerGridVisiumHD
 
-
-#' Unwind the Aggregated Barcodes to Their Pre-Aggregation State
+#' @title Map aggregated to pre-aggregated barcodes
 #'
-#' This function reconstructs the original barcodes before the aggregation process was applied. It retrieves the pre-aggregation state of the data and, if specified, adds selected metadata variables.
+#' @details This function reconstructs the original barcodes before the aggregation
+#' process was applied. It retrieves the pre-aggregation state of the data and,
+#' if specified, adds selected metadata variables.
 #'
-#' @param object A \code{SPATA2} object containing spatial transcriptomics data, which has undergone an aggregation process.
-#' @param var_names Optional. A character vector specifying the names of metadata variables to include in the output. If \code{NULL}, only the original and aggregated barcodes are returned.
+#' @param var_names Optional. A character vector specifying the names of metadata variables to include in the output.
+#' If \code{NULL}, only the original and aggregated barcodes are returned.
 #'
-#' @return A \code{data.frame} containing the original barcodes (\code{barcodes_orig}), the corresponding aggregated barcodes (\code{barcodes_aggr}), and any additional metadata variables specified in \code{var_names}.
+#' @inherit argument_dummy params
 #'
-#' @details
-#' The \code{unwindAggregation} function is used to reverse the effects of an aggregation process applied to a \code{SPATA2} object. It reconstructs the original barcodes that were aggregated into larger units, allowing the user to recover the pre-aggregation state. If additional metadata variables are specified via \code{var_names}, these variables are included in the output data frame.
+#' @return A \code{data.frame} containing the original barcodes (\code{barcodes_orig}),
+#' the corresponding aggregated barcodes (\code{barcodes_aggr}), and any additional
+#' metadata variables specified in \code{var_names}.
 #'
-#' This function is particularly useful for tracing back the original barcodes and their associated data after performing a resolution reduction or other aggregation-based operations.
-#'
-#' @examples
-#' \dontrun{
-#' # Assuming 'object' is a SPATA2 object that has undergone aggregation
-#' original_barcodes <- unwindAggregation(object)
-#'
-#' # Retrieve original barcodes with additional metadata
-#' original_barcodes_with_meta <- unwindAggregation(object, var_names = c("cluster", "sample"))
-#' }
-#'
-#' @seealso \code{\link{reduceResolutionVisiumHD}} for aggregating barcodes by reducing resolution.
+#' @seealso \code{\link{reduceResolutionVisiumHD}} for aggregating barcodes by reducing resolution
+#' in VisiumHD data sets.
 #'
 #' @export
 unwindAggregation <- function(object, var_names = NULL){

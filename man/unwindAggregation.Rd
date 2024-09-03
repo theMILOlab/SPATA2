@@ -2,36 +2,31 @@
 % Please edit documentation in R/v3_1_0.R
 \name{unwindAggregation}
 \alias{unwindAggregation}
-\title{Unwind the Aggregated Barcodes to Their Pre-Aggregation State}
+\title{Map aggregated to pre-aggregated barcodes}
 \usage{
 unwindAggregation(object, var_names = NULL)
 }
 \arguments{
-\item{object}{A \code{SPATA2} object containing spatial transcriptomics data, which has undergone an aggregation process.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
-\item{var_names}{Optional. A character vector specifying the names of metadata variables to include in the output. If \code{NULL}, only the original and aggregated barcodes are returned.}
+\item{var_names}{Optional. A character vector specifying the names of metadata variables to include in the output.
+If \code{NULL}, only the original and aggregated barcodes are returned.}
 }
 \value{
-A \code{data.frame} containing the original barcodes (\code{barcodes_orig}), the corresponding aggregated barcodes (\code{barcodes_aggr}), and any additional metadata variables specified in \code{var_names}.
+A \code{data.frame} containing the original barcodes (\code{barcodes_orig}),
+the corresponding aggregated barcodes (\code{barcodes_aggr}), and any additional
+metadata variables specified in \code{var_names}.
 }
 \description{
-This function reconstructs the original barcodes before the aggregation process was applied. It retrieves the pre-aggregation state of the data and, if specified, adds selected metadata variables.
+Map aggregated to pre-aggregated barcodes
 }
 \details{
-The \code{unwindAggregation} function is used to reverse the effects of an aggregation process applied to a \code{SPATA2} object. It reconstructs the original barcodes that were aggregated into larger units, allowing the user to recover the pre-aggregation state. If additional metadata variables are specified via \code{var_names}, these variables are included in the output data frame.
-
-This function is particularly useful for tracing back the original barcodes and their associated data after performing a resolution reduction or other aggregation-based operations.
-}
-\examples{
-\dontrun{
-# Assuming 'object' is a SPATA2 object that has undergone aggregation
-original_barcodes <- unwindAggregation(object)
-
-# Retrieve original barcodes with additional metadata
-original_barcodes_with_meta <- unwindAggregation(object, var_names = c("cluster", "sample"))
-}
-
+This function reconstructs the original barcodes before the aggregation
+process was applied. It retrieves the pre-aggregation state of the data and,
+if specified, adds selected metadata variables.
 }
 \seealso{
-\code{\link{reduceResolutionVisiumHD}} for aggregating barcodes by reducing resolution.
+\code{\link{reduceResolutionVisiumHD}} for aggregating barcodes by reducing resolution
+in VisiumHD data sets.
 }

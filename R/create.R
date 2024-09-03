@@ -3094,6 +3094,8 @@ createSpatialDataMERFISH <- function(dir,
       version = current_spata2_version
     )
 
+  sp_data <- computeCaptureArea(sp_data)
+
   return(sp_data)
 
 }
@@ -3151,6 +3153,8 @@ createSpatialDataSlideSeqV1 <- function(dir,
       sample = sample,
       version = current_spata2_version
     )
+
+  sp_data <- computeCaptureArea(sp_data)
 
   return(sp_data)
 
@@ -3288,7 +3292,7 @@ createSpatialDataVisium <- function(dir,
   method@method_specifics[["spot_size"]] <- spot_size * 1.1
 
   # create output
-  object <-
+  sp_data <-
     createSpatialData(
       sample = sample,
       hist_img_ref = img_list[[img_ref]],
@@ -3304,9 +3308,11 @@ createSpatialDataVisium <- function(dir,
     )
 
   # compute pixel scale factor to
-  object <- computePixelScaleFactor(object, verbose = verbose)
+  sp_data <- computePixelScaleFactor(sp_data, verbose = verbose)
 
-  return(object)
+  sp_data <- computeCaptureArea(sp_data)
+
+  return(sp_data)
 
 }
 
@@ -3445,6 +3451,8 @@ createSpatialDataVisiumHD <- function(dir,
       misc = misc
     )
 
+  sp_data <- computeCaptureArea(sp_data)
+
   return(sp_data)
 
 }
@@ -3474,6 +3482,8 @@ createSpatialDataXenium <- function(dir,
       sample = sample,
       version = current_spata2_version
     )
+
+  sp_data <- computeCaptureArea(sp_data)
 
   return(sp_data)
 
