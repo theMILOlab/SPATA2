@@ -834,6 +834,7 @@ showModels <- function(input = 100,
                        pretty_names = FALSE,
                        x_axis_arrow = TRUE,
                        verbose = NULL,
+                       ncol = NULL,
                        ...){
 
   mdf <-
@@ -882,7 +883,7 @@ showModels <- function(input = 100,
 
   ggplot2::ggplot(data = mdf, mapping = ggplot2::aes(x = x, y = values)) +
     ggplot2::geom_path(size = linesize, color = linecolor) +
-    ggplot2::facet_wrap(facets = . ~ pattern, ...) +
+    ggplot2::facet_wrap(facets = . ~ pattern, ncol = ncol, ...) +
     ggplot2::theme_classic() +
     ggplot2::labs(x = NULL, y = NULL) +
     theme_add_on

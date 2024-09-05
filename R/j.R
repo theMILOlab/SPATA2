@@ -422,26 +422,36 @@ joinWithVariables <- function(object,
           mtr_name = activeMatrix(object, assay_name = assay_name),
           assay_name = assay_name
         )
-
-      for(signature in signatures[[assay_name]]){
-
+      
+      for (signature in signatures[[assay_name]]) {
+    
         mols_signature <- getMolecules(object, signature = signature, assay_name = assay_name)
-
-        sign_df <-
-          base::as.matrix(mtr[mols_signature, spata_df$barcodes]) %>%
+        
+        # prevent error in case of molecule mismatch in processed matrices
+        valid_molecules <- mols_signature[mols_signature %in% rownames(mtr)]
+        if (length(valid_molecules) == 0) {
+            warning(glue::glue("No valid molecules found for signature '{signature}'. Skipping."))
+            next
+        }
+        
+        valid_barcodes <- spata_df$barcodes[spata_df$barcodes %in% colnames(mtr)]
+        if (length(valid_barcodes) == 0) {
+            warning("No valid barcodes found in spata_df. Skipping.")
+            next
+        }
+        
+        sign_df <- base::as.matrix(mtr[valid_molecules, valid_barcodes]) %>%
           base::colMeans() %>%
           base::as.data.frame() %>%
           magrittr::set_colnames(value = signature) %>%
           tibble::rownames_to_column(var = "barcodes")
-
+        
         spata_df <- dplyr::left_join(x = spata_df, y = sign_df, by = "barcodes")
-
       }
 
     }
 
   }
-
 
   # add meta features
   if(!purrr::is_empty(var_types$meta_features)){
@@ -546,7 +556,3 @@ joinWithVariables <- function(object,
   return(spata_df)
 
 }
-
-
-
-
