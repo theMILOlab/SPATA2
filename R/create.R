@@ -3281,15 +3281,6 @@ createSpatialDataVisium <- function(dir,
     # scale to orig with isf
     half <- as_pixel(input = "3.25mm", object = object)/isf
 
-  } else if(method@name == "VisiumLarge"){
-
-    # scale to orig with isf
-    half <- as_pixel(input = "5.5mm", object = object)/isf
-
-  }
-
-  if(method@name == "VisiumSmall"){
-
     object@method@capture_area <-
       list(
         x_orig = c(xmean-half, xmean + half),
@@ -3297,6 +3288,9 @@ createSpatialDataVisium <- function(dir,
       )
 
   } else if(method@name == "VisiumLarge"){
+
+    # scale to orig with isf
+    half <- as_pixel(input = "5.5mm", object = object)/isf
 
     object@method@capture_area <-
       list(

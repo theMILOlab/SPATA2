@@ -1037,7 +1037,7 @@ setMethod(
   definition = function(object,
                         ids,
                         distance = distToEdge(object, id),
-                        resolution = recBinwidth(object),
+                        resolution = recSgsRes(object),
                         color_by = c("dist", "bins_dist", "angle", "bins_angle"),
                         unit = getDefaultUnit(object),
                         angle_span = c(0,360),

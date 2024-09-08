@@ -834,6 +834,7 @@ showModels <- function(input = 100,
                        pretty_names = FALSE,
                        x_axis_arrow = TRUE,
                        verbose = NULL,
+                       ncol = NULL,
                        ...){
 
   mdf <-
@@ -882,7 +883,7 @@ showModels <- function(input = 100,
 
   ggplot2::ggplot(data = mdf, mapping = ggplot2::aes(x = x, y = values)) +
     ggplot2::geom_path(size = linesize, color = linecolor) +
-    ggplot2::facet_wrap(facets = . ~ pattern, ...) +
+    ggplot2::facet_wrap(facets = . ~ pattern, ncol = ncol, ...) +
     ggplot2::theme_classic() +
     ggplot2::labs(x = NULL, y = NULL) +
     theme_add_on
@@ -936,9 +937,102 @@ simulate_complete_coords_sa <- function(object, id, distance){
       ) %>%
       dplyr::select(barcodes, x, y)
 
+  } else if(containsMethod(object, method_name = "MERFISH")){
+
+    # 1. Simulate coords of cells within a grid around the SA +- distance, assuming cell density as within the TissueOutline
+
+    sa_range <-
+      getSpatAnnRange(object, id = id) %>%
+      map(.f = function(r){
+
+        c(
+          floor(r[1]),
+          ceiling(r[2])
+        )
+
+      })
+
+    tot_dist <-
+      as_pixel(distance, object = object, add_attr = FALSE) %>%
+      base::ceiling(x = .)
+
+    left_border <- sa_range$x[1] - tot_dist
+    right_border <- sa_range$x[2] + tot_dist
+    lower_border <- sa_range$y[1] - tot_dist
+    upper_border <- sa_range$y[2] + tot_dist
+    grid_area <- (right_border - left_border) * (upper_border - lower_border)
+
+    # Density of cells within TissueOutline (cells per pixel)
+    cpp <- SPATA2::nObs(object) / SPATA2::getTissueArea(object, unit = "px")[[1]] # 1 px == 1 um in MERFISH data
+
+    # Assumed cells in whole grid (based on averaged density of cells in TissueOutline)
+    n_cells_assumed = round(grid_area*cpp)
+
+    # Obtain coordinates for assumed number of cells within grid broders (cells are equally spaced)
+    n_cells_per_side <- sqrt(n_cells_assumed)
+    
+    coords_df_simulated <- 
+            expand.grid(x = seq(left_border, right_border, length.out = n_cells_per_side), 
+                        y = seq(lower_border, upper_border, length.out = n_cells_per_side)
+                      ) %>% dplyr::mutate(barcodes = str_c("barcode", dplyr::row_number())
+                      ) %>% dplyr::select(barcodes, x, y
+                      ) %>% dplyr::slice(., 1:n_cells_assumed)
+
+    # 2. Exclude cells that overlap with the area of TissueOutline; use original cell locations instead
+
+    tissue_outline <- getTissueOutlineDf(object) %>% dplyr::select(x, y)
+
+    # Create polygon from tissue outline
+    polygon <- sp::SpatialPolygons(list(sp::Polygons(list(sp::Polygon(as.matrix(tissue_outline))), "1")))
+
+    # Calculate average nearest neighbor distances in simulated coords_df
+
+    if(!"RANN" %in% base::rownames(installed.packages())){
+
+        install <- utils::askYesNo(msg = "Package 'RANN' is required but not installed. Do you want to install it now?")
+
+        if(base::isTRUE(install)){
+
+          install.packages(c("RANN"))
+
+        } else {
+
+          stop("Cannot continue without 'RANN' package.")
+
+        }
+
+    }
+
+    nearest_dist <- RANN::nn2(coords_df_simulated %>% dplyr::select(x, y), k = 2)$nn.dists[, 2] # Exclude point itself
+
+    avg_dist <- mean(nearest_dist)
+
+    # Function to check if points are within the polygon and within avg_dist of coords_df_tissue
+    
+    is_within_range <- function(coords_df_simulated, coords_df_tissue, avg_dist, polygon) {
+        
+      in_range <- RANN::nn2(coords_df_tissue %>% dplyr::select(x, y), coords_df_simulated %>% dplyr::select(x, y), k = 1)$nn.dists[, 1] <= avg_dist
+        
+      in_poly <- !is.na(sp::over(sp::SpatialPoints(coords_df_simulated %>% dplyr::select(x, y)), polygon))
+        
+      in_range | in_poly
+        
+    }
+
+    # Filter out points in coords_df_simulated that overlap with coords_df_tissue or are inside the polygon
+    
+    coords_df_tissue <- getCoordsDf(object = object,
+                                    ids = id
+                                   )
+    
+    coords_df_cleaned <- coords_df_simulated %>%
+      dplyr::filter(!is_within_range(coords_df_simulated, coords_df_tissue, avg_dist, polygon))
+
+    coords_df <- dplyr::bind_rows(coords_df_cleaned, coords_df_tissue)
+  
   } else {
 
-    stop("No method for this experiment set up exists.")
+    stop("Not yet defined for the current platform.")
 
   }
 
@@ -1023,7 +1117,7 @@ simulate_complete_coords_st <- function(object, id){
 
   } else {
 
-    stop("No method for this experiment set up exists.")
+    stop("Not yet defined for the current platform.")
 
   }
 
@@ -1033,7 +1127,7 @@ simulate_complete_coords_st <- function(object, id){
 
 #' @title Expression pattern simulation
 #'
-#' @description Simulates expression pattern by modelling expression dependent
+#' @description Simulates expression patterns by modelling expression dependent
 #' on the distance to a spatial annotation.
 #'
 #' @inherit spatialAnnotationScreening params
@@ -1847,7 +1941,7 @@ simulate_random_gradients <- function(coords_df,
   pb <- confuns::create_progress_bar(total = n)
 
   confuns::give_feedback(
-    msg = glue::glue("Simulating {n} random expression pattern."),
+    msg = glue::glue("Simulating {n} random expression patterns."),
     verbose = verbose
   )
 
@@ -2057,7 +2151,7 @@ smoothSpatialAnnotation <- function(object,
 
   if(!"terra" %in% base::rownames(installed.packages())){
 
-    install <- utils::askYesNo(msg = "Package 'terra' and/or 'smoothr' is not installed. Do you want to install it?")
+    install <- utils::askYesNo(msg = "Package 'terra' and/or 'smoothr' is required but not installed. Do you want to install it now?")
 
     if(base::isTRUE(install)){
 
@@ -2065,7 +2159,7 @@ smoothSpatialAnnotation <- function(object,
 
     } else {
 
-      stop("Can not continue with 'terra' package.")
+      stop("Cannot continue without 'terra' and/or 'smoothr' packages.")
 
     }
 
@@ -2315,6 +2409,12 @@ spatial_gradient_screening <- function(coords_df,
       msg = glue::glue("Identified and removed {nzi} zero inflated variables."),
       verbose = verbose
     )
+
+    if (base::length(variables) == 0) {
+
+      stop("All variables are zero inflated. Screening aborted.")
+
+    }
 
   } else {
 
@@ -2627,6 +2727,27 @@ spatialAnnotationScreening <- function(object,
 
   hlpr_assign_arguments(object)
 
+  if(!containsImage(object)){
+    
+    if(add_image == TRUE){
+      
+      add_image <- FALSE
+      
+    }
+
+  }
+
+  if(containsMethod(object, method_name = c("MERFISH", "Xenium"))){
+
+    rm_zero_infl <- FALSE # otherwise too many variables are excluded
+    
+    confuns::give_feedback(
+      msg = "Removal of zero-inflated genes is disabled for MERFISH and Xenium data.",
+      verbose = verbose
+    )
+
+  }
+
   # obtain coords data.frame
   confuns::give_feedback(
     msg = "Starting spatial annotation screening.",
@@ -2683,14 +2804,26 @@ spatialAnnotationScreening <- function(object,
   coords_df_flt <-
     dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
 
-  cf <-
-    compute_correction_factor_sas(
-      object = object,
-      ids = ids,
-      distance = distance,
-      core = core,
-      coords_df_sa = coords_df_flt
-      )
+  cf <- list(...)[["cf"]]
+  
+  if(is.null(cf)){ 
+    
+    cf <-
+      compute_correction_factor_sas(
+        object = object,
+        ids = ids,
+        distance = distance,
+        core = core,
+        coords_df_sa = coords_df_flt
+        )
+  
+  } else { 
+    
+    confuns::is_value(cf, mode = "numeric")
+
+    stopifnot(cf > 0 & cf <= 1) # cannot be > 1
+  
+  }
 
   coords_df_flt <-
     joinWithVariables(
@@ -2722,7 +2855,6 @@ spatialAnnotationScreening <- function(object,
       verbose = verbose,
       rm_zero_infl = rm_zero_infl
     )
-
 
   coords_df_recreate <-
     getCoordsDfSA(

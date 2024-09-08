@@ -1010,7 +1010,7 @@ getSasDf <- function(object,
                      unit = getDefaultUnit(object),
                      ro = c(0, 1),
                      format = "wide",
-                     bcs_exclude = NULL,
+                     bcs_exclude = character(0),
                      outlier_rm = FALSE,
                      verbose = FALSE,
                      ...){
@@ -1031,25 +1031,28 @@ getSasDf <- function(object,
       verbose = verbose
     )
 
+  coords_df_flt <-
+    dplyr::filter(coords_df_sa, !barcodes %in% {{bcs_exclude}})
+
   cf <-
     compute_correction_factor_sas(
       object = object,
       ids = ids,
       distance = distance,
       core = core,
-      coords_df_sa = coords_df_sa
+      coords_df_sa = coords_df_flt
       )
 
   resolution <- as_unit(resolution, unit = unit, object = object)
 
   distance <-
-    stringr::str_c(base::max(coords_df_sa$dist), unit) %>%
+    stringr::str_c(base::max(coords_df_flt$dist), unit) %>%
     as_unit(input = ., unit = unit, object = object)
 
   if(base::isTRUE(core)){
 
     min_dist <-
-      base::min(coords_df_sa[["dist"]]) %>%
+      base::min(coords_df_flt[["dist"]]) %>%
       stringr::str_c(., unit)
 
   } else {
@@ -1058,7 +1061,7 @@ getSasDf <- function(object,
 
   }
 
-  expr_est_pos <- compute_expression_estimates(coords_df_sa)
+  expr_est_pos <- compute_expression_estimates(coords_df_flt)
 
   # prepare output
   sas_df <-
@@ -1081,22 +1084,22 @@ getSasDf <- function(object,
 
   for(var in variables){
 
-    coords_df_sa[["var.x"]] <- coords_df_sa[[var]]
+    coords_df_flt[["var.x"]] <- coords_df_flt[[var]]
 
     if(base::isTRUE(outlier_rm)){
 
-      keep <- !is_outlier(coords_df_sa[["var.x"]])
+      keep <- !is_outlier(coords_df_flt[["var.x"]])
 
     } else {
 
-      keep <- 1:nrow(coords_df_sa)
+      keep <- 1:nrow(coords_df_flt)
 
     }
 
     loess_model <-
       stats::loess(
         formula = var.x ~ dist,
-        data = coords_df_sa[keep,],
+        data = coords_df_flt[keep,],
         span = span,
         control = base::do.call(what = stats::loess.control, args = sgs_loess_control)
       )

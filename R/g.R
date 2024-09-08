@@ -649,7 +649,7 @@ ggpLayerColorGroupScale <- function(object,
 #' @title Add SAS expression estimates
 #'
 #' @description Visualizes the distances at which expression of a numeric
-#' feature is estimated with a certain \link[=spatialAnnotationScreening]{SAS} set up.
+#' feature is estimated with a certain \link[=spatialAnnotationScreening]{SAS} set up. Plotted as concentric circles around the annotation
 #'
 #' @param line_size Numeric. The size with which to display lines
 #' of the expression estimates.
@@ -2756,7 +2756,7 @@ ggpLayerSpatAnnOutline <- function(object,
                                    incl_edge = FALSE,
                                    merge_edge = FALSE,
                                    incr_vert = FALSE,
-                                   expand_outline = 0,
+                                   expand_outline = NULL,
                                    xrange = getCoordsRange(object)$x,
                                    yrange = getCoordsRange(object)$y,
                                    ...){
