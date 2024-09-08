@@ -20,7 +20,7 @@ The results depend on further adjustments like number of layers, dropout and num
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -147,7 +147,20 @@ and the number of bottleneck neurons.</p>
 
 
 <dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
-<dd><p>A valid spata-object.</p></dd>
+<dd><p>An object of class <code><a href="SPATA2.html">SPATA2</a></code> or, in case of S4 generics,
+objects of classes for which a method has been defined.</p></dd>
+
+
+<dt id="arg-clrp">clrp<a class="anchor" aria-label="anchor" href="#arg-clrp"></a></dt>
+<dd><p>Character value. Specifies the color palette to be used to represent
+groups of discrete variables. Run <code><a href="validActivationFunctions.html">validColorPalettes()</a></code> to obtain valid
+input options.</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, informative messages regarding
+the computational progress will be printed.</p>
+<p>(Warning messages will always be printed.)</p></dd>
 
 </dl></div>
     <div id="value">

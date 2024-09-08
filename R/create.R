@@ -5262,7 +5262,7 @@ createSpatialTrajectories <- function(object){
 
         traj_ids <- shiny::reactive({
 
-          getTrajectoryIds(spata_object())
+          getSpatialTrajectoryIds(spata_object())
 
         })
 

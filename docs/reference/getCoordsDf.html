@@ -18,7 +18,7 @@ or known entities the analysis revolves around."><!-- mathjax --><script src="ht
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -147,6 +147,7 @@ or known entities the analysis revolves around.</p>
 <span>  <span class="va">object</span>,</span>
 <span>  img_name <span class="op">=</span> <span class="fu"><a href="activateImage.html">activeImage</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
 <span>  scale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  exclude <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  wh <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  as_is <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -176,6 +177,16 @@ variables that are merged to the coordinates data.frame via <code><a href="joinW
 <dd><p>Only relevant if the <code><a href="SPATA2.html">SPATA2</a></code> object contains images. If so,
 specifies the name of the image to which the original coordinates are scaled.
 If <code>NULL</code>, defaults to the active image.</p></dd>
+
+
+<dt id="arg-exclude">exclude<a class="anchor" aria-label="anchor" href="#arg-exclude"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, observations that are no longer part of the dataset
+(but still exist in the coordinates data frame for potential use in spatial computations)
+will be excluded and removed before returning the data frame.</p></dd>
+
+
+<dt id="arg-as-is">as_is<a class="anchor" aria-label="anchor" href="#arg-as-is"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, no processing and coordinate scaling is conducted at all.</p></dd>
 
 </dl></div>
     <div id="value">

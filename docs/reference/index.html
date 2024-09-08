@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -488,7 +488,7 @@
       </tr><tr><td>
           <p><code><a href="visium_spots.html">visium_spots</a></code> </p>
         </td>
-        <td><p>A list of a slot named <em>VisiumSmall</em>, which contains the data.frame of all barcoded spots of 6.5mm capture area and a slot named <em>VisiumLarge</em> which contains the barcoded spots of the 11mm capture area.</p></td>
+        <td><p>A list of a slot named <em>VisiumSmall</em>, which contains a list of data.frames of all barcoded spots of 6.5mm capture area and a slot named <em>VisiumLarge</em> which a list of data.frames that contain the barcoded spots of the 11mm capture area.</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="activate-content">Activate Content <a href="#activate-content" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Functions to manage object specific defaults.</p>
@@ -1098,6 +1098,10 @@
         </td>
         <td><p>Register or remove images</p></td>
       </tr><tr><td>
+          <p><code><a href="resizeImage.html">resizeImage()</a></code> </p>
+        </td>
+        <td><p>Resize image</p></td>
+      </tr><tr><td>
           <p><code><a href="resetImageTransformations.html">resetImageTransformations()</a></code> </p>
         </td>
         <td><p>Reset image transformations</p></td>
@@ -1113,6 +1117,10 @@
           <p><code><a href="unloadImage.html">unloadImage()</a></code> <code><a href="unloadImage.html">unloadImages()</a></code> </p>
         </td>
         <td><p>Unload image slot content</p></td>
+      </tr><tr><td>
+          <p><code><a href="writeImage.html">writeImage()</a></code> </p>
+        </td>
+        <td><p>Write image to disk</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="join-information">Join Information <a href="#join-information" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>These functions access the information of interest, perform additional customized computations and join it as additional variables to already existing data.frames in a tidy-data fashion.</p>
@@ -1130,6 +1138,10 @@
           <p class="section-desc"></p><p>These functions perform calculations that might take some time. The results are stored inside the SPATA2 object.</p>
         </th>
       </tr></tbody><tbody><tr><td>
+          <p><code><a href="computeCaptureArea.html">computeCaptureArea()</a></code> </p>
+        </td>
+        <td><p>Compute capture area</p></td>
+      </tr><tr><td>
           <p><code><a href="computeCnvByChrArm.html">computeCnvByChrArm()</a></code> </p>
         </td>
         <td><p>Compute CNV by chromosome arm</p></td>
@@ -1766,6 +1778,10 @@
         </td>
         <td><p>Check for outliers in a numeric vector</p></td>
       </tr><tr><td>
+          <p><code><a href="isSPATA2.html">isSPATA2()</a></code> </p>
+        </td>
+        <td><p>General test for SPATA2 object</p></td>
+      </tr><tr><td>
           <p><code><a href="make_binary_image.html">make_binary_image()</a></code> </p>
         </td>
         <td><p>Convert Image to Binary with Flexible Thresholding</p></td>
@@ -1801,6 +1817,10 @@
           <p><code><a href="transform_image.html">transform_image()</a></code> </p>
         </td>
         <td><p>Transform image</p></td>
+      </tr><tr><td>
+          <p><code><a href="unwindAggregation.html">unwindAggregation()</a></code> </p>
+        </td>
+        <td><p>Map aggregated to pre-aggregated barcodes</p></td>
       </tr></tbody></table></div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

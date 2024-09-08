@@ -3407,8 +3407,8 @@ strongH5 <- function(text){
 #' ids <- getSpatAnnIds(object_mouse)
 #'
 #' plotSurface(object_mouse, color_by = "tissue_section", pt_clr = "lightgrey") +
-#'   ggpLayerSpatAnnOutline(object, ids = ids) +
-#'   ggpLayerSpatAnnPointer(object, ids = ids, ptr_lengths = "0.45mm", text_dist = 10, text_size = 7)
+#'   ggpLayerSpatAnnOutline(object_mouse, ids = ids) +
+#'   ggpLayerSpatAnnPointer(object_mouse, ids = ids, ptr_lengths = "0.45mm", text_dist = 10, text_size = 7)
 #'
 #' obj_list <- splitSpataObject(object_mouse, grouping = "tissue_section")
 #'
@@ -3448,7 +3448,7 @@ strongH5 <- function(text){
 #' object_cropped <-
 #'  cropSpataObject(object, xrange = xcrop, yrange = ycrop)
 #'
-#' plotSurface(object_cropped, color_by = "bayes_space") + orig_frame
+#' plotSurface(object_cropped, color_by = "bayes_space", pt_size = 0.75) + orig_frame
 #'
 subsetSpataObject <- function(object,
                               barcodes = NULL,

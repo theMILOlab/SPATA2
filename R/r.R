@@ -3031,7 +3031,6 @@ returnSpataObject <- function(object){
       args_input[["..."]] <- NULL
       args_input[["object"]] <- NULL
 
-
       args_input <-
         tryCatch({
 

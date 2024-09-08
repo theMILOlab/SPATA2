@@ -18,7 +18,7 @@ using the 10x Genomics VisiumHD platform."><!-- mathjax --><script src="https://
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -135,8 +135,13 @@ using the 10x Genomics <code><a href="VisiumHD.html">VisiumHD</a></code> platfor
 <span>  <span class="va">directory_visium</span>,</span>
 <span>  square_res <span class="op">=</span> <span class="st">"16um"</span>,</span>
 <span>  mtr <span class="op">=</span> <span class="st">"filtered"</span>,</span>
+<span>  genes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  workers <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  batch_size <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  img_active <span class="op">=</span> <span class="st">"lowres"</span>,</span>
-<span>  img_ref <span class="op">=</span> <span class="st">"lowres"</span>,</span>
+<span>  img_ref <span class="op">=</span> <span class="st">"hires"</span>,</span>
+<span>  resize_images <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  unload <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -154,12 +159,28 @@ using the 10x Genomics <code><a href="VisiumHD.html">VisiumHD</a></code> platfor
 
 
 <dt id="arg-square-res">square_res<a class="anchor" aria-label="anchor" href="#arg-square-res"></a></dt>
-<dd><p>Character. The square resolution from which to load the data. One of *c('16um', '8um', '2um').
-See details for more.</p></dd>
+<dd><p>Character. The square resolution from which to load the data. While <em>c('16um', '8um', '2um')</em>
+are the default resolutions, <code><a href="reduceResolutionVisiumHD.html">reduceResolutionVisiumHD()</a></code> is applied if the input
+deviates from these three input options. See section <em>Visium HD Resolution</em> for more information.</p></dd>
 
 
 <dt id="arg-mtr">mtr<a class="anchor" aria-label="anchor" href="#arg-mtr"></a></dt>
 <dd><p>Character. Specifies which matrix to use, either "filtered" or "raw". Default is "filtered".</p></dd>
+
+
+<dt id="arg-genes">genes<a class="anchor" aria-label="anchor" href="#arg-genes"></a></dt>
+<dd><p>Character or <code>NULL</code>. If character, specifies beforehand which genes to keep in the count
+matrix. If <code>NULL</code>, the default, all genes are kept.</p></dd>
+
+
+<dt id="arg-workers">workers<a class="anchor" aria-label="anchor" href="#arg-workers"></a></dt>
+<dd><p>Integer specifying the number of parallel workers to use for processing. Default is <code>1</code>,
+which defaults to no parallel workers. If <code>2</code> or more, the <code>furrr</code> package
+is required.</p></dd>
+
+
+<dt id="arg-batch-size">batch_size<a class="anchor" aria-label="anchor" href="#arg-batch-size"></a></dt>
+<dd><p>Integer specifying the number of spatial spots to process in each batch. Default is <code>1000</code>.</p></dd>
 
 
 <dt id="arg-img-active">img_active<a class="anchor" aria-label="anchor" href="#arg-img-active"></a></dt>
@@ -170,8 +191,21 @@ See details for more.</p></dd>
 <dd><p>Character. The reference image to use, either "lowres" or "hires". Default is "lowres".</p></dd>
 
 
+<dt id="arg-resize-images">resize_images<a class="anchor" aria-label="anchor" href="#arg-resize-images"></a></dt>
+<dd><p>A named list of numeric values between 0-1 used to resize
+the respective image as indicated by the slot name. E.g <code>resize_images = list(hires = 0.5)</code>
+resizes the hires image to 50% of its original scale.</p></dd>
+
+
+<dt id="arg-unload">unload<a class="anchor" aria-label="anchor" href="#arg-unload"></a></dt>
+<dd><p>Logical value. If <code>TRUE</code>, every image except for the active image
+is <a href="unloadImage.html">unloaded.</a></p></dd>
+
+
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical. If TRUE, progress messages are printed. Default is TRUE.</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, informative messages regarding
+the computational progress will be printed.</p>
+<p>(Warning messages will always be printed.)</p></dd>
 
 </dl></div>
     <div id="value">
@@ -201,6 +235,30 @@ and initializes the <code>SPATA2</code> object with the necessary metadata and s
     <p>It is crucial to install the package <code>arrow</code> in a way that <code><a href="https://arrow.apache.org/docs/r/reference/read_parquet.html" class="external-link">arrow::read_parquet()</a></code> works. There
 are several ways. Installing the package with <code>install.packages('arrow', repos = 'https://apache.r-universe.dev')</code>
 worked reliably for us.</p>
+    </div>
+    <div id="visium-hd-resolution">
+    <h2>Visium HD Resolution</h2>
+
+
+<p>The input for <code>square_res</code> can deviate from the standard resolution options as long as it is an
+even number divisible by one of the standard resolutions. In such cases, data from the next possible
+lower resolution is read, and <code><a href="reduceResolutionVisiumHD.html">reduceResolutionVisiumHD()</a></code> is applied to aggregate the data.
+For example, if <code>square_res = '6um'</code>, data is retrieved from <em>~/binned_outputs/square_002um</em>
+and then aggregated accordingly. The same applies if <code>square_res = 10um</code>. If <code>square_res = 24um</code>,
+data is read from <em>~/binned_outputs/square_008um</em>; if <code>square_res = 32um</code>, data is read from
+<em>~/binned_outputs/square_016um</em>, and so on. If the required folder is missing, data from the
+next higher resolution folder is used if possible, else an error is thrown.</p>
+<p>Note, that aggregating counts by resolution can take a considerable amount of time. Consider prefiltering
+the raw counts using <code>genes</code> and/or increasing the number of cores to use with <code>workers</code>.</p>
+    </div>
+    <div id="row-and-column-indices">
+    <h2>Row and column indices</h2>
+
+
+<p>Visium spot coordinates come with column and row indices. The functions <code><a href="initiateSpataObjectVisium.html">initiateSpataObjectVisium()</a></code>
+and <code>initiateSpataObjectVisiumHD()</code> ensure that <em>col</em> aligns with the direction of the x-coordinates and
+that <em>row</em> aligns with the direction of the y-coordinates. If they do not, they are adjusted accordingly.
+Hence, these variables should not be used as keys for data merging.</p>
     </div>
 
   </div>

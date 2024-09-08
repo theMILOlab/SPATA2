@@ -717,7 +717,7 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' @param directory_visium Character. The directory containing the Visium output files.
 #' @param mtr Character. Specifies which matrix to use, either "filtered" or "raw". Default is "filtered".
 #' @param img_active Character. The active image to use, either "lowres" or "hires". Default is "lowres".
-#' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
+#' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "hires".
 #'
 #' @inherit createSpatialData params
 #' @inherit argument_dummy params
@@ -996,7 +996,7 @@ initiateSpataObjectVisium <- function(sample_name,
 #' @param genes Character or `NULL`. If character, specifies beforehand which genes to keep in the count
 #' matrix. If `NULL`, the default, all genes are kept.
 #' @param img_active Character. The active image to use, either "lowres" or "hires". Default is "lowres".
-#' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
+#' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "hires".
 #'
 #' @inherit reduceResolutionVisiumHD params
 #' @inherit createSpatialData params
