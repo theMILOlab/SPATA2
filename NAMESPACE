@@ -94,7 +94,10 @@ export(check_to)
 export(check_variables)
 export(close_area_df)
 export(color_vector)
+<<<<<<< HEAD
 export(complete_visium_coords_df)
+=======
+>>>>>>> a129cda (rebase updates from upstream/dev)
 export(computeCaptureArea)
 export(computeCnvByChrArm)
 export(computeCountPercentage)
