@@ -421,7 +421,6 @@ getBarcodeSpotDistances <- function(object,
 #'
 #' @seealso [`setCaptureArea()`]
 #'
-#' @rdname getCaptureaArea
 #' @export
 setGeneric(name = "getCaptureArea", def = function(object, ...){
 
@@ -2531,40 +2530,42 @@ getGenesInteractive <- function(object){
 #'
 getGridVisiumHD <- function(object, res, img_name = activeImage(object)){
 
-  containsMethod(object, method = "VisiumHD", error = TRUE)
-
   sm <- getSpatialMethod(object)
 
-  res <- as_unit(res, unit = "um", object = object)
+  is_dist_si(res, error = TRUE)
+
+  res_new <- as_unit(res, unit = "um", object = object)
   res_now <- as_unit(sm@method_specifics$square_res, unit = "um", object = object)
 
-  num_res <- as.numeric(res)
+  num_res_new <- as.numeric(res_new)
   num_res_now <- as.numeric(res_now)
 
-  if(!(res >= res_now)){
+  if(!(res_new >= res_now)){
 
-    stop(glue::glue("`res` must be lower or equal to the current resolution, which is {res_now}um."))
+    stop(glue::glue("`res_new` must be lower or equal to the current resolution, which is {res_now}um."))
 
-  } else if((num_res %% num_res_now) != 0){
+  } else if((num_res_new %% num_res_now) != 0){
 
-    stop(glue::glue("`res` must be divisible by the current resolution, which {res_now}um"))
+    stop(glue::glue("`res_new` must be lower or equal to the current resolution, which is {res_now}um."))
 
   }
 
   # half of the center to center distance
-  ccd <- getCCD(object, unit = "px")
-  ccdh <- ccd/2
+  ccdh <- getCCD(object, unit = "px") / 2
 
   isf <- getScaleFactor(object, img_name = img_name, fct_name = "image")
 
-  cdf <- getCoordsDf(object, exclude = FALSE)
-  cdf$col <- cdf$col + 1
-  cdf$row <- cdf$row + 1
+  coords_df <- getCoordsDf(object, as_is = TRUE)
+
+  # start with fct = 1 and subset the segments later with every_nth
+  cdp <-
+    prepare_coords_df_visium_hd(coords_df, fct = 1) %>%
+    dplyr::mutate(x = x_orig*{isf}, y = y_orig * {isf})
 
   # ----- hlines
 
   dfh <-
-    dplyr::group_by(cdf, row) %>%
+    dplyr::group_by(cdp, row) %>%
     dplyr::mutate(is_xmin = x == min(x), is_xmax = x == max(x)) %>%
     dplyr::ungroup() %>%
     dplyr::filter(is_xmin | is_xmax) %>%
@@ -2572,7 +2573,7 @@ getGridVisiumHD <- function(object, res, img_name = activeImage(object)){
 
   dfh_xmin <-
     dplyr::filter(dfh, is_xmin) %>%
-    dplyr::mutate(x = x - {{ccdh}}, y = y - {{ccdh}}) %>% # y - ccdh -> segment drawn below point
+    dplyr::mutate(x = x - {{ccdh}}, y = y - {{ccdh}}) %>% # - ccdh -> segment drawn below point
     dplyr::select(row, x, y)
 
   dfh_xmax <-
@@ -2582,15 +2583,14 @@ getGridVisiumHD <- function(object, res, img_name = activeImage(object)){
 
   dfh_complete <-
     dplyr::left_join(x = dfh_xmin, y = dfh_xmax, by = "row") %>%
-    dplyr::filter(row != max(row)) %>% # ceiling of top row is displayed by border rectangle
+    dplyr::filter(row != max(row)) %>%
     dplyr::mutate(just = "horizontal", type = "segment", idx = paste0("row_", row)) %>%
     dplyr::select(idx, x, y, xend, yend, just, type)
-
 
   # ----- vlines
 
   dfv <-
-    dplyr::group_by(cdf, col) %>%
+    dplyr::group_by(cdp, col) %>%
     dplyr::mutate(is_ymin = y == min(y), is_ymax = y == max(y)) %>%
     dplyr::ungroup() %>%
     dplyr::filter(is_ymin | is_ymax) %>%
@@ -2598,7 +2598,7 @@ getGridVisiumHD <- function(object, res, img_name = activeImage(object)){
 
   dfv_ymin <-
     dplyr::filter(dfv, is_ymin) %>%
-    dplyr::mutate(x = x + {{ccdh}}, y = y - {{ccdh}}) %>%# x - ccdh -> segment drawn on right side of the point
+    dplyr::mutate(x = x + {{ccdh}}, y = y - {{ccdh}}) %>% # x + ccdh -> segment drawn on right side of the points
     dplyr::select(col, x, y)
 
   dfv_ymax <-
@@ -2609,26 +2609,21 @@ getGridVisiumHD <- function(object, res, img_name = activeImage(object)){
   dfv_complete <-
     dplyr::left_join(x = dfv_ymin, y = dfv_ymax, by = "col") %>%
     dplyr::arrange(col) %>%
+    dplyr::filter(col != min(col)) %>%
     dplyr::mutate(just = "vertical", type = "segment", idx = paste0("col_", col)) %>%
     dplyr::select(idx, x, y, xend, yend, just, type)
 
-
   # ---- merge segments
-  every_nth <- num_res/num_res_now
+  every_nth <- num_res_new / num_res_now
 
-  seq_subset_h <- reduce_vec(x = 1:nrow(dfh_complete), nth = every_nth, start.with = 1)
-  seq_subset_v <- reduce_vec(x = 1:nrow(dfv_complete), nth = every_nth, start.with = 1)
+  dfh_out <- dfh_complete[reduce_vec(1:nrow(dfh_complete), nth = every_nth), ]
+  dfv_out <- dfv_complete[reduce_vec(1:nrow(dfh_complete), nth = every_nth), ]
 
-  dfh_out <- dfh_complete[seq_subset_h, ]
-  dfv_out <- dfv_complete[seq_subset_v, ]
+  out <- rbind(dfh_out, dfv_out)
 
-  dfh_out <- dfh_out[-1,]
-  dfv_out <- dfv_out[-1,]
+  # return output
 
-  df_grid <- rbind(dfh_out, dfv_out)
-
-  return(df_grid)
-
+  return(out)
 }
 
 

@@ -470,6 +470,70 @@ affineNumInput <- function(inputId, value){
 }
 
 
+align_grid_with_coordinates <- function(coords_df) {
+
+  # calculate the correlations
+  ccx <- cor(coords_df$x_orig, coords_df$col)
+  cry <- cor(coords_df$y_orig, coords_df$row)
+
+  crx <- cor(coords_df$x_orig, coords_df$row)
+  ccy <- cor(coords_df$y_orig, coords_df$col)
+
+  # create temporary variables for col and row to hold adjustments
+  coords_df$temp_col <- coords_df$col
+  coords_df$temp_row <- coords_df$row
+
+  # check alignment for col and x
+  if (ccx > 0.9) {
+    # good alignment between col and x, do nothing
+
+  } else if (ccx < -0.9) {
+    # invert col to align positively with x
+    coords_df$temp_col <- max(coords_df$col) + min(coords_df$col) - coords_df$col
+
+  } else if (crx > 0.9) {
+    # swap col and row, as row aligns positively with x
+    coords_df <- coords_df %>%
+      dplyr::mutate(temp_col = row)
+
+  } else if (crx < -0.9) {
+    # swap and then invert col to align with x
+    coords_df <- coords_df %>%
+      dplyr::mutate(temp_col = max(row) + min(row) - row)
+
+  }
+
+  # check alignment for row and y
+  if (cry > 0.9) {
+    # good alignment between row and y, do nothing
+
+  } else if (cry < -0.9) {
+    # invert row to align positively with y
+    coords_df$temp_row <- max(coords_df$row) + min(coords_df$row) - coords_df$row
+
+  } else if (ccy > 0.9) {
+    # swap col and row, as col aligns positively with y
+    coords_df <- coords_df %>%
+      dplyr::mutate(temp_row = col)
+
+  } else if (ccy < -0.9) {
+    # swap and then invert row to align with y
+    coords_df <- coords_df %>%
+      dplyr::mutate(temp_row = max(col) + min(col) - col)
+
+  }
+
+  coords_df$col <- coords_df$temp_col
+  coords_df$row <- coords_df$temp_row
+
+  coords_df$temp_col <- NULL
+  coords_df$temp_row <- NULL
+
+  # return the adjusted data frame
+  return(coords_df)
+}
+
+
 
 #' @title Align histology images
 #'

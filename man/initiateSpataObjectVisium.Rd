@@ -9,11 +9,7 @@ initiateSpataObjectVisium(
   directory_visium,
   mtr = "filtered",
   img_active = "lowres",
-<<<<<<< HEAD
   img_ref = "hires",
-=======
-  img_ref = "lowres",
->>>>>>> 99de33d (v3.1.0 restored 1)
   resize_images = NULL,
   unload = TRUE,
   verbose = TRUE
@@ -28,7 +24,7 @@ initiateSpataObjectVisium(
 
 \item{img_active}{Character. The active image to use, either "lowres" or "hires". Default is "lowres".}
 
-\item{img_ref}{Character. The reference image to use, either "lowres" or "hires". Default is "lowres".}
+\item{img_ref}{Character. The reference image to use, either "lowres" or "hires". Default is "hires".}
 
 \item{resize_images}{A named list of numeric values between 0-1 used to resize
 the respective image as indicated by the slot name. E.g \code{resize_images = list(hires = 0.5)}

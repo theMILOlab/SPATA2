@@ -191,6 +191,25 @@ setMethod(
 #' in VisiumHD data sets.
 #'
 #' @export
+#' @title Map aggregated to pre-aggregated barcodes
+#'
+#' @details This function reconstructs the original barcodes before the aggregation
+#' process was applied. It retrieves the pre-aggregation state of the data and,
+#' if specified, adds selected metadata variables.
+#'
+#' @param var_names Optional. A character vector specifying the names of metadata variables to include in the output.
+#' If \code{NULL}, only the original and aggregated barcodes are returned.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A \code{data.frame} containing the original barcodes (\emph{barcodes}),
+#' the corresponding aggregated barcodes (\emph{barcodes_aggr}), and any additional
+#' metadata variables specified in \emph{var_names}.
+#'
+#' @seealso \code{\link{reduceResolutionVisiumHD}} for aggregating barcodes by reducing resolution
+#' in VisiumHD data sets.
+#'
+#' @export
 unwindAggregation <- function(object, var_names = NULL){
 
   if(purrr::is_empty(object@obj_info$aggregation)){

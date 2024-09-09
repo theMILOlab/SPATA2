@@ -2705,6 +2705,7 @@ setMethod(
 )
 
 
+#' @export
 resize_image <- function(image, resize_fct = NULL, image_dims = NULL) {
 
   if(is.null(image_dims)){
@@ -2721,7 +2722,6 @@ resize_image <- function(image, resize_fct = NULL, image_dims = NULL) {
   return(resized_image)
 
 }
-
 
 #' @title Resize image
 #'
@@ -2954,6 +2954,8 @@ setMethod(
 
   }
 )
+
+
 
 
 #' @title Used for GeomSegmentFixed

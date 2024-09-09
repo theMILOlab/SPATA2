@@ -2414,9 +2414,17 @@ spatial_gradient_screening <- function(coords_df,
 
   }
 
+  # remove uniform variables (prior to normalization to prevent NAs)
   variables <- base::unique(variables)
 
-  coords_df <- normalize_variables(coords_df, variables = variables)
+  coords_df <-
+    discard_uniform_variables(coords_df, variables = variables, verbose = verbose)
+
+  variables <- variables[variables %in% colnames(coords_df)]
+
+  # rescale them to
+  coords_df <-
+    normalize_variables(coords_df, variables = variables)
 
   if(base::isTRUE(rm_zero_infl)){
 
@@ -3017,6 +3025,8 @@ spatialTrajectoryScreening <- function(object,
       dist_unit = unit,
       verbose = FALSE
     )
+
+  variables <- variables[variables %in% colnames(coords_df)]
 
   cf <- compute_correction_factor_sts(object, id = id, width = width)
 

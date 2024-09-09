@@ -529,7 +529,6 @@ ggpLayerAxesSI <- function(object,
 #' @return List of ggpLayer outputs.
 #' @export
 #'
-#'
 #' @examples
 #'
 #' library(SPATA2)

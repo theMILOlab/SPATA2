@@ -233,6 +233,47 @@ discardExpressionMatrix <- function(...){
 
 }
 
+#' @keywords internal
+#' @export
+discard_uniform_variables <- function(spata_df, variables, verbose = TRUE){
+
+  confuns::give_feedback(
+    msg = "Identifying and discarding uniformly expressed variables.",
+    verbose = verbose
+  )
+
+  pb <- confuns::create_progress_bar(total = base::length(variables))
+
+  remove <-
+    purrr::map_lgl(
+      .x = variables,
+      .f = function(vname){
+
+        if(isTRUE(verbose)){ pb$tick() }
+
+        is.numeric(spata_df[[vname]]) &
+          (dplyr::n_distinct(spata_df[[vname]]) == 1)
+
+      }
+    )
+
+  n_rm <- base::sum(remove)
+
+  confuns::give_feedback(
+    msg = glue::glue("Discarded {n_rm} variable(s) due to uniform expression."),
+    verbose = verbose
+  )
+
+  remove_vars <- variables[remove]
+
+  variables <- variables[!variables %in% remove_vars]
+
+  spata_df <- dplyr::select(spata_df, -dplyr::all_of(remove_vars))
+
+  return(spata_df)
+
+}
+
 
 
 #' @title Dissolve groups in a SPATA2 object

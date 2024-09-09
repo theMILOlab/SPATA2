@@ -76,7 +76,7 @@ whichTissueSection <- function(object, id){
 
 #' @title Write image to disk
 #'
-#' @description The `writeImage` method writes an image to a specified directory.
+#' @description Writes an image to a specified directory.
 #'
 #' @param img_dir A character string specifying the directory where the image should be saved. If `NULL`,
 #' the image is written to the current image directory as obtained by [`getImageDir()`].
@@ -93,7 +93,6 @@ whichTissueSection <- function(object, id){
 #' @param ... Additional arguments passed to `EBImage::writeImage`.
 #'
 #' @inherit argument_dummy params
-#'
 #' @details
 #'
 #' The `writeImage()` function writes the image associated with the specified `img_name` to the given
@@ -155,12 +154,20 @@ whichTissueSection <- function(object, id){
 #' object <- writeImage(object, img_name = img_name, img_dir = img_dir, overwrite = TRUE, transform = TRUE)
 #' # The image is saved with transformations applied, and the object is updated with the new directory and resize factor.
 #'
+#' # Pitfall 1: Forgetting to reassign the object after writing with transformations
+#' writeImage(object, img_name = img_name, img_dir = img_dir, overwrite = TRUE, transform = TRUE)
+#' # If you now reload the object or access the image again, it may not reflect the transformations you just saved.
+#'
+#' # Pitfall 2: Not setting overwrite = TRUE when a file already exists
+#' # This will cause an error if a file with the same name already exists in the directory.
+#' # writeImage(object, img_name = img_name, img_dir = img_dir)
+#'
 #' @rdname writeImage
 #' @export
 
 setGeneric(name = "writeImage", def = function(object, ...){
 
-  standardGeneric(f = "writeImage")
+  standardGeneric("writeImage")
 
 })
 
@@ -176,8 +183,6 @@ setMethod(
                         transform = FALSE,
                         verbose = NULL){
 
-    hlpr_assign_arguments(object)
-
     sp_data <- getSpatialData(object)
 
     sp_data <-
@@ -192,7 +197,6 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    # save function call in logfile
     object <- returnSpataObject(object)
 
     invisible(object)
@@ -297,4 +301,3 @@ setMethod(
 
   }
 )
-
