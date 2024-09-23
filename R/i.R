@@ -253,7 +253,7 @@ idSA <- function(object, verbose = NULL){
 
   } else if(base::length(id) > 1){
 
-    stop("More than one spatial annotation found in this object. Please specify argument `id`.")
+    stop("More than one spatial annotation found in this object. Please specify argument `ids`.")
 
   }
 
@@ -1979,64 +1979,43 @@ increase_n_data_points <- function(coords_df, fct = 10, cvars = c("x", "y")){
 #' @keywords internal
 increase_polygon_vertices <- function(polygon_df, avg_dist, skip = FALSE) {
 
-  if(!base::isTRUE(skip)){
+  if (!base::isTRUE(skip)) {
 
     polygon_df <- base::as.data.frame(polygon_df)
 
-    # ensure the polygon is closed (first and last point are the same)
-    if(!base::identical(polygon_df[1, ], polygon_df[nrow(polygon_df), ])){
-
+    # Ensure the polygon is closed (first and last point are the same)
+    if (!base::identical(polygon_df[1, ], polygon_df[nrow(polygon_df), ])) {
       polygon_df <- base::rbind(polygon_df, polygon_df[1, ])
-
     }
 
-    # initialize a new data frame to store interpolated vertices
-    interpolated_df <- data.frame(x = numeric(0), y = numeric(0))
+    # Calculate differences between consecutive points
+    diffs <- base::diff(as.matrix(polygon_df))
 
-    # loop through each pair of consecutive vertices
-    for(i in 1:(base::nrow(polygon_df) - 1)){
+    # Calculate distances between consecutive points
+    dist_between_vertices <- sqrt(rowSums(diffs^2))
 
-      x1 <- polygon_df[i, "x"]
-      y1 <- polygon_df[i, "y"]
-      x2 <- polygon_df[i + 1, "x"]
-      y2 <- polygon_df[i + 1, "y"]
+    # Calculate the number of points to interpolate between each pair of points
+    num_interpolated <- base::pmax(1, floor(dist_between_vertices / avg_dist))
 
-      # calculate the distance between the consecutive vertices
-      dist_between_vertices <- base::sqrt((x2 - x1)^2 + (y2 - y1)^2)
+    # Generate sequences for interpolation
+    interpolated_points <- lapply(1:(nrow(polygon_df) - 1), function(i) {
+      n <- num_interpolated[i]
+      x_seq <- seq(polygon_df[i, "x"], polygon_df[i + 1, "x"], length.out = n + 1)[-1]
+      y_seq <- seq(polygon_df[i, "y"], polygon_df[i + 1, "y"], length.out = n + 1)[-1]
+      data.frame(x = x_seq, y = y_seq)
+    })
 
-      # calculate the number of interpolated vertices needed
-      num_interpolated <- base::max(1, floor(dist_between_vertices / avg_dist))
+    # Combine all interpolated points into a single data frame
+    interpolated_df <- do.call(rbind, interpolated_points)
 
-      # calculate the step size for interpolation
-      step_x <- (x2 - x1) / (num_interpolated + 1)
-      step_y <- (y2 - y1) / (num_interpolated + 1)
+    # Add the first point to close the polygon
+    interpolated_df <- rbind(interpolated_df, interpolated_df[1, ])
 
-      # add the original vertex to the interpolated data frame
-      interpolated_df <- base::rbind(interpolated_df, data.frame(x = x1, y = y1))
-
-      # interpolate new vertices between the consecutive vertices
-      for (j in 1:num_interpolated) {
-
-        new_x <- x1 + j * step_x
-        new_y <- y1 + j * step_y
-
-        interpolated_df <- base::rbind(interpolated_df, data.frame(x = new_x, y = new_y))
-
-      }
-    }
-
-    # combine the original and interpolated vertices
-    polygon_df <-
-      dplyr::add_row(polygon_df, interpolated_df) %>%
-      tibble::as_tibble()
-
+    return(tibble::as_tibble(interpolated_df))
   }
 
-
-  return(polygon_df)
-
+  return(tibble::as_tibble(polygon_df))
 }
-
 
 #' @keywords internal
 infer_gradient <- function(loess_model,

@@ -3308,11 +3308,13 @@ createSpatialDataVisium <- function(dir,
     )
 
   # compute pixel scale factor to
+
   sp_data <- computePixelScaleFactor(sp_data, verbose = verbose)
 
   sp_data <- computeCaptureArea(sp_data)
 
   return(sp_data)
+
 
 }
 
