@@ -1025,6 +1025,16 @@ regex_exclam <- stringr::str_c(regex_exclam1, "|", regex_exclam2)
 regex_unit <- stringr::str_c(regex_dist_units_si, regex_pxl, regex_area_units, sep = "|")
 
 
+regex_visiumHD_barcode <- "s_[0-9]{3}um_[0-9]{5}_[0-9]{5}"
+regex_visiumHD_barcode_col <- confuns::rgx_lookbehind(pattern = "s_[0-9]{3}um_[0-9]{5}_", match = "[0-9]{5}")
+regex_visiumHD_barcode_row <- confuns::rgx_lookbehind(pattern = "s_[0-9]{3}um_", match = "[0-9]{5}")
+regex_visiumHD_barcode_square_res <-
+  confuns::rgx_lookbehind(
+    pattern = "s_[0-9]{0,1}",
+    match = "[1-9]{1,3}um" # 1-9 to remove 0s
+    )
+
+
 #' Regular Expressions for Data Validation and Parsing
 #'
 #' A list of regular expressions commonly used for parsing and validating data inputs.
@@ -1112,12 +1122,12 @@ regexes <- list(
   ribosomal = "^RP[SL][0-9].*",
   scientific_notation = "-{0,1}[0-9]*e(\\+|-)[0-9]*",
   si_dist = stringr::str_c("(", regex_num_value, ")(", regex_dist_units_si, ")", sep = ""),
-  unit = stringr::str_c(regex_dist_units_si, regex_pxl, regex_area_units, sep = "|")
+  unit = stringr::str_c(regex_dist_units_si, regex_pxl, regex_area_units, sep = "|"),
+  visiumHD_barcode = regex_visiumHD_barcode,
+  visiumHD_barcode_col = regex_visiumHD_barcode_col,
+  visiumHD_barcode_row = regex_visiumHD_barcode_row,
+  visiumHD_barcode_square_res = regex_visiumHD_barcode_square_res
 )
-
-
-
-
 
 
 # relateToImageAnnotation names

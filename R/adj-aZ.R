@@ -1460,6 +1460,7 @@ setMethod(
   definition = function(object,
                         sample_name,
                         platform = "Undefined",
+                        square_res = NULL,
                         assay_name = NULL,
                         assay_modality = NULL,
                         img_name = NULL,
@@ -1574,7 +1575,8 @@ setMethod(
 
       coordinates <-
         Seurat::GetTissueCoordinates(seurat_image) %>%
-        dplyr::select(barcodes = cell, x_orig = x, y_orig = y)
+        dplyr::select(barcodes = cell, x_orig = x, y_orig = y) %>%
+        tibble::as_tibble()
 
       # pixel scale factor
       psf <- 1
@@ -1606,7 +1608,8 @@ setMethod(
 
       coordinates <-
         Seurat::GetTissueCoordinates(object) %>%
-        dplyr::rename(barcodes = cell, x_orig = x, y_orig = y)
+        dplyr::rename(barcodes = cell, x_orig = x, y_orig = y) %>%
+        tibble::as_tibble()
 
       sp_data <-
         createSpatialData(
@@ -1615,6 +1618,35 @@ setMethod(
           method = spatial_methods[[platform]],
           coordinates = coordinates
         )
+
+      if(sp_data@method@name == "VisiumHD"){
+
+        if(is.null(square_res)){
+
+          # assay_modality derives from assay_name
+          square_res <-
+            stringr::str_extract(coordinates$barcodes, pattern = regexes$visiumHD_barcode_square_res) %>%
+            base::unique()
+
+          if(length(square_res) > 1 || any(is.na(square_res))){
+
+            stop("Could not deduce square resolution of VisiumHD data set from assay name. Please specify `square_res`.")
+
+          }
+
+        } else {
+
+          confuns::check_one_of(
+            input = square_res,
+            against = names(visiumHD_ranges)
+          )
+
+        }
+
+        sp_data@method@method_specifics$square_res <- square_res
+        sp_data@method@method_specifics$ccd <- square_res
+
+      }
 
     } else {
 

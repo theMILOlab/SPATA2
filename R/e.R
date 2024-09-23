@@ -833,3 +833,47 @@ expandSpatialAnnotation <- function(object,
   returnSpataObject(object)
 
 }
+
+
+
+#' Extract Row and Column Variables for VisiumHD Barcodes
+#'
+#' This function extracts row and column information from VisiumHD barcodes in a provided dataframe.
+#'
+#' @param coords_df A dataframe containing VisiumHD barcodes.
+#' @param name_bcs The column name where the barcodes are stored (default is "barcodes").
+#' @param name_row The name to assign to the row variable (default is "row").
+#' @param name_col The name to assign to the column variable (default is "col").
+#'
+#' @return A dataframe with added row and column information.
+#' @keywords internal
+#' @export
+extract_row_col_vars_visiumHD <- function(coords_df,
+                                          name_bcs = "barcodes",
+                                          name_row = "row",
+                                          name_col = "col"){
+
+  sym <- rlang::sym
+
+  # test if barcodes are valid
+  bcs_valid <- stringr::str_detect(coords_df[[name_bcs]], pattern = regexes$visiumHD_barcode)
+  all_valid <- all(bcs_valid)
+
+  if(!all_valid){
+
+    warning("There are barcodes that do not fit the regular expression regexes$visiumHD_barcode. Consider to check row/col assignment.")
+
+  }
+
+  # extract data
+  coords_df <-
+    dplyr::group_by(coords_df, !!sym(name_bcs)) %>%
+    dplyr::mutate(
+      {{name_row}} := as.numeric(stringr::str_extract(!!sym(name_bcs), pattern = regexes$visiumHD_barcode_row)),
+      {{name_col}} := as.numeric(stringr::str_extract(!!sym(name_bcs), pattern = regexes$visiumHD_barcode_col))
+    ) %>%
+    dplyr::ungroup()
+
+  return(coords_df)
+
+}

@@ -1454,6 +1454,9 @@ setMethod(
 
     ccd <- getCCD(object)
 
+    ccd_val <- extract_value(ccd)
+    ccd_unit <- extract_unit(ccd)
+
     confuns::give_feedback(
       msg = "Computing pixel scale factor.",
       verbose = verbose
@@ -1469,61 +1472,98 @@ setMethod(
     coords_df <-
       getCoordsDf(object, img_name = object@name_img_ref)
 
-    bc_origin <- coords_df$barcodes
-    bc_destination <- coords_df$barcodes
+    # VisiumHD contains too many spots
+    if(!containsMethod(object, method_name = "VisiumHD")){
 
-    spots_compare <-
-      tidyr::expand_grid(bc_origin, bc_destination) %>%
-      dplyr::left_join(
-        x = .,
-        y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y),
-        by = "bc_origin"
-      ) %>%
-      dplyr::left_join(
-        x = .,
-        y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y),
-        by = "bc_destination"
-      ) %>%
-      dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2))
+      bc_origin <- coords_df$barcodes
+      bc_destination <- coords_df$barcodes
 
-    bcsp_dist_pixel <-
-      dplyr::filter(spots_compare, bc_origin != bc_destination) %>%
-      dplyr::group_by(bc_origin) %>%
-      dplyr::mutate(dist_round = base::round(distance, digits = 0)) %>%
-      dplyr::filter(dist_round == base::min(dist_round)) %>%
-      dplyr::ungroup() %>%
-      dplyr::pull(distance) %>%
-      stats::median()
+      spots_compare <-
+        tidyr::expand_grid(bc_origin, bc_destination) %>%
+        dplyr::left_join(
+          x = .,
+          y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y),
+          by = "bc_origin"
+        ) %>%
+        dplyr::left_join(
+          x = .,
+          y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y),
+          by = "bc_destination"
+        ) %>%
+        dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2))
 
-    ccd_val <- extract_value(ccd)
-    ccd_unit <- extract_unit(ccd)
+      bcsp_dist_pixel <-
+        dplyr::filter(spots_compare, bc_origin != bc_destination) %>%
+        dplyr::group_by(bc_origin) %>%
+        dplyr::mutate(dist_round = base::round(distance, digits = 0)) %>%
+        dplyr::filter(dist_round == base::min(dist_round)) %>%
+        dplyr::ungroup() %>%
+        dplyr::pull(distance) %>%
+        stats::median()
 
-    pxl_scale_fct <-
-      units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
-      units::set_units(x = ., value = object@method@unit, mode = "standard") %>%
-      base::as.numeric()
+      pxl_scale_fct <-
+        units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
+        units::set_units(x = ., value = object@method@unit, mode = "standard") %>%
+        base::as.numeric()
 
-    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(object@method@unit, "/px")
+      base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(object@method@unit, "/px")
 
-    # set in ref image
-    ref_img <- getHistoImage(object, img_name = object@name_img_ref)
+    } else if(containsMethod(object, method_name = "VisiumHD")) {
 
-    ref_img <- setScaleFactor(ref_img, fct_name = "pixel", value = pxl_scale_fct)
+      if(!all(c("row", "col") %in% names(coords_df))){
 
-    object <- setHistoImage(object, hist_img = ref_img)
+        coords_df <- extract_row_col_vars_visiumHD(coords_df)
 
-    # set in all other slots
-    for(img_name in getImageNames(object, ref = FALSE)){
+      }
 
-      hist_img <- getHistoImage(object, img_name = img_name)
+      neighbors <- find_neighbors_visiumHD(coords_df, verbose = verbose)
 
-      sf <-
-        base::max(ref_img@image_info$dims)/
-        base::max(hist_img@image_info$dims)
+      if(is.null(neighbors)){
 
-      hist_img <- setScaleFactor(hist_img, fct_name = "pixel", value = pxl_scale_fct*sf)
+        pxl_scale_fct <- NULL
 
-      object <- setHistoImage(object, hist_img = hist_img)
+      } else {
+
+        bcsp_dist_pixel <- neighbors$distance
+
+        pxl_scale_fct <-
+          units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
+          units::set_units(x = ., value = object@method@unit, mode = "standard") %>%
+          base::as.numeric()
+
+        base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(object@method@unit, "/px")
+
+      }
+
+    }
+
+    if(!is.null(pxl_scale_fct)){
+
+      # set in ref image
+      ref_img <- getHistoImage(object, img_name = object@name_img_ref)
+
+      ref_img <- setScaleFactor(ref_img, fct_name = "pixel", value = pxl_scale_fct)
+
+      object <- setHistoImage(object, hist_img = ref_img)
+
+      # set in all other slots
+      for(img_name in getImageNames(object, ref = FALSE)){
+
+        hist_img <- getHistoImage(object, img_name = img_name)
+
+        sf <-
+          base::max(ref_img@image_info$dims)/
+          base::max(hist_img@image_info$dims)
+
+        hist_img <- setScaleFactor(hist_img, fct_name = "pixel", value = pxl_scale_fct*sf)
+
+        object <- setHistoImage(object, hist_img = hist_img)
+
+      }
+
+    } else {
+
+      warning("Can not compute pixel scale facotr.")
 
     }
 
