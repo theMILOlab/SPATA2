@@ -54,46 +54,50 @@ setBarcodes <- function(object, barcodes){
 #' @description Sets the capture area for objects from platforms with
 #' a specific capture area / field of view.
 #'
-#' @param x,y Vectors of length two that correspond to the range of the
-#' respective axis. If `NULL`, the respective range stays as is.
+#' @param capture_area Data.frame of vertices .with x_orig and y_orig variables
 #' @inherit argument_dummy
-#'
-#' @note The spatial methods *VisiumSmall* and *VisiumLarge* have a capture
-#' area by default. You can override it but it is not recommended.
 #'
 #' @seealso [`getCaptureArea()`]
 #'
 #' @export
 #' @keywords internal
-setCaptureArea <- function(object, x = NULL, y = NULL){
+setGeneric(name = "setCaptureArea", def = function(object, ...){
 
-  sm <- getSpatialMethod(object)
+  standardGeneric("setCaptureArea")
 
-  if(!base::is.null(x)){
+})
 
-    base::stopifnot(base::length(x) == 2)
+#' @rdname setCaptureArea
+#' @export
+setMethod(
+  f = "setCaptureArea",
+  signature = "SPATA2",
+  definition = function(object, capture_area, ...){
 
-    is_dist(input = x, error = TRUE)
+    sp_data <- getSpatialData(object)
 
-    sm@capture_area$x <- x
+    sp_data <- setCaptureArea(sp_data, capture_area)
+
+    object <- setSpatialData(object, sp_data)
+
+    returnSpataObject(object)
 
   }
+)
 
-  if(!base::is.null(y)){
+#' @rdname setCaptureArea
+#' @export
+setMethod(
+  f = "setCaptureArea",
+  signature = "SpatialData",
+  definition = function(object, capture_area, ...){
 
-    base::stopifnot(base::length(y) == 2)
+    object@capture_area <- capture_area
 
-    is_dist(input = y, error = TRUE)
-
-    sm@capture_area$y <- y
+    return(object)
 
   }
-
-  object <- setSpatialMethod(object, method = sm)
-
-  returnSpataObject(object)
-
-}
+)
 
 
 #' @title Set center to center distance
@@ -391,11 +395,8 @@ setDefault <- function(object, ...){
 
 #' @title Set default instructions
 #'
-#' @inherit check_object params
-#'
-#' @return A spata-object again containing the default spata-instructions.
-#' Everything that previously has been adjusted with \code{adjustDefaultInstructions()}
-#' is overwritten.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
 #' @export
 #' @keywords internal

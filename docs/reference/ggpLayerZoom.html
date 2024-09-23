@@ -18,7 +18,7 @@ manual input."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/li
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -138,7 +138,8 @@ manual input.</p>
 <span>  expand_y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  round <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  n_breaks <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>  unit <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  unit <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  img_name <span class="op">=</span> <span class="fu"><a href="activateImage.html">activeImage</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -166,6 +167,12 @@ x-coordinate 500px. If <code>NULL</code>, the original range is used.</p></dd>
 <dt id="arg-unit">unit<a class="anchor" aria-label="anchor" href="#arg-unit"></a></dt>
 <dd><p>Character value. Overwrites the unit of the x- and y-axis. (If <code>NULL</code>,
 the defalt, the unit for the respective axis is taken from <code>xrange</code> and <code>yrange</code> input.)</p></dd>
+
+
+<dt id="arg-img-name">img_name<a class="anchor" aria-label="anchor" href="#arg-img-name"></a></dt>
+<dd><p>Character value. The name of the image of interest.
+If <code>NULL</code>, the <a href="concept_active.html">active</a> image is chosen by default. Either way, must
+be one of <code><a href="getImageNames.html">getImageNames()</a></code>.</p></dd>
 
 </dl></div>
     <div id="value">

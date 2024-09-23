@@ -167,7 +167,7 @@ printAutoencoderSummary <- function(object, mtr_name = "denoised", of_sample = "
 #'
 #' The results depend on further adjustments like number of layers, dropout and number of epochs.
 #'
-#' @inherit check_object params
+#' @inherit argument_dummy params
 #'
 #' @return ggplot_family return
 #' @export
@@ -292,7 +292,7 @@ plotAutoencoderResults <- function(object,
 #' @description Assesses different neural network set ups regarding
 #' the activation function and the number of bottleneck neurons.
 #'
-#' @inherit check_object params
+#' @inherit argument_dummy params
 #' @param expr_mtr The expression matrix that is to be used as input for the neural network.
 #' @param activations Character vector. Denotes the activation functions to be assessed.
 #' @param bottlenecks Numeric vector. Denotes the different numbers of bottleneck neurons to be assessed.
@@ -343,7 +343,7 @@ runAutoencoderAssessment <- function(object,
 #' @description This function constructs and uses a neural network to denoise
 #' expression levels spatially.
 #'
-#' @inherit check_object params
+#' @inherit argument_dummy params
 #' @param layers Numeric vector of length 3. Denotes the number of neurons in the three hidden layers.
 #'  (default = c(128, 64, 32))
 #' @param bottleneck Numeric value. Denotes the number of bottleneck neurons.
@@ -557,7 +557,7 @@ runAutoencoderDenoising <- function(object,
 #'
 #' @description Extracts the results from \code{assessAutoencoderOptions()}.
 #'
-#' @inherit check_object params
+#' @inherit argument_dummy params
 #'
 #' @return A data.frame containing the total variance measured by \code{irlba::prcomp_irlba()} after each
 #' combination of activations/bottlenecks.
@@ -619,7 +619,7 @@ getAutoencoderSetUp <- function(object, mtr_name, of_sample = NA){
 
 #' @title Set results of autoencoder assessment
 #'
-#' @inherit check_object params
+#' @inherit argument_dummy params
 #' @param assessment_list Named list with slots \code{$df} and \code{$set_up}.
 #'
 #' @return A spata-object.

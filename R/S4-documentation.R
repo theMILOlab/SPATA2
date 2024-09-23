@@ -200,6 +200,8 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
 #' or \emph{\link[=SpatialTrajectory]{spatial trajectories}}.
 #'
 #' @slot annotations list. List of objects of class [`SpatialAnnotation`].
+#' @slot capture_area data.frame. Data.frame of vertices that define the capture area
+#' or the field of view.
 #' @slot coordinates data.frame. Data.frame that stores information about identified
 #' or known entities located on the imaged tissue, such as cells or capture spots.
 #' @slot images list. List of objects of class [`HistoImage`] - the container objects
@@ -230,6 +232,7 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
 SpatialData <- setClass(Class = "SpatialData",
                         slots = list(
                           annotations = "list",
+                          capture_area = "data.frame",
                           coordinates = "data.frame",
                           images = "list",
                           method = "SpatialMethod",
@@ -422,6 +425,15 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 #' @slot transformations list. List of transformations to apply upon extracting
 #' the image to ensure alignment with additional images and spatial aspects. In case of default values
 #' no transformation is applied.
+#'
+#' The following transformations are applied when the image is \link[=loadImage]{loaded}:
+#'
+#' \itemize{
+#'  \item{*resize_fct*:}{ Numeric value between 0-1. Used to resize the resolution of the image.}
+#'  }
+#'
+#' The following transformations are applied when the image is \link[=getImage]{extracted}:
+#'
 #' \itemize{
 #'  \item{*angle*:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
 #'  by which the image needs to be rotated in **clockwise** direction. Defaults to 0.}

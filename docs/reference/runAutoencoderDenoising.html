@@ -18,7 +18,7 @@ expression levels spatially."><!-- mathjax --><script src="https://cdnjs.cloudfl
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -151,7 +151,8 @@ expression levels spatially.</p>
 
 
 <dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
-<dd><p>A valid spata-object.</p></dd>
+<dd><p>An object of class <code><a href="SPATA2.html">SPATA2</a></code> or, in case of S4 generics,
+objects of classes for which a method has been defined.</p></dd>
 
 
 <dt id="arg-activation">activation<a class="anchor" aria-label="anchor" href="#arg-activation"></a></dt>
@@ -192,6 +193,12 @@ See documentation for <code><a href="plotAutoencoderResults.html">plotAutoencode
 <dt id="arg-set-as-active">set_as_active<a class="anchor" aria-label="anchor" href="#arg-set-as-active"></a></dt>
 <dd><p>Logical. If set to TRUE the denoised matrix is set as the active matrix via
 <code><a href="setActiveExpressionMatrix.html">setActiveExpressionMatrix()</a></code>.</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, informative messages regarding
+the computational progress will be printed.</p>
+<p>(Warning messages will always be printed.)</p></dd>
 
 </dl></div>
     <div id="value">

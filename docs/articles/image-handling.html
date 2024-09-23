@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -313,14 +313,14 @@ referring to them within functions.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># before unloading</span></span>
 <span><span class="fu">pryr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pryr/man/object_size.html" class="external-link">object_size</a></span><span class="op">(</span><span class="va">object_t275</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 157.22 MB</span></span></code></pre>
+<pre><code><span><span class="co">## 157.17 MB</span></span></code></pre>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># unload</span></span>
 <span><span class="va">object_t275</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/unloadImage.html">unloadImage</a></span><span class="op">(</span><span class="va">object_t275</span>, img_name <span class="op">=</span> <span class="st">"hires"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># after unloading</span></span>
 <span><span class="fu">pryr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pryr/man/object_size.html" class="external-link">object_size</a></span><span class="op">(</span><span class="va">object_t275</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 64.97 MB</span></span></code></pre>
+<pre><code><span><span class="co">## 64.91 MB</span></span></code></pre>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># activate image normres again</span></span>
 <span><span class="va">object_t275</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/activateImage.html">activateImage</a></span><span class="op">(</span><span class="va">object_t275</span>, img_name <span class="op">=</span> <span class="st">"normres"</span><span class="op">)</span></span>
@@ -506,7 +506,8 @@ the reference image.</p>
 <span><span class="va">object_t275</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/resetImageTransformations.html">resetImageTransformations</a></span><span class="op">(</span><span class="va">object_t275</span>, img_name <span class="op">=</span> <span class="st">"badly_aligned"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">object_t275</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/alignImage.html">alignImageInteractive</a></span><span class="op">(</span><span class="va">object_t275</span><span class="op">)</span></span></code></pre></div>
-<p><img src="gifs/align_image_interactive.gif" width="100%"></p>
+<video width="640" height="480" controls><source src="../reference/figures/align_image_interactive.mp4" type="video/mp4" srcset="NA"></source></video><p>
+</p>
 <p>As with <code>alignImaage()</code>, the results of the interactive
 alignment are stored in the <code>SPATA2</code> object.</p>
 </div>

@@ -476,12 +476,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
 
   crange <- getCoordsRange(object)
 
-  object <-
-    setCaptureArea(
-      object = object,
-      x = as_millimeter(crange$x, object = object),
-      y = as_millimeter(crange$y, object = object)
-      )
+  object <- computeCaptureArea(object)
 
   confuns::give_feedback(
     msg = "Estimated field of view (capture area) bases on cell coordinates. Specify with `setCaptureaArea()`.",
@@ -707,6 +702,8 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
       use_scattermore = TRUE
     )
 
+  object <- computeCaptureArea(object)
+
   returnSpataObject(object)
 
 }
@@ -720,8 +717,9 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' @param directory_visium Character. The directory containing the Visium output files.
 #' @param mtr Character. Specifies which matrix to use, either "filtered" or "raw". Default is "filtered".
 #' @param img_active Character. The active image to use, either "lowres" or "hires". Default is "lowres".
-#' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
-#' @param verbose Logical. If TRUE, progress messages are printed. Default is TRUE.
+#' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "hires".
+#' @inherit createSpatialData params
+#' @inherit argument_dummy params
 #'
 #' @return A `SPATA2` object containing data from the Visium platform. More precise,
 #' depending on the set up used to create the raw data it is of either spatial method:
@@ -768,13 +766,21 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' identified in the resulting `SPATA2` object, which contains two assays. One of molecular
 #' modality *gene* and of of molecular modality *protein*.
 #'
+#' @section Row and column indices:
+#' Visium spot coordinates come with column and row indices. The functions `initiateSpataObjectVisium()`
+#' and `initiateSpataObjectVisiumHD()` ensure that *col* aligns with the direction of the x-coordinates and
+#' that *row* aligns with the direction of the y-coordinates. If they do not, they are adjusted accordingly.
+#' Hence, these variables should not be used as keys for data merging.
+#'
 #' @export
 #'
 initiateSpataObjectVisium <- function(sample_name,
                                       directory_visium,
                                       mtr = "filtered",
                                       img_active = "lowres",
-                                      img_ref = "lowres",
+                                      img_ref = "hires",
+                                      resize_images = NULL,
+                                      unload = TRUE,
                                       verbose = TRUE){
 
   confuns::give_feedback(
@@ -871,6 +877,8 @@ initiateSpataObjectVisium <- function(sample_name,
       sample = sample_name,
       img_ref = img_ref,
       img_active = img_active,
+      resize_images = resize_images,
+      unload = unload,
       verbose = verbose
     )
 
@@ -968,6 +976,8 @@ initiateSpataObjectVisium <- function(sample_name,
   # default processing
   object <- identifyTissueOutline(object, verbose = verbose)
 
+  object <- computeCaptureArea(object)
+
   returnSpataObject(object)
 
 }
@@ -987,9 +997,10 @@ initiateSpataObjectVisium <- function(sample_name,
 #' @param genes Character or `NULL`. If character, specifies beforehand which genes to keep in the count
 #' matrix. If `NULL`, the default, all genes are kept.
 #' @param img_active Character. The active image to use, either "lowres" or "hires". Default is "lowres".
-#' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "lowres".
-#' @param inherit argument_dummy params
+#' @param img_ref Character. The reference image to use, either "lowres" or "hires". Default is "hires".
 #' @inherit reduceResolutionVisiumHD params
+#' @inherit createSpatialData params
+#' @inherit argument_dummy params
 #'
 #' @return A `SPATA2` object the VisiumHD platform.
 #'
@@ -1037,6 +1048,12 @@ initiateSpataObjectVisium <- function(sample_name,
 #' Note, that aggregating counts by resolution can take a considerable amount of time. Consider prefiltering
 #' the raw counts using `genes` and/or increasing the number of cores to use with `workers`.
 #'
+#' @section Row and column indices:
+#' Visium spot coordinates come with column and row indices. The functions `initiateSpataObjectVisium()`
+#' and `initiateSpataObjectVisiumHD()` ensure that *col* aligns with the direction of the x-coordinates and
+#' that *row* aligns with the direction of the y-coordinates. If they do not, they are adjusted accordingly.
+#' Hence, these variables should not be used as keys for data merging.
+#'
 #' @export
 #'
 initiateSpataObjectVisiumHD <- function(sample_name,
@@ -1047,7 +1064,9 @@ initiateSpataObjectVisiumHD <- function(sample_name,
                                         workers = 1,
                                         batch_size = 1000,
                                         img_active = "lowres",
-                                        img_ref = "lowres",
+                                        img_ref = "hires",
+                                        resize_images = NULL,
+                                        unload = TRUE,
                                         verbose = TRUE){
 
   confuns::give_feedback(
@@ -1121,6 +1140,8 @@ initiateSpataObjectVisiumHD <- function(sample_name,
       sample = sample_name,
       img_ref = img_ref,
       img_active = img_active,
+      resize_images = resize_images,
+      unload = unload,
       verbose = verbose
     )
 
@@ -1241,6 +1262,8 @@ initiateSpataObjectVisiumHD <- function(sample_name,
 
   }
 
+  object <- computeCaptureArea(object)
+
   returnSpataObject(object)
 
 }
@@ -1338,17 +1361,12 @@ initiateSpataObjectXenium <- function(sample_name,
 
   base::options(scipen = 999)
 
-  object <-
-    setCaptureArea(
-      object = object,
-      x = getCoordsRange(object)$x %>% as_millimeter(object = object),
-      y = getCoordsRange(object)$y %>% as_millimeter(object = object)
-    )
-
   object <- identifyTissueOutline(object, verbose = verbose)
 
   # set default
   object <- setDefault(object, use_scattermore = TRUE, display_image = FALSE, pt_size = 0.1)
+
+  object <- computeCaptureArea(object)
 
   returnSpataObject(object)
 

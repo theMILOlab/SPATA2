@@ -71,6 +71,15 @@ See \code{\link[=concept_scale_factors]{scale factors}} for more information.}
 \item{\code{transformations}}{list. List of transformations to apply upon extracting
 the image to ensure alignment with additional images and spatial aspects. In case of default values
 no transformation is applied.
+
+The following transformations are applied when the image is \link[=loadImage]{loaded}:
+
+\itemize{
+\item{\emph{resize_fct}:}{ Numeric value between 0-1. Used to resize the resolution of the image.}
+}
+
+The following transformations are applied when the image is \link[=getImage]{extracted}:
+
 \itemize{
 \item{\emph{angle}:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
 by which the image needs to be rotated in \strong{clockwise} direction. Defaults to 0.}

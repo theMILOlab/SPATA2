@@ -19,7 +19,7 @@ the number of observations and molecules in the object."><!-- mathjax --><script
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -244,8 +244,8 @@ Analysis results are not affected.</p>
 <span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="getSpatAnnIds.html">getSpatAnnIds</a></span><span class="op">(</span><span class="va">object_mouse</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_mouse</span>, color_by <span class="op">=</span> <span class="st">"tissue_section"</span>, pt_clr <span class="op">=</span> <span class="st">"lightgrey"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline</a></span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="va">ids</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="ggpLayerSpatAnnPointer.html">ggpLayerSpatAnnPointer</a></span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="va">ids</span>, ptr_lengths <span class="op">=</span> <span class="st">"0.45mm"</span>, text_dist <span class="op">=</span> <span class="fl">10</span>, text_size <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline</a></span><span class="op">(</span><span class="va">object_mouse</span>, ids <span class="op">=</span> <span class="va">ids</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="ggpLayerSpatAnnPointer.html">ggpLayerSpatAnnPointer</a></span><span class="op">(</span><span class="va">object_mouse</span>, ids <span class="op">=</span> <span class="va">ids</span>, ptr_lengths <span class="op">=</span> <span class="st">"0.45mm"</span>, text_dist <span class="op">=</span> <span class="fl">10</span>, text_size <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">obj_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="splitSpataObject.html">splitSpataObject</a></span><span class="op">(</span><span class="va">object_mouse</span>, grouping <span class="op">=</span> <span class="st">"tissue_section"</span><span class="op">)</span></span>
 <span></span>
@@ -285,7 +285,7 @@ Analysis results are not affected.</p>
 <span><span class="va">object_cropped</span> <span class="op">&lt;-</span></span>
 <span> <span class="fu"><a href="cropSpataObject.html">cropSpataObject</a></span><span class="op">(</span><span class="va">object</span>, xrange <span class="op">=</span> <span class="va">xcrop</span>, yrange <span class="op">=</span> <span class="va">ycrop</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_cropped</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span><span class="op">)</span> <span class="op">+</span> <span class="va">orig_frame</span></span>
+<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_cropped</span>, color_by <span class="op">=</span> <span class="st">"bayes_space"</span>, pt_size <span class="op">=</span> <span class="fl">0.75</span><span class="op">)</span> <span class="op">+</span> <span class="va">orig_frame</span></span>
 <span></span></code></pre></div>
     </div>
   </div>

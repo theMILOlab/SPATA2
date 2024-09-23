@@ -949,7 +949,7 @@ create_spatial_trajectories_ui <- function(plot_height = "600px", breaks_add = N
 #' annotation that essentially spans the entirety of the sample, lacking the
 #' segregation of specific variable expressions. Similarly, enabling \code{force1}
 #' might unify multiple segregated areas, present on both sides of the sample, into one
-#' group and subsequently, one image annotation encompassing the whole sample.
+#' group and subsequently, one spatial annotation encompassing the whole sample.
 #' Consider to allow the creation of multiple spatial annotations (suffixed with an index)
 #' and merging them afterwards via `mergeSpatialAnnotations()` if they are too
 #' close together.
@@ -2889,6 +2889,13 @@ createSpatialMethod <- function(...){
 #'  \item{*Visium*:}{ Either *'lowres'* or *'hires'*.}
 #' }
 #'
+#' @param resize_images A named list of numeric values between 0-1 used to resize
+#' the respective image as indicated by the slot name. E.g `resize_images = list(hires = 0.5)`
+#' resizes the hires image to 50% of its original scale.
+#'
+#' @param unload Logical value. If `TRUE`, every image except for the active image
+#' is \link[=unloadImages]{unloaded.}
+#'
 #' @param meta List of meta data regarding the tissue.
 #' @param misc List of miscellaneous information.
 #' @param sample Character value. The sample name of the tissue.
@@ -2905,11 +2912,12 @@ createSpatialData <- function(sample,
                               hist_img_ref = NULL,
                               hist_imgs = list(),
                               active = NULL,
-                              unload = TRUE,
                               coordinates = tibble::tibble(),
                               meta = list(),
                               method = SpatialMethod(),
                               scale_factors = list(),
+                              resize_images = NULL,
+                              unload = TRUE,
                               misc = list(),
                               verbose = TRUE,
                               ...){
@@ -2965,8 +2973,30 @@ createSpatialData <- function(sample,
       activateImage(
         object = object,
         img_name = active,
+        unload = FALSE,
         verbose = FALSE
       )
+
+  }
+
+  # resize if desired
+  if(confuns::is_list(resize_images)){
+
+    resize_images <- confuns::keep_named(resize_images)
+
+    for(img_name in names(resize_images)){
+
+      object <-
+        resizeImage(
+          object = object,
+          img_name = img_name,
+          img_name_new = img_name,
+          resize_fct = resize_images[[img_name]],
+          overwrite = TRUE,
+          verbose = verbose
+        )
+
+    }
 
   }
 
@@ -3064,6 +3094,8 @@ createSpatialDataMERFISH <- function(dir,
       version = current_spata2_version
     )
 
+  sp_data <- computeCaptureArea(sp_data)
+
   return(sp_data)
 
 }
@@ -3122,6 +3154,8 @@ createSpatialDataSlideSeqV1 <- function(dir,
       version = current_spata2_version
     )
 
+  sp_data <- computeCaptureArea(sp_data)
+
   return(sp_data)
 
 }
@@ -3133,6 +3167,8 @@ createSpatialDataVisium <- function(dir,
                                     sample,
                                     img_ref = "lowres",
                                     img_active = "lowres",
+                                    resize_images = NULL,
+                                    unload = TRUE,
                                     meta = list(),
                                     misc = list(),
                                     verbose = TRUE){
@@ -3256,13 +3292,14 @@ createSpatialDataVisium <- function(dir,
   method@method_specifics[["spot_size"]] <- spot_size * 1.1
 
   # create output
-  object <-
+  sp_data <-
     createSpatialData(
       sample = sample,
       hist_img_ref = img_list[[img_ref]],
       hist_imgs = img_list[req_images[req_images != img_ref]],
       active = img_active,
-      unload = TRUE,
+      unload = unload,
+      resize_images = resize_images,
       coordinates = coords_df,
       method = method,
       meta = meta,
@@ -3271,36 +3308,13 @@ createSpatialDataVisium <- function(dir,
     )
 
   # compute pixel scale factor to
-  object <- computePixelScaleFactor(object, verbose = verbose)
 
-  # compute capture area
-  isf <- getScaleFactor(object, fct_name = "image", img_name = img_active)
+  sp_data <- computePixelScaleFactor(sp_data, verbose = verbose)
 
-  if(method@name == "VisiumSmall"){
+  sp_data <- computeCaptureArea(sp_data)
 
-    # scale to orig with isf
-    half <- as_pixel(input = "3.25mm", object = object)/isf
+  return(sp_data)
 
-    object@method@capture_area <-
-      list(
-        x_orig = c(xmean-half, xmean + half),
-        y_orig = c(ymean-half*1.045, ymean + half*1.045)
-      )
-
-  } else if(method@name == "VisiumLarge"){
-
-    # scale to orig with isf
-    half <- as_pixel(input = "5.5mm", object = object)/isf
-
-    object@method@capture_area <-
-      list(
-        x_orig = c(xmean-half*1.045, xmean + half*1.045),
-        y_orig = c(ymean-half*1.025, ymean + half*1.025)
-      )
-
-  }
-
-  return(object)
 
 }
 
@@ -3311,6 +3325,8 @@ createSpatialDataVisiumHD <- function(dir,
                                       square_res,
                                       img_ref = "lowres",
                                       img_active = "lowres",
+                                      resize_images = NULL,
+                                      unload = FALSE,
                                       meta = list(),
                                       misc = list(),
                                       verbose = TRUE){
@@ -3410,9 +3426,6 @@ createSpatialDataVisiumHD <- function(dir,
 
   coords_df <- read_coords_visium(dir_coords)
 
-  xmean <- base::mean(coords_df$x_orig, na.rm = TRUE)
-  ymean <- base::mean(coords_df$y_orig, na.rm = TRUE)
-
   # compute spot size
   spot_size <-
     scale_factors$fiducial_diameter_fullres *
@@ -3425,15 +3438,6 @@ createSpatialDataVisiumHD <- function(dir,
   method@method_specifics[["ccd"]] <- square_res
   method@method_specifics[["square_res"]] <- square_res
 
-  # half capture area in pixel_orig
-  half_ca <- (3250*(1/scale_factors$microns_per_pixel))*1.025
-
-  method@capture_area <-
-    list(
-      x_orig = c(xmean-half_ca, xmean+half_ca),
-      y_orig = c(ymean-half_ca, ymean+half_ca)
-    )
-
   # create output
   sp_data <-
     createSpatialData(
@@ -3441,12 +3445,15 @@ createSpatialDataVisiumHD <- function(dir,
       hist_img_ref = img_list[[img_ref]],
       hist_imgs = img_list[req_images[req_images != img_ref]],
       active = img_active,
-      unload = TRUE,
+      unload = unload,
+      resize_images = resize_images,
       coordinates = coords_df,
       method = method,
       meta = meta,
       misc = misc
     )
+
+  sp_data <- computeCaptureArea(sp_data)
 
   return(sp_data)
 
@@ -3477,6 +3484,8 @@ createSpatialDataXenium <- function(dir,
       sample = sample,
       version = current_spata2_version
     )
+
+  sp_data <- computeCaptureArea(sp_data)
 
   return(sp_data)
 
@@ -5255,7 +5264,7 @@ createSpatialTrajectories <- function(object){
 
         traj_ids <- shiny::reactive({
 
-          getTrajectoryIds(spata_object())
+          getSpatialTrajectoryIds(spata_object())
 
         })
 
@@ -5577,7 +5586,7 @@ createSpatialTrajectories <- function(object){
             )
 
           object <-
-            setTrajectory(
+            setSpatialTrajectory(
               object = object,
               trajectory = spat_traj,
               overwrite = FALSE

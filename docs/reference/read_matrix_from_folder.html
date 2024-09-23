@@ -18,7 +18,7 @@ and returns the matrix with appropriate row and column names."><!-- mathjax --><
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -147,7 +147,8 @@ and returns the matrix with appropriate row and column names.</p>
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p>The specified directory must contain the following files:</p><ul><li><p>Matrix file: A file with the extension <code>.mtx.gz</code> or <code>.mtx</code>. This file contains the count matrix in Matrix Market format.</p></li>
+    <p>The specified directory must contain the following files:</p>
+<ul><li><p>Matrix file: A file with the extension <code>.mtx.gz</code> or <code>.mtx</code>. This file contains the count matrix in Matrix Market format.</p></li>
 <li><p>Barcodes file: A file with the name <code>barcodes.tsv.gz</code> or <code>barcodes.tsv</code>. This file contains the barcodes for the columns of the matrix.</p></li>
 <li><p>Features file: A file with the name <code>features.tsv.gz</code> or <code>features.tsv</code>. This file contains the features (e.g., gene names) for the rows of the matrix.</p></li>
 </ul><p>The function will search for these files in the specified directory and read them using appropriate functions. The matrix will be returned with barcodes as column names and features as row names.</p>
@@ -155,7 +156,8 @@ and returns the matrix with appropriate row and column names.</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span>
 <span>  <span class="va">matrix_dir</span> <span class="op">&lt;-</span> <span class="st">"path/to/matrix/folder"</span></span>
 <span>  <span class="va">matrix</span> <span class="op">&lt;-</span> <span class="fu">read_matrix_from_folder</span><span class="op">(</span><span class="va">matrix_dir</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">matrix</span><span class="op">)</span></span>

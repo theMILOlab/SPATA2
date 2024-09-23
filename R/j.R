@@ -467,39 +467,7 @@ joinWithVariables <- function(object,
   # remove variables with uniform values
   if(uniform_variables == "discard"){
 
-    confuns::give_feedback(
-      msg = "Identifying and discarding uniformly expressed variables.",
-      verbose = verbose
-    )
-
-    pb <- confuns::create_progress_bar(total = base::length(variables))
-
-    remove <-
-      purrr::map(
-        .x = variables,
-        .f = function(vname){
-
-          if(base::isTRUE(verbose)){ pb$tick() }
-
-          base::is.numeric(spata_df[[vname]]) &
-            (dplyr::n_distinct(spata_df[[vname]]) == 1)
-
-        }
-      ) %>%
-      purrr::flatten_lgl()
-
-    n_rm <- base::sum(remove)
-
-    confuns::give_feedback(
-      msg = glue::glue("Discarded {n_rm} variable(s) due to uniform expression."),
-      verbose = verbose
-    )
-
-    remove_vars <- variables[remove]
-
-    variables <- variables[!variables %in% remove_vars]
-
-    spata_df <- dplyr::select(spata_df, -dplyr::all_of(remove_vars))
+    spata_df <- discard_uniform_variables(spata_df, variables = variables, verbose = verbose)
 
   }
 

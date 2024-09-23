@@ -1,13 +1,13 @@
 Package: SPATA2
 Type: Package
 Title: A Toolbox for Spatial Expression Analysis
-Version: 3.0.1
+Version: 3.1.0
 Authors@R: as.person(c(
     "Jan Kueckelhaus <jan.kueckelhaus@uk-erlangen.de> [aut, cre]", 
     "Simon Frerich [ctb]",
     "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]" 
   ))
-Description: This package provides a framework of functions and shiny-applications to make it as easy  and intuitive as possible to work with spatial gene expression data. 
+Description: This package provides a framework of functions and shiny-applications to make it as easy  and intuitive as possible to work with spatial expression data. 
 Encoding: UTF-8
 LazyData: true
 License: GPL-3
@@ -121,6 +121,7 @@ Collate:
     'u.R'
     'unused.R'
     'v.R'
+    'v3_1_0.R'
     'w.R'
 Depends: 
     R (>= 3.5)
@@ -130,4 +131,3 @@ References:
     Dichgans, M., Beck, J., Schnell, O., & Heiland, D. H. (2024). 
     Inferring histology-associated gene expression gradients in spatial transcriptomic studies. 
     Nature Communications, 15, 7280. https://doi.org/10.1038/s41467-024-50904-x
-

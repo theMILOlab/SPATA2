@@ -70,7 +70,7 @@ data("example_data")
 
 object <- example_data$object_UKF269T_diet
 
-object <- normalizeCounts(objcect, activate = TRUE)
+object <- normalizeCounts(object, activate = TRUE)
 
 genes <- c("EGFR", "MBP", "MAG", "SNAP25")
 

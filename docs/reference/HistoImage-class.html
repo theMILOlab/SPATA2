@@ -18,7 +18,7 @@ about it. Usually live in slot @images of SpatialData objects."><!-- mathjax -->
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -210,7 +210,11 @@ attribute called "unit" conforming to the format "SI-unit/px".</p></li>
 <dt><code>transformations</code></dt>
 <dd><p>list. List of transformations to apply upon extracting
 the image to ensure alignment with additional images and spatial aspects. In case of default values
-no transformation is applied.</p><ul><li><p><em>angle</em>: Numeric value that ranges from 0-359. Indicates the angle in degrees
+no transformation is applied.</p>
+<p>The following transformations are applied when the image is <a href="loadImage.html">loaded</a>:</p>
+<ul><li><p><em>resize_fct</em>: Numeric value between 0-1. Used to resize the resolution of the image.</p></li>
+</ul><p>The following transformations are applied when the image is <a href="getImage.html">extracted</a>:</p>
+<ul><li><p><em>angle</em>: Numeric value that ranges from 0-359. Indicates the angle in degrees
 by which the image needs to be rotated in <strong>clockwise</strong> direction. Defaults to 0.</p></li>
 <li><p><em>flip</em>: List of two logical values named <em>horizontal</em> and <em>vertical</em>. Indicate
 if the image is supposed to be flipped around either axis. Both default to <code>FALSE</code></p></li>

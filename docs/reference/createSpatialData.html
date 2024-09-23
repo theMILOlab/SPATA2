@@ -19,7 +19,7 @@ standardized output folder."><!-- mathjax --><script src="https://cdnjs.cloudfla
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -137,11 +137,12 @@ standardized output folder.</p>
 <span>  hist_img_ref <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  hist_imgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  active <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  unload <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  coordinates <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  meta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="SpatialMethod-class.html">SpatialMethod</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  scale_factors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  resize_images <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  unload <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  misc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -169,6 +170,8 @@ standardized output folder.</p>
 <span>  <span class="va">sample</span>,</span>
 <span>  img_ref <span class="op">=</span> <span class="st">"lowres"</span>,</span>
 <span>  img_active <span class="op">=</span> <span class="st">"lowres"</span>,</span>
+<span>  resize_images <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  unload <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  meta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  misc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -180,6 +183,8 @@ standardized output folder.</p>
 <span>  <span class="va">square_res</span>,</span>
 <span>  img_ref <span class="op">=</span> <span class="st">"lowres"</span>,</span>
 <span>  img_active <span class="op">=</span> <span class="st">"lowres"</span>,</span>
+<span>  resize_images <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  unload <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  meta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  misc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -223,12 +228,25 @@ multiplied withe its coordinate scale factor in slot @scale_factors$coords.</p><
 <dd><p>List of meta data regarding the tissue.</p></dd>
 
 
+<dt id="arg-resize-images">resize_images<a class="anchor" aria-label="anchor" href="#arg-resize-images"></a></dt>
+<dd><p>A named list of numeric values between 0-1 used to resize
+the respective image as indicated by the slot name. E.g <code>resize_images = list(hires = 0.5)</code>
+resizes the hires image to 50% of its original scale.</p></dd>
+
+
+<dt id="arg-unload">unload<a class="anchor" aria-label="anchor" href="#arg-unload"></a></dt>
+<dd><p>Logical value. If <code>TRUE</code>, every image except for the active image
+is <a href="unloadImage.html">unloaded.</a></p></dd>
+
+
 <dt id="arg-misc">misc<a class="anchor" aria-label="anchor" href="#arg-misc"></a></dt>
 <dd><p>List of miscellaneous information.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical. If TRUE, progress messages are printed. Default is TRUE.</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, informative messages regarding
+the computational progress will be printed.</p>
+<p>(Warning messages will always be printed.)</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -263,8 +281,9 @@ on the platform used:</p>
 
 
 <dt id="arg-square-res">square_res<a class="anchor" aria-label="anchor" href="#arg-square-res"></a></dt>
-<dd><p>Character. The square resolution from which to load the data. One of *c('16um', '8um', '2um').
-See details for more.</p></dd>
+<dd><p>Character. The square resolution from which to load the data. While <em>c('16um', '8um', '2um')</em>
+are the default resolutions, <code><a href="reduceResolutionVisiumHD.html">reduceResolutionVisiumHD()</a></code> is applied if the input
+deviates from these three input options. See section <em>Visium HD Resolution</em> for more information.</p></dd>
 
 </dl></div>
     <div id="value">

@@ -97,7 +97,7 @@ of individual data points dispersed across the sample. This results in an image
 annotation that essentially spans the entirety of the sample, lacking the
 segregation of specific variable expressions. Similarly, enabling \code{force1}
 might unify multiple segregated areas, present on both sides of the sample, into one
-group and subsequently, one image annotation encompassing the whole sample.
+group and subsequently, one spatial annotation encompassing the whole sample.
 Consider to allow the creation of multiple spatial annotations (suffixed with an index)
 and merging them afterwards via \code{mergeSpatialAnnotations()} if they are too
 close together.

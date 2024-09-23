@@ -13,7 +13,9 @@ initiateSpataObjectVisiumHD(
   workers = 1,
   batch_size = 1000,
   img_active = "lowres",
-  img_ref = "lowres",
+  img_ref = "hires",
+  resize_images = NULL,
+  unload = TRUE,
   verbose = TRUE
 )
 }
@@ -39,14 +41,19 @@ is required.}
 
 \item{img_active}{Character. The active image to use, either "lowres" or "hires". Default is "lowres".}
 
-\item{img_ref}{Character. The reference image to use, either "lowres" or "hires". Default is "lowres".}
+\item{img_ref}{Character. The reference image to use, either "lowres" or "hires". Default is "hires".}
+
+\item{resize_images}{A named list of numeric values between 0-1 used to resize
+the respective image as indicated by the slot name. E.g \code{resize_images = list(hires = 0.5)}
+resizes the hires image to 50\% of its original scale.}
+
+\item{unload}{Logical value. If \code{TRUE}, every image except for the active image
+is \link[=unloadImages]{unloaded.}}
 
 \item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{inherit}{argument_dummy params}
 }
 \value{
 A \code{SPATA2} object the VisiumHD platform.
@@ -100,5 +107,13 @@ next higher resolution folder is used if possible, else an error is thrown.
 
 Note, that aggregating counts by resolution can take a considerable amount of time. Consider prefiltering
 the raw counts using \code{genes} and/or increasing the number of cores to use with \code{workers}.
+}
+
+\section{Row and column indices}{
+
+Visium spot coordinates come with column and row indices. The functions \code{initiateSpataObjectVisium()}
+and \code{initiateSpataObjectVisiumHD()} ensure that \emph{col} aligns with the direction of the x-coordinates and
+that \emph{row} aligns with the direction of the y-coordinates. If they do not, they are adjusted accordingly.
+Hence, these variables should not be used as keys for data merging.
 }
 

@@ -50,5 +50,5 @@ Useful for efficient data storing.
 Not to be confused with \code{\link[=removeImage]{removeImage()}}!
 }
 \seealso{
-\code{\link[=loadImage]{loadImage()}},\code{\link[=loadImages]{loadImages()}}
+\code{\link[=loadImage]{loadImage()}},\code{\link[=loadImages]{loadImages()}}, \code{\link[=getImageDir]{getImageDir()}}
 }

@@ -1,4 +1,4 @@
-# SPATA2 Version 3.0.0
+# SPATA2 Version 3
 
 We are excited to announce the release of SPATA2 v3.0.0, coinciding with the official publication:
 

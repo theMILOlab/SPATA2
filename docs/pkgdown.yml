@@ -11,6 +11,7 @@ articles:
   dimensional-reduction: dimensional-reduction.html
   gsea: gsea.html
   image-handling: image-handling.html
+  individual-visiumHD-resolution: individual-visiumHD-resolution.html
   initiation-and-preprocessing-customized: initiation-and-preprocessing-customized.html
   initiation-and-preprocessing-merfish: initiation-and-preprocessing-merfish.html
   initiation-and-preprocessing-visium-hd: initiation-and-preprocessing-visium-hd.html
@@ -27,4 +28,4 @@ articles:
   spatial-segmentation: spatial-segmentation.html
   spatial-trajectory-screening: spatial-trajectory-screening.html
   using-spatial-annotations: using-spatial-annotations.html
-last_built: 2024-08-24T12:12Z
+last_built: 2024-09-09T08:37Z

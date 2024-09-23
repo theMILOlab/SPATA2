@@ -7,7 +7,8 @@
 getSampleName(object)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 }
 \value{
 A character value.
