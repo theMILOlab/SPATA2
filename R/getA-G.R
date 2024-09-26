@@ -1667,11 +1667,10 @@ getCoordsDfST <- function(object,
 
   deprecated(...)
 
-  if (!is.character(id) || !id %in% getSpatialTrajectoryIds(object)) {
-
-    stop("Could not find the specified annotation in object. Please revise `id` argument.")
-
-  }
+  confuns::check_one_of(
+    input = ids,
+    against = getSpatialTrajectoryIds(object)
+  )
 
   # scale distance
   if(dist_unit %in% validUnitsOfLengthSI()){
