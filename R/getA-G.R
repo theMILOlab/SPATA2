@@ -1095,12 +1095,11 @@ getCoordsDfSA <- function(object,
 
   pb <- confuns::create_progress_bar(total = base::length(ids))
 
-  if (!is.character(ids) || !ids %in% getSpatAnnIds(object)) {
+  confuns::check_one_of(
+    input = ids,
+    against = getSpatAnnIds(object)
+  )
 
-    stop("Could not find the specified annotation in object. Please revise `ids` argument.")
-
-  } 
-  
   if(base::length(ids) > 1){
 
     confuns::give_feedback(
@@ -1668,11 +1667,10 @@ getCoordsDfST <- function(object,
 
   deprecated(...)
 
-  if (!is.character(id) || !id %in% getSpatialTrajectoryIds(object)) {
-
-    stop("Could not find the specified annotation in object. Please revise `id` argument.")
-
-  }
+  confuns::check_one_of(
+    input = ids,
+    against = getSpatialTrajectoryIds(object)
+  )
 
   # scale distance
   if(dist_unit %in% validUnitsOfLengthSI()){
