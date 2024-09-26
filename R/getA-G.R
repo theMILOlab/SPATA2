@@ -912,7 +912,7 @@ setMethod(
 #'  \item{*bins_angle*:}{ Factor. The bin the data point was assigned to based on its *angle* value.}
 #'  \item{*rel_loc*:}{ Character. Possible values are *'core'*, if the data point lies inside the spatial annotation,
 #'  *'periphery'* if the data point lies outside of the boundaries of the spatial annotation but inside
-#'  the area denoted via `distance` and *outside*, if the data point lies beyond the screening area (it's
+#'  the area denoted via `distance` and *outside*, if the data point lies beyond the screening area (its
 #'  distance to the spatial annotation boundaries is bigger than the value denoted in `distance`).}
 #'  \item{*id*}{ Character. The ID of the spatial annotation the data points lies closest to. (only relevant
 #'  in case of `length(ids) > 1`)}
@@ -920,7 +920,7 @@ setMethod(
 #'  }
 #'
 #'
-#' @note In most scenarious, it does **not** make sense to relate data points from
+#' @note In most scenarios, it does **not** make sense to relate data points from
 #' tissue sections to a spatial annotation that is located on a different
 #' tissue section. Hence, the default of this function (`incl_edge = TRUE`, `drop_na = TRUE`)
 #' is set to simply remove these data points from the output. See examples.
@@ -949,7 +949,7 @@ setMethod(
 #'    )
 #'
 #' # default distance = "dte" -> uses distToEdge()
-#' coords_df <- getCoordsDfSA(object, ids = "hypoxia_ann", binwidth = "1mm")
+#' coords_df <- getCoordsDfSA(object, ids = "hypoxia_ann", resolution = "1mm")
 #'
 #' p1 <-
 #'   plotSurface(object, "HM_HYPOXIA", pt_clrsp = "inferno") +
@@ -1061,7 +1061,7 @@ setMethod(
 #' p_visium + p_sc
 #'
 #' # relate cells to spatial annotations
-#' sc_input_rel <- getCoordsDfSA(object, ids = "inj1", coords_df = sc_input, binwidth = "250um")
+#' sc_input_rel <- getCoordsDfSA(object, ids = "inj1", coords_df = sc_input, resolution = "250um")
 #'
 #' plotSurface(sc_input_rel, color_by = "dist", pt_size = 1) +
 #'   hemispheres
@@ -1095,6 +1095,12 @@ getCoordsDfSA <- function(object,
 
   pb <- confuns::create_progress_bar(total = base::length(ids))
 
+  if (!is.character(ids) || !ids %in% getSpatAnnIds(object)) {
+
+    stop("Could not find the specified annotation in object. Please revise `ids` argument.")
+
+  } 
+  
   if(base::length(ids) > 1){
 
     confuns::give_feedback(
@@ -1661,6 +1667,12 @@ getCoordsDfST <- function(object,
                           ...){
 
   deprecated(...)
+
+  if (!is.character(id) || !id %in% getSpatialTrajectoryIds(object)) {
+
+    stop("Could not find the specified annotation in object. Please revise `id` argument.")
+
+  }
 
   # scale distance
   if(dist_unit %in% validUnitsOfLengthSI()){
@@ -2769,7 +2781,7 @@ getGroupNames <- function(object, grouping,...){
 
 #' @title Obtain enrichment data.frame
 #'
-#' @description Extracts results from gene set enrichment analysis
+#' @description Extracts results from a gene set enrichment analysis
 #' in form of a data.frame.
 #'
 #' @inherit check_method params

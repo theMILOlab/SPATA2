@@ -247,7 +247,7 @@ test_sas_input <- function(object,
                            id,
                            distance,
                            core,
-                           binwidth = recBinwidth(object),
+                           binwidth = recSgsRes(object),
                            fdb_fn = "stop",
                            verbose = TRUE){
 

@@ -1608,7 +1608,7 @@ removeMolecules <- function(object,
 #'
 #'  \itemize{
 #'    \item{`removeObs()`}{: Allows to specify the observations to remove manually.}
-#'    \item{`removeObsNoCounts()`}{: Identifies and removes observations with no molecule counts from the `SPATA2` object.}
+#'    \item{`removeObsZeroCounts()`}{: Identifies and removes observations with no molecule counts from the `SPATA2` object.}
 #'  }
 #'
 #' @param barcodes Character vector or barcodes that are **removed**.
@@ -1627,7 +1627,7 @@ removeMolecules <- function(object,
 #' object <- example_data$object_UKF269T_diet
 #'
 #' # the function tells you if / how many observations were removed
-#' object <- removeObsNoCounts(object, verbose = TRUE)
+#' object <- removeObsZeroCounts(object, verbose = TRUE)
 #'
 
 removeObs <- function(object,
