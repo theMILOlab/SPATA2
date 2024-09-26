@@ -1630,7 +1630,7 @@ setMethod(
 
           if(length(square_res) > 1 || any(is.na(square_res))){
 
-            stop("Could not deduce square resolution of VisiumHD data set from assay name. Please specify `square_res`.")
+            stop("Could not deduce square resolution of VisiumHD data set. Please specify `square_res`.")
 
           }
 
