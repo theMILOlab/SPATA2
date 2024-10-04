@@ -2024,6 +2024,37 @@ setMethod(
 #'
 #' @export
 #'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' object <- loadExampleObject("UKF313T", process = T, meta = T)
+#'
+#' # show all IDs
+#' getSpatAnnIds(object)
+#'
+#' bcs_necr_area <- getSpatAnnBarcodes(object, ids = "necrotic_area")
+#'
+#' ids_all <- c("necrotic_area", "necrotic_edge", "necrotic_edge2")
+#' bcs_necr_all <- getSpatAnnBarcodes(object, ids = ids_all)
+#'
+#' # plot results as proof of principle
+#' coords_df <- getCoordsDfSA(object, ids = ids_all)
+#'
+#' coords_df$necr_area <- coords_df$barcodes %in% bcs_necr_area
+#' coords_df$necr_all <- coords_df$barcodes %in% bcs_necr_all
+#'
+#' plotSurface(coords_df, "necr_area")
+#' plotSurface(coords_df, "necr_all")
+#'
+#' # work with relative location of observations annotations 'rel_loc'
+#' plotSurface(coords_df, color_by = "id") # closest to which annotation?
+#' plotSurface(coords_df, color_by = "rel_loc")
+#'
+#' dplyr::filter(coords_df, rel_loc == "core") %>%
+#'  plotSurface(object = ., color_by = "id")
+#'
 getSpatAnnBarcodes <- function(object,
                                ids = NULL,
                                tags = NULL,

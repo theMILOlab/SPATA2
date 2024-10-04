@@ -300,8 +300,6 @@ enhanceSpataObject <- function(object,
 }
 
 
-directory_visium <- "C:/Informatics/R-Folder/Packages/SPATA2/vignettes/data/10XVisium/#UKF336_T_P"
-
 remove_stress_and_mt_genes <- function(mtr, verbose = TRUE){
 
   confuns::give_feedback(

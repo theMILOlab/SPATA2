@@ -51,6 +51,6 @@ Data.frame that contains results of gene set enrichment
 analysis.
 }
 \description{
-Extracts results from gene set enrichment analysis
+Extracts results from a gene set enrichment analysis
 in form of a data.frame.
 }

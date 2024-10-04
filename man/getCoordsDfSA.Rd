@@ -120,7 +120,7 @@ parameter. Binwidth is equal to the value of \code{resolution}.}
 \item{\emph{bins_angle}:}{ Factor. The bin the data point was assigned to based on its \emph{angle} value.}
 \item{\emph{rel_loc}:}{ Character. Possible values are \emph{'core'}, if the data point lies inside the spatial annotation,
 \emph{'periphery'} if the data point lies outside of the boundaries of the spatial annotation but inside
-the area denoted via \code{distance} and \emph{outside}, if the data point lies beyond the screening area (it's
+the area denoted via \code{distance} and \emph{outside}, if the data point lies beyond the screening area (its
 distance to the spatial annotation boundaries is bigger than the value denoted in \code{distance}).}
 \item{\emph{id}}{ Character. The ID of the spatial annotation the data points lies closest to. (only relevant
 in case of \code{length(ids) > 1})}
@@ -128,7 +128,7 @@ in case of \code{length(ids) > 1})}
 }
 }
 \note{
-In most scenarious, it does \strong{not} make sense to relate data points from
+In most scenarios, it does \strong{not} make sense to relate data points from
 tissue sections to a spatial annotation that is located on a different
 tissue section. Hence, the default of this function (\code{incl_edge = TRUE}, \code{drop_na = TRUE})
 is set to simply remove these data points from the output. See examples.
@@ -155,7 +155,7 @@ object <-
    )
 
 # default distance = "dte" -> uses distToEdge()
-coords_df <- getCoordsDfSA(object, ids = "hypoxia_ann", binwidth = "1mm")
+coords_df <- getCoordsDfSA(object, ids = "hypoxia_ann", resolution = "1mm")
 
 p1 <-
   plotSurface(object, "HM_HYPOXIA", pt_clrsp = "inferno") +
@@ -267,7 +267,7 @@ p_sc <-
 p_visium + p_sc
 
 # relate cells to spatial annotations
-sc_input_rel <- getCoordsDfSA(object, ids = "inj1", coords_df = sc_input, binwidth = "250um")
+sc_input_rel <- getCoordsDfSA(object, ids = "inj1", coords_df = sc_input, resolution = "250um")
 
 plotSurface(sc_input_rel, color_by = "dist", pt_size = 1) +
   hemispheres

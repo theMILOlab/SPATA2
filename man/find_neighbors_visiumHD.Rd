@@ -4,12 +4,12 @@
 \alias{find_neighbors_visiumHD}
 \title{Find Neighbors in VisiumHD Data}
 \usage{
-find_neighbors_visiumHD(df, verbose = TRUE)
+find_neighbors_visiumHD(coords_df, verbose = TRUE)
 }
 \arguments{
-\item{df}{A dataframe containing barcodes and spatial coordinates.}
-
 \item{verbose}{Logical, whether to display a progress bar (default is TRUE).}
+
+\item{df}{A dataframe containing barcodes and spatial coordinates.}
 }
 \value{
 A dataframe with identified neighbors or NULL if no neighbors are found.

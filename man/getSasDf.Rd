@@ -16,7 +16,7 @@ getSasDf(
   unit = getDefaultUnit(object),
   ro = c(0, 1),
   format = "wide",
-  bcs_exclude = NULL,
+  bcs_exclude = character(0),
   outlier_rm = FALSE,
   verbose = FALSE,
   ...

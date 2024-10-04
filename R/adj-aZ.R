@@ -1089,8 +1089,10 @@ asSeurat <- function(object,
 
 asSingleCellExperiment <- function(object,
                                    assay_name = activeAssay(object),
-                                   bayes_space = FALSE){
+                                   bayes_space = FALSE,
+                                   verbose = NULL){
 
+  hlpr_assign_arguments(object)
   require(SingleCellExperiment)
 
   if(base::isTRUE(bayes_space)){
@@ -1103,7 +1105,7 @@ asSingleCellExperiment <- function(object,
 
     coords_df <- getCoordsDf(object)
 
-    if(any(!c("col", "row" %in% colnames(coords_df)))){
+    if(any(!c("col", "row") %in% colnames(coords_df))){
 
       coords_df$col <- NULL
       coords_df$row <- NULL
