@@ -49,7 +49,7 @@ Remove unwanted \link[=concept_observations]{observations} from the object.
 
 \itemize{
 \item{\code{removeObs()}}{: Allows to specify the observations to remove manually.}
-\item{\code{removeObsNoCounts()}}{: Identifies and removes observations with no molecule counts from the \code{SPATA2} object.}
+\item{\code{removeObsZeroCounts()}}{: Identifies and removes observations with no molecule counts from the \code{SPATA2} object.}
 }
 }
 \details{
@@ -63,7 +63,7 @@ data("example_data")
 object <- example_data$object_UKF269T_diet
 
 # the function tells you if / how many observations were removed
-object <- removeObsNoCounts(object, verbose = TRUE)
+object <- removeObsZeroCounts(object, verbose = TRUE)
 
 }
 \seealso{

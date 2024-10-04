@@ -22,7 +22,7 @@ ggpLayerSpatAnnOutline(
   incl_edge = FALSE,
   merge_edge = FALSE,
   incr_vert = FALSE,
-  expand_outline = 0,
+  expand_outline = NULL,
   xrange = getCoordsRange(object)$x,
   yrange = getCoordsRange(object)$y,
   ...

@@ -44,7 +44,7 @@ with an average log fold change below that threshold are ignored.}
 Depends on input of argument \code{return}:
 
 \itemize{
-\item{ \code{return} = \emph{'data.frame'}: The filtered data.frame of \code{dea_df} with all it's variables.}
+\item{ \code{return} = \emph{'data.frame'}: The filtered data.frame of \code{dea_df} with all its variables.}
 \item{ \code{return} = \emph{'vector'}: A named vector of all genes that remain. Named by the experimental
 group in which they were differently expressed.}
 \item{ \code{return} = \emph{'list}: A list named according to the experimental groups. Every slot of that list is

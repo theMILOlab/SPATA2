@@ -14,6 +14,7 @@ plotSasRidgeplot(
   core = FALSE,
   smooth_span = 0.3,
   unit = getSpatialMethod(object)@unit,
+  bcs_exclude = character(0),
   alpha = 1,
   fill = NULL,
   clrp = NULL,
@@ -59,6 +60,9 @@ an angle span relative to the center of its closest spatial annotation.}
 Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{unit}{Character value. Specifies the desired unit.}
+
+\item{bcs_exclude}{Character value containing the barcodes of observations to be excluded
+from the analysis.}
 
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid

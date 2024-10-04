@@ -15,6 +15,7 @@ plotSasLineplot(
   smooth_span = 0.2,
   smooth_se = TRUE,
   unit = getSpatialMethod(object)@unit,
+  bcs_exclude = character(0),
   clrp = NULL,
   clrp_adjust = NULL,
   line_color = NULL,
@@ -63,6 +64,9 @@ Given to argument \code{span} of \code{stats::loess()}.}
 to the spatial annotation is displayed on the x-axis.
 
 If \code{FALSE}, plots the bin numbers instead.}
+
+\item{bcs_exclude}{Character value containing the barcodes of observations to be excluded
+from the analysis.}
 
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid

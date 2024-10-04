@@ -12,6 +12,7 @@ plotSasBarplot(
   resolution = getCCD(object) * 2,
   unit = getDefaultUnit(object),
   angle_span = c(0, 360),
+  core = FALSE,
   round = 2,
   clrp = NULL,
   clrp_adjust = NULL,

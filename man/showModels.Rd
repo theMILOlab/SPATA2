@@ -17,6 +17,7 @@ showModels(
   pretty_names = FALSE,
   x_axis_arrow = TRUE,
   verbose = NULL,
+  ncol = NULL,
   ...
 )
 }
