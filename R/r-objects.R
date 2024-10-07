@@ -359,7 +359,10 @@ create_image_annotations_descr <- list(
 
 create_segmentation_descr <- list(
 
-  color_by = c("Use SPATA variables to color the surface of the image."),
+  color_by = c(
+    "Use variables to color the surface of the image. Enter the name on the text input. Use this select option for auto-complete options.
+    Empty the text input to only display the image. Use the transparency slider to adjust the visibility of the data points."
+    ),
   linesize = create_image_annotations_descr$linesize,
   pick_action_interaction =
     c(

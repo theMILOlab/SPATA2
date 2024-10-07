@@ -2140,6 +2140,69 @@ intersect_polygons <- function(a, b, strictly = FALSE){
 }
 
 
+#' Check polygon containment and intersection
+#'
+#' @description This set of functions checks whether one polygon is completely inside another, or whether two polygons intersect.
+#'
+#' @param a A data frame or matrix with two columns named \code{x} and \code{y}, representing the vertices of the first polygon.
+#' @param b A data frame or matrix with two columns named \code{x} and \code{y}, representing the vertices of the second polygon.
+#' @param strictly Logical, if \code{TRUE}, the functions perform strict checks (i.e., points on the edges of the polygons are excluded). If \code{FALSE}, points on the edges are considered as inside or intersecting.
+#'
+#' @return
+#' \itemize{
+#'   \item \code{polygon_inside_polygon()}: A logical value \code{TRUE} if all points of polygon \code{a} are inside polygon \code{b}, \code{FALSE} otherwise.
+#'   \item \code{polygon_intersects_polygon()}: A logical value \code{TRUE} if the polygons intersect, \code{FALSE} otherwise.
+#' }
+#'
+#' @details
+#' These functions help in determining spatial relationships between two polygons. They work with data frames or matrices where the columns represent the \code{x} and \code{y} coordinates of the polygon's vertices.
+#'
+#' \itemize{
+#'   \item \code{polygon_inside_polygon()}: Checks whether all points of polygon \code{a} lie inside polygon \code{b}.
+#'   \item \code{polygon_intersects_polygon()}: Checks whether the polygons \code{a} and \code{b} intersect, considering their vertices.
+#'   \item If \code{strictly = TRUE}, the checks exclude points that lie on the edges of the polygons. If \code{strictly = FALSE}, points on the edges are considered inside or intersecting.
+#' }
+#'
+#' @examples
+#' polygon_a <- data.frame(x = c(1, 2, 2, 1), y = c(1, 1, 2, 2))
+#' polygon_b <- data.frame(x = c(0, 3, 3, 0), y = c(0, 0, 3, 3))
+#'
+#' # Check if polygon_a is completely inside polygon_b
+#' polygon_inside_polygon(polygon_a, polygon_b) # TRUE
+#'
+#' # Check if polygon_a intersects with polygon_b
+#' polygon_intersects_polygon(polygon_a, polygon_b) # TRUE
+#'
+#' @export
+polygon_inside_polygon <- function(a, b, strictly = TRUE){
+  res <- sp::point.in.polygon(
+    point.x = a[["x"]],
+    point.y = a[["y"]],
+    pol.x = b[["x"]],
+    pol.y = b[["y"]]
+  )
+
+  if(base::isTRUE(strictly)){
+    out <- res == 1
+  } else {
+    out <- res %in% c(1, 2)
+  }
+
+  all(out)
+}
+
+#' @rdname polygon_inside_polygon
+#' @export
+polygon_intersects_polygon <- function(a, b, strictly = TRUE){
+  x <- intersect_polygons(a = a, b = b, strictly = strictly)
+
+  out <- any(x) & any(!x)
+
+  return(out)
+}
+
+
+
 # is_ ----------------------------------------------------------------------
 
 

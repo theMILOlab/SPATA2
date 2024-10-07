@@ -3794,18 +3794,27 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
                         shiny::fluidRow(
                           shiny::column(
                             width = 3,
-                            align = "left",
                             shinyWidgets::pickerInput(
-                              inputId = "color_by_opt",
+                              inputId = "color_by_aid",
                               label = "Color by:",
                               choices = c(
                                 "Nothing" = "nothing",
-                                "Genes" = "genes",
-                                "Gene sets" = "gene_sets",
-                                "Features" = "features"
+                                "Molecule" = "molecule",
+                                "Signature" = "signature",
+                                "Meta feature" = "feature"
                               ),
                               selected = "nothing"
-                            )  %>% add_helper(content = text$createSegmentation$color_by),
+                            )  %>% add_helper(content = text$createSegmentation$color_by)
+                          ),
+                          shiny::column(
+                            width = 9,
+                            shiny::uiOutput(outputId = "color_by_var")
+                          )
+                        ),
+                        shiny::fluidRow(
+                          shiny::column(
+                            width = 3,
+                            align = "left",
                             shinyWidgets::pickerInput(
                               inputId = "pt_clrp",
                               label = "Color palette:",
@@ -3816,7 +3825,6 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
                           shiny::column(
                             width = 3,
                             align = "left",
-                            shiny::uiOutput(outputId = "color_by_var"),
                             shinyWidgets::pickerInput(
                               inputId = "pt_clrsp",
                               label = "Color spectrum:",
@@ -3829,7 +3837,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
                             align = "left",
                             shiny::sliderInput(
                               inputId = "pt_transparency", label = "Transparency:",
-                              min = 0, max = 1, value = 1, step = 0.01
+                              min = 0, max = 1, value = 0.5, step = 0.01
                             ) %>% add_helper(content = text$createSegmentation$transparency_point),
                             shiny::sliderInput(
                               inputId = "pt_size", label = "Point size:",
@@ -3899,6 +3907,32 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           # reactive values
 
+          color_by_choices <- shiny::reactive({
+
+            shiny::req(input$color_by_aid)
+
+            if(input$color_by_aid == "molecule"){
+
+              choices <- getMolecules(spata_object())
+
+            } else if(input$color_by_aid == "signature"){
+
+              choices <- getSignatureNames(spata_object())
+
+            } else if(input$color_by_aid == "feature"){
+
+              choices <- getFeatureNames(spata_object())
+
+            } else {
+
+              choices <- ""
+
+            }
+
+            return(choices)
+
+          })
+
           drawing <- shiny::reactiveVal(value = FALSE)
 
           encircled_barcodes <- shiny::reactiveVal(value = base::character(0))
@@ -3940,56 +3974,19 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           # render UIs
 
-          output$segm_var_name <- shiny::renderUI({
-
-            if(base::is.character(selected$segm_var)){
-
-              selected_segm_var <- selected$segm_var
-
-            } else {
-
-              selected_segm_var <- NULL
-
-            }
-
-            shinyWidgets::pickerInput(
-              inputId = "segm_var_name",
-              label = NULL,
-              choices = segm_vars(),
-              selected = selected_segm_var
-            )
-
-          })
-
-          output$segm_group <- shiny::renderUI({
-
-            shiny::req(input$segm_var_name)
-
-            choices <-
-              getGroupNames(
-                object = spata_object(),
-                grouping = input$segm_var_name
-              ) %>%
-              stringr::str_subset(pattern = "^unnamed$", negate = TRUE)
-
-            shinyWidgets::pickerInput(
-              inputId = "segm_group",
-              label = NULL,
-              choices = choices,
-              multiple = FALSE,
-              selected = choices[1]
-            )
-
-          })
-
           output$color_by_var <- shiny::renderUI({
 
-            shinyWidgets::pickerInput(
+            choices <- unique(c("", color_by_choices()))
+
+            shiny::selectizeInput(
               inputId = "color_by_var",
               label = "Variable:",
-              choices = color_by_choices(),
-              options = list(`live-search` = TRUE),
-              multiple = F
+              choices = choices,  # Initially empty, no suggestions until typing starts
+              options = list(
+                create = TRUE,        # Allow free text input if no match is found
+                maxOptions = 5,       # Only show up to 5 suggestions
+                placeholder = "Enter a variable name..."
+              )
             )
 
           })
@@ -4042,41 +4039,76 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           })
 
-          # reactive expressions
+          output$segm_group <- shiny::renderUI({
 
-          color_by_choices <- shiny::reactive({
+            shiny::req(input$segm_var_name)
 
-            if(input$color_by_opt == "nothing"){
+            choices <-
+              getGroupNames(
+                object = spata_object(),
+                grouping = input$segm_var_name
+              ) %>%
+              stringr::str_subset(pattern = "^unnamed$", negate = TRUE)
 
-              out <- NULL
-
-            } else if(input$color_by_opt == "genes"){
-
-              out <- getGenes(object)
-
-            } else if(input$color_by_opt == "gene_sets"){
-
-              out <- getGeneSets(object)
-
-            } else if(input$color_by_opt == "features"){
-
-              out <-
-                getFeatureNames(object) %>%
-                base::unname()
-
-            }
-
-            return(out)
+            shinyWidgets::pickerInput(
+              inputId = "segm_group",
+              label = NULL,
+              choices = choices,
+              multiple = FALSE,
+              selected = choices[1]
+            )
 
           })
 
-          color_by <- shiny::reactive({
+          output$segm_var_name <- shiny::renderUI({
 
-            if(base::is.character(input$color_by_var)){
+            if(base::is.character(selected$segm_var)){
 
-              out <- input$color_by_var
+              selected_segm_var <- selected$segm_var
 
             } else {
+
+              selected_segm_var <- NULL
+
+            }
+
+            shinyWidgets::pickerInput(
+              inputId = "segm_var_name",
+              label = NULL,
+              choices = segm_vars(),
+              selected = selected_segm_var
+            )
+
+          })
+
+          # reactive expressions
+
+          color_by <- shiny::reactive({
+
+            shiny::req(length(input$color_by_var)>=1)
+
+            cbv <- input$color_by_var
+
+            if(cbv == "none"){
+
+              out <- NULL
+
+            } else if(cbv %in% variables()){
+
+              out <- cbv
+
+            } else {
+
+              if(cbv != ""){
+
+                confuns::give_feedback(
+                  msg = glue::glue("Variable '{cbv}' is unknown."),
+                  fdb.fn = "warning",
+                  with.time = FALSE
+                )
+
+              }
+
 
               out <- NULL
 
@@ -4173,11 +4205,17 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
             if(base::length(segment()) >= 1){
 
               out <-
-                getBarcodesInPolygonList(
-                  object = object,
-                  polygon_list = segment(),
-                  strictly = TRUE
-                )
+                purrr::map(
+                  .x = segment(),
+                  .f = ~ getBarcodesInPolygonList(
+                    object = object,
+                    polygon_list = .x,
+                    strictly = TRUE
+                    )
+                  ) %>%
+                    purrr::flatten_chr()
+
+
 
             } else {
 
@@ -4369,6 +4407,12 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
               ggplot2::theme(
                 plot.margin = ggplot2::unit(x = mai_vec, units = "inches")
               )
+
+          })
+
+          variables <- shiny::reactive({
+
+            getVariableNames(object = spata_object(), protected = T)
 
           })
 
@@ -4718,13 +4762,87 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
           # new3
           oe <- shiny::observeEvent(input$connect, {
 
-              append_polygon_df(
-                lst = segment(),
-                plg = polygon_df(),
-                allow_intersect = FALSE,
-                with.time = FALSE
-              ) %>%
-              segment()
+            if(length(segment()) == 0){
+
+              new_list <- list(outer1 = list(outer = polygon_df()))
+
+              segment(new_list)
+
+            } else {
+
+              outer_polygons <-
+                purrr::map(
+                  .x = segment(),
+                  .f = ~.x[["outer"]]
+                )
+
+              inner_polygons <-
+                purrr::map(
+                  .x = segment(),
+                  .f = ~ confuns::lselect(.x, -dplyr::starts_with("outer"))
+                ) %>%
+                purrr::flatten()
+
+              # test if polygon intersects with any other polygon
+              intersects <-
+                purrr::map_lgl(
+                  .x = purrr::flatten(segment()),
+                  .f = ~ polygon_intersects_polygon(a = polygon_df(), b = .x)
+                  )
+
+              if(any(intersects)){
+
+                confuns::give_feedback(
+                  msg = "Drawn outline must not intersect with outher outlines.",
+                  fdb.fn = "stop"
+                )
+
+              }
+
+              # test if is inside any inner polygon
+              if(length(inner_polygons) >= 1){
+
+                inside_inner_polygons <-
+                  purrr::map_lgl(
+                    .x = inner_polygons,
+                    .f = ~ polygon_inside_polygon(a = polygon_df(), b = .x)
+                  )
+
+                if(any(inside_inner_polygons)){
+
+                  confuns::give_feedback(
+                    msg = "Drawn outline must not lie inside of holes.",
+                    fdb.fn = "stop"
+                  )
+
+                }
+
+              }
+
+              # test if is inside any outer polygon
+              inside_outer_polygons <-
+                purrr::map_lgl(
+                  .x = outer_polygons,
+                  .f = ~ polygon_inside_polygon(a = polygon_df(), b = .x)
+                )
+
+              all_polys <- segment()
+
+              if(any(inside_outer_polygons)){
+
+                idx <- which(inside_outer_polygons)
+
+                all_polys[[idx]][[paste0("inner", length(all_polys[[idx]])-1)]] <- polygon_df()
+
+              } else {
+
+                all_polys[[paste0("outer", length(all_polys)+1)]] <- list(outer = polygon_df())
+
+              }
+
+              segment(all_polys)
+
+            }
 
             polygon_vals$x <- NULL
             polygon_vals$y <- NULL
@@ -4832,10 +4950,20 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
             }
 
+            if(is.null(color_by())){
+
+              pta <- 0
+
+            } else {
+
+              pta <- pt_alpha()
+
+            }
+
             plotSurfaceBase(
               object = object,
               color_by = color_by(),
-              pt_alpha = pt_alpha(),
+              pt_alpha = pta,
               pt_size = pt_size(),
               pt_clrp = input$pt_clrp,
               pt_clrsp = input$pt_clrsp,
@@ -4852,13 +4980,18 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
             # reactive
             if(!purrr::is_empty(segment())){
 
-              graphics::polypath(
-                x = concatenate_polypaths(segment(), axis = "x"),
-                y = concatenate_polypaths(segment(), axis = "y"),
-                col = col,
-                lwd = input$linesize,
-                lty = "solid"
-              )
+              all_polys <- segment()
+              for(i in seq_along(all_polys)){
+
+                graphics::polypath(
+                  x = concatenate_polypaths(all_polys[[i]], axis = "x"),
+                  y = concatenate_polypaths(all_polys[[i]], axis = "y"),
+                  col = col,
+                  lwd = input$linesize,
+                  lty = "solid"
+                )
+
+              }
 
             }
 
@@ -5048,17 +5181,19 @@ createSpatialTrajectories <- function(object){
 
         color_by <- shiny::reactive({
 
+          shiny::req(input$color_by)
+
           if(base::is.null(input$color_by)){
 
-            NULL
+           out <-  NULL
 
           } else if(input$color_by == "none"){
 
-            NULL
+            out <- NULL
 
           } else {
 
-            input$color_by
+            out <- input$color_by
 
           }
 
