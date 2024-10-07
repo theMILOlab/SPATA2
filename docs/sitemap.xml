@@ -256,6 +256,7 @@
 <url><loc>/reference/exclude.html</loc></url>
 <url><loc>/reference/expandSpatialAnnotation.html</loc></url>
 <url><loc>/reference/export.html</loc></url>
+<url><loc>/reference/extract_row_col_vars_visiumHD.html</loc></url>
 <url><loc>/reference/extract_unit.html</loc></url>
 <url><loc>/reference/extract_value.html</loc></url>
 <url><loc>/reference/extract_var_names.html</loc></url>
@@ -266,6 +267,7 @@
 <url><loc>/reference/findOptimalDistanceSAS.html</loc></url>
 <url><loc>/reference/findSDEGS.html</loc></url>
 <url><loc>/reference/findSeuratClusters.html</loc></url>
+<url><loc>/reference/find_neighbors_visiumHD.html</loc></url>
 <url><loc>/reference/flexible_call_dummy.html</loc></url>
 <url><loc>/reference/flipAll.html</loc></url>
 <url><loc>/reference/flipCoords.html</loc></url>
@@ -602,6 +604,7 @@
 <url><loc>/reference/plot_model_comparison_dotplot.html</loc></url>
 <url><loc>/reference/plot_screening_evaluation.html</loc></url>
 <url><loc>/reference/plot_type_dummy.html</loc></url>
+<url><loc>/reference/polygon_inside_polygon.html</loc></url>
 <url><loc>/reference/prepare_coords_df_visium_hd.html</loc></url>
 <url><loc>/reference/printAutoencoderSummary.html</loc></url>
 <url><loc>/reference/printDefaultInstructions.html</loc></url>

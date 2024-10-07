@@ -2173,6 +2173,7 @@ intersect_polygons <- function(a, b, strictly = FALSE){
 #' # Check if polygon_a intersects with polygon_b
 #' polygon_intersects_polygon(polygon_a, polygon_b) # TRUE
 #'
+#' @keywords internal
 #' @export
 polygon_inside_polygon <- function(a, b, strictly = TRUE){
   res <- sp::point.in.polygon(
