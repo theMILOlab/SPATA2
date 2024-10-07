@@ -255,7 +255,6 @@ append_polygon_df <- function(lst,
 
     }
 
-
     if(base::isFALSE(allow_intersect)){
 
       plg_intersect <-
