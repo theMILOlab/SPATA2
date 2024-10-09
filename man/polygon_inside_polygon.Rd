@@ -45,3 +45,4 @@ polygon_inside_polygon(polygon_a, polygon_b) # TRUE
 polygon_intersects_polygon(polygon_a, polygon_b) # TRUE
 
 }
+\keyword{internal}

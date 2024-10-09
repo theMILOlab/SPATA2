@@ -201,6 +201,39 @@ steps are skipped. Eventually, the remaining spatial annotations are submitted t
 whatever the respective function does.</p>
     </div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="loadExampleObject.html">loadExampleObject</a></span><span class="op">(</span><span class="st">"UKF313T"</span>, process <span class="op">=</span> <span class="cn">T</span>, meta <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># show all IDs</span></span>
+<span><span class="fu"><a href="getSpatAnnIds.html">getSpatAnnIds</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">bcs_necr_area</span> <span class="op">&lt;-</span> <span class="fu">getSpatAnnBarcodes</span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="st">"necrotic_area"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ids_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"necrotic_area"</span>, <span class="st">"necrotic_edge"</span>, <span class="st">"necrotic_edge2"</span><span class="op">)</span></span>
+<span><span class="va">bcs_necr_all</span> <span class="op">&lt;-</span> <span class="fu">getSpatAnnBarcodes</span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="va">ids_all</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot results as proof of principle</span></span>
+<span><span class="va">coords_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="getCoordsDfSA.html">getCoordsDfSA</a></span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="va">ids_all</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">coords_df</span><span class="op">$</span><span class="va">necr_area</span> <span class="op">&lt;-</span> <span class="va">coords_df</span><span class="op">$</span><span class="va">barcodes</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">bcs_necr_area</span></span>
+<span><span class="va">coords_df</span><span class="op">$</span><span class="va">necr_all</span> <span class="op">&lt;-</span> <span class="va">coords_df</span><span class="op">$</span><span class="va">barcodes</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">bcs_necr_all</span></span>
+<span></span>
+<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">coords_df</span>, <span class="st">"necr_area"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">coords_df</span>, <span class="st">"necr_all"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># work with relative location of observations annotations 'rel_loc'</span></span>
+<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">coords_df</span>, color_by <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span> <span class="co"># closest to which annotation?</span></span>
+<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">coords_df</span>, color_by <span class="op">=</span> <span class="st">"rel_loc"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">coords_df</span>, <span class="va">rel_loc</span> <span class="op">==</span> <span class="st">"core"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span> <span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">.</span>, color_by <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span></span>
+<span></span></code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

@@ -133,7 +133,8 @@ SingleCellExperiment. See details for more information."><!-- mathjax --><script
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">asSingleCellExperiment</span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
 <span>  assay_name <span class="op">=</span> <span class="fu"><a href="activateAssay.html">activeAssay</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
-<span>  bayes_space <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  bayes_space <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -156,6 +157,12 @@ as set by <code><a href="activateAssay.html">activateAssay()</a></code>.</p></dd
 <dt id="arg-bayes-space">bayes_space<a class="anchor" aria-label="anchor" href="#arg-bayes-space"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, the function creates an object
 fitted to the requirements for the BayesSpace pipeline.</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, informative messages regarding
+the computational progress will be printed.</p>
+<p>(Warning messages will always be printed.)</p></dd>
 
 </dl></div>
     <div id="value">

@@ -1668,7 +1668,7 @@ getCoordsDfST <- function(object,
   deprecated(...)
 
   confuns::check_one_of(
-    input = ids,
+    input = id,
     against = getSpatialTrajectoryIds(object)
   )
 
