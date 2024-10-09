@@ -1065,7 +1065,6 @@ identifySpatialOutliers <- function(object,
 
     }
 
-
     meta_df$outlier_obs <- meta_df$tissue_section == "tissue_section_0"
 
     # check min_section

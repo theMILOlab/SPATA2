@@ -466,14 +466,13 @@ plot_overview <- function(object,
 
 }
 
-
 #' @keywords internal
 plot_sgs_barplot <- function(coords_df_sgs,
                              grouping,
                              round = 2,
                              clrp = NULL,
                              clrp_adjust = NULL,
-                             position = "fill",
+                             position = "stack",
                              bar_width = bar_width,
                              expand_x = c(0.025, 0),
                              expand_y = c(0.0125, 0),
@@ -482,28 +481,24 @@ plot_sgs_barplot <- function(coords_df_sgs,
 
   coords_df_sgs[["bins_dist"]] <- base::droplevels(coords_df_sgs[["bins_dist"]])
 
-  breaks <-
-    base::levels(coords_df_sgs[["bins_dist"]]) %>%
-    reduce_vec(nth = 7)
-
-  labels <-
-    dplyr::filter(coords_df_sgs, bins_dist %in% {{breaks}}) %>%
-    dplyr::group_by(bins_dist) %>%
-    dplyr::summarise(dist_smrd = base::mean(dist, na.rm = TRUE)) %>%
-    dplyr::arrange(dist_smrd) %>%
-    dplyr::pull(dist_smrd) %>%
-    base::round(digits = round)
+  # Extract numeric x range (midpoint of bin)
+  coords_df_sgs <- coords_df_sgs %>%
+    dplyr::mutate(
+      bin_start = as.numeric(stringr::str_extract(bins_dist, "-?\\d+\\.\\d+")),
+      bin_end = as.numeric(stringr::str_extract(bins_dist, "(?<=,)-?\\d+(\\.\\d+)?")),
+      bin_mid = (bin_start + bin_end) / 2
+    ) 
 
   ggplot2::ggplot(coords_df_sgs) +
     ggplot2::geom_bar(
-      mapping = ggplot2::aes(x = bins_dist, fill = .data[[grouping]]),
+      mapping = ggplot2::aes(x = bin_mid, fill = .data[[grouping]]),
       position = position,
       width = bar_width
     ) +
-    ggplot2::scale_x_discrete(breaks = breaks, labels = labels, expand = expand_x) +
+    ggplot2::scale_x_continuous(
+      expand = expand_x,
+    ) +
     ggplot2::scale_y_continuous(
-      breaks = c(0, 0.25, 0.5, 0.75, 1),
-      labels = stringr::str_c(c(0, 25, 50, 75, 100), "%"),
       expand = expand_y
     ) +
     confuns::scale_color_add_on(
@@ -515,13 +510,48 @@ plot_sgs_barplot <- function(coords_df_sgs,
     ggplot2::theme_minimal() +
     ggplot2::theme(
       axis.ticks = ggplot2::element_line(),
-      axis.line.x = trajectory.line.x,
+      axis.line.x = ggplot2::element_line(),
       axis.line.y = ggplot2::element_line(),
       panel.grid = ggplot2::element_blank()
     )
-
 }
 
+#' @keywords internal
+plot_sgs_densityplot <- function(coords_df_sgs,
+                               grouping,
+                               clrp = NULL,
+                               clrp_adjust = NULL,
+                               position = "fill",
+                               expand_x = c(0.025, 0),
+                               expand_y = c(0.0125, 0),
+                               #geom_density_bw = NULL,
+                               geom_density_adjust = 1/5,
+                               ...){
+
+  p <- ggplot(coords_df_sgs, aes(dist, after_stat(count), fill = .data[[grouping]])) +
+    geom_density(position = position, adjust = geom_density_adjust, color = NA)  +  
+    ggplot2::scale_x_continuous(
+      expand = expand_x,
+    ) +
+    ggplot2::scale_y_continuous(
+      expand = expand_y
+    ) +
+    confuns::scale_color_add_on(
+      aes = "fill",
+      variable = coords_df_sgs[[grouping]],
+      clrp = clrp,
+      clrp.adjust = clrp_adjust
+    ) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.ticks = ggplot2::element_line(),
+      axis.line.x = ggplot2::element_line(),
+      axis.line.y = ggplot2::element_line(),
+      panel.grid = ggplot2::element_blank()
+    )
+    
+  return(p)
+}
 
 #' @keywords internal
 plot_sgs_heatmap <- function(sgs_df,

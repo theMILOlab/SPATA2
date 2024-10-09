@@ -14,7 +14,7 @@
 #' the **top** percentile of colors to identify as background based on the frequency
 #' they appear in the image. This can improve identifying tissue pixels in images
 #' where the edge between tissue and background is continuous rather than sharp
-#' and thus difficult to identify using computational approaches. It follows the
+#' and thus difficult txo identify using computational approaches. It follows the
 #' hypothesis that the background consists of many pixels of equal color while
 #' the tissue consists of pixels of heterogenous colors.
 #'
