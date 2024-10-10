@@ -13,7 +13,7 @@ ggpLayerHorizonSAS(
   line_size = 1.5,
   line_type = "solid",
   incl_edge = TRUE,
-  incr_vert = TRUE,
+  incr_vert = FALSE,
   verbose = NULL,
   ...
 )

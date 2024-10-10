@@ -674,29 +674,30 @@ plotSasBarplot <- function(object,
 #'
 #' @inherit plotSasLineplot params return
 #' @inherit argument_dummy params
-#' @param geom_density_adjust Numeric value. Adjusts the smoothing bandwidth of the density plot. For example, adjust = 1/2 means use half of the default bandwidth.
+#' @param geom_density_adjust Numeric value. Adjusts the smoothing bandwidth of the density plot.
+#' For example, adjust = 1/2 means use half of the default bandwidth.
 #'
 #' @inheritSection section_dummy Distance measures
-#' 
+#'
 #' @export
 #'
 plotSasDensityplot <- function(object,
-                           grouping,
-                           id = idSA(object),
-                           distance = distToEdge(object, id),
-                           resolution = getCCD(object)*2,
-                           unit = getDefaultUnit(object),
-                           angle_span = c(0, 360),
-                           core = FALSE,
-                           clrp = NULL,
-                           clrp_adjust = NULL,
-                           position = "fill",
-                           expand_x = c(0.025, 0),
-                           expand_y = c(0.0125, 0),
-                           verbose = NULL,
-                           geom_density_bw = NULL,
-                           geom_density_adjust = 1/5,
-                           ...){
+                               grouping,
+                               id = idSA(object),
+                               distance = distToEdge(object, id),
+                               resolution = getCCD(object)*2,
+                               unit = getDefaultUnit(object),
+                               angle_span = c(0, 360),
+                               core = FALSE,
+                               clrp = NULL,
+                               clrp_adjust = NULL,
+                               position = "fill",
+                               expand_x = c(0.025, 0),
+                               expand_y = c(0.0125, 0),
+                               verbose = NULL,
+                               geom_density_bw = NULL,
+                               geom_density_adjust = 1/5,
+                               ...){
 
   hlpr_assign_arguments(object)
   deprecated(...)
@@ -722,7 +723,7 @@ plotSasDensityplot <- function(object,
       clrp = clrp,
       clrp_adjust = clrp_adjust,
       position = position,
-      expand_x = expand_x, 
+      expand_x = expand_x,
       expand_y = expand_y,
       geom_density_bw = geom_density_bw,
       geom_density_adjust = geom_density_adjust

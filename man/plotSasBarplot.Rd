@@ -17,7 +17,7 @@ plotSasBarplot(
   clrp = NULL,
   clrp_adjust = NULL,
   position = "fill",
-  bar_width = 0.9,
+  bar_width = 0.025,
   expand_x = c(0.025, 0),
   expand_y = c(0.0125, 0),
   verbose = NULL,

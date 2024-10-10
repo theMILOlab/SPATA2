@@ -740,8 +740,6 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
                 ) %>%
                 purrr::flatten_chr()
 
-
-
             } else {
 
               out <- NULL
@@ -1323,6 +1321,17 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           # new3
           oe <- shiny::observeEvent(input$connect, {
+
+            if(length(polygon_vals$x) <= 2){
+
+              confuns::give_feedback(
+                msg = "Can not connect. Need at least three vertices.",
+                verbose = TRUE,
+                fdb.fn = "stop",
+                with.time = FALSE
+              )
+
+            }
 
             if(length(segment()) == 0){
 
