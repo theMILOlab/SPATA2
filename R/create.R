@@ -3028,6 +3028,14 @@ createSpatialData <- function(sample,
 
   }
 
+  # normalize pixel intensities if too low; solves issue that images sometimes appear just all black
+  img <- object@images[[hist_img_ref@name]]@image
+  if (max(img) < 0.1) {
+      img <- img - min(img)
+      img <- img / max(img)
+  }
+  object@images[[hist_img_ref@name]]@image <- img
+
   return(object)
 
 }
