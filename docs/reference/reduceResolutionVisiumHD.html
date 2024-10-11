@@ -19,7 +19,7 @@ object with the reduced resolution."><!-- mathjax --><script src="https://cdnjs.
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -153,9 +153,9 @@ objects of classes for which a method has been defined.</p></dd>
 
 
 <dt id="arg-res-new">res_new<a class="anchor" aria-label="anchor" href="#arg-res-new"></a></dt>
-<dd><p>The new, lower spatial resolution in micrometers (um). It must
-be greater than the current resolution and divisible by the current resolution.
-Provide as <a href="concept_distance_measure.html">distance measure</a>.</p></dd>
+<dd><p><a href="concept_distance_measure.html">Distance measure</a>.
+The new spatial resolution in micrometers (um). It must
+be lower than the current resolution and divisible by the current resolution.</p></dd>
 
 
 <dt id="arg-new-sample-name">new_sample_name<a class="anchor" aria-label="anchor" href="#arg-new-sample-name"></a></dt>
@@ -196,7 +196,7 @@ the computational progress will be printed.</p>
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p>The <code>reduceResolutionVisuiumHD()</code> function reduces the spatial resolution of a Visium HD
+    <p>The <code>reduceResolutionVisiumHD()</code> function reduces the spatial resolution of a Visium HD
 dataset by aggregating neighboring spots into larger units and recalculating the count
 matrix for the new resolution. The process involves the following key steps:</p>
 <ul><li><p><strong>Resolution check:</strong> Ensures the new resolution (<code>res_new</code>) is greater
@@ -211,7 +211,7 @@ groups the data by new barcodes, summarizes the spot counts, and calculates the
 theoretical versus actual number of spots in each aggregated unit.</p>
 <p>(Since tissue is rarely a perfect rectangle, the new grid of squares often
 contains squares that, if located at the edge of the tissue, contain aggregated
-data of the fewer resolution squares if located on the tissue edge. This
+data of the fewer resolution squares than if not located on the tissue edge. This
 information is stored in the meta variables <em>n_square_exp</em>, <em>n_square_actual</em> and <em>n_square_perc</em>.
 See examples.)</p></li>
 <li><p><strong>Count matrix summarization:</strong> The count matrix
@@ -219,81 +219,14 @@ is recalculated by <strong>summing</strong> up the counts of each new square. Th
 optimized with parallel processing if multiple workers are specified.</p></li>
 <li><p><strong>SPATA2 object creation:</strong> A new <code>SPATA2</code> object is generated
 with the reduced resolution data, including updated spatial data and metadata.</p></li>
-</ul></div>
+</ul><p>The assignment of barcodes under high resolution and new barcodes under which
+they have been aggrated is stored in a list in slot <code>object@obj_info$reduceResolutionVisiumHD$aggregated_barcodes</code>.</p>
+    </div>
     <div id="note">
     <h2>Note</h2>
     <p>Only works on <code>SPATA2</code> object for <a href="SpatialMethod-class.html">platform</a> <code><a href="VisiumHD.html">VisiumHD</a></code>.</p>
     </div>
 
-    <div id="ref-examples">
-    <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SPATAData</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># download example object</span></span>
-<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="downloadSpataObject.html">downloadSpataObject</a></span><span class="op">(</span><span class="st">"HumanPancreasHD"</span>, update <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># create the grid layer for visualization</span></span>
-<span><span class="va">grid_layer</span> <span class="op">&lt;-</span> <span class="fu"><a href="ggpLayerGridVisiumHD.html">ggpLayerGridVisiumHD</a></span><span class="op">(</span><span class="va">object</span>, res <span class="op">=</span> <span class="st">"32um"</span>, line_size <span class="op">=</span> <span class="fl">0.1</span>, line_alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">xrange</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"9.25mm"</span>, <span class="st">"9.75mm"</span><span class="op">)</span></span>
-<span><span class="va">yrange</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"5.5mm"</span>, <span class="st">"6mm"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, unit <span class="op">=</span> <span class="st">"mm"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="va">grid_layer</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="ggpLayerRect.html">ggpLayerRect</a></span><span class="op">(</span><span class="va">object</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span>, unit <span class="op">=</span> <span class="st">"mm"</span>, pt_size <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="va">grid_layer</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="ggpLayerScaleBarSI.html">ggpLayerScaleBarSI</a></span><span class="op">(</span><span class="va">object</span>, sb_dist <span class="op">=</span> <span class="st">"32um"</span>, sb_pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"9.7mm"</span>, <span class="st">"5.75mm"</span><span class="op">)</span>, text_nudge_y <span class="op">=</span> <span class="op">-</span><span class="fl">7.5</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># identify top 100 genes for the sake of this example</span></span>
-<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="identifyVariableMolecules.html">identifyVariableMolecules</a></span><span class="op">(</span><span class="va">object</span>, method <span class="op">=</span> <span class="st">"vst"</span>, n_mol <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
-<span><span class="va">genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="getVariableMolecules.html">getVariableMolecules</a></span><span class="op">(</span><span class="va">object</span>, method <span class="op">=</span> <span class="st">"vst"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># reduce resolution</span></span>
-<span><span class="va">object_red</span> <span class="op">&lt;-</span> <span class="fu">reduceResolutionVisiumHD</span><span class="op">(</span><span class="va">object</span>, res_new <span class="op">=</span> <span class="st">"32um"</span>, genes <span class="op">=</span> <span class="va">genes</span>, workers <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># show new position of aggregated squares</span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_red</span>, unit <span class="op">=</span> <span class="st">"mm"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="va">grid_layer</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="ggpLayerRect.html">ggpLayerRect</a></span><span class="op">(</span><span class="va">object</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_red</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span>, unit <span class="op">=</span> <span class="st">"mm"</span>, pt_size <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="va">grid_layer</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="ggpLayerScaleBarSI.html">ggpLayerScaleBarSI</a></span><span class="op">(</span><span class="va">object</span>, sb_dist <span class="op">=</span> <span class="st">"32um"</span>, sb_pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"9.7mm"</span>, <span class="st">"5.75mm"</span><span class="op">)</span>, text_nudge_y <span class="op">=</span> <span class="op">-</span><span class="fl">7.5</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># show the percentage of squares</span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_red</span>, color_by <span class="op">=</span> <span class="st">"square_perc"</span>, unit <span class="op">=</span> <span class="st">"mm"</span>, limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">100</span><span class="op">)</span>, oob <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/oob.html" class="external-link">squish</a></span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="ggpLayerRect.html">ggpLayerRect</a></span><span class="op">(</span><span class="va">object</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># note how several new squares do not contain 4 but 3 to 1 spots due to the tissue edge</span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span>, unit <span class="op">=</span> <span class="st">"mm"</span>, pt_size <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="va">grid_layer</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="ggpLayerScaleBarSI.html">ggpLayerScaleBarSI</a></span><span class="op">(</span><span class="va">object</span>, sb_dist <span class="op">=</span> <span class="st">"32um"</span>, sb_pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"9.7mm"</span>, <span class="st">"5.75mm"</span><span class="op">)</span>, text_nudge_y <span class="op">=</span> <span class="op">-</span><span class="fl">7</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># visualize with 'square_perc' and compare</span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_red</span>, color_by <span class="op">=</span> <span class="st">"square_perc"</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span>, unit <span class="op">=</span> <span class="st">"mm"</span>, pt_size <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="va">grid_layer</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="ggpLayerScaleBarSI.html">ggpLayerScaleBarSI</a></span><span class="op">(</span><span class="va">object</span>, sb_dist <span class="op">=</span> <span class="st">"32um"</span>, sb_pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"9.7mm"</span>, <span class="st">"5.75mm"</span><span class="op">)</span>, text_nudge_y <span class="op">=</span> <span class="op">-</span><span class="fl">7</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># filter if you want to</span></span>
-<span><span class="va">object_red_flt</span> <span class="op">&lt;-</span> <span class="fu"><a href="filterSpataObject.html">filterSpataObject</a></span><span class="op">(</span><span class="va">object_red</span>, <span class="va">square_perc</span> <span class="op">==</span> <span class="fl">100</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_red_flt</span>, color_by <span class="op">=</span> <span class="st">"square_perc"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># not filtered</span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_red</span>, color_by <span class="op">=</span> <span class="st">"square_perc"</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span>, unit <span class="op">=</span> <span class="st">"mm"</span>, pt_size <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="va">grid_layer</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>subtitle <span class="op">=</span> <span class="st">"Not filtered"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># filtered</span></span>
-<span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_red_flt</span>, color_by <span class="op">=</span> <span class="st">"square_perc"</span>, xrange <span class="op">=</span> <span class="va">xrange</span>, yrange <span class="op">=</span> <span class="va">yrange</span>, unit <span class="op">=</span> <span class="st">"mm"</span>, pt_size <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="va">grid_layer</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>subtitle <span class="op">=</span> <span class="st">"Filtered"</span><span class="op">)</span></span>
-<span><span class="op">}</span> <span class="co"># }</span></span></code></pre></div>
-    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

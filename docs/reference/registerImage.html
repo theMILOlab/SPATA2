@@ -21,7 +21,7 @@ Do not confuse with loadImage() and unloadImage()."><!-- mathjax --><script src=
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -145,6 +145,7 @@ that are no longer needed.</p>
 <span>  img <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  unload <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  resize_fct <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  process <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -157,6 +158,7 @@ that are no longer needed.</p>
 <span>  img <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  unload <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  resize_fct <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  process <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -195,6 +197,11 @@ the active nor the reference image.</p></dd>
 
 <dt id="arg-dir">dir<a class="anchor" aria-label="anchor" href="#arg-dir"></a></dt>
 <dd><p>Character value. The directory from where to retrieve the image.</p></dd>
+
+
+<dt id="arg-resize-fct">resize_fct<a class="anchor" aria-label="anchor" href="#arg-resize-fct"></a></dt>
+<dd><p>Numeric value or <code>NULL</code>. If numeric, used to adjust the
+resolution in which the image is dealt with via <code><a href="resizeImage.html">resizeImage()</a></code>.</p></dd>
 
 
 <dt id="arg-overwrite">overwrite<a class="anchor" aria-label="anchor" href="#arg-overwrite"></a></dt>

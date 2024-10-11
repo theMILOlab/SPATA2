@@ -18,7 +18,7 @@ a spatial annotation using lineplots."><!-- mathjax --><script src="https://cdnj
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -141,6 +141,7 @@ a spatial annotation using lineplots.</p>
 <span>  smooth_span <span class="op">=</span> <span class="fl">0.2</span>,</span>
 <span>  smooth_se <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  unit <span class="op">=</span> <span class="fu"><a href="getSpatialMethod.html">getSpatialMethod</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">@</span><span class="va">unit</span>,</span>
+<span>  bcs_exclude <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  clrp <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  clrp_adjust <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  line_color <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -207,6 +208,11 @@ Given to argument <code>span</code> of <code><a href="https://rdrr.io/r/stats/lo
 <dd><p>Character value. The unit in which the distance
 to the spatial annotation is displayed on the x-axis.</p>
 <p>If <code>FALSE</code>, plots the bin numbers instead.</p></dd>
+
+
+<dt id="arg-bcs-exclude">bcs_exclude<a class="anchor" aria-label="anchor" href="#arg-bcs-exclude"></a></dt>
+<dd><p>Character value containing the barcodes of observations to be excluded
+from the analysis.</p></dd>
 
 
 <dt id="arg-clrp">clrp<a class="anchor" aria-label="anchor" href="#arg-clrp"></a></dt>

@@ -242,7 +242,7 @@ filter_by_thresholds <- function(df,
 #' @return Depends on input of argument \code{return}:
 #'
 #'  \itemize{
-#'    \item{ \code{return} = \emph{'data.frame'}: The filtered data.frame of \code{dea_df} with all it's variables.}
+#'    \item{ \code{return} = \emph{'data.frame'}: The filtered data.frame of \code{dea_df} with all its variables.}
 #'    \item{ \code{return} = \emph{'vector'}: A named vector of all genes that remain. Named by the experimental
 #'    group in which they were differently expressed.}
 #'    \item{ \code{return} = \emph{'list}: A list named according to the experimental groups. Every slot of that list is
@@ -503,6 +503,85 @@ find_elbow_point <- function(df){
 }
 
 
+
+
+#' Find Neighbors in VisiumHD Data
+#'
+#' This function identifies the closest neighbors for each barcode based on spatial coordinates.
+#'
+#' @param df A dataframe containing barcodes and spatial coordinates.
+#' @param verbose Logical, whether to display a progress bar (default is TRUE).
+#'
+#' @return A dataframe with identified neighbors or NULL if no neighbors are found.
+#' @keywords internal
+#' @export
+find_neighbors_visiumHD <- function(coords_df, verbose = TRUE) {
+
+  pb <- confuns::create_progress_bar(nrow(coords_df))
+
+  # Iterate through each row of the dataframe
+  for (i in 1:nrow(coords_df)) {
+
+    if(isTRUE(verbose)){
+
+      pb$tick()
+
+    }
+
+    current_row <- coords_df[i, ]
+
+    bc_origin <- current_row$barcodes
+    bc_destination <- coords_df$barcodes
+
+    spots_compare <-
+      tidyr::expand_grid(bc_origin, bc_destination) %>%
+      dplyr::left_join(
+        x = .,
+        y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y),
+        by = "bc_origin"
+      ) %>%
+      dplyr::left_join(
+        x = .,
+        y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y),
+        by = "bc_destination"
+      ) %>%
+      dplyr::filter(bc_origin != bc_destination) %>%
+      dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2)) %>%
+      dplyr::filter(distance == min(distance)) %>%
+      extract_row_col_vars_visiumHD(
+        name_bcs = "bc_origin",
+        name_col = "col_o",
+        name_row = "row_o"
+      ) %>%
+      extract_row_col_vars_visiumHD(
+        name_bcs = "bc_destination",
+        name_col = "col_d",
+        name_row = "row_d"
+      ) %>%
+      dplyr::mutate(
+        is_neighbor =
+          (col_o == col_d + 1 & row_o == row_d) |  # right neighbor
+          (col_o == col_d - 1 & row_o == row_d) |  # left neighbor
+          (col_o == col_d & row_o == row_d + 1) |
+          (col_o == col_d & row_o == row_d - 1)
+      )
+
+    if(spots_compare$is_neighbor){
+
+      out <- spots_compare
+
+      break()
+
+    }
+
+    warning("No neighbors found. Returning NULL.")
+    out <- NULL
+
+  }
+
+  return(out)
+
+}
 
 
 #' @title Spatial Differential Gene Expression

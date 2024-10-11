@@ -20,7 +20,8 @@ runAutoencoderDenoising(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{activation}{Character value. Denotes the activation function. (defaults to \emph{'relu'})}
 
@@ -43,6 +44,11 @@ See documentation for \code{plotAutoencoderResults()} for more information.}
 
 \item{set_as_active}{Logical. If set to TRUE the denoised matrix is set as the active matrix via
 \code{setActiveExpressionMatrix()}.}
+
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 A spata-object containing the denoised expression matrix in slot @data$denoised. This matrix

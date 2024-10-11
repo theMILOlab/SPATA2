@@ -4,7 +4,7 @@
 \alias{containsMethod}
 \alias{containsMethod,SPATA2-method}
 \alias{containsMethod,SpatialData-method}
-\title{Check availability of specific methods}
+\title{Check availability of specific spatial methods (platforms)}
 \usage{
 containsMethod(object, ...)
 
@@ -18,15 +18,15 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{method_name}{Character vector. Names of methods to check.}
+\item{method_name}{Character vector. The names of platforms to check.}
 
 \item{error}{Logical. If \code{TRUE} and the input is invalid the
 function throws an error.}
 }
 \value{
-Logical value.
+Logical value. TRUE if any of \code{method_name} is the name of the platform.
 }
 \description{
 Tests if the input object is associated with
-specific methods.
+specific \link[=spatial_methods]{spatial methods / platforms}.
 }

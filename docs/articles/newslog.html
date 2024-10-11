@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -157,6 +157,33 @@ run:</p>
 <code class="sourceCode R"><span></span>
 <span><span class="co"># the output is an object fit for the version of SPATA2 you have installed</span></span>
 <span><span class="va">my_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/updateSpataObject.html">updateSpataObject</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">my_object</span><span class="op">)</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="spata2-v3-1-0">SPATA2 v3.1.0<a class="anchor" aria-label="anchor" href="#spata2-v3-1-0"></a>
+</h2>
+<p>SPATA2 v3.1.0 comes with the following major changes and fixes.</p>
+<p>Changes:</p>
+<ul>
+<li>Fixes <code><a href="../reference/spatialTrajectoryScreening.html">spatialTrajectoryScreening()</a></code> in case of missing
+capture areas.</li>
+<li>Improved precision in computing the capture area of Visium
+Experiments.</li>
+<li>Fixes bad polygon display in case of
+<code><a href="../reference/ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline()</a></code> with
+<code>expand_outline = 0</code>.</li>
+<li>Improved options and comfort in
+<code><a href="../reference/createSpatialSegmentation.html">createSpatialSegmentation()</a></code>.</li>
+</ul>
+<p>Additions:</p>
+<ul>
+<li>
+<code><a href="../reference/reduceResolutionVisiumHD.html">reduceResolutionVisiumHD()</a></code> to create SPATA2 objects
+with individual VisiumHD resolution beyond the standard (16um, 8um and
+2um).</li>
+<li>
+<code><a href="../reference/resizeImage.html">resizeImage()</a></code> for memory friendly handling of large
+images.</li>
+</ul>
+</div>
 <div class="section level2">
 <h2 id="spata2-v2-0-4---v3-0-0">SPATA2 v2.0.4 -&gt; v3.0.0<a class="anchor" aria-label="anchor" href="#spata2-v2-0-4---v3-0-0"></a>
 </h2>
@@ -283,9 +310,9 @@ are deprecated.</p>
 <span></span>
 <span><span class="co"># activate different image</span></span>
 <span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/activateImage.html">activateImage</a></span><span class="op">(</span><span class="va">object</span>, img_name <span class="op">=</span> <span class="st">"hires"</span><span class="op">)</span></span>
-<span><span class="co">## 14:22:01 Unloading image lowres.</span></span>
-<span><span class="co">## 14:22:01 Loading image hires.</span></span>
-<span><span class="co">## 14:22:02 Active image: 'hires'.</span></span>
+<span><span class="co">## 03:24:51 No image directory found and/or the directory does not exist on this device. Did not unload image {object@name}.</span></span>
+<span><span class="co">## 03:24:51 Loading image hires.</span></span>
+<span><span class="co">## 03:24:51 Active image: 'hires'.</span></span>
 <span></span>
 <span><span class="co"># currently active image has changed to "hires"</span></span>
 <span><span class="fu"><a href="../reference/activateImage.html">activeImage</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>

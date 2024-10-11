@@ -65,7 +65,7 @@ family.
 }
 \description{
 Visualizes the distances at which expression of a numeric
-feature is estimated with a certain \link[=spatialAnnotationScreening]{SAS} set up.
+feature is estimated with a certain \link[=spatialAnnotationScreening]{SAS} set up. Plotted as concentric circles around the annotation
 }
 \examples{
 

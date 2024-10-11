@@ -253,7 +253,7 @@ idSA <- function(object, verbose = NULL){
 
   } else if(base::length(id) > 1){
 
-    stop("More than one spatial annotation found in this object. Please specify argument `id`.")
+    stop("More than one spatial annotation found in this object. Please specify argument `ids`.")
 
   }
 
@@ -1064,7 +1064,6 @@ identifySpatialOutliers <- function(object,
       stop("Need output of `identifyTissueSection(object, method = 'obs').`")
 
     }
-
 
     meta_df$outlier_obs <- meta_df$tissue_section == "tissue_section_0"
 
@@ -1979,64 +1978,43 @@ increase_n_data_points <- function(coords_df, fct = 10, cvars = c("x", "y")){
 #' @keywords internal
 increase_polygon_vertices <- function(polygon_df, avg_dist, skip = FALSE) {
 
-  if(!base::isTRUE(skip)){
+  if (!base::isTRUE(skip)) {
 
     polygon_df <- base::as.data.frame(polygon_df)
 
-    # ensure the polygon is closed (first and last point are the same)
-    if(!base::identical(polygon_df[1, ], polygon_df[nrow(polygon_df), ])){
-
+    # Ensure the polygon is closed (first and last point are the same)
+    if (!base::identical(polygon_df[1, ], polygon_df[nrow(polygon_df), ])) {
       polygon_df <- base::rbind(polygon_df, polygon_df[1, ])
-
     }
 
-    # initialize a new data frame to store interpolated vertices
-    interpolated_df <- data.frame(x = numeric(0), y = numeric(0))
+    # Calculate differences between consecutive points
+    diffs <- base::diff(as.matrix(polygon_df))
 
-    # loop through each pair of consecutive vertices
-    for(i in 1:(base::nrow(polygon_df) - 1)){
+    # Calculate distances between consecutive points
+    dist_between_vertices <- sqrt(rowSums(diffs^2))
 
-      x1 <- polygon_df[i, "x"]
-      y1 <- polygon_df[i, "y"]
-      x2 <- polygon_df[i + 1, "x"]
-      y2 <- polygon_df[i + 1, "y"]
+    # Calculate the number of points to interpolate between each pair of points
+    num_interpolated <- base::pmax(1, floor(dist_between_vertices / avg_dist))
 
-      # calculate the distance between the consecutive vertices
-      dist_between_vertices <- base::sqrt((x2 - x1)^2 + (y2 - y1)^2)
+    # Generate sequences for interpolation
+    interpolated_points <- lapply(1:(nrow(polygon_df) - 1), function(i) {
+      n <- num_interpolated[i]
+      x_seq <- seq(polygon_df[i, "x"], polygon_df[i + 1, "x"], length.out = n + 1)[-1]
+      y_seq <- seq(polygon_df[i, "y"], polygon_df[i + 1, "y"], length.out = n + 1)[-1]
+      data.frame(x = x_seq, y = y_seq)
+    })
 
-      # calculate the number of interpolated vertices needed
-      num_interpolated <- base::max(1, floor(dist_between_vertices / avg_dist))
+    # Combine all interpolated points into a single data frame
+    interpolated_df <- do.call(rbind, interpolated_points)
 
-      # calculate the step size for interpolation
-      step_x <- (x2 - x1) / (num_interpolated + 1)
-      step_y <- (y2 - y1) / (num_interpolated + 1)
+    # Add the first point to close the polygon
+    interpolated_df <- rbind(interpolated_df, interpolated_df[1, ])
 
-      # add the original vertex to the interpolated data frame
-      interpolated_df <- base::rbind(interpolated_df, data.frame(x = x1, y = y1))
-
-      # interpolate new vertices between the consecutive vertices
-      for (j in 1:num_interpolated) {
-
-        new_x <- x1 + j * step_x
-        new_y <- y1 + j * step_y
-
-        interpolated_df <- base::rbind(interpolated_df, data.frame(x = new_x, y = new_y))
-
-      }
-    }
-
-    # combine the original and interpolated vertices
-    polygon_df <-
-      dplyr::add_row(polygon_df, interpolated_df) %>%
-      tibble::as_tibble()
-
+    return(tibble::as_tibble(interpolated_df))
   }
 
-
-  return(polygon_df)
-
+  return(tibble::as_tibble(polygon_df))
 }
-
 
 #' @keywords internal
 infer_gradient <- function(loess_model,
@@ -2159,6 +2137,70 @@ intersect_polygons <- function(a, b, strictly = FALSE){
   return(out)
 
 }
+
+
+#' Check polygon containment and intersection
+#'
+#' @description This set of functions checks whether one polygon is completely inside another, or whether two polygons intersect.
+#'
+#' @param a A data frame or matrix with two columns named \code{x} and \code{y}, representing the vertices of the first polygon.
+#' @param b A data frame or matrix with two columns named \code{x} and \code{y}, representing the vertices of the second polygon.
+#' @param strictly Logical, if \code{TRUE}, the functions perform strict checks (i.e., points on the edges of the polygons are excluded). If \code{FALSE}, points on the edges are considered as inside or intersecting.
+#'
+#' @return
+#' \itemize{
+#'   \item \code{polygon_inside_polygon()}: A logical value \code{TRUE} if all points of polygon \code{a} are inside polygon \code{b}, \code{FALSE} otherwise.
+#'   \item \code{polygon_intersects_polygon()}: A logical value \code{TRUE} if the polygons intersect, \code{FALSE} otherwise.
+#' }
+#'
+#' @details
+#' These functions help in determining spatial relationships between two polygons. They work with data frames or matrices where the columns represent the \code{x} and \code{y} coordinates of the polygon's vertices.
+#'
+#' \itemize{
+#'   \item \code{polygon_inside_polygon()}: Checks whether all points of polygon \code{a} lie inside polygon \code{b}.
+#'   \item \code{polygon_intersects_polygon()}: Checks whether the polygons \code{a} and \code{b} intersect, considering their vertices.
+#'   \item If \code{strictly = TRUE}, the checks exclude points that lie on the edges of the polygons. If \code{strictly = FALSE}, points on the edges are considered inside or intersecting.
+#' }
+#'
+#' @examples
+#' polygon_a <- data.frame(x = c(1, 2, 2, 1), y = c(1, 1, 2, 2))
+#' polygon_b <- data.frame(x = c(0, 3, 3, 0), y = c(0, 0, 3, 3))
+#'
+#' # Check if polygon_a is completely inside polygon_b
+#' polygon_inside_polygon(polygon_a, polygon_b) # TRUE
+#'
+#' # Check if polygon_a intersects with polygon_b
+#' polygon_intersects_polygon(polygon_a, polygon_b) # TRUE
+#'
+#' @keywords internal
+#' @export
+polygon_inside_polygon <- function(a, b, strictly = TRUE){
+  res <- sp::point.in.polygon(
+    point.x = a[["x"]],
+    point.y = a[["y"]],
+    pol.x = b[["x"]],
+    pol.y = b[["y"]]
+  )
+
+  if(base::isTRUE(strictly)){
+    out <- res == 1
+  } else {
+    out <- res %in% c(1, 2)
+  }
+
+  all(out)
+}
+
+#' @rdname polygon_inside_polygon
+#' @export
+polygon_intersects_polygon <- function(a, b, strictly = TRUE){
+  x <- intersect_polygons(a = a, b = b, strictly = strictly)
+
+  out <- any(x) & any(!x)
+
+  return(out)
+}
+
 
 
 # is_ ----------------------------------------------------------------------
@@ -2777,6 +2819,39 @@ isNumericVariable <- function(object, variable){
 
 
 # isS ---------------------------------------------------------------------
+
+#' @title General test for SPATA2 object
+#'
+#' @description
+#' Logical test of an object being interpretable as a [`SPATA2`] object.
+#'
+#' @inherit argument_dummy params
+#' @param warn,error Logical values, allowing the function to throw warnings
+#' or errors. If `FALSE`, the default, only a logical value is returned.
+#'
+#' @return Logical value.
+#'
+#' @export
+#'
+isSPATA2 <- function(object, warn = TRUE, error = FALSE){
+
+  out <- all(class(object) == "SPATA2")
+
+  if(isTRUE(out) & isTRUE(warn)){
+
+    check_object(object)
+
+  }
+
+  if(isFALSE(out) & isTRUE(error)){
+
+    stop("Input object is not of class `SPATA2`.")
+
+  }
+
+  return(out)
+
+}
 
 #' @export
 #' @keywords internal

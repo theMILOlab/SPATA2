@@ -18,7 +18,7 @@ annotation to the coordinates data.frame. See details and examples for more."><!
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -276,7 +276,7 @@ parameter. Binwidth is equal to the value of <code>resolution</code>.</p></li>
 <li><p><em>bins_angle</em>: Factor. The bin the data point was assigned to based on its <em>angle</em> value.</p></li>
 <li><p><em>rel_loc</em>: Character. Possible values are <em>'core'</em>, if the data point lies inside the spatial annotation,
 <em>'periphery'</em> if the data point lies outside of the boundaries of the spatial annotation but inside
-the area denoted via <code>distance</code> and <em>outside</em>, if the data point lies beyond the screening area (it's
+the area denoted via <code>distance</code> and <em>outside</em>, if the data point lies beyond the screening area (its
 distance to the spatial annotation boundaries is bigger than the value denoted in <code>distance</code>).</p></li>
 <li><p><em>id</em> Character. The ID of the spatial annotation the data points lies closest to. (only relevant
 in case of <code>length(ids) &gt; 1</code>)</p></li>
@@ -284,7 +284,7 @@ in case of <code>length(ids) &gt; 1</code>)</p></li>
 </ul></div>
     <div id="note">
     <h2>Note</h2>
-    <p>In most scenarious, it does <strong>not</strong> make sense to relate data points from
+    <p>In most scenarios, it does <strong>not</strong> make sense to relate data points from
 tissue sections to a spatial annotation that is located on a different
 tissue section. Hence, the default of this function (<code>incl_edge = TRUE</code>, <code>drop_na = TRUE</code>)
 is set to simply remove these data points from the output. See examples.</p>
@@ -313,7 +313,7 @@ is set to simply remove these data points from the output. See examples.</p>
 <span>   <span class="op">)</span></span>
 <span></span>
 <span><span class="co"># default distance = "dte" -&gt; uses distToEdge()</span></span>
-<span><span class="va">coords_df</span> <span class="op">&lt;-</span> <span class="fu">getCoordsDfSA</span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="st">"hypoxia_ann"</span>, binwidth <span class="op">=</span> <span class="st">"1mm"</span><span class="op">)</span></span>
+<span><span class="va">coords_df</span> <span class="op">&lt;-</span> <span class="fu">getCoordsDfSA</span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="st">"hypoxia_ann"</span>, resolution <span class="op">=</span> <span class="st">"1mm"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object</span>, <span class="st">"HM_HYPOXIA"</span>, pt_clrsp <span class="op">=</span> <span class="st">"inferno"</span><span class="op">)</span> <span class="op">+</span></span>
@@ -425,7 +425,7 @@ is set to simply remove these data points from the output. See examples.</p>
 <span><span class="va">p_visium</span> <span class="op">+</span> <span class="va">p_sc</span></span>
 <span></span>
 <span><span class="co"># relate cells to spatial annotations</span></span>
-<span><span class="va">sc_input_rel</span> <span class="op">&lt;-</span> <span class="fu">getCoordsDfSA</span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="st">"inj1"</span>, coords_df <span class="op">=</span> <span class="va">sc_input</span>, binwidth <span class="op">=</span> <span class="st">"250um"</span><span class="op">)</span></span>
+<span><span class="va">sc_input_rel</span> <span class="op">&lt;-</span> <span class="fu">getCoordsDfSA</span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="st">"inj1"</span>, coords_df <span class="op">=</span> <span class="va">sc_input</span>, resolution <span class="op">=</span> <span class="st">"250um"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">sc_input_rel</span>, color_by <span class="op">=</span> <span class="st">"dist"</span>, pt_size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="va">hemispheres</span></span>

@@ -538,18 +538,130 @@ setMethod(f = "show", signature = "ANY", definition = function(object){
 })
 
 #' @export
-setMethod(f = "show", signature = "SpatialMethod", definition = function(object){
+setMethod("show", "HistoImage", function(object) {
 
-  out <-
-    purrr::map(
-      .x = methods::slotNames(object),
-      .f = ~ methods::slot(object, name = .x)
-    ) %>%
-    purrr::set_names(nm = methods::slotNames(object))
+  cat("An object of class HistoImage\n")
+  objectMemoryUsage(object)
 
-  return(out)
+  cat("Name: ", object@name, "\n")
+  cat("Sample: ", object@sample, "\n")
+  cat("Active: ", object@active, "\n")
+  cat("Reference: ", object@reference, "\n")
+  cat("Aligned: ", object@aligned, "\n")
+  cat("Background color: ", object@bg_color, "\n")
+
+  if (!is.null(object@dir)) {
+
+    cat("Image directory: ", object@dir, "\n")
+
+  } else {
+
+    cat("Image directory: Not set\n")
+
+  }
+
+  if (!is.null(object@image)) {
+
+    cat("Image dimensions (WxHxC): ", paste(dim(object@image), collapse = " x "), "\n")
+
+  } else {
+
+    cat("Image: Not loaded\n")
+
+  }
+
+  # Print scale factors
+  cat("Scale factors:\n")
+  max_len_sf <- max(nchar(names(object@scale_factors)))
+
+  for (name in names(object@scale_factors)) {
+    val <- object@scale_factors[[name]]
+    add <- ""
+
+    if (name == "pixel") {
+      add <- paste0(" (", attr(val, which = "unit"), ")")
+    }
+
+    cat(sprintf("  %-*s : %s%s\n", max_len_sf, name, round(val, digits = 4), add))
+  }
+
+
+  # Print transformations
+  cat("Transformations:\n")
+  max_len_trans <- max(nchar(names(object@transformations)))
+
+  for (name in names(object@transformations)) {
+
+    value <- object@transformations[[name]]
+
+    if (is.list(value)) {
+
+      cat(sprintf("  %-*s :\n", max_len_trans, name))
+      max_len_sub <- max(nchar(names(value)))
+
+      for (subname in names(value)) {
+
+        cat(sprintf("    %-*s : %s\n", max_len_sub, subname, value[[subname]]))
+
+      }
+
+    } else {
+
+      cat(sprintf("  %-*s : %s\n", max_len_trans, name, value))
+
+    }
+  }
+
+  # Print outline information
+  if (length(object@outline) > 0) {
+    cat("Outline information:\n")
+    for (name in names(object@outline)) {
+      cat("  ", name, ": ", nrow(object@outline[[name]]), " vertices\n")
+    }
+  } else {
+    cat("Outline: None\n")
+  }
+
+  # Print pixel content
+  if (length(object@pixel_content) > 0) {
+    cat("Pixel content: ", length(levels(object@pixel_content)), " categories\n")
+  } else {
+    cat("Pixel content: Not set\n")
+  }
+
+  # Print overlap
+  cat("Overlap: ", object@overlap, "\n")
+})
+
+
+#' @export
+setMethod("show", "MolecularAssay", function(object) {
+
+  cat("An object of class MolecularAssay\n")
+  objectMemoryUsage(object)
+
+  cat("Modality: ", object@modality, "\n")
+  cat("Active matrix: ", object@active_mtr, "\n")
+
+  cat("Count matrix:\n")
+  if (nrow(object@mtr_counts) == 0 || ncol(object@mtr_counts) == 0) {
+    cat("  No count matrix available.\n")
+  } else {
+    cat("  Dimensions: ", nrow(object@mtr_counts), " x ", ncol(object@mtr_counts), "\n")
+  }
+
+  cat("Processed matrices:\n")
+  if (length(object@mtr_proc) == 0) {
+    cat("  No processed matrices available.\n")
+  } else {
+    cat("  Available matrices:\n")
+    for (mtr_name in names(object@mtr_proc)) {
+      cat("    - ", mtr_name, "\n")
+    }
+  }
 
 })
+
 
 #' @export
 setMethod(f = "show", signature = "SPATA2", definition = function(object){
@@ -563,7 +675,10 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   n_mols <- purrr::map_dbl(.x = assay_names, .f = ~ nMolecules(object, assay_name = .x))
   n_obs <- nObs(object) # also in case no matrix available
 
-  cat("SPATA2 object of size:", n_obs, "x", sum(n_mols), paste0("(", obsUnit(object), "s x molecules)\n"))
+  cat("An object of class SPATA2\n")
+  cat("Sample:", object@sample, "\n")
+  cat("Size:", n_obs, "x", sum(n_mols), paste0("(", obsUnit(object), "s x molecules)\n"))
+  objectMemoryUsage(object)
 
   platform <- object@platform
 
@@ -577,8 +692,6 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   }
 
   cat("Platform:", platform, "\n")
-  cat("Sample name:", object@sample, "\n")
-
 
   #cat("Contains", length(assays), ifelse(length(assays) > 1, "assays:\n", "assay:\n"), stringr::str_c(assays, collapse = "\n"))
 
@@ -661,13 +774,27 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
 })
 
 #' @export
-setMethod(f = "show", signature = "SpatialAnnotation", definition = function(object){
+setMethod("show", "SpatialAnnotation", function(object) {
 
-  tags <- confuns::scollapse(object@tags, sep = ", ", last = ", ")
+  cat("An object of class SpatialAnnotation\n")
+  cat("ID: ", object@id, "\n")
+  cat("Sample: ", object@sample, "\n")
+  objectMemoryUsage(object)
+  cat("Tags: ", paste(object@tags, collapse = ", "), "\n")
 
-  writeLines(glue::glue("An object of class '{class(object)}' with id = '{object@id}'. \n Tags: {tags}."))
+  cat("Area information:\n")
+  for (name in names(object@area)) {
+    cat("  ", name, ": ", nrow(object@area[[name]]), " vertices\n")
+  }
+
+  if (!is.null(object@image)) {
+    cat("Cropped image dimensions (WxHxC): ", paste(dim(object@image), collapse = " x "), "\n")
+  } else {
+    cat("Cropped image: Not available until extraction.\n")
+  }
 
 })
+
 
 #' @title Show color palettes and spectra
 #'
@@ -834,6 +961,7 @@ showModels <- function(input = 100,
                        pretty_names = FALSE,
                        x_axis_arrow = TRUE,
                        verbose = NULL,
+                       ncol = NULL,
                        ...){
 
   mdf <-
@@ -882,7 +1010,7 @@ showModels <- function(input = 100,
 
   ggplot2::ggplot(data = mdf, mapping = ggplot2::aes(x = x, y = values)) +
     ggplot2::geom_path(size = linesize, color = linecolor) +
-    ggplot2::facet_wrap(facets = . ~ pattern, ...) +
+    ggplot2::facet_wrap(facets = . ~ pattern, ncol = ncol, ...) +
     ggplot2::theme_classic() +
     ggplot2::labs(x = NULL, y = NULL) +
     theme_add_on
@@ -936,9 +1064,102 @@ simulate_complete_coords_sa <- function(object, id, distance){
       ) %>%
       dplyr::select(barcodes, x, y)
 
+  } else if(containsMethod(object, method_name = "MERFISH")){
+
+    # 1. Simulate coords of cells within a grid around the SA +- distance, assuming cell density as within the TissueOutline
+
+    sa_range <-
+      getSpatAnnRange(object, id = id) %>%
+      map(.f = function(r){
+
+        c(
+          floor(r[1]),
+          ceiling(r[2])
+        )
+
+      })
+
+    tot_dist <-
+      as_pixel(distance, object = object, add_attr = FALSE) %>%
+      base::ceiling(x = .)
+
+    left_border <- sa_range$x[1] - tot_dist
+    right_border <- sa_range$x[2] + tot_dist
+    lower_border <- sa_range$y[1] - tot_dist
+    upper_border <- sa_range$y[2] + tot_dist
+    grid_area <- (right_border - left_border) * (upper_border - lower_border)
+
+    # Density of cells within TissueOutline (cells per pixel)
+    cpp <- SPATA2::nObs(object) / SPATA2::getTissueArea(object, unit = "px")[[1]] # 1 px == 1 um in MERFISH data
+
+    # Assumed cells in whole grid (based on averaged density of cells in TissueOutline)
+    n_cells_assumed = round(grid_area*cpp)
+
+    # Obtain coordinates for assumed number of cells within grid broders (cells are equally spaced)
+    n_cells_per_side <- sqrt(n_cells_assumed)
+    
+    coords_df_simulated <- 
+            expand.grid(x = seq(left_border, right_border, length.out = n_cells_per_side), 
+                        y = seq(lower_border, upper_border, length.out = n_cells_per_side)
+                      ) %>% dplyr::mutate(barcodes = str_c("barcode", dplyr::row_number())
+                      ) %>% dplyr::select(barcodes, x, y
+                      ) %>% dplyr::slice(., 1:n_cells_assumed)
+
+    # 2. Exclude cells that overlap with the area of TissueOutline; use original cell locations instead
+
+    tissue_outline <- getTissueOutlineDf(object) %>% dplyr::select(x, y)
+
+    # Create polygon from tissue outline
+    polygon <- sp::SpatialPolygons(list(sp::Polygons(list(sp::Polygon(as.matrix(tissue_outline))), "1")))
+
+    # Calculate average nearest neighbor distances in simulated coords_df
+
+    if(!"RANN" %in% base::rownames(installed.packages())){
+
+        install <- utils::askYesNo(msg = "Package 'RANN' is required but not installed. Do you want to install it now?")
+
+        if(base::isTRUE(install)){
+
+          install.packages(c("RANN"))
+
+        } else {
+
+          stop("Cannot continue without 'RANN' package.")
+
+        }
+
+    }
+
+    nearest_dist <- RANN::nn2(coords_df_simulated %>% dplyr::select(x, y), k = 2)$nn.dists[, 2] # Exclude point itself
+
+    avg_dist <- mean(nearest_dist)
+
+    # Function to check if points are within the polygon and within avg_dist of coords_df_tissue
+    
+    is_within_range <- function(coords_df_simulated, coords_df_tissue, avg_dist, polygon) {
+        
+      in_range <- RANN::nn2(coords_df_tissue %>% dplyr::select(x, y), coords_df_simulated %>% dplyr::select(x, y), k = 1)$nn.dists[, 1] <= avg_dist
+        
+      in_poly <- !is.na(sp::over(sp::SpatialPoints(coords_df_simulated %>% dplyr::select(x, y)), polygon))
+        
+      in_range | in_poly
+        
+    }
+
+    # Filter out points in coords_df_simulated that overlap with coords_df_tissue or are inside the polygon
+    
+    coords_df_tissue <- getCoordsDf(object = object,
+                                    ids = id
+                                   )
+    
+    coords_df_cleaned <- coords_df_simulated %>%
+      dplyr::filter(!is_within_range(coords_df_simulated, coords_df_tissue, avg_dist, polygon))
+
+    coords_df <- dplyr::bind_rows(coords_df_cleaned, coords_df_tissue)
+  
   } else {
 
-    stop("No method for this experiment set up exists.")
+    stop("Not yet defined for the current platform.")
 
   }
 
@@ -984,8 +1205,6 @@ simulate_complete_coords_st <- function(object, id){
         y = c(tfp1.1[2], tfp1.2[2], tfp2.1[2], tfp2.2[2])
       )
 
-    ca <- getCaptureArea(object, unit = "px")
-
     sim_range <-
       list(
         x = base::range(trajectory_frame$x),
@@ -1015,15 +1234,12 @@ simulate_complete_coords_st <- function(object, id){
       identify_obs_in_polygon(coords_df = ., polygon_df = trajectory_frame, strictly = TRUE, opt = "trajectory_frame") %>%
       dplyr::filter(trajectory_frame) %>%
       dplyr::mutate(
-        rel_loc = "inside",
-        capture_area =
-          dplyr::between(x, left = ca$x[1], right = ca$x[2]) &
-          dplyr::between(y, left = ca$y[1], right = ca$y[2])
+        rel_loc = "inside"
       )
 
   } else {
 
-    stop("No method for this experiment set up exists.")
+    stop("Not yet defined for the current platform.")
 
   }
 
@@ -1033,7 +1249,7 @@ simulate_complete_coords_st <- function(object, id){
 
 #' @title Expression pattern simulation
 #'
-#' @description Simulates expression pattern by modelling expression dependent
+#' @description Simulates expression patterns by modelling expression dependent
 #' on the distance to a spatial annotation.
 #'
 #' @inherit spatialAnnotationScreening params
@@ -1847,7 +2063,7 @@ simulate_random_gradients <- function(coords_df,
   pb <- confuns::create_progress_bar(total = n)
 
   confuns::give_feedback(
-    msg = glue::glue("Simulating {n} random expression pattern."),
+    msg = glue::glue("Simulating {n} random expression patterns."),
     verbose = verbose
   )
 
@@ -2057,7 +2273,7 @@ smoothSpatialAnnotation <- function(object,
 
   if(!"terra" %in% base::rownames(installed.packages())){
 
-    install <- utils::askYesNo(msg = "Package 'terra' and/or 'smoothr' is not installed. Do you want to install it?")
+    install <- utils::askYesNo(msg = "Package 'terra' and/or 'smoothr' is required but not installed. Do you want to install it now?")
 
     if(base::isTRUE(install)){
 
@@ -2065,7 +2281,7 @@ smoothSpatialAnnotation <- function(object,
 
     } else {
 
-      stop("Can not continue with 'terra' package.")
+      stop("Cannot continue without 'terra' and/or 'smoothr' packages.")
 
     }
 
@@ -2292,9 +2508,17 @@ spatial_gradient_screening <- function(coords_df,
 
   }
 
+  # remove uniform variables (prior to normalization to prevent NAs)
   variables <- base::unique(variables)
 
-  coords_df <- normalize_variables(coords_df, variables = variables)
+  coords_df <-
+    discard_uniform_variables(coords_df, variables = variables, verbose = verbose)
+
+  variables <- variables[variables %in% colnames(coords_df)]
+
+  # rescale them to
+  coords_df <-
+    normalize_variables(coords_df, variables = variables)
 
   if(base::isTRUE(rm_zero_infl)){
 
@@ -2315,6 +2539,12 @@ spatial_gradient_screening <- function(coords_df,
       msg = glue::glue("Identified and removed {nzi} zero inflated variables."),
       verbose = verbose
     )
+
+    if (base::length(variables) == 0) {
+
+      stop("All variables are zero inflated. Screening aborted.")
+
+    }
 
   } else {
 
@@ -2627,6 +2857,27 @@ spatialAnnotationScreening <- function(object,
 
   hlpr_assign_arguments(object)
 
+  if(!containsImage(object)){
+    
+    if(add_image == TRUE){
+      
+      add_image <- FALSE
+      
+    }
+
+  }
+
+  if(containsMethod(object, method_name = c("MERFISH", "Xenium"))){
+
+    rm_zero_infl <- FALSE # otherwise too many variables are excluded
+    
+    confuns::give_feedback(
+      msg = "Removal of zero-inflated genes is disabled for MERFISH and Xenium data.",
+      verbose = verbose
+    )
+
+  }
+
   # obtain coords data.frame
   confuns::give_feedback(
     msg = "Starting spatial annotation screening.",
@@ -2683,14 +2934,26 @@ spatialAnnotationScreening <- function(object,
   coords_df_flt <-
     dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
 
-  cf <-
-    compute_correction_factor_sas(
-      object = object,
-      ids = ids,
-      distance = distance,
-      core = core,
-      coords_df_sa = coords_df_flt
-      )
+  cf <- list(...)[["cf"]]
+  
+  if(is.null(cf)){ 
+    
+    cf <-
+      compute_correction_factor_sas(
+        object = object,
+        ids = ids,
+        distance = distance,
+        core = core,
+        coords_df_sa = coords_df_flt
+        )
+  
+  } else { 
+    
+    confuns::is_value(cf, mode = "numeric")
+
+    stopifnot(cf > 0 & cf <= 1) # cannot be > 1
+  
+  }
 
   coords_df_flt <-
     joinWithVariables(
@@ -2722,7 +2985,6 @@ spatialAnnotationScreening <- function(object,
       verbose = verbose,
       rm_zero_infl = rm_zero_infl
     )
-
 
   coords_df_recreate <-
     getCoordsDfSA(
@@ -2895,6 +3157,8 @@ spatialTrajectoryScreening <- function(object,
       dist_unit = unit,
       verbose = FALSE
     )
+
+  variables <- variables[variables %in% colnames(coords_df)]
 
   cf <- compute_correction_factor_sts(object, id = id, width = width)
 
@@ -3285,8 +3549,8 @@ strongH5 <- function(text){
 #' ids <- getSpatAnnIds(object_mouse)
 #'
 #' plotSurface(object_mouse, color_by = "tissue_section", pt_clr = "lightgrey") +
-#'   ggpLayerSpatAnnOutline(object, ids = ids) +
-#'   ggpLayerSpatAnnPointer(object, ids = ids, ptr_lengths = "0.45mm", text_dist = 10, text_size = 7)
+#'   ggpLayerSpatAnnOutline(object_mouse, ids = ids) +
+#'   ggpLayerSpatAnnPointer(object_mouse, ids = ids, ptr_lengths = "0.45mm", text_dist = 10, text_size = 7)
 #'
 #' obj_list <- splitSpataObject(object_mouse, grouping = "tissue_section")
 #'
@@ -3326,7 +3590,7 @@ strongH5 <- function(text){
 #' object_cropped <-
 #'  cropSpataObject(object, xrange = xcrop, yrange = ycrop)
 #'
-#' plotSurface(object_cropped, color_by = "bayes_space") + orig_frame
+#' plotSurface(object_cropped, color_by = "bayes_space", pt_size = 0.75) + orig_frame
 #'
 subsetSpataObject <- function(object,
                               barcodes = NULL,

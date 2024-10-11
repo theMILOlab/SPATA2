@@ -968,7 +968,7 @@ setMethod(
 #' @description Extracts the name/ID of the \code{SPATA2} object
 #' in form of a single character value.
 #'
-#' @inherit check_object params
+#' @inherit argument_dummy params
 #'
 #' @return A character value.
 #'
@@ -1010,7 +1010,7 @@ getSasDf <- function(object,
                      unit = getDefaultUnit(object),
                      ro = c(0, 1),
                      format = "wide",
-                     bcs_exclude = NULL,
+                     bcs_exclude = character(0),
                      outlier_rm = FALSE,
                      verbose = FALSE,
                      ...){
@@ -1031,25 +1031,28 @@ getSasDf <- function(object,
       verbose = verbose
     )
 
+  coords_df_flt <-
+    dplyr::filter(coords_df_sa, !barcodes %in% {{bcs_exclude}})
+
   cf <-
     compute_correction_factor_sas(
       object = object,
       ids = ids,
       distance = distance,
       core = core,
-      coords_df_sa = coords_df_sa
+      coords_df_sa = coords_df_flt
       )
 
   resolution <- as_unit(resolution, unit = unit, object = object)
 
   distance <-
-    stringr::str_c(base::max(coords_df_sa$dist), unit) %>%
+    stringr::str_c(base::max(coords_df_flt$dist), unit) %>%
     as_unit(input = ., unit = unit, object = object)
 
   if(base::isTRUE(core)){
 
     min_dist <-
-      base::min(coords_df_sa[["dist"]]) %>%
+      base::min(coords_df_flt[["dist"]]) %>%
       stringr::str_c(., unit)
 
   } else {
@@ -1058,7 +1061,7 @@ getSasDf <- function(object,
 
   }
 
-  expr_est_pos <- compute_expression_estimates(coords_df_sa)
+  expr_est_pos <- compute_expression_estimates(coords_df_flt)
 
   # prepare output
   sas_df <-
@@ -1081,22 +1084,22 @@ getSasDf <- function(object,
 
   for(var in variables){
 
-    coords_df_sa[["var.x"]] <- coords_df_sa[[var]]
+    coords_df_flt[["var.x"]] <- coords_df_flt[[var]]
 
     if(base::isTRUE(outlier_rm)){
 
-      keep <- !is_outlier(coords_df_sa[["var.x"]])
+      keep <- !is_outlier(coords_df_flt[["var.x"]])
 
     } else {
 
-      keep <- 1:nrow(coords_df_sa)
+      keep <- 1:nrow(coords_df_flt)
 
     }
 
     loess_model <-
       stats::loess(
         formula = var.x ~ dist,
-        data = coords_df_sa[keep,],
+        data = coords_df_flt[keep,],
         span = span,
         control = base::do.call(what = stats::loess.control, args = sgs_loess_control)
       )
@@ -2020,6 +2023,37 @@ setMethod(
 #' character vectors.
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' object <- loadExampleObject("UKF313T", process = T, meta = T)
+#'
+#' # show all IDs
+#' getSpatAnnIds(object)
+#'
+#' bcs_necr_area <- getSpatAnnBarcodes(object, ids = "necrotic_area")
+#'
+#' ids_all <- c("necrotic_area", "necrotic_edge", "necrotic_edge2")
+#' bcs_necr_all <- getSpatAnnBarcodes(object, ids = ids_all)
+#'
+#' # plot results as proof of principle
+#' coords_df <- getCoordsDfSA(object, ids = ids_all)
+#'
+#' coords_df$necr_area <- coords_df$barcodes %in% bcs_necr_area
+#' coords_df$necr_all <- coords_df$barcodes %in% bcs_necr_all
+#'
+#' plotSurface(coords_df, "necr_area")
+#' plotSurface(coords_df, "necr_all")
+#'
+#' # work with relative location of observations annotations 'rel_loc'
+#' plotSurface(coords_df, color_by = "id") # closest to which annotation?
+#' plotSurface(coords_df, color_by = "rel_loc")
+#'
+#' dplyr::filter(coords_df, rel_loc == "core") %>%
+#'  plotSurface(object = ., color_by = "id")
 #'
 getSpatAnnBarcodes <- function(object,
                                ids = NULL,

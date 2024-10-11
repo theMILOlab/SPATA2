@@ -7,7 +7,8 @@
 asSingleCellExperiment(
   object,
   assay_name = activeAssay(object),
-  bayes_space = FALSE
+  bayes_space = FALSE,
+  verbose = NULL
 )
 }
 \arguments{
@@ -21,6 +22,11 @@ as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{bayes_space}{Logical. If \code{TRUE}, the function creates an object
 fitted to the requirements for the BayesSpace pipeline.}
+
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 An object of class \code{SingleCellExperiment}.

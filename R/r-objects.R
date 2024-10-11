@@ -359,7 +359,10 @@ create_image_annotations_descr <- list(
 
 create_segmentation_descr <- list(
 
-  color_by = c("Use SPATA variables to color the surface of the image."),
+  color_by = c(
+    "Use variables to color the surface of the image. Enter the name on the text input. Use this select option for auto-complete options.
+    Empty the text input to only display the image. Use the transparency slider to adjust the visibility of the data points."
+    ),
   linesize = create_image_annotations_descr$linesize,
   pick_action_interaction =
     c(
@@ -434,7 +437,7 @@ create_spatial_trajectories_descr <- list(
 
 
 #' @export
-current_spata2_version <- list(major = 3, minor = 0, patch = 1)
+current_spata2_version <- list(major = 3, minor = 1, patch = 0)
 current_spata_version <- current_spata2_version # deprecated
 
 
@@ -1025,6 +1028,16 @@ regex_exclam <- stringr::str_c(regex_exclam1, "|", regex_exclam2)
 regex_unit <- stringr::str_c(regex_dist_units_si, regex_pxl, regex_area_units, sep = "|")
 
 
+regex_visiumHD_barcode <- "s_[0-9]{3}um_[0-9]{5}_[0-9]{5}"
+regex_visiumHD_barcode_col <- confuns::rgx_lookbehind(pattern = "s_[0-9]{3}um_[0-9]{5}_", match = "[0-9]{5}")
+regex_visiumHD_barcode_row <- confuns::rgx_lookbehind(pattern = "s_[0-9]{3}um_", match = "[0-9]{5}")
+regex_visiumHD_barcode_square_res <-
+  confuns::rgx_lookbehind(
+    pattern = "s_[0-9]{0,1}",
+    match = "[1-9]{1,3}um" # 1-9 to remove 0s
+    )
+
+
 #' Regular Expressions for Data Validation and Parsing
 #'
 #' A list of regular expressions commonly used for parsing and validating data inputs.
@@ -1112,12 +1125,12 @@ regexes <- list(
   ribosomal = "^RP[SL][0-9].*",
   scientific_notation = "-{0,1}[0-9]*e(\\+|-)[0-9]*",
   si_dist = stringr::str_c("(", regex_num_value, ")(", regex_dist_units_si, ")", sep = ""),
-  unit = stringr::str_c(regex_dist_units_si, regex_pxl, regex_area_units, sep = "|")
+  unit = stringr::str_c(regex_dist_units_si, regex_pxl, regex_area_units, sep = "|"),
+  visiumHD_barcode = regex_visiumHD_barcode,
+  visiumHD_barcode_col = regex_visiumHD_barcode_col,
+  visiumHD_barcode_row = regex_visiumHD_barcode_row,
+  visiumHD_barcode_square_res = regex_visiumHD_barcode_square_res
 )
-
-
-
-
 
 
 # relateToImageAnnotation names
@@ -1214,21 +1227,30 @@ threshold_scattermore <- 100000
 
 # V -----------------------------------------------------------------------
 
+#' @export
+#' @keywords internal
 visiumHD_resolutions <- c("16um" =  16, "8um" = 8, "2um" = 2)
+
+#' @export
+#' @keywords internal
+visiumHD_ranges <-
+  list(
+    "16um" = list(col = c(0, 418), row = c(0, 418)),
+    "8um" = list(col = c(0, 837), row = c(0, 837)),
+    "2um" = list(col = c(0, 3349), row = c(0, 3349))
+  )
 
 #' VisiumHD Spatial Method
 #'
-#' This object abstracts the VisiumHD spatial method, which is a high-density version of the Visium platform.
+#' This object abstracts the VisiumHD spatial method, which is a high-resolution version of the Visium platform.
 #'
 #' @details
 #' The `VisiumHD` object is based on the `SpatialMethod` class and contains the following specifications:
 #' \itemize{
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
-#'     \item \code{capture_area_sides}: A list specifying the dimensions of the capture area with elements \code{x} and \code{y}, both set to "6.25mm".
 #'     \item \code{ccd}: Center to center distance, which is a character value.
 #'     \item \code{square_res}: Square resolution, which is a character value.
-#'     \item \code{fiducial_frame_sides}: A list specifying the dimensions of the fiducial frame with elements \code{x} and \code{y}, both set to "8mm".
 #'   }
 #'   \item \code{observational_unit}: The unit of observation, which is "spot".
 #'   \item \code{unit}: The SI unit used, which is "mm".
@@ -1241,7 +1263,7 @@ VisiumHD <-
   SpatialMethod(
     method_specifics =
       list(
-        capture_area_sides = list(x = "6.25mm", y = "6.25mm"),
+        capture_area_side_lengths = list(x = "6.5mm", y = "6.5mm"),
         ccd = character(1),
         square_res = character(1),
         fiducial_frame_sides = list(x = "8mm", y = "8mm")
@@ -1262,18 +1284,8 @@ VisiumHD <-
 #' \itemize{
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
-#'     \item \code{capture_area}: A list specifying the coordinates of the capture area:
-#'       \itemize{
-#'          \item \code{x}: A vector with coordinates "0.75mm" and "11.75mm".
-#'          \item \code{y}: A vector with coordinates "0.75mm" and "11.75mm".
-#'       }
 #'     \item \code{ccd}: Center to center distance of "100um".
 #'     \item \code{diameter}: Diameter of each spot is "55um".
-#'     \item \code{fiducial_frame}: A list with the following elements:
-#'       \itemize{
-#'         \item \code{x}: A vector with coordinates "0mm" and "12.5mm".
-#'         \item \code{y}: A vector with coordinates "0mm" and "12.5mm".
-#'       }
 #'     }
 #'   \item \code{observational_unit}: The unit of observation, which is "spot".
 #'   \item \code{unit}: The SI unit used, which is "mm".
@@ -1286,7 +1298,7 @@ VisiumLarge <-
   SpatialMethod(
     method_specifics =
       list(
-        capture_area = list(x = c("0.75mm", "11.75mm"), y = c("0.75mm", "11.75mm")),
+        capture_area_side_lengths = list(x = "11mm", y = "11mm"),
         ccd = "100um",
         diameter = "55um",
         fiducial_frame = list(x = c("0mm", "12.5mm"), y = c("0mm", "12.5mm"))
@@ -1307,18 +1319,8 @@ VisiumLarge <-
 #' \itemize{
 #'   \item \code{method_specifics}: A list with the following elements:
 #'   \itemize{
-#'     \item \code{capture_area_frame}: A list specifying the coordinates of the capture area:
-#'       \itemize{
-#'         \item \code{x}: A vector with coordinates "0.75mm" and "7.25mm".
-#'         \item \code{y}: A vector with coordinates "0.75mm" and "7.25mm".
-#'       }
 #'     \item \code{ccd}: Center to center distance of "100um".
 #'     \item \code{diameter}: Diameter of each spot is "55um".
-#'     \item \code{fiducial_frame}: A list with the following elements:
-#'       \itemize{
-#'         \item \code{x}: A vector with coordinates "0mm" and "8mm".
-#'         \item \code{y}: A vector with coordinates "0mm" and "8mm".
-#'       }
 #'     }
 #'   \item \code{observational_unit}: The unit of observation, which is "spot".
 #'   \item \code{unit}: The SI unit used, which is "mm".
@@ -1331,7 +1333,7 @@ VisiumSmall <-
   SpatialMethod(
     method_specifics =
       list(
-        capture_area_frame = list(x = c("0.75mm", "7.25mm"), y = c("0.75mm", "7.25mm")),
+        capture_area_side_lengths = list(x = "6.5mm", y = "6.5mm"),
         ccd = "100um",
         diameter = "55um",
         fiducial_frame = list(x = c("0mm", "8mm"), y = c("0mm", "8mm"))

@@ -139,13 +139,6 @@ SpatialGradientScreening <-  setClass(Class = "SpatialGradientScreening",
 #' @description Defines the core features of spatial biology platforms
 #' like \emph{Visium} and \emph{SlideSeq}.
 #'
-#' @slot capture_area list
-#' A list of length two, with elements named *x* and *y*. Each element is a vector of length two.
-#' This slot specifies the coordinates of the opposite corners of a rectangular area.
-#' The *x* element contains the x-coordinates and the *y* element contains the y-coordinates.
-#' These coordinates define the area within which data points are expected to be captured.
-#' Coordinates must be specified in SI units. The first value in each vector represents
-#' one corner of the rectangle, and the second value represents the diagonally opposite corner.
 #' @slot info list. List of miscellaneous meta data about the method.
 #' @slot method_specific list. List method specific data. Depending on the
 #' method certain slot names are reserved. See section *Method specifics:*
@@ -181,7 +174,6 @@ SpatialGradientScreening <-  setClass(Class = "SpatialGradientScreening",
 #' @export
 SpatialMethod <- setClass(Class = "SpatialMethod",
                           slots = list(
-                            capture_area = "list",
                             info = "list",
                             method_specifics = "list",
                             name = "character",
@@ -200,6 +192,8 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
 #' or \emph{\link[=SpatialTrajectory]{spatial trajectories}}.
 #'
 #' @slot annotations list. List of objects of class [`SpatialAnnotation`].
+#' @slot capture_area data.frame. Data.frame of vertices that define the capture area
+#' or the field of view.
 #' @slot coordinates data.frame. Data.frame that stores information about identified
 #' or known entities located on the imaged tissue, such as cells or capture spots.
 #' @slot images list. List of objects of class [`HistoImage`] - the container objects
@@ -230,6 +224,7 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
 SpatialData <- setClass(Class = "SpatialData",
                         slots = list(
                           annotations = "list",
+                          capture_area = "data.frame",
                           coordinates = "data.frame",
                           images = "list",
                           method = "SpatialMethod",
@@ -422,6 +417,15 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 #' @slot transformations list. List of transformations to apply upon extracting
 #' the image to ensure alignment with additional images and spatial aspects. In case of default values
 #' no transformation is applied.
+#'
+#' The following transformations are applied when the image is \link[=loadImage]{loaded}:
+#'
+#' \itemize{
+#'  \item{*resize_fct*:}{ Numeric value between 0-1. Used to resize the resolution of the image.}
+#'  }
+#'
+#' The following transformations are applied when the image is \link[=getImage]{extracted}:
+#'
 #' \itemize{
 #'  \item{*angle*:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
 #'  by which the image needs to be rotated in **clockwise** direction. Defaults to 0.}

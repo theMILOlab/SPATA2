@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -196,7 +196,8 @@ above yourself, use the function
 workflow:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">object_t269</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/createSpatialSegmentation.html">createSpatialSegmentation</a></span><span class="op">(</span><span class="va">object_t269</span><span class="op">)</span></span></code></pre></div>
-<p><img src="gifs/create_spatial_segmentation.gif" width="100%"></p>
+<video width="640" height="480" controls><source src="../reference/figures/create_spatial_segmentation.mp4" type="video/mp4" srcset="NA"></source></video><p>
+</p>
 <p>To create a new segmentation variable click on ‘Create new
 segmentation variable’. You are then prompted to enter the name that you
 want to give the new variable. Here, we simply call it
@@ -228,6 +229,16 @@ can be worked on. In this example, we have already created the spatial
 segmentation variable <em>histology</em>. And do not bother to much with
 single data points your drawn polygons omit. The function
 <code><a href="../reference/dissolveGroups.html">dissolveGroups()</a></code> might spare you time and trouble.</p>
+<p>Furthermore, as the video below exemplifies, you can draw multiple
+outlines at the same time and give them one single label. On top of
+that, you can draw “holes” inside outlines. Note that outlines must not
+intersect!</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">object_t313</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loadExampleObject.html">loadExampleObject</a></span><span class="op">(</span><span class="st">"UKFT313"</span>, process <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">object_t313</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/createSpatialSegmentation.html">createSpatialSegmentation</a></span><span class="op">(</span><span class="va">object_t313</span><span class="op">)</span></span></code></pre></div>
+<video width="640" height="480" controls><source src="../reference/figures/create_spatial_segmentation_advanced.mp4" type="video/mp4" srcset="NA"></source></video><p>
+</p>
 </div>
 <div class="section level2">
 <h2 id="data-storage">3. Data storage<a class="anchor" aria-label="anchor" href="#data-storage"></a>
@@ -236,7 +247,7 @@ single data points your drawn polygons omit. The function
 cluster algorithms and are stored in form of factors in the meta
 data.frame. As spatial segmentation variables are grouping variables,
 too, they are stored there as well.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show all grouping (factor) variables in the meta data.frame</span></span>
 <span><span class="fu"><a href="../reference/getMetaDf.html">getMetaDf</a></span><span class="op">(</span><span class="va">object_t269</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">barcodes</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.factor</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -255,13 +266,13 @@ too, they are stored there as well.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span> GGGTGGTCCAGCCTGT-1 tissue_section_1 4               transition 4          </span></span>
 <span><span class="co">## <span style="color: #949494;"># ℹ 3,203 more rows</span></span></span>
 <span><span class="co">## <span style="color: #949494;"># ℹ 1 more variable: example_spat_segm &lt;fct&gt;</span></span></span></code></pre>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># obtain only names from variables created with spatial segmentation</span></span>
 <span><span class="va">spat_segm_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getSpatSegmVarNames.html">getSpatSegmVarNames</a></span><span class="op">(</span><span class="va">object_t269</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">spat_segm_vars</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "histology"         "example_spat_segm"</span></span></code></pre>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show only variables that have been created by spatial segmentation</span></span>
 <span><span class="fu"><a href="../reference/getMetaDf.html">getMetaDf</a></span><span class="op">(</span><span class="va">object_t269</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">barcodes</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">spat_segm_vars</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -279,11 +290,11 @@ too, they are stored there as well.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span> ATAGTCTTTGACGTGC-1 transition unnamed          </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span> GGGTGGTCCAGCCTGT-1 transition unnamed          </span></span>
 <span><span class="co">## <span style="color: #949494;"># ℹ 3,203 more rows</span></span></span></code></pre>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># visualize the (unfinished) spatial segmentation variable </span></span>
 <span><span class="co"># from the gif above</span></span>
 <span><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_t269</span>, color_by <span class="op">=</span> <span class="st">"example_spat_segm"</span>, clrp_adjust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"unnamed"</span> <span class="op">=</span> <span class="st">"lightgrey"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="spatial-segmentation_files/figure-html/unnamed-chunk-6-1.png" width="50%"></p>
+<p><img src="spatial-segmentation_files/figure-html/unnamed-chunk-7-1.png" width="50%"></p>
 </div>
 <div class="section level2">
 <h2 id="working-with-segmentation-variables">4. Working with segmentation variables<a class="anchor" aria-label="anchor" href="#working-with-segmentation-variables"></a>
@@ -291,14 +302,14 @@ too, they are stored there as well.</p>
 <p>Segmentation variables can be used like any other grouping variable
 and are usually referred to via the arguments <code>group_by</code>,
 <code>grouping_variable</code> or <code>across</code>.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># histology variable is a grouping option ...</span></span>
 <span><span class="fu"><a href="../reference/getGroupingOptions.html">getGroupingOptions</a></span><span class="op">(</span><span class="va">object_t269</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##              factor              factor              factor              factor </span></span>
 <span><span class="co">##    "tissue_section"   "seurat_clusters"         "histology"       "bayes_space" </span></span>
 <span><span class="co">##              factor </span></span>
 <span><span class="co">## "example_spat_segm"</span></span></code></pre>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># but not all grouping options derive from spatial segmentation</span></span>
 <span><span class="fu"><a href="../reference/getSpatSegmVarNames.html">getSpatSegmVarNames</a></span><span class="op">(</span><span class="va">object_t269</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "histology"         "example_spat_segm"</span></span></code></pre>
@@ -306,18 +317,18 @@ and are usually referred to via the arguments <code>group_by</code>,
 other grouping variables the same rules and options apply to it
 <code><a href="../reference/getGroupNames.html">getGroupNames()</a></code>, <code><a href="../reference/renameGroups.html">renameGroups()</a></code>,
 <code><a href="../reference/relevelGroups.html">relevelGroups()</a></code>.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># check group (segment) names</span></span>
 <span><span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span><span class="va">object_t269</span>, grouping <span class="op">=</span> <span class="st">"histology"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "tumor"       "transition"  "infiltrated"</span></span></code></pre>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># rename groups (only temporary without storing the results)</span></span>
 <span><span class="fu"><a href="../reference/renameGroups.html">renameGroups</a></span><span class="op">(</span><span class="va">object_t269</span>, grouping_variable <span class="op">=</span> <span class="st">"histology"</span>, <span class="st">"tumor_renamed"</span> <span class="op">=</span> <span class="st">"tumor"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">.</span>, color_by <span class="op">=</span> <span class="st">"histology"</span>, pt_clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="spatial-segmentation_files/figure-html/unnamed-chunk-8-1.png" width="50%"></p>
+<p><img src="spatial-segmentation_files/figure-html/unnamed-chunk-9-1.png" width="50%"></p>
 <p>Spatial segmentation variables can be also used to conduct <a href="dea.html">DEA</a> and <a href="gsea.html">GSEA</a> based on
 histology and access results in plotting functions.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># run DEA based on histology</span></span>
 <span><span class="va">object_t269</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runDEA.html">runDEA</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span>, across <span class="op">=</span> <span class="st">"histology"</span><span class="op">)</span></span>
 <span></span>
@@ -327,13 +338,13 @@ histology and access results in plotting functions.</p>
 <span>  use_pseudolog <span class="op">=</span> <span class="cn">TRUE</span>, </span>
 <span>  label_genes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EGFR"</span>, <span class="st">"MBP"</span>, <span class="st">"SNAP25"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p><img src="spatial-segmentation_files/figure-html/unnamed-chunk-10-1.png" width="100%"></p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotSurfaceComparison.html">plotSurfaceComparison</a></span><span class="op">(</span><span class="va">object_t269</span>, color_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EGFR"</span>, <span class="st">"MBP"</span>, <span class="st">"SNAP25"</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="spatial-segmentation_files/figure-html/unnamed-chunk-11-1.png" width="100%"></p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotBoxplot.html">plotBoxplot</a></span><span class="op">(</span><span class="va">object_t269</span>, variables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EGFR"</span>, <span class="st">"MBP"</span>, <span class="st">"SNAP25"</span><span class="op">)</span>, across <span class="op">=</span> <span class="st">"histology"</span>, nrow <span class="op">=</span> <span class="fl">1</span>, clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotSurfaceComparison.html">plotSurfaceComparison</a></span><span class="op">(</span><span class="va">object_t269</span>, color_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EGFR"</span>, <span class="st">"MBP"</span>, <span class="st">"SNAP25"</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="spatial-segmentation_files/figure-html/unnamed-chunk-12-1.png" width="100%"></p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotBoxplot.html">plotBoxplot</a></span><span class="op">(</span><span class="va">object_t269</span>, variables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EGFR"</span>, <span class="st">"MBP"</span>, <span class="st">"SNAP25"</span><span class="op">)</span>, across <span class="op">=</span> <span class="st">"histology"</span>, nrow <span class="op">=</span> <span class="fl">1</span>, clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="spatial-segmentation_files/figure-html/unnamed-chunk-13-1.png" width="100%"></p>
 </div>
   </div>
 

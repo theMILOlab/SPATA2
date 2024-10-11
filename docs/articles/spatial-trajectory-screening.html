@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -202,7 +202,7 @@ are expressed in a non-random and biologically meaningful way along the
 trajectory.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># this is a wrapper around SPARK::sparkx()</span></span>
-<span><span class="va">object_t269</span> <span class="op">&lt;-</span> <span class="fu">runSparkx</span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">object_t269</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runSPARKX.html">runSPARKX</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## ## ===== SPARK-X INPUT INFORMATION ==== </span></span>
 <span><span class="co">## ## number of total samples: 3213 </span></span>
 <span><span class="co">## ## number of total genes: 15000 </span></span>
@@ -239,14 +239,17 @@ trajectory.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span> RHOC                0            0</span></span>
 <span><span class="co">## <span style="color: #949494;"># ℹ 8,724 more rows</span></span></span></code></pre>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># `getSparkxGenes()` would work, too</span></span>
+<code class="sourceCode R"><span><span class="co"># name of the trajectory</span></span>
+<span><span class="va">id</span> <span class="op">&lt;-</span> <span class="st">"horizontal_mid"</span></span>
+<span></span>
+<span><span class="co"># `getSparkxGenes()` would work, too</span></span>
 <span><span class="va">input_genes</span> <span class="op">&lt;-</span> <span class="va">spark_df</span><span class="op">[[</span><span class="st">"genes"</span><span class="op">]</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co"># define start and end positions of the trajectory directly</span></span>
 <span><span class="va">object_t269</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu"><a href="../reference/addSpatialTrajectory.html">addSpatialTrajectory</a></span><span class="op">(</span></span>
 <span>    object <span class="op">=</span> <span class="va">object_t269</span>,</span>
-<span>    id <span class="op">=</span> <span class="st">"horizontal_mid"</span>,</span>
+<span>    id <span class="op">=</span> <span class="va">id</span>,</span>
 <span>    start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1.5mm"</span>, <span class="st">"4mm"</span><span class="op">)</span>,</span>
 <span>    end <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"6.5mm"</span>, <span class="st">"4mm"</span><span class="op">)</span>,</span>
 <span>    overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>

@@ -13,6 +13,7 @@ plotSasHeatmap(
   core = FALSE,
   arrange_rows = "none",
   unit = getDefaultUnit(object),
+  bcs_exclude = character(0),
   smooth_span = 0.3,
   multiplier = 10,
   clrsp = NULL,
@@ -56,6 +57,9 @@ which \link[=concept_distance_measure]{distance measures}
 or  \link[=concept_area_measure]{area measures} are provided.
 Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
 input options.}
+
+\item{bcs_exclude}{Character value containing the barcodes of observations to be excluded
+from the analysis.}
 
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}

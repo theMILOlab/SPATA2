@@ -23,6 +23,7 @@ asSPATA2(object, ...)
   object,
   sample_name,
   platform = "Undefined",
+  square_res = NULL,
   assay_name = NULL,
   assay_modality = NULL,
   img_name = NULL,

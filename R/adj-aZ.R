@@ -150,6 +150,70 @@ adjustGseaDf <- function(df,
 
 # align -------------------------------------------------------------------
 
+#' @export
+#' @keywords internal
+align_grid_with_coordinates <- function(coords_df) {
+
+  # calculate the correlations
+  ccx <- cor(coords_df$x_orig, coords_df$col)
+  cry <- cor(coords_df$y_orig, coords_df$row)
+
+  crx <- cor(coords_df$x_orig, coords_df$row)
+  ccy <- cor(coords_df$y_orig, coords_df$col)
+
+  # create temporary variables for col and row to hold adjustments
+  coords_df$temp_col <- coords_df$col
+  coords_df$temp_row <- coords_df$row
+
+  # check alignment for col and x
+  if (ccx > 0.9) {
+    # good alignment between col and x, do nothing
+
+  } else if (ccx < -0.9) {
+    # invert col to align positively with x
+    coords_df$temp_col <- max(coords_df$col) + min(coords_df$col) - coords_df$col
+
+  } else if (crx > 0.9) {
+    # swap col and row, as row aligns positively with x
+    coords_df <- coords_df %>%
+      dplyr::mutate(temp_col = row)
+
+  } else if (crx < -0.9) {
+    # swap and then invert col to align with x
+    coords_df <- coords_df %>%
+      dplyr::mutate(temp_col = max(row) + min(row) - row)
+
+  }
+
+  # check alignment for row and y
+  if (cry > 0.9) {
+    # good alignment between row and y, do nothing
+
+  } else if (cry < -0.9) {
+    # invert row to align positively with y
+    coords_df$temp_row <- max(coords_df$row) + min(coords_df$row) - coords_df$row
+
+  } else if (ccy > 0.9) {
+    # swap col and row, as col aligns positively with y
+    coords_df <- coords_df %>%
+      dplyr::mutate(temp_row = col)
+
+  } else if (ccy < -0.9) {
+    # swap and then invert row to align with y
+    coords_df <- coords_df %>%
+      dplyr::mutate(temp_row = max(col) + min(col) - col)
+
+  }
+
+  coords_df$col <- coords_df$temp_col
+  coords_df$row <- coords_df$temp_row
+
+  coords_df$temp_col <- NULL
+  coords_df$temp_row <- NULL
+
+  # return the adjusted data frame
+  return(coords_df)
+}
 
 # append ------------------------------------------------------------------
 
@@ -190,7 +254,6 @@ append_polygon_df <- function(lst,
       }
 
     }
-
 
     if(base::isFALSE(allow_intersect)){
 
@@ -1025,8 +1088,10 @@ asSeurat <- function(object,
 
 asSingleCellExperiment <- function(object,
                                    assay_name = activeAssay(object),
-                                   bayes_space = FALSE){
+                                   bayes_space = FALSE,
+                                   verbose = NULL){
 
+  hlpr_assign_arguments(object)
   require(SingleCellExperiment)
 
   if(base::isTRUE(bayes_space)){
@@ -1039,7 +1104,7 @@ asSingleCellExperiment <- function(object,
 
     coords_df <- getCoordsDf(object)
 
-    if(any(!c("col", "row" %in% colnames(coords_df)))){
+    if(any(!c("col", "row") %in% colnames(coords_df))){
 
       coords_df$col <- NULL
       coords_df$row <- NULL
@@ -1396,6 +1461,7 @@ setMethod(
   definition = function(object,
                         sample_name,
                         platform = "Undefined",
+                        square_res = NULL,
                         assay_name = NULL,
                         assay_modality = NULL,
                         img_name = NULL,
@@ -1510,7 +1576,8 @@ setMethod(
 
       coordinates <-
         Seurat::GetTissueCoordinates(seurat_image) %>%
-        dplyr::select(barcodes = cell, x_orig = x, y_orig = y)
+        dplyr::select(barcodes = cell, x_orig = x, y_orig = y) %>%
+        tibble::as_tibble()
 
       # pixel scale factor
       psf <- 1
@@ -1542,7 +1609,8 @@ setMethod(
 
       coordinates <-
         Seurat::GetTissueCoordinates(object) %>%
-        dplyr::rename(barcodes = cell, x_orig = x, y_orig = y)
+        dplyr::rename(barcodes = cell, x_orig = x, y_orig = y) %>%
+        tibble::as_tibble()
 
       sp_data <-
         createSpatialData(
@@ -1551,6 +1619,35 @@ setMethod(
           method = spatial_methods[[platform]],
           coordinates = coordinates
         )
+
+      if(sp_data@method@name == "VisiumHD"){
+
+        if(is.null(square_res)){
+
+          # assay_modality derives from assay_name
+          square_res <-
+            stringr::str_extract(coordinates$barcodes, pattern = regexes$visiumHD_barcode_square_res) %>%
+            base::unique()
+
+          if(length(square_res) > 1 || any(is.na(square_res))){
+
+            stop("Could not deduce square resolution of VisiumHD data set. Please specify `square_res`.")
+
+          }
+
+        } else {
+
+          confuns::check_one_of(
+            input = square_res,
+            against = names(visiumHD_ranges)
+          )
+
+        }
+
+        sp_data@method@method_specifics$square_res <- square_res
+        sp_data@method@method_specifics$ccd <- square_res
+
+      }
 
     } else {
 

@@ -7,9 +7,15 @@
 addAutoencoderSetUp(object, mtr_name, set_up_list, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
+
+\item{mtr_name}{Character value. The name of the matrix of interest. Defaults
+to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
 
 \item{set_up_list}{A named list with slots \code{$activation, $bottleneck, $dropout, $epochs, $layers}.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A \code{SPATA2} object.

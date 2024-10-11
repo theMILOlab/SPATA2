@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -128,14 +128,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">updateSpataObject</span><span class="op">(</span></span>
-<span>  <span class="va">object</span>,</span>
-<span>  method <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sample_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  n_pcs <span class="op">=</span> <span class="fl">30</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  <span class="va">....</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">updateSpataObject</span><span class="op">(</span><span class="va">object</span>, method <span class="op">=</span> <span class="cn">NULL</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">....</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -149,19 +142,11 @@ objects of classes for which a method has been defined.</p></dd>
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>Character value or <code>NULL</code>. If <code>NULL</code>, the functions tests whether
-the barcodes of the input object can be mapped to either of the VisiumSmall or VisiumLarge
+the barcodes of the input object can be mapped to either of the <code>VisiumSmall</code> or <code>VisiumLarge</code>
 platform. If this does not succeed you must specify the argument. In that case it
-should be one of <code>base::names(spatial_methods)</code>.</p></dd>
-
-
-<dt id="arg-sample-name">sample_name<a class="anchor" aria-label="anchor" href="#arg-sample-name"></a></dt>
-<dd><p>Character value. The name of the input object.</p></dd>
-
-
-<dt id="arg-n-pcs">n_pcs<a class="anchor" aria-label="anchor" href="#arg-n-pcs"></a></dt>
-<dd><p>Numeric value or <code>NULL</code>. If numeric, specifies the number of
-principal components to use. If <code>NULL</code>, all principal components are used
-(as computed with <code><a href="runPCA.html">runPCA()</a></code>).</p></dd>
+should be one of <code>base::names(spatial_methods)</code>.</p>
+<p>Only relevant for updating from SPATA2v2 to SPATA2v3. v3.0.0 and above should not
+face any problems regarding this.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -180,8 +165,8 @@ the computational progress will be printed.</p>
     </div>
     <div id="note">
     <h2>Note</h2>
-    <p><code>n_pcs</code> and <code>sample_name</code> only are if the input object derives from
-the old <code>SPATA</code> (not <code>SPATA2</code>) package!</p>
+    <p><code>SPATA2</code> objects of version &lt; 2.0.0 can not be updated any longer. If you have such an object
+and want to transfer the data, please raise an issue at github.</p>
     </div>
 
   </div>

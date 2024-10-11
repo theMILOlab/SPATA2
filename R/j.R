@@ -422,26 +422,36 @@ joinWithVariables <- function(object,
           mtr_name = activeMatrix(object, assay_name = assay_name),
           assay_name = assay_name
         )
-
-      for(signature in signatures[[assay_name]]){
-
+      
+      for (signature in signatures[[assay_name]]) {
+    
         mols_signature <- getMolecules(object, signature = signature, assay_name = assay_name)
-
-        sign_df <-
-          base::as.matrix(mtr[mols_signature, spata_df$barcodes]) %>%
+        
+        # prevent error in case of molecule mismatch in processed matrices
+        valid_molecules <- mols_signature[mols_signature %in% rownames(mtr)]
+        if (length(valid_molecules) == 0) {
+            warning(glue::glue("No valid molecules found for signature '{signature}'. Skipping."))
+            next
+        }
+        
+        valid_barcodes <- spata_df$barcodes[spata_df$barcodes %in% colnames(mtr)]
+        if (length(valid_barcodes) == 0) {
+            warning("No valid barcodes found in spata_df. Skipping.")
+            next
+        }
+        
+        sign_df <- base::as.matrix(mtr[valid_molecules, valid_barcodes]) %>%
           base::colMeans() %>%
           base::as.data.frame() %>%
           magrittr::set_colnames(value = signature) %>%
           tibble::rownames_to_column(var = "barcodes")
-
+        
         spata_df <- dplyr::left_join(x = spata_df, y = sign_df, by = "barcodes")
-
       }
 
     }
 
   }
-
 
   # add meta features
   if(!purrr::is_empty(var_types$meta_features)){
@@ -457,39 +467,7 @@ joinWithVariables <- function(object,
   # remove variables with uniform values
   if(uniform_variables == "discard"){
 
-    confuns::give_feedback(
-      msg = "Identifying and discarding uniformly expressed variables.",
-      verbose = verbose
-    )
-
-    pb <- confuns::create_progress_bar(total = base::length(variables))
-
-    remove <-
-      purrr::map(
-        .x = variables,
-        .f = function(vname){
-
-          if(base::isTRUE(verbose)){ pb$tick() }
-
-          base::is.numeric(spata_df[[vname]]) &
-            (dplyr::n_distinct(spata_df[[vname]]) == 1)
-
-        }
-      ) %>%
-      purrr::flatten_lgl()
-
-    n_rm <- base::sum(remove)
-
-    confuns::give_feedback(
-      msg = glue::glue("Discarded {n_rm} variable(s) due to uniform expression."),
-      verbose = verbose
-    )
-
-    remove_vars <- variables[remove]
-
-    variables <- variables[!variables %in% remove_vars]
-
-    spata_df <- dplyr::select(spata_df, -dplyr::all_of(remove_vars))
+    spata_df <- discard_uniform_variables(spata_df, variables = variables, verbose = verbose)
 
   }
 
@@ -546,7 +524,3 @@ joinWithVariables <- function(object,
   return(spata_df)
 
 }
-
-
-
-

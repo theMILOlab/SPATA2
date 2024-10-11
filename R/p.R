@@ -317,11 +317,17 @@ prepare_coords_df_visium_hd <- function(coords_df, fct){
   coords_df_out <-
     dplyr::mutate(
       .data = cdf_complete,
-      row_group = cut(x = row, breaks = length(breaks_row), include.lowest = TRUE, right = FALSE),
-      col_group = cut(x = col, breaks = length(breaks_col), include.lowest = TRUE, right = FALSE),
+      row_group = cut(x = row, breaks = max(seq_col)/fct, include.lowest = TRUE, right = FALSE, labels = FALSE),
+      col_group = cut(x = col, breaks = max(seq_col)/fct, include.lowest = TRUE, right = FALSE, labels = FALSE),
       row_new = base::as.numeric(row_group),
       col_new = base::as.numeric(col_group),
       barcodes_new = stringr::str_c("c", (col_new-1), "r", (row_new-1))
+    )
+
+  coords_df_out$barcodes_new <-
+    factor(
+      x = coords_df_out$barcodes_new,
+      levels = sample(unique(coords_df_out$barcodes_new))
     )
 
   # predict missing coordinates and summarize by new meta barcodes
@@ -340,12 +346,6 @@ prepare_coords_df_visium_hd <- function(coords_df, fct){
       y_orig = dplyr::if_else(y_na, predicted_y, y_orig)
       ) %>%
     dplyr::ungroup()
-
-  coords_df_out$barcodes_new <-
-    factor(
-      x = coords_df_out$barcodes_new,
-      levels = sample(unique(coords_df_out$barcodes_new))
-      )
 
   return(coords_df_out)
 

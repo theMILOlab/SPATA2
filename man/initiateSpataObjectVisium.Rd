@@ -9,7 +9,9 @@ initiateSpataObjectVisium(
   directory_visium,
   mtr = "filtered",
   img_active = "lowres",
-  img_ref = "lowres",
+  img_ref = "hires",
+  resize_images = NULL,
+  unload = TRUE,
   verbose = TRUE
 )
 }
@@ -22,9 +24,19 @@ initiateSpataObjectVisium(
 
 \item{img_active}{Character. The active image to use, either "lowres" or "hires". Default is "lowres".}
 
-\item{img_ref}{Character. The reference image to use, either "lowres" or "hires". Default is "lowres".}
+\item{img_ref}{Character. The reference image to use, either "lowres" or "hires". Default is "hires".}
 
-\item{verbose}{Logical. If TRUE, progress messages are printed. Default is TRUE.}
+\item{resize_images}{A named list of numeric values between 0-1 used to resize
+the respective image as indicated by the slot name. E.g \code{resize_images = list(hires = 0.5)}
+resizes the hires image to 50\% of its original scale.}
+
+\item{unload}{Logical value. If \code{TRUE}, every image except for the active image
+is \link[=unloadImages]{unloaded.}}
+
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 A \code{SPATA2} object containing data from the Visium platform. More precise,
@@ -76,5 +88,13 @@ The function ensures that molecule names do not overlap by normalizing the names
 This naming convention prevents any overlap and ensures that each molecule type is uniquely
 identified in the resulting \code{SPATA2} object, which contains two assays. One of molecular
 modality \emph{gene} and of of molecular modality \emph{protein}.
+}
+
+\section{Row and column indices}{
+
+Visium spot coordinates come with column and row indices. The functions \code{initiateSpataObjectVisium()}
+and \code{initiateSpataObjectVisiumHD()} ensure that \emph{col} aligns with the direction of the x-coordinates and
+that \emph{row} aligns with the direction of the y-coordinates. If they do not, they are adjusted accordingly.
+Hence, these variables should not be used as keys for data merging.
 }
 

@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -197,11 +197,8 @@ structure or area you want to annotate.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># access an interface to interact with the image</span></span>
 <span><span class="va">object_t313</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/createImageAnnotations.html">createImageAnnotations</a></span><span class="op">(</span><span class="va">object_t313</span><span class="op">)</span></span></code></pre></div>
-<div class="figure">
-<img src="gifs/create_image_annotation_t313.gif" alt="This GIF exemplifies the process of creating an image annotation." width="100%"><p class="caption">
-This GIF exemplifies the process of creating an image annotation.
+<video width="640" height="480" controls><source src="../reference/figures/create_image_annotation_t313.mp4" type="video/mp4" srcset="NA"></source></video><p>
 </p>
-</div>
 <p>The left plot <em>Interaction</em> is where the magic happens. The
 right plot is used for orientation if you want to zoom in and out.
 Double click on the left image to start the drawing process. Double
@@ -299,7 +296,7 @@ documentation via <code>createNumericAnnotations</code>.</p>
 <span><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_t275</span>, color_by <span class="op">=</span> <span class="st">"HM_HYPOXIA"</span>, pt_clrsp <span class="op">=</span> <span class="st">"plasma"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="va">hypoxic_ann_outline</span></span>
 <span></span>
-<span><span class="co"># rifht plot</span></span>
+<span><span class="co"># right plot</span></span>
 <span><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">object_t275</span>, color_by <span class="op">=</span> <span class="st">"HM_HYPOXIA"</span>, pt_clrsp <span class="op">=</span> <span class="st">"plasma"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="../reference/ggpLayerSpatAnnOutline.html">ggpLayerSpatAnnOutline</a></span><span class="op">(</span><span class="va">object_t275</span>, ids <span class="op">=</span> <span class="st">"hypoxic_ann_nh"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="creating-spatial-annotations_files/figure-html/unnamed-chunk-9-1.png" width="50%"><img src="creating-spatial-annotations_files/figure-html/unnamed-chunk-9-2.png" width="50%"></p>

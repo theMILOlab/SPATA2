@@ -359,15 +359,15 @@ containsModality <- function(object, modality, error = FALSE, ...){
 }
 
 
-#' @title Check availability of specific methods
+#' @title Check availability of specific spatial methods (platforms)
 #'
 #' @description Tests if the input object is associated with
-#' specific methods.
+#' specific \link[=spatial_methods]{spatial methods / platforms}.
 #'
-#' @param method_name Character vector. Names of methods to check.
+#' @param method_name Character vector. The names of platforms to check.
 #' @inherit argument_dummy params
 #'
-#' @return Logical value.
+#' @return Logical value. TRUE if any of `method_name` is the name of the platform.
 #' @export
 #'
 setGeneric(name = "containsMethod", def = function(object, ...){
@@ -421,6 +421,9 @@ setMethod(
 
   }
 )
+
+
+
 
 #' @title Check availability pixel content
 #'

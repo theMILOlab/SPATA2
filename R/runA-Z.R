@@ -491,7 +491,6 @@ runCIN <- function(object,
   gc()
 
   # quantify instability
-
   confuns::give_feedback(
     msg = "Computing chromosomal instability. (This can take time.)",
     verbose = verbose

@@ -10,12 +10,11 @@ setDefaultInstructions(object, instructions = NULL)
 setDirectoryInstructions(object)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 }
 \value{
-A spata-object again containing the default spata-instructions.
-Everything that previously has been adjusted with \code{adjustDefaultInstructions()}
-is overwritten.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Set default instructions

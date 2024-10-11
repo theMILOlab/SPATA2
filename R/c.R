@@ -168,6 +168,242 @@ close_area_df <- function(df){
 
 
 
+
+#' @export
+#' @keywords internal
+complete_visium_coords_df <- function(coords_df, method, square_res = NULL){
+
+  if(method == "VisiumSmall"){
+
+    if(any(coords_df$barcodes %in% visium_spots$VisiumSmall$opt1$barcode)){
+
+      coords_df <-
+        dplyr::left_join(
+          x = dplyr::select(visium_spots$VisiumSmall$opt1, barcode, col, row),
+          y = dplyr::select(coords_df, -dplyr::any_of(x = c("col", "row"))),
+          by = c("barcode" = "barcodes")
+        ) %>%
+        dplyr::rename(barcodes = barcode)
+
+    } else if(any(coords_df$barcodes %in% visium_spots$VisiumSmall$opt2$barcode)){
+
+      coords_df <-
+        dplyr::left_join(
+          x = dplyr::select(visium_spots$VisiumSmall$opt2, barcode, col, row),
+          y = dplyr::select(coords_df, -dplyr::any_of(x = c("col", "row"))),
+          by = c("barcode" = "barcodes")
+        ) %>%
+        dplyr::rename(barcodes = barcode)
+
+    } else {
+
+      warning("Could not find matching spot data.frame for VisiumSmall data set. Please reaise an issue at github.")
+
+    }
+
+  } else if(method == "VisiumLarge"){
+
+    if(any(coords_df$barcodes %in% visium_spots$VisiumLarge$opt1$barcode)){
+
+      coords_df <-
+        dplyr::left_join(
+          x = dplyr::select(visium_spots$VisiumLarge$opt1, barcode, col = array_col, row = array_row),
+          y = dplyr::select(coords_df, -dplyr::any_of(x = c("col", "row"))),
+          by = c("barcode" = "barcodes")
+        ) %>%
+        dplyr::rename(barcodes = barcode)
+
+    } else {
+
+      warning("Could not find matching spot data.frame for VisiumLarge data set. Please reaise an issue at github.")
+
+    }
+
+  } else if(method == "VisiumHD"){
+
+    if(square_res %in% names(visiumHD_ranges)){
+
+      ranges <- visiumHD_ranges[[square_res]]
+
+      complete_coords_df <-
+        tidyr::expand_grid(
+          col = seq(ranges$col[1], ranges$col[2], by = 1),
+          row = seq(ranges$row[1], ranges$row[2], by = 1)
+        )
+
+      coords_df <-
+        dplyr::left_join(x = complete_coords_df, y = coords_df, by = c("col", "row")) %>%
+        dplyr::mutate(
+          barcodes = dplyr::if_else(is.na(barcodes), true = paste0("new_bc_col", col, "row", row), false = barcodes)
+        )
+
+    } else {
+
+      # created with reduceResolutionVisumHD
+
+    }
+
+  }
+
+  # add exclude for not used spots
+  if(!"exclude" %in% colnames(coords_df)){
+
+    if("in_tissue" %in% colnames(coords_df)){
+
+      coords_df$exclude <- coords_df$in_tissue == 0
+
+    } else {
+
+      coords_df$exclude <- FALSE
+
+    }
+
+  }
+
+  coords_df <-
+    dplyr::mutate(
+      .data = coords_df,
+      exclude = dplyr::if_else(is.na(x_orig) | is.na(y_orig), true = TRUE, false = exclude)
+    )
+
+  # predict missing pixel position
+  lmx <- stats::lm(formula = x_orig ~ col + row, data = coords_df, na.action = na.exclude)
+  lmy <- stats::lm(formula = y_orig ~ row + col, data = coords_df, na.action = na.exclude)
+
+  coords_df$x_pred <- stats::predict(lmx, newdata = coords_df)
+  coords_df$y_pred <- stats::predict(lmy, newdata = coords_df)
+
+  coords_df <-
+    dplyr::mutate(
+      .data = coords_df,
+      x_orig = dplyr::if_else(is.na(x_orig), true = x_pred, false = x_orig),
+      y_orig = dplyr::if_else(is.na(y_orig), true = y_pred, false = y_orig)
+    ) %>%
+    dplyr::select(-x_pred, -y_pred)
+
+  # return output
+  return(coords_df)
+
+}
+
+
+#' @keywords internal
+complete_visium_coords_df <- function(coords_df, method, square_res = NULL){
+
+  if(method == "VisiumSmall"){
+
+    if(any(coords_df$barcodes %in% visium_spots$VisiumSmall$opt1$barcode)){
+
+      coords_df <-
+        dplyr::left_join(
+          x = dplyr::select(visium_spots$VisiumSmall$opt1, barcode, col, row),
+          y = dplyr::select(coords_df, -col, -row),
+          by = c("barcode" = "barcodes")
+        ) %>%
+        dplyr::rename(barcodes = barcode)
+
+    } else if(any(coords_df$barcodes %in% visium_spots$VisiumSmall$opt2$barcode)){
+
+      coords_df <-
+        dplyr::left_join(
+          x = dplyr::select(visium_spots$VisiumSmall$opt2, barcode, col, row),
+          y = dplyr::select(coords_df, -col, -row),
+          by = c("barcode" = "barcodes")
+        ) %>%
+        dplyr::rename(barcodes = barcode)
+
+    } else {
+
+      warning("Could not find matching spot data.frame for VisiumSmall data set. Please reaise an issue at github.")
+
+    }
+
+  } else if(method == "VisiumLarge"){
+
+    if(any(coords_df$barcodes %in% visium_spots$VisiumLarge$opt1$barcode)){
+
+      coords_df <-
+        dplyr::left_join(
+          x = dplyr::select(visium_spots$VisiumLarge$opt1, barcode, col = array_col, row = array_row),
+          y = dplyr::select(coords_df, -col, -row),
+          by = c("barcode" = "barcodes")
+        ) %>%
+        dplyr::rename(barcodes = barcode)
+
+    } else {
+
+      warning("Could not find matching spot data.frame for VisiumLarge data set. Please reaise an issue at github.")
+
+    }
+
+  } else if(method == "VisiumHD"){
+
+    if(square_res %in% names(visiumHD_ranges)){
+
+      ranges <- visiumHD_ranges[[square_res]]
+
+      complete_coords_df <-
+        tidyr::expand_grid(
+          col = seq(ranges$col[1], ranges$col[2], by = 1),
+          row = seq(ranges$row[1], ranges$row[2], by = 1)
+        )
+
+      coords_df <-
+        dplyr::left_join(x = complete_coords_df, y = coords_df, by = c("col", "row")) %>%
+        dplyr::mutate(
+          barcodes = dplyr::if_else(is.na(barcodes), true = paste0("new_bc_col", col, "row", row), false = barcodes)
+        )
+
+    } else {
+
+      # created with reduceResolutionVisumHD
+
+    }
+
+  }
+
+  # add exclude for not used spots
+  if(!"exclude" %in% colnames(coords_df)){
+
+    if("in_tissue" %in% colnames(coords_df)){
+
+      coords_df$exclude <- coords_df$in_tissue == 0
+
+    } else {
+
+      coords_df$exclude <- FALSE
+
+    }
+
+  }
+
+  coords_df <-
+    dplyr::mutate(
+      .data = coords_df,
+      exclude = dplyr::if_else(is.na(x_orig) | is.na(y_orig), true = TRUE, false = exclude)
+    )
+
+  # predict missing pixel position
+  lmx <- stats::lm(formula = x_orig ~ col + row, data = coords_df, na.action = na.exclude)
+  lmy <- stats::lm(formula = y_orig ~ row + col, data = coords_df, na.action = na.exclude)
+
+  coords_df$x_pred <- stats::predict(lmx, newdata = coords_df)
+  coords_df$y_pred <- stats::predict(lmy, newdata = coords_df)
+
+  coords_df <-
+    dplyr::mutate(
+      .data = coords_df,
+      x_orig = dplyr::if_else(is.na(x_orig), true = x_pred, false = x_orig),
+      y_orig = dplyr::if_else(is.na(y_orig), true = y_pred, false = y_orig)
+    ) %>%
+    dplyr::select(-x_pred, -y_pred)
+
+  # return output
+  return(coords_df)
+
+}
+
+
 # compute_ ----------------------------------------------------------------
 
 #' @title Compute angle between two points
@@ -301,99 +537,123 @@ compute_correction_factor_sas <- function(object,
                                           core,
                                           coords_df_sa = NULL){
 
-  if(containsMethod(object, "Visium")){
+  if(base::is.null(coords_df_sa)){
 
-    if(base::is.null(coords_df_sa)){
-
-      orig_cdf <-
-        getCoordsDfSA(
-          object = object,
-          ids = ids,
-          distance = distance,
-          core = core,
-          periphery = FALSE,
-          verbose = FALSE
-        )
-
-    } else {
-
-      orig_cdf <-
-        dplyr::filter(coords_df_sa, rel_loc != "periphery")
-
-      if(base::isFALSE(core)){
-
-        orig_cdf <-
-          dplyr::filter(orig_cdf, rel_loc != "core")
-
-      }
-
-    }
-
-    smrd_cdf <-
-      dplyr::group_by(orig_cdf, id) %>%
-      dplyr::summarise(md = base::max(dist, na.rm = TRUE))
-
-    unit <- base::unique(orig_cdf$dist_unit)
-
-    fct_df <-
-      purrr::map_df(
-        .x = base::levels(smrd_cdf$id),
-        .f = function(id){
-
-          distance <-
-            dplyr::filter(smrd_cdf, id == {{id}}) %>%
-            dplyr::pull(md) %>%
-            stringr::str_c(., unit)
-
-          buffer <-
-            as_unit(distance, unit = "px", object = object) %>%
-            base::as.numeric()
-
-          sim_cdf <-
-            simulate_complete_coords_sa(object = object, id = id, distance = distance)
-
-          outline_df <- getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = TRUE)
-
-          outer_df <- getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = FALSE)[,c("x", "y")]
-
-          buffered_outer_df <- buffer_area(outer_df, buffer = buffer)
-
-          if(base::isFALSE(core)){
-
-            sim_cdf <-
-              identify_obs_in_spat_ann(sim_cdf, strictly = TRUE, outline_df = outline_df, opt = "remove")
-
-          }
-
-          sim_cdf <-
-            identify_obs_in_polygon(sim_cdf, strictly = TRUE, polygon_df = buffered_outer_df, opt = "keep")
-
-          flt_orig_cdf <-
-            getCoordsDfSA(object, ids = id, distance = distance, core = core, periphery = FALSE)
-
-          fct <- base::nrow(flt_orig_cdf) / base::nrow(sim_cdf)
-
-          out_df <-
-            tibble::tibble(
-              fct = fct,
-              nav = base::nrow(flt_orig_cdf), # n available
-              nreq = base::nrow(sim_cdf) # n required
-            )
-
-          return(out_df)
-
-        }
+    orig_cdf <-
+      getCoordsDfSA(
+        object = object,
+        ids = ids,
+        distance = distance,
+        core = core,
+        periphery = FALSE,
+        verbose = FALSE
       )
-
-    nreq_max <- base::max(fct_df$nreq)
-
-    out <- stats::weighted.mean(x = fct_df$fct, w = fct_df$nreq/nreq_max)
 
   } else {
 
-    out <- 1
+    orig_cdf <-
+      dplyr::filter(coords_df_sa, rel_loc != "periphery")
+
+    if(base::isFALSE(core)){
+
+      orig_cdf <-
+        dplyr::filter(orig_cdf, rel_loc != "core")
+
+    }
 
   }
+
+  smrd_cdf <-
+    dplyr::group_by(orig_cdf, id) %>%
+    dplyr::summarise(md = base::max(dist, na.rm = TRUE))
+
+  unit <- base::unique(orig_cdf$dist_unit)
+
+  fct_df <-
+    purrr::map_df(
+      .x = base::levels(smrd_cdf$id),
+      .f = function(id){
+
+        distance <-
+          dplyr::filter(smrd_cdf, id == {{id}}) %>%
+          dplyr::pull(md) %>%
+          stringr::str_c(., unit)
+
+        buffer <-
+          as_unit(
+            distance,
+            unit = "px",
+            object = object
+          ) %>% base::as.numeric()
+
+        sim_cdf <- simulate_complete_coords_sa(
+          object = object,
+          id = id,
+          distance = distance
+        )
+
+        outline_df <- getSpatAnnOutlineDf(
+          object,
+          id = id,
+          outer = TRUE,
+          inner = TRUE
+        )
+
+        outer_df <- getSpatAnnOutlineDf(
+          object,
+          id = id,
+          outer = TRUE,
+          inner = FALSE
+        )[, c("x", "y")]
+
+        buffered_outer_df <- buffer_area(outer_df, buffer = buffer)
+
+        if(base::isFALSE(core)){
+
+          sim_cdf <-
+            identify_obs_in_spat_ann(
+              sim_cdf,
+              strictly = TRUE,
+              outline_df = outline_df,
+              opt = "remove"
+            )
+
+        }
+
+        sim_cdf <-
+          identify_obs_in_polygon(
+            sim_cdf,
+            strictly = TRUE,
+            polygon_df = buffered_outer_df,
+            opt = "keep"
+          )
+
+        flt_orig_cdf <-
+          getCoordsDfSA(
+            object,
+            ids = id,
+            distance = distance,
+            core = core,
+            periphery = FALSE
+          )
+
+        fct <- base::nrow(flt_orig_cdf) / base::nrow(sim_cdf)
+
+        out_df <-
+          tibble::tibble(
+            fct = fct,
+            nav = base::nrow(flt_orig_cdf), # n available
+            nreq = base::nrow(sim_cdf) # n required
+          )
+
+        return(out_df)
+
+      }
+    )
+
+  nreq_max <- base::max(fct_df$nreq)
+
+  out <- stats::weighted.mean(x = fct_df$fct, w = fct_df$nreq/nreq_max)
 
   # use
   return(out)
@@ -617,6 +877,215 @@ compute_relative_variation <- function(gradient){
 
 # computeC ----------------------------------------------------------------
 
+
+#' @title Compute capture area
+#' @description Computes and updates the capture area (field of view).
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' The `computeCaptureArea` function calculates the capture area for the spatial data based
+#' on the specific method used. The process differs slightly depending on whether the
+#' spatial method is a Visium platform or another type:
+#'
+#' \itemize{
+#'   \item For Visium platforms:
+#'     \itemize{
+#'       \item The coordinates data frame is first ensured to be complete using `complete_visium_coords_df`.
+#'       \item A buffer is added around the capture area to account for the physical spacing between capture areas, calculated using the center-to-center distance (`CCD`).
+#'       \item The capture area is defined by the four corners (vertices) of the bounding box around the coordinates, adjusted by the buffer.
+#'     }
+#'   \item For non-Visium platforms:
+#'     \itemize{
+#'       \item The capture area is calculated as the range of the x and y coordinates, defining a simple bounding box.
+#'     }
+#' }
+#'
+#' After computing the capture area, it is stored in the `@capture_area` slot of the [`SpatialData`].
+#'
+#' @export
+
+#' @title Compute capture area
+#' @description Computes and updates the capture area (field of view).
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' The `computeCaptureArea` function calculates the capture area for the spatial data based
+#' on the specific method used. The process differs slightly depending on whether the
+#' spatial method is a Visium platform or another type:
+#'
+#' \itemize{
+#'   \item For Visium platforms:
+#'     \itemize{
+#'       \item The coordinates data frame is first ensured to be complete using `complete_visium_coords_df`.
+#'       \item A buffer is added around the capture area to account for the physical spacing between capture areas, calculated using the center-to-center distance (`CCD`).
+#'       \item The capture area is defined by the four corners (vertices) of the bounding box around the coordinates, adjusted by the buffer.
+#'     }
+#'   \item For non-Visium platforms:
+#'     \itemize{
+#'       \item The capture area is calculated as the range of the x and y coordinates, defining a simple bounding box.
+#'     }
+#' }
+#'
+#' After computing the capture area, it is stored in the `@capture_area` slot of the [`SpatialData`].
+#'
+#' @export
+
+setGeneric(name = "computeCaptureArea", def = function(object, ...){
+
+  standardGeneric(f = "computeCaptureArea")
+
+})
+
+#' @rdname computeCaptureArea
+#' @export
+setMethod(
+  f = "computeCaptureArea",
+  signature = "SPATA2" ,
+  definition = function(object, ...){
+
+    sp_data <- getSpatialData(object)
+
+    sp_data <- computeCaptureArea(sp_data)
+
+    object <- setSpatialData(object, sp_data = sp_data)
+
+    returnSpataObject(object)
+
+  }
+)
+
+#' @rdname computeCaptureArea
+#' @export
+setMethod(
+  f = "computeCaptureArea",
+  signature = "SpatialData" ,
+  definition = function(object, ...){
+
+    coords_df <- getCoordsDf(object, as_is = TRUE)
+
+    method_obj <- object@method
+
+    # concept is similar for all visium platforms
+    if(stringr::str_detect(method_obj@name, pattern = "Visium")){
+
+      isf <- getScaleFactor(object, fct_name = "image")
+
+      buffer <- as.numeric(getCCD(object, unit = "px")*1.125/isf)
+
+      # ensure that the coordinates data.frame is complete
+      coords_df <-
+        complete_visium_coords_df(
+          coords_df = coords_df,
+          method = method_obj@name,
+          square_res = method_obj@method_specifics$square_res
+        )
+
+      coords_df <- align_grid_with_coordinates(coords_df)
+
+      # make capture area
+      # idx1
+      x1 <-
+        dplyr::filter(coords_df, col == min(col)) %>%
+        dplyr::filter(y_orig == min(y_orig)) %>%
+        dplyr::pull(x_orig)
+
+      x1 <- x1 - buffer
+
+      y1 <-
+        dplyr::filter(coords_df, row == min(row)) %>%
+        dplyr::filter(x_orig == min(x_orig)) %>%
+        dplyr::pull(y_orig)
+
+      y1 <- y1 - buffer
+
+      idx1 <- tibble::tibble(x_orig = x1, y_orig = y1, idx = 1)
+
+      # idx2
+      x2 <-
+        dplyr::filter(coords_df, col == min(col)) %>%
+        dplyr::filter(y_orig == max(y_orig)) %>%
+        dplyr::pull(x_orig)
+
+      x2 <- x2 - buffer
+
+      y2 <-
+        dplyr::filter(coords_df, row == max(row)) %>%
+        dplyr::filter(x_orig == min(x_orig)) %>%
+        dplyr::pull(y_orig)
+
+      y2 <- y2 + buffer
+
+      idx2 <- tibble::tibble(x_orig = x2, y_orig = y2, idx = 2)
+
+      # idx3
+      x3 <-
+        dplyr::filter(coords_df, col == max(col)) %>%
+        dplyr::filter(y_orig == max(y_orig)) %>%
+        dplyr::pull(x_orig)
+
+      x3 <- x3 + buffer
+
+      y3 <-
+        dplyr::filter(coords_df, row == max(row)) %>%
+        dplyr::filter(x_orig == max(x_orig)) %>%
+        dplyr::pull(y_orig)
+
+      y3 <- y3 + buffer
+
+      idx3 <- tibble::tibble(x_orig = x3, y_orig = y3, idx = 3)
+
+      # idx4
+      x4 <-
+        dplyr::filter(coords_df, col == max(col)) %>%
+        dplyr::filter(y_orig == min(y_orig)) %>%
+        dplyr::pull(x_orig)
+
+      x4 <- x4 + buffer
+
+      y4 <-
+        dplyr::filter(coords_df, row == min(row)) %>%
+        dplyr::filter(x_orig == max(x_orig)) %>%
+        dplyr::pull(y_orig)
+
+      y4 <- y4 - buffer
+
+      idx4 <- tibble::tibble(x_orig = x4, y_orig = y4, idx = 4)
+
+      capture_area <-
+        purrr::map_dfr(.x = list(idx1, idx2, idx3, idx4), .f = ~ .x)
+
+    } else {
+
+      range_list <-
+        list(
+          x_orig = range(coords_df$x_orig),
+          y_orig = range(coords_df$y_orig)
+        )
+
+      x_min <- range_list$x_orig[1]
+      x_max <- range_list$x_orig[2]
+      y_min <- range_list$y_orig[1]
+      y_max <- range_list$y_orig[2]
+
+      capture_area <-
+        tibble::tibble(
+          x = c(x_min, x_min, x_max, x_max),
+          y = c(y_min, y_max, y_min, y_max),
+          idx = 1:4
+        )
+
+    }
+
+    object@capture_area <- capture_area
+
+    return(object)
+
+  }
+)
 
 #' @title Compute chromosomal damage
 #'
@@ -1009,6 +1478,9 @@ setMethod(
 
     ccd <- getCCD(object)
 
+    ccd_val <- extract_value(ccd)
+    ccd_unit <- extract_unit(ccd)
+
     confuns::give_feedback(
       msg = "Computing pixel scale factor.",
       verbose = verbose
@@ -1024,61 +1496,98 @@ setMethod(
     coords_df <-
       getCoordsDf(object, img_name = object@name_img_ref)
 
-    bc_origin <- coords_df$barcodes
-    bc_destination <- coords_df$barcodes
+    # VisiumHD contains too many spots
+    if(!containsMethod(object, method_name = "VisiumHD")){
 
-    spots_compare <-
-      tidyr::expand_grid(bc_origin, bc_destination) %>%
-      dplyr::left_join(
-        x = .,
-        y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y),
-        by = "bc_origin"
-      ) %>%
-      dplyr::left_join(
-        x = .,
-        y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y),
-        by = "bc_destination"
-      ) %>%
-      dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2))
+      bc_origin <- coords_df$barcodes
+      bc_destination <- coords_df$barcodes
 
-    bcsp_dist_pixel <-
-      dplyr::filter(spots_compare, bc_origin != bc_destination) %>%
-      dplyr::group_by(bc_origin) %>%
-      dplyr::mutate(dist_round = base::round(distance, digits = 0)) %>%
-      dplyr::filter(dist_round == base::min(dist_round)) %>%
-      dplyr::ungroup() %>%
-      dplyr::pull(distance) %>%
-      stats::median()
+      spots_compare <-
+        tidyr::expand_grid(bc_origin, bc_destination) %>%
+        dplyr::left_join(
+          x = .,
+          y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y),
+          by = "bc_origin"
+        ) %>%
+        dplyr::left_join(
+          x = .,
+          y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y),
+          by = "bc_destination"
+        ) %>%
+        dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2))
 
-    ccd_val <- extract_value(ccd)
-    ccd_unit <- extract_unit(ccd)
+      bcsp_dist_pixel <-
+        dplyr::filter(spots_compare, bc_origin != bc_destination) %>%
+        dplyr::group_by(bc_origin) %>%
+        dplyr::mutate(dist_round = base::round(distance, digits = 0)) %>%
+        dplyr::filter(dist_round == base::min(dist_round)) %>%
+        dplyr::ungroup() %>%
+        dplyr::pull(distance) %>%
+        stats::median()
 
-    pxl_scale_fct <-
-      units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
-      units::set_units(x = ., value = object@method@unit, mode = "standard") %>%
-      base::as.numeric()
+      pxl_scale_fct <-
+        units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
+        units::set_units(x = ., value = object@method@unit, mode = "standard") %>%
+        base::as.numeric()
 
-    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(object@method@unit, "/px")
+      base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(object@method@unit, "/px")
 
-    # set in ref image
-    ref_img <- getHistoImage(object, img_name = object@name_img_ref)
+    } else if(containsMethod(object, method_name = "VisiumHD")) {
 
-    ref_img <- setScaleFactor(ref_img, fct_name = "pixel", value = pxl_scale_fct)
+      if(!all(c("row", "col") %in% names(coords_df))){
 
-    object <- setHistoImage(object, hist_img = ref_img)
+        coords_df <- extract_row_col_vars_visiumHD(coords_df)
 
-    # set in all other slots
-    for(img_name in getImageNames(object, ref = FALSE)){
+      }
 
-      hist_img <- getHistoImage(object, img_name = img_name)
+      neighbors <- find_neighbors_visiumHD(coords_df, verbose = verbose)
 
-      sf <-
-        base::max(ref_img@image_info$dims)/
-        base::max(hist_img@image_info$dims)
+      if(is.null(neighbors)){
 
-      hist_img <- setScaleFactor(hist_img, fct_name = "pixel", value = pxl_scale_fct*sf)
+        pxl_scale_fct <- NULL
 
-      object <- setHistoImage(object, hist_img = hist_img)
+      } else {
+
+        bcsp_dist_pixel <- neighbors$distance
+
+        pxl_scale_fct <-
+          units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
+          units::set_units(x = ., value = object@method@unit, mode = "standard") %>%
+          base::as.numeric()
+
+        base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(object@method@unit, "/px")
+
+      }
+
+    }
+
+    if(!is.null(pxl_scale_fct)){
+
+      # set in ref image
+      ref_img <- getHistoImage(object, img_name = object@name_img_ref)
+
+      ref_img <- setScaleFactor(ref_img, fct_name = "pixel", value = pxl_scale_fct)
+
+      object <- setHistoImage(object, hist_img = ref_img)
+
+      # set in all other slots
+      for(img_name in getImageNames(object, ref = FALSE)){
+
+        hist_img <- getHistoImage(object, img_name = img_name)
+
+        sf <-
+          base::max(ref_img@image_info$dims)/
+          base::max(hist_img@image_info$dims)
+
+        hist_img <- setScaleFactor(hist_img, fct_name = "pixel", value = pxl_scale_fct*sf)
+
+        object <- setHistoImage(object, hist_img = hist_img)
+
+      }
+
+    } else {
+
+      warning("Can not compute pixel scale facotr.")
 
     }
 
@@ -1262,12 +1771,7 @@ cropSpataObject <- function(object,
 
   if(base::isTRUE(adjust_capture_area)){
 
-    object_cropped <-
-      setCaptureArea(
-        object = object_cropped,
-        x = as_unit(xrange, unit = unit, object = object),
-        y = as_unit(yrange, unit = unit, object = object)
-      )
+    object_cropped <- computeCaptureArea(object_cropped)
 
   }
 

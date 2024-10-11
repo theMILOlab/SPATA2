@@ -30,6 +30,11 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
+\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
 }

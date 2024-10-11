@@ -119,7 +119,7 @@ Matrix with rownames corresponding to the simulation names and
 colnames corresponding to the barcodes of the object.
 }
 \description{
-Simulates expression pattern by modelling expression dependent
+Simulates expression patterns by modelling expression dependent
 on the distance to a spatial annotation.
 }
 \details{

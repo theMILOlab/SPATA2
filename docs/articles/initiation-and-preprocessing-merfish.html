@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.0</span>
       </span>
     </div>
 
@@ -182,8 +182,10 @@ tutorial can be downloaded <a href="https://drive.google.com/drive/folders/1hDIL
 <span></span>
 <span><span class="co"># output object</span></span>
 <span><span class="va">object</span></span></code></pre></div>
-<pre><code><span><span class="co">## SPATA2 object of size: 85958 x 649 (cells x molecules)</span></span>
-<span><span class="co">## Sample name: Slice2_Replicate3 </span></span>
+<pre><code><span><span class="co">## An object of class SPATA2</span></span>
+<span><span class="co">## Sample: Slice2_Replicate3 </span></span>
+<span><span class="co">## Size: 85958 x 649 (cells x molecules)</span></span>
+<span><span class="co">## Memory: 179.16 Mb</span></span>
 <span><span class="co">## Platform: MERFISH </span></span>
 <span><span class="co">## Molecular assays (1):</span></span>
 <span><span class="co">## 1. Assay</span></span>
@@ -237,8 +239,8 @@ column <em>sp_outlier</em> which is added to the cell metadata.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># identify outliers based on the results of identifyTissueOutline()</span></span>
 <span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/identifySpatialOutliers.html">identifySpatialOutliers</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 00:35:58 Identifying spatial outliers.</span></span></code></pre>
-<pre><code><span><span class="co">## 00:35:58 Spatial outliers: 95</span></span></code></pre>
+<pre><code><span><span class="co">## 14:40:20 Identifying spatial outliers.</span></span></code></pre>
+<pre><code><span><span class="co">## 14:40:20 Spatial outliers: 95</span></span></code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show the column</span></span>
 <span><span class="fu"><a href="../reference/getCoordsDf.html">getCoordsDf</a></span><span class="op">(</span><span class="va">object</span>, variables <span class="op">=</span> <span class="st">"sp_outlier"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -369,8 +371,10 @@ identified by cell.</p>
 <span></span>
 <span><span class="co"># show overview (compare to overview above)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/methods/show.html" class="external-link">show</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
-<span><span class="co">## SPATA2 object of size: 85863 x 649 (cells x molecules)</span></span>
-<span><span class="co">## Sample name: Slice2_Replicate3 </span></span>
+<span><span class="co">## An object of class SPATA2</span></span>
+<span><span class="co">## Sample: Slice2_Replicate3 </span></span>
+<span><span class="co">## Size: 85863 x 649 (cells x molecules)</span></span>
+<span><span class="co">## Memory: 261.64 Mb</span></span>
 <span><span class="co">## Platform: MERFISH </span></span>
 <span><span class="co">## Molecular assays (1):</span></span>
 <span><span class="co">## 1. Assay</span></span>
