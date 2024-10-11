@@ -1,5 +1,7 @@
 # SPATA2 Version 3
 
+*(Version 3.1.0 has been released for some fixes as well as improvements. See Newslog.)*
+
 We are excited to announce the release of SPATA2 v3.0.0, coinciding with the official publication:
 
 Kueckelhaus, J., Frerich, S., Kada-Benotmane, J. et al. Inferring histology-associated gene expression gradients in spatial transcriptomic studies. Nat Commun 15, 7280 (2024). https://doi.org/10.1038/s41467-024-50904-x

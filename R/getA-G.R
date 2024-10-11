@@ -2627,7 +2627,7 @@ getGridVisiumHD <- function(object, res, img_name = activeImage(object)){
   every_nth <- num_res_new / num_res_now
 
   dfh_out <- dfh_complete[reduce_vec(1:nrow(dfh_complete), nth = every_nth), ]
-  dfv_out <- dfv_complete[reduce_vec(1:nrow(dfh_complete), nth = every_nth), ]
+  dfv_out <- dfv_complete[reduce_vec(1:nrow(dfh_complete), nth = every_nth, start.with = 0), ]
 
   out <- rbind(dfh_out, dfv_out)
 
