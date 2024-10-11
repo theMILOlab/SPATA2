@@ -139,13 +139,6 @@ SpatialGradientScreening <-  setClass(Class = "SpatialGradientScreening",
 #' @description Defines the core features of spatial biology platforms
 #' like \emph{Visium} and \emph{SlideSeq}.
 #'
-#' @slot capture_area list
-#' A list of length two, with elements named *x* and *y*. Each element is a vector of length two.
-#' This slot specifies the coordinates of the opposite corners of a rectangular area.
-#' The *x* element contains the x-coordinates and the *y* element contains the y-coordinates.
-#' These coordinates define the area within which data points are expected to be captured.
-#' Coordinates must be specified in SI units. The first value in each vector represents
-#' one corner of the rectangle, and the second value represents the diagonally opposite corner.
 #' @slot info list. List of miscellaneous meta data about the method.
 #' @slot method_specific list. List method specific data. Depending on the
 #' method certain slot names are reserved. See section *Method specifics:*
@@ -181,7 +174,6 @@ SpatialGradientScreening <-  setClass(Class = "SpatialGradientScreening",
 #' @export
 SpatialMethod <- setClass(Class = "SpatialMethod",
                           slots = list(
-                            capture_area = "list",
                             info = "list",
                             method_specifics = "list",
                             name = "character",
