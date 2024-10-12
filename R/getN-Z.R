@@ -3548,7 +3548,7 @@ getStsDf <- function(object,
 #' @inherit argumnet_dummy params
 #' @param unit Character value. Output unit. Must be one of `validUnitsOfArea()`.
 #'
-#' @return A vector of \link[=concept_area_measures]{area measures}. Length is equal to the number
+#' @return A vector of \link[=concept_area_measure]{area measures}. Length is equal to the number
 #' of tissue sections.
 #'
 #' @seealso [`getTissueSections()`], [`identifyTissueOutline()`]

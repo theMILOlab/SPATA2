@@ -17,7 +17,7 @@ By default, all molecules are included.}
 A list containing the names of molecules categorized by type.
 }
 \description{
-Retrieves a list of molecules sorted by \link[=concept_molecular_modality]{molecular modality}.
+Retrieves a list of molecules sorted by \link[=concept_molecular_modalities]{molecular modality}.
 }
 \details{
 This function categorizes molecules into different types based on the provided object.

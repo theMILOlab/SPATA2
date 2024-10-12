@@ -22,6 +22,6 @@ objects of classes for which a method has been defined.}
 Character value.
 }
 \description{
-Extracts the observational unit of the \link[\code{SpatialMethod}]{spatial method (platform)}
+Extracts the observational unit of the \link[\code{SpatialMethod}]{spatial method or platform}
 of the object.
 }

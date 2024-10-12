@@ -110,5 +110,5 @@ tcr_genes <- getGenes(object, of_gene_sets = tcr_gs, simplify = FALSE)
 
 }
 \seealso{
-\code{\link[=getMatrix]{getMatrix()}}, \code{\link[=getSignatures]{getSignatures()}}
+\code{\link[=getMatrix]{getMatrix()}}, \code{\link[=getSignatureList]{getSignatureList()}}
 }

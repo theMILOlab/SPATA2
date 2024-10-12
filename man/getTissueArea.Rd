@@ -20,7 +20,7 @@ If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. E
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
 }
 \value{
-A vector of \link[=concept_area_measures]{area measures}. Length is equal to the number
+A vector of \link[=concept_area_measure]{area measures}. Length is equal to the number
 of tissue sections.
 }
 \description{

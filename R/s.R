@@ -1097,9 +1097,9 @@ simulate_complete_coords_sa <- function(object, id, distance){
 
     # Obtain coordinates for assumed number of cells within grid broders (cells are equally spaced)
     n_cells_per_side <- sqrt(n_cells_assumed)
-    
-    coords_df_simulated <- 
-            expand.grid(x = seq(left_border, right_border, length.out = n_cells_per_side), 
+
+    coords_df_simulated <-
+            expand.grid(x = seq(left_border, right_border, length.out = n_cells_per_side),
                         y = seq(lower_border, upper_border, length.out = n_cells_per_side)
                       ) %>% dplyr::mutate(barcodes = str_c("barcode", dplyr::row_number())
                       ) %>% dplyr::select(barcodes, x, y
@@ -1135,28 +1135,28 @@ simulate_complete_coords_sa <- function(object, id, distance){
     avg_dist <- mean(nearest_dist)
 
     # Function to check if points are within the polygon and within avg_dist of coords_df_tissue
-    
+
     is_within_range <- function(coords_df_simulated, coords_df_tissue, avg_dist, polygon) {
-        
+
       in_range <- RANN::nn2(coords_df_tissue %>% dplyr::select(x, y), coords_df_simulated %>% dplyr::select(x, y), k = 1)$nn.dists[, 1] <= avg_dist
-        
+
       in_poly <- !is.na(sp::over(sp::SpatialPoints(coords_df_simulated %>% dplyr::select(x, y)), polygon))
-        
+
       in_range | in_poly
-        
+
     }
 
     # Filter out points in coords_df_simulated that overlap with coords_df_tissue or are inside the polygon
-    
+
     coords_df_tissue <- getCoordsDf(object = object,
                                     ids = id
                                    )
-    
+
     coords_df_cleaned <- coords_df_simulated %>%
       dplyr::filter(!is_within_range(coords_df_simulated, coords_df_tissue, avg_dist, polygon))
 
     coords_df <- dplyr::bind_rows(coords_df_cleaned, coords_df_tissue)
-  
+
   } else {
 
     stop("Not yet defined for the current platform.")
@@ -2460,7 +2460,6 @@ smoothSpatially <- function(coords_df,
 #' @param seed Numeric value. Sets the random seed.
 #'
 #' @inherit argument_dummy params
-#' @inherit spatial_gradient_screening params
 #'
 #' @return A list of four slots:
 #'
@@ -2858,11 +2857,11 @@ spatialAnnotationScreening <- function(object,
   hlpr_assign_arguments(object)
 
   if(!containsImage(object)){
-    
+
     if(add_image == TRUE){
-      
+
       add_image <- FALSE
-      
+
     }
 
   }
@@ -2870,7 +2869,7 @@ spatialAnnotationScreening <- function(object,
   if(containsMethod(object, method_name = c("MERFISH", "Xenium"))){
 
     rm_zero_infl <- FALSE # otherwise too many variables are excluded
-    
+
     confuns::give_feedback(
       msg = "Removal of zero-inflated genes is disabled for MERFISH and Xenium data.",
       verbose = verbose
@@ -2935,9 +2934,9 @@ spatialAnnotationScreening <- function(object,
     dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
 
   cf <- list(...)[["cf"]]
-  
-  if(is.null(cf)){ 
-    
+
+  if(is.null(cf)){
+
     cf <-
       compute_correction_factor_sas(
         object = object,
@@ -2946,13 +2945,13 @@ spatialAnnotationScreening <- function(object,
         core = core,
         coords_df_sa = coords_df_flt
         )
-  
-  } else { 
-    
+
+  } else {
+
     confuns::is_value(cf, mode = "numeric")
 
     stopifnot(cf > 0 & cf <= 1) # cannot be > 1
-  
+
   }
 
   coords_df_flt <-

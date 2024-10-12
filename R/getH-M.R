@@ -1289,7 +1289,7 @@ setMethod(
 #'
 #' If 'signature' is `NULL`, it returns all molecules from the respective assay in the object.
 #'
-#' @seealso [`getMatrix()`], [`getSignatures()`]
+#' @seealso [`getMatrix()`], [`getSignatureList()`]
 #'
 #' @examples
 #'
@@ -1385,7 +1385,7 @@ getMolecules <- function(object,
 
 #' @title Obtain a list of molecules
 #'
-#' @description Retrieves a list of molecules sorted by \link[=concept_molecular_modality]{molecular modality}.
+#' @description Retrieves a list of molecules sorted by \link[=concept_molecular_modalities]{molecular modality}.
 #'
 #' @inherit argument_dummy params
 #' @param molecules A character vector specifying the subset of molecules to include in the output.
