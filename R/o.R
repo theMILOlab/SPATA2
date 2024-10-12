@@ -37,7 +37,7 @@ objectMemoryUsage <- function(object, digits = 2){
 #' @title The observational unit
 #'
 #' @description
-#' Extracts the observational unit of the \link[`SpatialMethod`]{spatial method (platform)}
+#' Extracts the observational unit of the \link[`SpatialMethod`]{spatial method or platform}
 #' of the object.
 #'
 #' @inherit argument_dummy params

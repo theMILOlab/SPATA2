@@ -19,7 +19,7 @@ objects of classes for which a method has been defined.}
 \item{unit}{Character value. Specifies the desired unit in
 which \link[=concept_distance_measure]{distance measures}
 or  \link[=concept_area_measure]{area measures} are provided.
-Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsOfArea]{validUnitsOfArea()}} for valid
 input options.}
 }
 \value{

@@ -406,7 +406,7 @@ setMethod(
 #'
 #' @inherit argument_dummy params
 #' @inherit check_object params
-#' @param directory_spata Character value. The directory from which to load the [`SPATA2'] object.
+#' @param directory_spata Character value. The directory from which to load the [`SPATA2`] object.
 #' @param update Logical value. If `TRUE`, calls [`updateSpataObject()`] after loading to check whether
 #' the loaded object is up to date.
 #'

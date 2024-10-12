@@ -294,7 +294,7 @@
 #' @param unit Character value. Specifies the desired unit in
 #' which \link[=concept_distance_measure]{distance measures}
 #' or  \link[=concept_area_measure]{area measures} are provided.
-#' Run [`validUnitsOfLength()`] or [`validUnitsofArea()`] for valid
+#' Run [`validUnitsOfLength()`] or [`validUnitsOfArea()`] for valid
 #' input options.
 #'
 #' @param use_scattermore Logical value. If `TRUE`, data points are plotted with
