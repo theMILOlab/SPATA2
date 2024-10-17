@@ -913,7 +913,7 @@ setMethod(
     ma <- MolecularAssay()
     ma@modality <- modality
 
-    mtr_names <- base::names(object@layers)
+    mtr_names <- SeuratObject::Layers(object)
 
     for(mtr_name in mtr_names){
 
@@ -929,7 +929,11 @@ setMethod(
 
     }
 
-    ma@meta_var <-  object@meta.data
+    if ("meta.data" %in% slotNames(object)) {
+        ma@meta_var <- slot(object, "meta.data") # Seurat v4
+    } else if ("meta.features" %in% slotNames(object)) {
+        ma@meta_var <- slot(object, "meta.features") # Seurat v5
+    }
 
     if(modality %in% base::names(signatures)){
 
@@ -982,7 +986,11 @@ setMethod(
     }
 
     # meta var
-    ma@meta_var <- object@meta.features
+    if ("meta.data" %in% slotNames(object)) {
+        ma@meta_var <- slot(object, "meta.data") # Seurat v4
+    } else if ("meta.features" %in% slotNames(object)) {
+        ma@meta_var <- slot(object, "meta.features") # Seurat v5
+    }
 
     # signatures
     if(modality %in% base::names(signatures)){
@@ -1533,9 +1541,15 @@ setMethod(
 
     }
 
+    object_assay <- Seurat::GetAssay(object, assay = assay_name)
+    if (class(object_assay) == "Assay") {
+      warning(glue::glue("Assay '{assay_name}' is in outdated Seurat format and will be converted to Seurat v5."))
+      object_assay <- as(object = object_assay, Class = "Assay5")
+    }
+
     ma <-
       asMolecularAssay(
-        object = Seurat::GetAssay(object, assay = assay_name),
+        object = object_assay, # requires Seurat v5 assay
         modality = assay_modality
         )
 
@@ -1574,10 +1588,14 @@ setMethod(
 
     if(class(seurat_image) == "FOV"){
 
-      coordinates <-
-        Seurat::GetTissueCoordinates(seurat_image) %>%
-        dplyr::select(barcodes = cell, x_orig = x, y_orig = y) %>%
-        tibble::as_tibble()
+      # compatible with Seurat naming conventions up to v5
+      coordinates <- Seurat::GetTissueCoordinates(object) %>%
+        { if (!"cell" %in% colnames(.)) tibble::as_tibble(., rownames = "barcodes") else tibble::as_tibble(.) } %>%
+        dplyr::rename(
+          barcodes = dplyr::if_else("cell" %in% colnames(.), "cell", "barcodes"),
+          x_orig = dplyr::if_else("x" %in% colnames(.), "x", "imagecol"),
+          y_orig = dplyr::if_else("y" %in% colnames(.), "y", "imagerow")
+        )
 
       # pixel scale factor
       psf <- 1
@@ -1607,10 +1625,14 @@ setMethod(
           verbose = verbose
         )
 
-      coordinates <-
-        Seurat::GetTissueCoordinates(object) %>%
-        dplyr::rename(barcodes = cell, x_orig = x, y_orig = y) %>%
-        tibble::as_tibble()
+      # compatible with Seurat naming conventions up to v5
+      coordinates <- Seurat::GetTissueCoordinates(object) %>%
+        { if (!"cell" %in% colnames(.)) tibble::as_tibble(., rownames = "barcodes") else tibble::as_tibble(.) } %>%
+        dplyr::rename(
+          barcodes = dplyr::if_else("cell" %in% colnames(.), "cell", "barcodes"),
+          x_orig = dplyr::if_else("x" %in% colnames(.), "x", "imagecol"),
+          y_orig = dplyr::if_else("y" %in% colnames(.), "y", "imagerow")
+        )
 
       sp_data <-
         createSpatialData(
