@@ -4,18 +4,13 @@
 \alias{asSeurat}
 \title{Transform SPATA2 object to Seurat object}
 \usage{
-asSeurat(
-  object,
-  process = TRUE,
-  transfer_features = TRUE,
-  assay_name = "Spatial",
-  image_name = "slice1",
-  verbose = NULL
-)
+asSeurat(object, ...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{process}{Logical value. If \code{TRUE}, count matrix is processed.
 See details for more.
@@ -26,11 +21,6 @@ initiation.}
 \item{assay_name, image_name}{Character values. Define the name with which
 to refer to the assay or the image in the \code{Seurat} object. Defaults to
 the default of the \code{Seurat} package.}
-
-\item{verbose}{Logical. If \code{TRUE}, informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
 }
 \value{
 An object of class \code{Seurat}.
