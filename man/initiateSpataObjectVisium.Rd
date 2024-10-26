@@ -98,3 +98,8 @@ that \emph{row} aligns with the direction of the y-coordinates. If they do not, 
 Hence, these variables should not be used as keys for data merging.
 }
 
+\seealso{
+\code{\link[=flipAll]{flipAll()}} to revert the effect of a horizontally flipped sample. (SPATA2 works
+in cartesian coordinate system, in which images are displayed, too. Therefore, samples are
+displayed "upside-down" when compared to the image in your folder.)
+}

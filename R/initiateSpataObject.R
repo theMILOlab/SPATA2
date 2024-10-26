@@ -731,6 +731,10 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #'
 #' In any case, the output is an object of class `SPATA2`.
 #'
+#' @seealso [`flipAll()`] to revert the effect of a horizontally flipped sample. (SPATA2 works
+#' in cartesian coordinate system, in which images are displayed, too. Therefore, samples are
+#' displayed "upside-down" when compared to the image in your folder.)
+#'
 #' @details
 #' The function requires a directory containing the output files from a 10x Genomics Visium experiment
 #' specified with the argument `directory_visum`. This directory (below denoted as **~**) must include the following files
