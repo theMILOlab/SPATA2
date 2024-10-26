@@ -1045,7 +1045,7 @@ setMethod(
 #'
 
 asSeurat <- function(object, ...){
-  
+
   warning("This function is currently in development. Please raise an issue at github if you require SPATA2 to Seurat conversion.")
 
 }

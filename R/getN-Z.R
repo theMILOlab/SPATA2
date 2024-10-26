@@ -2720,7 +2720,8 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, id, expand = 0, scale_fct = 1, ...){
 
-    ranges <- getSpatialData(object) %>%
+    ranges <-
+      getSpatialData(object) %>%
       getSpatAnnRange(object = ., id = id, scale_fct = scale_fct)
 
     if (containsImage(object)) {
