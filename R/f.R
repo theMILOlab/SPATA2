@@ -950,7 +950,15 @@ flip_coords_df <- function(df,
 #'
 flipAll <- function(object, axis, verbose = FALSE){
 
-  object <- flipImage(object, axis = axis, verbose = verbose)
+  if(containsHistoImages(object)){
+
+    for(img_name in getImageNames(object)){
+
+      object <- flipImage(object, axis = axis, img_name = img_name, verbose = verbose)
+
+    }
+
+  }
 
   object <- flipCoordinates(object, axis = axis, verbose = verbose)
 

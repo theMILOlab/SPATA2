@@ -69,28 +69,9 @@ tab_create_segmentation_return <- function(){shinydashboard::tabItem(tabName = "
 tab_surface_plots_return <- function(){shinydashboard::tabItem(tabName = "surface_plots",
 
                                                                shiny::fluidRow(
-                                                                 shiny::column(width = 7, align = "center",
+                                                                 shiny::column(width = 12, align = "center",
                                                                                moduleSurfacePlotUI(id = "isp"),
 
-                                                                 ),
-
-                                                                 shiny::column(width = 5, align = "center",
-                                                                               shiny::wellPanel(
-                                                                                 shiny::fluidRow(
-                                                                                   shiny::column(width = 12,
-                                                                                                 shiny::plotOutput("surface_variable"),
-                                                                                                 shiny::HTML("<br>"),
-                                                                                                 shinyWidgets::radioGroupButtons(
-                                                                                                   inputId = "surface_variable_plot_type",
-                                                                                                   label = NULL,
-                                                                                                   selected = "density",
-                                                                                                   choices = c("Densityplot" = "density",
-                                                                                                               "Histogram" = "histogram",
-                                                                                                               "Violinplot" = "violin")
-                                                                                                 )
-                                                                                   )
-                                                                                 )
-                                                                               )
                                                                  )
 
                                                                ),
@@ -105,6 +86,8 @@ tab_surface_plots_return <- function(){shinydashboard::tabItem(tabName = "surfac
                                                                  )
                                                                )
 )}
+
+
 
 
 #' @title Surface plot tab - classic

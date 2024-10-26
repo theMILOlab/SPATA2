@@ -1,7 +1,7 @@
 Package: SPATA2
 Type: Package
 Title: A Toolbox for Spatial Expression Analysis
-Version: 3.1.0
+Version: 3.1.1
 Authors@R: as.person(c(
     "Jan Kueckelhaus <jan.kueckelhaus@uk-erlangen.de> [aut, cre]", 
     "Simon Frerich [ctb]",

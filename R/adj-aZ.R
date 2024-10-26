@@ -1044,14 +1044,9 @@ setMethod(
 #' class(seurat_obj)
 #'
 
-asSeurat <- function(object,
-                     process = TRUE,
-                     transfer_features = TRUE,
-                     assay_name = "Spatial",
-                     image_name = "slice1",
-                     verbose = NULL){
+asSeurat <- function(object, ...){
 
-  message("to do")
+  warning("This function is currently in development. Please raise an issue at github if you require SPATA2 to Seurat conversion.")
 
 }
 

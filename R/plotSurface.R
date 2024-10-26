@@ -1275,51 +1275,6 @@ plotSurfaceInteractive <- function(object){
           })
 
 
-
-          # Distribution plotting ---------------------------------------------------
-
-          output$surface_variable <- shiny::renderPlot({
-
-            plot_df <- module_return()$smoothed_df()
-            var_name <- base::colnames(plot_df)[5]
-
-            if(base::is.numeric(dplyr::pull(plot_df, var_name))){
-
-              plot_type <- input$surface_variable_plot_type
-
-              if(plot_type == "violin"){
-
-                add_on <- ggplot2::theme(
-                  axis.text.x = ggplot2::element_blank(),
-                  axis.ticks.x = ggplot2::element_blank()
-                )
-
-              } else {
-
-                add_on <- list()
-              }
-
-              plotDistribution2(df = plot_df,
-                                plot_type = plot_type,
-                                binwidth = 0.05,
-                                verbose = FALSE) + add_on
-
-            } else {
-
-              ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = .data[[var_name]])) +
-                ggplot2::geom_bar(mapping = ggplot2::aes(fill = .data[[var_name]]), color = "black") +
-                ggplot2::theme_classic() +
-                ggplot2::theme(legend.position = "none") +
-                confuns::scale_color_add_on(aes = "fill",
-                                            variable = "discrete",
-                                            clrp = module_return()$current_setting()$pt_clrp) +
-                ggplot2::labs(y = "Count")
-
-            }
-
-          })
-
-
         }
       )
     )

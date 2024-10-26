@@ -1533,17 +1533,7 @@ moduleSurfacePlotUI <- function(id){
                                         shiny::column(width = 6, shiny::uiOutput(ns("aes_clr_opts")))
                                       ),
                                       shiny::fluidRow(
-                                        shiny::column(width = 12,
-                                                      shiny::uiOutput(ns("aes_clr_opts_detailed")),
-                                                      shiny::conditionalPanel(
-                                                        condition = "input.aes_clr_opts == 'gene_sets'", ns = ns,
-                                                        shinyWidgets::pickerInput(ns("method_gs"),
-                                                                                  label = "Gene-set method:",
-                                                                                  choices = c("Mean" = "mean",
-                                                                                              "Gene Set Variation Analysis" = "gsva",
-                                                                                              "Gene Set Enrichment Analysis" = "ssgsea",
-                                                                                              "Z-Score" = "zscore",
-                                                                                              "Plage" = "plage" )))),
+                                        shiny::column(width = 12, shiny::uiOutput(ns("aes_clr_opts_detailed"))),
                                       ),
                                       shiny::fluidRow(
                                         shiny::column(width = 6, shiny::uiOutput(ns("pt_clrsp"))),
@@ -1576,8 +1566,7 @@ moduleSurfacePlotUI <- function(id){
                                                                                          choices = c("Legend" = "legend",
                                                                                                      "Image" = "image",
                                                                                                      "Title" = "title",
-                                                                                                     "Coordinates" = "coords",
-                                                                                                     "Segmentation" = "segmentation"),
+                                                                                                     "Coordinates" = "coords"),
                                                                                          direction = "horizontal",
                                                                                          justified = FALSE,
                                                                                          individual = FALSE)
@@ -1629,7 +1618,7 @@ moduleSurfacePlotServer <- function(id,
 
       current <- shiny::reactiveValues(
 
-        sample = getSampleNames(object)[1],
+        sample = object@sample,
         color_code = "gene_sets",
         gene_set = base::character(1),
         method_gs = base::character(1),
@@ -1696,8 +1685,8 @@ moduleSurfacePlotServer <- function(id,
 
         shinyWidgets::pickerInput(ns("sample_opts"),
                                   label = "Choose sample:",
-                                  choices = getSampleNames(object),
-                                  selected = getSampleNames(object)[1])
+                                  choices = object@sample,
+                                  selected = object@sample)
 
       })
 
@@ -1754,7 +1743,7 @@ moduleSurfacePlotServer <- function(id,
                                     options = shinyWidgets::pickerOptions(
                                       liveSearch = TRUE,
                                       actionsBox = TRUE),
-                                    multiple = TRUE),
+                                    multiple = FALSE),
           shiny::checkboxInput(ns("reset_select_genes"),
                                label = "Automatic reset",
                                value = FALSE))
@@ -1956,6 +1945,8 @@ moduleSurfacePlotServer <- function(id,
               ymax = img_info$height
             )
 
+          image_add_on <- ggpLayerImage(object)
+
 
         } else {
 
@@ -1972,7 +1963,7 @@ moduleSurfacePlotServer <- function(id,
       sample_coords <- shiny::reactive({
 
         sample_coords <-
-          getCoordsDf(object = object, of_sample = current$sample) %>%
+          getCoordsDf(object = object) %>%
           dplyr::select(barcodes, sample, x, y)
 
         return(sample_coords)
@@ -1983,7 +1974,7 @@ moduleSurfacePlotServer <- function(id,
       rna_assay <- shiny::reactive({
 
         rna_assay <-
-          getExpressionMatrix(object = object, of_sample = current$sample)
+          getMatrix(object = object)
 
         return(rna_assay)
 
@@ -2022,39 +2013,15 @@ moduleSurfacePlotServer <- function(id,
 
         shiny::req(current$gene_set)
 
-        gene_set_df <- object@used_genesets
+        genes <- getGenes(object, signatures = current$gene_set, simplify = T)
 
-        genes <-
-          gene_set_df %>%
-          dplyr::filter(ont == current$gene_set) %>%
-          dplyr::filter(gene %in% base::rownames(rna_assay())) %>%
-          dplyr::pull(gene)
-
-        if(current$method_gs == "mean"){
-
-          geneset_vls <-
-            base::colMeans(rna_assay()[genes, ]) %>%
-            base::as.data.frame() %>%
-            magrittr::set_colnames(value = "expr_score") %>%
-            tibble::rownames_to_column(var = "barcodes")
-
-        } else if(current$method_gs %in% c("gsva", "ssgsea", "zscore", "plage")) {
-
-          shiny::showNotification(
-            ui = stringr::str_c("Calculating gene set score according to method: '", current$method_gs, "'. This might take a few moments.", sep = ""),
-            type = "message")
-
-          geneset_vls <-
-            GSVA::gsva(expr = rna_assay()[genes,], gset.idx.list = gene_set_df, mx.diff = 1, parallel.sz = 2, method = current$method_gs, verbose = F) %>%
-            base::t() %>%
-            base::as.data.frame() %>%
-            magrittr::set_colnames(value = "expr_score") %>%
-            tibble::rownames_to_column(var = "barcodes")
-
-        }
+        geneset_vls <-
+          base::colMeans(base::as.matrix(rna_assay()[genes, ])) %>%
+          base::as.data.frame() %>%
+          magrittr::set_colnames(value = "expr_score") %>%
+          tibble::rownames_to_column(var = "barcodes")
 
         return(geneset_vls)
-
 
       })
 
