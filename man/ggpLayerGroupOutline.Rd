@@ -23,7 +23,7 @@ ggpLayerGroupOutline(
   eps = recDbscanEps(object),
   minPts = recDbscanMinPts(object),
   concavity = NULL,
-  expand_outline = getCCD(object, "px") * 1.1,
+  expand_outline = 0,
   ...
 )
 }

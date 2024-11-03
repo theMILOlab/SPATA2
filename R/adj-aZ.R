@@ -1147,7 +1147,6 @@ asSingleCellExperiment <- function(object,
         imagerow = y_orig,
         imagecol = x_orig
       ) %>%
-      dplyr::left_join(x = ., y = spot_df, by = c("spot" = "barcode")) %>%
       base::as.data.frame()
 
     base::rownames(colD) <- colD$spot

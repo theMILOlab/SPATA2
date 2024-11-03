@@ -1031,7 +1031,7 @@ ggpLayerGroupOutline <- function(object,
                                  eps = recDbscanEps(object),
                                  minPts = recDbscanMinPts(object),
                                  concavity = NULL,
-                                 expand_outline = getCCD(object, "px")*1.1,
+                                 expand_outline = 0,
                                  ...){
 
   hlpr_assign_arguments(object)
@@ -3352,7 +3352,7 @@ setMethod(
                         smooth_with = "none",
                         scale_fct = 1,
                         outline_fct = c(1.75, 2.75),
-                        expand_outline = recSgsRes(object, "px")/1.25,
+                        expand_outline = 0,
                         ...){
 
     hlpr_assign_arguments(object)
@@ -3550,7 +3550,7 @@ setMethod(
                         line_size = 1,
                         line_type = "solid",
                         transform = TRUE,
-                        smooth_with = "chaikin",
+                        smooth_with = "none",
                         scale_fct = 1,
                         expand_outline = 0,
                         ...){

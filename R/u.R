@@ -82,7 +82,7 @@ setMethod(
     } else {
 
       confuns::give_feedback(
-        msg = "No image directory found and/or the directory does not exist on this device. Did not unload image {object@name}.",
+        msg = glue::glue("No image directory found and/or the directory does not exist on this device. Did not unload image {object@name}."),
         verbose = verbose
       )
 
