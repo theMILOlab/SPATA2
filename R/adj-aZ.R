@@ -1588,25 +1588,47 @@ setMethod(
 
     } else if(stringr::str_detect(class(seurat_image), "Visium")){
 
-      scale_factors <- base::unclass(object@images[[img_name]]@scale.factors)
+      scale_factors <- base::unclass(seurat_image@scale.factors)
 
       confuns::is_value(img_scale_fct, mode = "character")
+
+      img <- EBImage::as.Image(seurat_image@image)
+      EBImage::colorMode(img) <- "Color"
+
+      if(class(seurat_image) == "VisiumV1"){
+
+        coordinates <-
+          object@images[[img_name]]@coordinates %>%
+          dplyr::rename(x_orig = imagerow, y_orig = imagecol) %>% # transpose coords
+          dplyr::select(-dplyr::any_of("tissue")) %>%
+          tibble::rownames_to_column("barcodes") %>%
+          tibble::as_tibble()
+
+        #img <- EBImage::flip(img)
+
+      } else if(class(seurat_image) == "VisiumV2"){
+
+        coordinates <-
+          Seurat::GetTissueCoordinates(object) %>%
+          tibble::rownames_to_column(var = "barcodes") %>%
+          dplyr::select(-dplyr::any_of("cell")) %>%
+          dplyr::rename(x_orig = x, y_orig = y) %>%
+          tibble::as_tibble()
+
+      } else {
+
+        stop("Unknown Visium-Seurat class. Please raise an issue at GitHub.")
+
+      }
 
       histo_image <-
         createHistoImage(
           img_name = img_name,
           sample = sample_name,
-          img = object@images[[img_name]]@image,
+          img = img,
           scale_factors = list(image = scale_factors[[img_scale_fct]]),
           verbose = verbose
         )
-
-      coordinates <-
-        Seurat::GetTissueCoordinates(object) %>%
-        tibble::rownames_to_column(var = "barcodes") %>%
-        dplyr::select(-dplyr::any_of("cell")) %>%
-        dplyr::rename(x_orig = x, y_orig = y) %>%
-        tibble::as_tibble()
 
       sp_data <-
         createSpatialData(
