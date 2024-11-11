@@ -49,7 +49,7 @@
 #' continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 #' valid input options.
 #'
-#' @param color_by Character value. The \link[=concept_variable]{variables} by which
+#' @param color_by Character value. The \link[=concept_variables]{variables} by which
 #' to color the data points.
 #'
 #' @param concavity Numeric value. Given to argument `concavity` of

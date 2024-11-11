@@ -90,7 +90,7 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Additional arguments given to \code{scale_color_add_on()}.}
 
-\item{color_by}{Character value. The \link[=concept_variable]{variables} by which
+\item{color_by}{Character value. The \link[=concept_variables]{variables} by which
 to color the data points.}
 
 \item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}

@@ -959,7 +959,7 @@ setMethod(
 #' @export
 setMethod(
   f = "asMolecularAssay",
-  signature = "SCTAssay",
+  signature = "Assay",
   definition = function(object, modality = "undefined", active_mtr = "counts"){
 
     ma <- MolecularAssay()
@@ -1603,7 +1603,9 @@ setMethod(
 
       coordinates <-
         Seurat::GetTissueCoordinates(object) %>%
-        dplyr::rename(barcodes = cell, x_orig = x, y_orig = y) %>%
+        tibble::rownames_to_column(var = "barcodes") %>%
+        dplyr::select(-dplyr::any_of("cell")) %>%
+        dplyr::rename(x_orig = x, y_orig = y) %>%
         tibble::as_tibble()
 
       sp_data <-

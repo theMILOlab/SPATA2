@@ -52,7 +52,7 @@ on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exc
 with which the expression gradient is inferred. Defaults are platform specific.
 See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
-\item{color_by}{Character value. The \link[=concept_variable]{variables} by which
+\item{color_by}{Character value. The \link[=concept_variables]{variables} by which
 to color the data points.}
 
 \item{unit}{Character value. Specifies the desired unit in
