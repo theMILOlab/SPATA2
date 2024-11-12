@@ -2412,21 +2412,23 @@ renameMetaFeatures <- function(object, ...){
 #' @export
 renameMolecularAssay <- function(object, assay_name, new_assay_name, set_signatures = FALSE){
 
+  check_object(object)
+
   confuns::check_one_of(
     input = assay_name,
     against = getAssayNames(object)
   )
 
   confuns::check_none_of(
-    input = assay_name_new,
+    input = new_assay_name,
     against = getAssayNames(object),
-    ref.input = "`assay_name_new`",
+    ref.input = "`new_assay_name`",
     ref.against = "existing molecular assays"
   )
 
   ma <- object@assays[[assay_name]]
-  ma@modality <- assay_name_new
-  object@assays[[assay_name_new]] <- ma
+  ma@modality <- new_assay_name
+  object@assays[[new_assay_name]] <- ma
 
   object@assays[[assay_name]] <- NULL
 
