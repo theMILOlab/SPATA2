@@ -505,7 +505,12 @@ plotSurfaceBase <- function(object,
 
   }
 
-  if(containsImage(object) &
+  # pt_size is optimized for ggplot2
+  if(containsMethod(object, c("MERFISH", "Xenium"))){
+
+    pt_size <- pt_size/10
+
+  } else if(containsImage(object) &
      base::isTRUE(crop_image) &
      base::isTRUE(adjust_pt_size)){
 

@@ -931,7 +931,7 @@ create_spatial_trajectories_ui <- function(plot_height = "600px", breaks_add = N
 #' annotations are tagged are expanded by the unsuffixed `id`, the `grouping`,
 #' the `group` and *'createGroupAnnotations'*.
 #'
-#' @inherit barcodesToSpatialAnnotation params seealso return
+#' @inherit barcodesToSpatialAnnotation params seealso return references
 #' @inherit argument_dummy params
 #'
 #' @inheritSection section_dummy Distance measures
@@ -954,8 +954,8 @@ create_spatial_trajectories_ui <- function(plot_height = "600px", breaks_add = N
 #' and merging them afterwards via `mergeSpatialAnnotations()` if they are too
 #' close together.
 #'
-#' Lastly, the remaining data points are fed into the concaveman algorithm on a
-#' per-group basis. The algorithm calculates concave polygons outlining the groups
+#' Lastly, the remaining data points are fed into either the concaveman or the alphahull algorithm on a
+#' per-group basis. The algorithm calculates polygons outlining the groups
 #' of data points. If `dbscan_use` is `FALSE`, all data points that remained after the
 #' initial filtering are submitted to the algorithm. Subsequently, these polygons are
 #' integrated into \code{addSpatialAnnotation()} along with the unsuffixed \code{id} and
@@ -997,6 +997,8 @@ createGroupAnnotations <- function(object,
                                    minPts = recDbscanMinPts(object),
                                    min_size = nObs(object)*0.01,
                                    force1 = FALSE,
+                                   method_outline = "concaveman",
+                                   alpha = recAlpha(object),
                                    concavity = 2,
                                    overwrite = FALSE,
                                    verbose = NULL){
@@ -1028,6 +1030,8 @@ createGroupAnnotations <- function(object,
       tags_expand = FALSE,
       inner_borders = inner_borders,
       force1 = force1,
+      method_outline = method_outline,
+      alpha = alpha,
       concavity = concavity,
       eps = eps,
       minPts = minPts,
@@ -2577,7 +2581,7 @@ createMolecularAssay <- function(object,
 #'
 #' @inherit variable_num params
 #'
-#' @inherit barcodesToSpatialAnnotation params seealso return
+#' @inherit barcodesToSpatialAnnotation params seealso return references
 #' @inherit argument_dummy params
 #'
 #' @inheritSection section_dummy Distance measures
@@ -2630,8 +2634,8 @@ createMolecularAssay <- function(object,
 #' and merging them afterwards via [`mergeSpatialAnnotations()`] if they are too
 #' close together.
 #'
-#' Lastly, the remaining data points are fed into the concaveman algorithm on a
-#' per-group basis. The algorithm calculates concave polygons outlining the groups
+#' Lastly, the remaining data points are fed into either the concaveman or the alphahull algorithm on a
+#' per-group basis. The algorithm calculates polygons outlining the groups
 #' of data points. If `dbscan_use` is `FALSE`, all data points that remained after the
 #' initial filtering are submitted to the algorithm. Subsequently, these polygons are
 #' integrated into \code{addSpatialAnnotation()} along with the unsuffixed \code{id} and
@@ -2682,6 +2686,8 @@ createNumericAnnotations <- function(object,
                                      force1 = FALSE,
                                      fct_incr = 1,
                                      min_size = nObs(object)*0.01,
+                                     method_outline = "concaveman",
+                                     alpha = recAlpha(object),
                                      concavity = 2,
                                      method_gs = NULL,
                                      transform_with = NULL,
@@ -2807,6 +2813,8 @@ createNumericAnnotations <- function(object,
       fct_incr = fct_incr,
       min_size = min_size,
       force1 = force1,
+      method_outline = method_outline,
+      alpha = alpha,
       concavity = concavity,
       overwrite = overwrite,
       variable = variable, # pass on to addSpatialAnnotation()
@@ -3604,15 +3612,15 @@ createSpatialTrajectories <- function(object){
 
         output$pt_size <- shiny::renderUI({
 
-          val <- 1
+          val <- getDefault(object, arg = "pt_size")
 
           shiny::sliderInput(
             inputId = "pt_size",
             label = "Point size:",
-            min = 1,
+            min = val/3,
             max = val*3,
             value = val,
-            step = 0.01
+            step = val/100
           )
 
         })
@@ -3688,8 +3696,16 @@ createSpatialTrajectories <- function(object){
 
         default_ranges <- shiny::reactive({
 
-          getImageRange(object = object) %>%
-            purrr::map(.f = ~ .x * scale_fct())
+          if(containsHistoImages(object)){
+
+            getImageRange(object = object) %>%
+              purrr::map(.f = ~ .x * scale_fct())
+
+          } else {
+
+            getCoordsRange(object = object)
+
+          }
 
         })
 

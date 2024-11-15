@@ -17,6 +17,8 @@ createGroupAnnotations(
   minPts = recDbscanMinPts(object),
   min_size = nObs(object) * 0.01,
   force1 = FALSE,
+  method_outline = "concaveman",
+  alpha = recAlpha(object),
   concavity = 2,
   overwrite = FALSE,
   verbose = NULL
@@ -64,6 +66,22 @@ with an index to label each spatial annotation created uniquely, regardless of
 how many are eventually created. E.g. if \code{id = "my_ann"} and the algorithm
 created two spatial annotations, they are named \emph{my_ann_1} and \emph{my_ann_2}.}
 
+\item{method_outline}{Character value. The method used to create the outline
+of the spatial annotations. Either \emph{'concaveman'} or \emph{'alphahull'}.
+
+\itemize{
+\item{\emph{'concaveman'}:}{ A fast algorithm that creates concave hulls with adjustable detail.
+It captures more intricate shapes and is generally computationally efficient, but may produce
+less smooth outlines compared to alpha shapes. \code{concavity} determines the level of detail.}
+\item{\emph{'alphahull'}:}{ (BETA) Generates an alpha shape outline by controlling the boundary tightness
+with the \code{alpha} parameter. Smaller \code{alpha} values produce highly detailed boundaries, while
+larger values approximate convex shapes. It’s more precise for capturing complex edges but
+can be computationally more intensive.}
+}}
+
+\item{alpha}{Numeric value. Given to \code{alpha} of \code{\link[alphahull:ahull]{alphahull::ahull()}}.
+Default is \code{\link[=recAlpha]{platform dependent}}.}
+
 \item{concavity}{Numeric value. Given to argument \code{concavity} of
 \code{\link[concaveman:concaveman]{concaveman::concaveman()}}. Determines the relative measure of concavity.
 1 results in a relatively detailed shape, Infinity results in a convex hull.
@@ -102,8 +120,8 @@ Consider to allow the creation of multiple spatial annotations (suffixed with an
 and merging them afterwards via \code{mergeSpatialAnnotations()} if they are too
 close together.
 
-Lastly, the remaining data points are fed into the concaveman algorithm on a
-per-group basis. The algorithm calculates concave polygons outlining the groups
+Lastly, the remaining data points are fed into either the concaveman or the alphahull algorithm on a
+per-group basis. The algorithm calculates polygons outlining the groups
 of data points. If \code{dbscan_use} is \code{FALSE}, all data points that remained after the
 initial filtering are submitted to the algorithm. Subsequently, these polygons are
 integrated into \code{addSpatialAnnotation()} along with the unsuffixed \code{id} and
@@ -137,6 +155,14 @@ object <-
  plotSurface(object, color_by = "bayes_space") +
    ggpLayerSpatAnnOutline(object, tags = "bspace_ann")
 
+}
+\references{
+P. J. de Oliveira and A. C. P. F. da Silva (2012). alphahull:
+Generalization of the convex hull of a sample of points in the plane. R package version 2.1.
+\url{https://CRAN.R-project.org/package=alphahull}
+
+Graham, D., & Heaton, D. (2018). concaveman: A very fast 2D concave hull algorithm.
+R package version 1.1.0. \url{https://CRAN.R-project.org/package=concaveman}
 }
 \seealso{
 \code{\link[=recDbscanEps]{recDbscanEps()}}, \code{\link[=recDbscanMinPts]{recDbscanMinPts()}}
