@@ -421,7 +421,7 @@ barcodesToSpatialAnnotation <- function(object,
           alpha = alpha/isf # scale back to original
         )
 
-      assign("hull_out", hull_out, envir = .GlobalEnv)
+      #assign("hull_out", hull_out, envir = .GlobalEnv)
 
       components <-
         tibble::as_tibble(hull_out$ashape.obj$edges) %>%
