@@ -39,7 +39,7 @@ plotSpatialTrajectories(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{color_by}{Character value. The \link[=concept_variable]{variables} by which
+\item{color_by}{Character value. The \link[=concept_variables]{variables} by which
 to color the data points.}
 
 \item{method_gs}{Character value. The method according to which gene sets will

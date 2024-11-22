@@ -92,6 +92,21 @@ background_white <- function(image, percentile = 1){
 #' @param tags_expand Logical value. If `TRUE`, the tags with which the image
 #' annotations are tagged are expanded by the unsuffixed `id`, the `variable`,
 #' the `threshold` and *'barcodesToSpatialAnnotation()'*.
+#' @param method_outline Character value. The method used to create the outline
+#' of the spatial annotations. Either *'concaveman'* or *'alphahull'*.
+#'
+#' \itemize{
+#'   \item{*'concaveman'*:}{ A fast algorithm that creates concave hulls with adjustable detail.
+#'     It captures more intricate shapes and is generally computationally efficient, but may produce
+#'     less smooth outlines compared to alpha shapes. `concavity` determines the level of detail.}
+#'   \item{*'alphahull'*:}{ (BETA) Generates an alpha shape outline by controlling the boundary tightness
+#'     with the `alpha` parameter. Smaller `alpha` values produce highly detailed boundaries, while
+#'     larger values approximate convex shapes. It’s more precise for capturing complex edges but
+#'     can be computationally more intensive.}
+#' }
+#'
+#' @param alpha Numeric value. Given to `alpha` of [`alphahull::ahull()`].
+#' Default is \code{\link[=recAlpha]{platform dependent}}.
 #'
 #' @inherit addSpatialAnnotation params return
 #' @inherit add_dbscan_variable params
@@ -119,8 +134,8 @@ background_white <- function(image, percentile = 1){
 #' and merging them afterwards via `mergeSpatialAnnotations()` if they are too
 #' close together.
 #'
-#' Lastly, the remaining data points are fed into the concaveman algorithm on a
-#' per-group basis. The algorithm calculates concave polygons outlining the groups
+#' Lastly, the remaining data points are fed into either the concaveman or the alphahull algorithm on a
+#' per-group basis. The algorithm calculates polygons outlining the groups
 #' of data points. If `dbscan_use` is `FALSE`, all data points that remained after the
 #' initial filtering are submitted to the algorithm. Subsequently, these polygons are
 #' integrated into \code{addSpatialAnnotation()} along with the unsuffixed \code{id} and
@@ -130,6 +145,14 @@ background_white <- function(image, percentile = 1){
 #' See [`mergeSpatialAnnotations()`] to merge spatial annotations.
 #'
 #' See [`SpatialAnnotation`]-class for details about the S4 architecture.
+#'
+#' @references
+#' P. J. de Oliveira and A. C. P. F. da Silva (2012). alphahull:
+#' Generalization of the convex hull of a sample of points in the plane. R package version 2.1.
+#' \url{https://CRAN.R-project.org/package=alphahull}
+#'
+#' Graham, D., & Heaton, D. (2018). concaveman: A very fast 2D concave hull algorithm.
+#' R package version 1.1.0. \url{https://CRAN.R-project.org/package=concaveman}
 #'
 #' @export
 #'
@@ -166,10 +189,12 @@ barcodesToSpatialAnnotation <- function(object,
                                         use_dbscan = TRUE,
                                         inner_borders = TRUE,
                                         eps = getCCD(object)*1.25,
-                                        minPts = 3,
+                                        minPts = recDbscanMinPts(object),
                                         min_size = nBarcodes(object)*0.005,
                                         fct_incr = 20,
                                         force1 = FALSE,
+                                        method_outline = "concavity",
+                                        alpha = recAlpha(object),
                                         concavity = 2,
                                         overwrite = FALSE,
                                         class = "SpatialAnnotation",
@@ -177,6 +202,11 @@ barcodesToSpatialAnnotation <- function(object,
                                         ...){
 
   hlpr_assign_arguments(object)
+
+  confuns::check_one_of(
+    input = method_outline,
+    against = c("concaveman", "alphahull")
+  )
 
   # check input validity
   base::stopifnot(is_dist(eps))
@@ -232,7 +262,6 @@ barcodesToSpatialAnnotation <- function(object,
     dplyr::pull(areas) %>%
     base::unique()
 
-
   if(base::isFALSE(force1)){
 
     spat_ann_ids <-
@@ -244,7 +273,6 @@ barcodesToSpatialAnnotation <- function(object,
 
   }
 
-
   confuns::check_none_of(
     input = spat_ann_ids,
     against = getSpatAnnIds(object),
@@ -252,102 +280,20 @@ barcodesToSpatialAnnotation <- function(object,
     overwrite = overwrite
   )
 
+  if(base::isTRUE(tags_expand)){
+
+    tags_in <-
+      base::unique(c(tags, id, "barcodesToSpatialAnnotation"))
+
+  } else {
+
+    tags_in <- tags
+
+  }
+
   cvars <- c("x_orig", "y_orig")
 
   for(i in base::seq_along(areas_to_annotate)){
-
-    area <- areas_to_annotate[i]
-
-    df_area <-
-      dplyr::filter(coords_df_prepped, areas == {{area}})
-
-    if(fct_incr > 1){
-
-      df_concave_use <-
-        increase_n_data_points(df_area, fct = fct_incr, cvars = cvars)
-
-    } else {
-
-      df_concave_use <- df_area
-
-    }
-
-    # apply concaveman
-    outline_df <-
-      # use original x_orig and y_orig variables!
-      # are scaled to x and y during extraction
-      dplyr::select(df_concave_use, x_orig, y_orig) %>%
-      base::as.matrix() %>%
-      concaveman::concaveman(points = ., concavity = concavity) %>%
-      tibble::as_tibble() %>%
-      magrittr::set_colnames(value = cvars)
-
-    base::rm(df_concave_use)
-    base::gc()
-
-    area <- list(outer = outline_df)
-
-    # add inner borders
-    if(base::isTRUE(inner_borders)){
-
-      coords_df_inner <-
-        identify_obs_in_polygon(
-          coords_df = coords_df,
-          polygon_df = outline_df,
-          strictly = TRUE,
-          cvars = c("x_orig", "y_orig"),
-          opt = "keep"
-        ) %>%
-        dplyr::filter(!barcodes %in% df_area$barcodes)
-
-      if(base::nrow(coords_df_inner) > 1){
-
-        coords_df_inner <-
-          add_dbscan_variable(coords_df = coords_df_inner, eps = eps, minPts = minPts) %>%
-          dplyr::filter(dbscan != "0")
-
-        holes <- base::unique(coords_df_inner$dbscan)
-
-        for(h in base::seq_along(holes)){
-
-          hole <- holes[h]
-
-          df_hole <-
-            dplyr::filter(coords_df_inner, dbscan == {{hole}})
-
-          if(fct_incr > 1){
-
-            df_hole <-
-              increase_n_data_points(df_hole, fct = fct_incr, cvars = cvars)
-
-          }
-
-          area[[stringr::str_c("inner", h)]] <-
-            dplyr::select(df_hole, x_orig, y_orig) %>%
-            base::as.matrix() %>%
-            concaveman::concaveman(points = ., concavity = concavity) %>%
-            base::as.data.frame() %>%
-            magrittr::set_colnames(value = c("x_orig", "y_orig")) %>%
-            tibble::as_tibble()
-
-          rm(df_hole)
-
-        }
-
-      }
-
-    }
-
-    if(base::isTRUE(tags_expand)){
-
-      tags_in <-
-        base::unique(c(tags, id, "barcodesToSpatialAnnotation"))
-
-    } else {
-
-      tags_in <- tags
-
-    }
 
     if(base::isFALSE(force1)){
 
@@ -359,27 +305,180 @@ barcodesToSpatialAnnotation <- function(object,
 
     }
 
-    # create spatial annotation
-    object <-
-      addSpatialAnnotation(
-        object = object,
-        id = id_use,
-        tags = tags_in,
-        area = area,
-        overwrite = overwrite,
-        class = class,
-        parameters = list(
-          use_dbscan = use_dbscan,
-          eps = eps,
-          minPts = minPts,
-          min_size = min_size,
-          force1 = force1,
-          concavity = concavity,
-          inner_borders = inner_borders
-        ),
-        misc = list(barcodes = df_area$barcodes, variable = variable),
-        ...
-      )
+    area <- areas_to_annotate[i]
+
+    df_area <- dplyr::filter(coords_df_prepped, areas == {{area}})
+
+    if(method_outline == "concaveman"){
+
+      if(fct_incr > 1){
+
+        df_concave_use <-
+          increase_n_data_points(df_area, fct = fct_incr, cvars = cvars)
+
+      } else {
+
+        df_concave_use <- df_area
+
+      }
+
+      # apply concaveman
+      outline_df <-
+        # use original x_orig and y_orig variables!
+        # are scaled to x and y during extraction
+        dplyr::select(df_concave_use, x_orig, y_orig) %>%
+        base::as.matrix() %>%
+        concaveman::concaveman(points = ., concavity = concavity) %>%
+        tibble::as_tibble() %>%
+        magrittr::set_colnames(value = cvars)
+
+      base::rm(df_concave_use)
+      base::gc()
+
+      area <- list(outer = outline_df)
+
+      # add inner borders
+      if(base::isTRUE(inner_borders)){
+
+        coords_df_inner <-
+          identify_obs_in_polygon(
+            coords_df = coords_df,
+            polygon_df = outline_df,
+            strictly = TRUE,
+            cvars = c("x_orig", "y_orig"),
+            opt = "keep"
+          ) %>%
+          dplyr::filter(!barcodes %in% df_area$barcodes)
+
+        if(base::nrow(coords_df_inner) > 1){
+
+          coords_df_inner <-
+            add_dbscan_variable(coords_df = coords_df_inner, eps = eps, minPts = minPts) %>%
+            dplyr::filter(dbscan != "0")
+
+          holes <- base::unique(coords_df_inner$dbscan)
+
+          for(h in base::seq_along(holes)){
+
+            hole <- holes[h]
+
+            df_hole <-
+              dplyr::filter(coords_df_inner, dbscan == {{hole}})
+
+            if(fct_incr > 1){
+
+              df_hole <-
+                increase_n_data_points(df_hole, fct = fct_incr, cvars = cvars)
+
+            }
+
+            area[[stringr::str_c("inner", h)]] <-
+              dplyr::select(df_hole, x_orig, y_orig) %>%
+              base::as.matrix() %>%
+              concaveman::concaveman(points = ., concavity = concavity) %>%
+              base::as.data.frame() %>%
+              magrittr::set_colnames(value = c("x_orig", "y_orig")) %>%
+              tibble::as_tibble()
+
+            rm(df_hole)
+
+          }
+
+        }
+
+      }
+
+      # create spatial annotation
+      object <-
+        addSpatialAnnotation(
+          object = object,
+          id = id_use,
+          tags = tags_in,
+          area = area,
+          overwrite = overwrite,
+          class = class,
+          parameters = list(
+            use_dbscan = use_dbscan,
+            eps = eps,
+            minPts = minPts,
+            min_size = min_size,
+            method_outline = "alphahull",
+            concavity = concavity,
+            inner_borders = inner_borders
+          ),
+          misc = list(barcodes = df_area$barcodes, variable = variable),
+          ...
+        )
+
+    } else if(method_outline == "alphahull"){
+
+      isf <- getScaleFactor(object, fct_name = "image")
+
+      hull_out <-
+        alphahull::ahull(
+          x = df_area$x_orig,
+          y = df_area$y_orig,
+          alpha = alpha/isf # scale back to original
+        )
+
+      #assign("hull_out", hull_out, envir = .GlobalEnv)
+
+      components <-
+        tibble::as_tibble(hull_out$ashape.obj$edges) %>%
+        dplyr::mutate(idx = paste0("v", dplyr::row_number())) %>%
+        sort_into_components(edges_df = .)
+
+      outlines <-
+        purrr::map(.x = components, .f = segments_to_vertices) %>%
+        purrr::map(.x = ., .f = ~ dplyr::select(.x, x_orig = x1, y_orig = y1))
+
+      sizes <-
+        purrr::map_dbl(
+          .x = outlines,
+          .f = ~ close_area_df(.x) %>%
+            make_sf_polygon() %>%
+            sf::st_area()
+        )
+
+      outer_idx <- which(sizes == max(sizes))
+
+      area <- list(outer = outlines[[outer_idx]])
+
+      if(isTRUE(inner_borders)){
+
+        inner_areas <- outlines[-outer_idx]
+
+        for(i in seq_along(inner_areas)){
+
+          area[[paste0("inner", i)]] <- inner_areas[[i]]
+
+        }
+
+      }
+
+      # create spatial annotation
+      object <-
+        addSpatialAnnotation(
+          object = object,
+          id = id_use,
+          tags = tags_in,
+          area = area,
+          overwrite = overwrite,
+          class = class,
+          parameters = list(
+            use_dbscan = use_dbscan,
+            eps = eps,
+            minPts = minPts,
+            min_size = min_size,
+            force1 = force1,
+            method_outline = "alphahull",
+            alpha = alpha,
+            inner_borders = inner_borders
+          ),
+          misc = list(barcodes = df_area$barcodes, variable = variable)
+        )
+
+    }
 
   }
 

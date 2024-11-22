@@ -243,6 +243,147 @@ scale_nuclei_df <- function(object,
 
 
 
+# segments ----------------------------------------------------------------
+
+#' @title Transform segments to vertices
+#'
+#' @description This function takes a data frame of arcs (segments) and constructs an ordered sequence of vertices
+#' to outline a connected, non-intersecting polygon.
+#'
+#' @param arcs_df A data frame containing arc information with columns:
+#'   - `x1`, `y1`: Starting coordinates of each segment
+#'   - `x2`, `y2`: Ending coordinates of each segment
+#'   - `idx`: An identifier for each segment
+#' @return A data frame (`outline_df`) containing the vertices (`x`, `y` coordinates and `idx`)
+#'   that form the ordered outline of the polygon.
+#'
+#' @details
+#' This function iteratively selects arcs that connect to form a polygon. If an arc’s endpoint does not
+#' match any available arc’s start or endpoint, it selects the nearest arc using a nearest-neighbor search.
+#' Segments that would cause intersections are removed. If the constructed polygon closes on itself,
+#' it terminates the process.
+#'
+#' @examples
+#'
+#' # Sample data frame of arcs
+#'
+#' arcs_df <- data.frame(
+#'   x1 = c(0, 1, 2),
+#'   y1 = c(0, 1, 0),
+#'   x2 = c(1, 2, 0),
+#'   y2 = c(1, 0, 0),
+#'   idx = c(1, 2, 3)
+#' )
+#' segments_to_vertices(arcs_df)
+#'
+#'
+segments_to_vertices <- function(arcs_df){
+
+  # identify and remove "circular" segments
+  arcs_df$nns <- 2 # nn = number of neighbor segments
+
+  for(i in 1:nrow(arcs_df)){
+
+    arc <- arcs_df[i,]
+    arcs_remaining <- arcs_df[-i,]
+
+    sp <- arc$start
+    ep <- arc$end
+
+    nsp <- sum(arcs_remaining$start == sp) + sum(arcs_remaining$end == sp)
+    nep <- sum(arcs_remaining$start == ep) + sum(arcs_remaining$end == ep)
+
+    arcs_df$nns[i] <- nsp + nep
+
+  }
+
+  arcs_df <- dplyr::filter(arcs_df, nns <= 3)
+
+  # initialize the outline with the first arc
+  arc <- arcs_df[1, ]
+  arcs_df <- arcs_df[2:nrow(arcs_df),]
+
+  # start outline with the first arc's start point
+  arc_init <- arc[, c("x1", "y1", "idx")]
+  outline_df <- arc_init
+
+  # loop through remaining arcs to construct the polygon
+  while(nrow(arcs_df) != 0){
+
+    # endpoint of the current arc
+    x2 <- arc$x2
+    y2 <- arc$y2
+
+    # check if endpoint matches any starting points in the remaining arcs
+    mstart <- any(arcs_df$x1 == x2 & arcs_df$y1 == y2)
+
+    # check if endpoint matches any other endpoints in the remaining arcs
+    mend <- any(arcs_df$x2 == x2 & arcs_df$y2 == y2)
+
+    # select the next arc based on matching start or endpoint
+    if(mstart){
+
+      # find the row index where the endpoint matches the startpoint
+      row <- which(arcs_df$x1 == x2 & arcs_df$y1 == y2)
+
+    } else if(mend) {
+
+      # find the row index where the endpoint matches the endpoint
+      row <- which(arcs_df$x2 == x2 & arcs_df$y2 == y2)
+
+    } else {
+
+      # if no exact match is found, use nearest neighbor to find the closest arc
+      nn_out <-
+        RANN::nn2(
+          data = as.matrix(arcs_df[,c("x1", "y1")]),
+          query = as.matrix(arc[c("x2", "y2")]),
+          k = 1
+        )
+
+      row <- nn_out$nn.idx
+
+    }
+
+    # if multiple rows are found (indicating an intersection), remove them
+    if(length(row) > 1){
+
+      arcs_df <- arcs_df[-row,]
+
+    } else {
+
+      # if endpoint matches, swap start and end points to maintain order
+      if(mend){
+
+        start <- as.numeric(arcs_df[row, c("x1", "y1")])
+        end <- as.numeric(arcs_df[row, c("x2", "y2")])
+
+        arcs_df[row, "x1"] <- end[1]
+        arcs_df[row, "y1"] <- end[2]
+
+        arcs_df[row, "x2"] <- start[1]
+        arcs_df[row, "y2"] <- start[2]
+      }
+
+      # update arc and add it to the outline
+      arc <- arcs_df[row, ]
+      arcs_df <- arcs_df[arcs_df$idx != arc$idx,]
+
+      outline_df <- rbind(outline_df, arc[,c("x1", "y1", "idx")])
+
+      # check if the polygon is closed by comparing first and last vertices
+      closed <- identical(x = arc_init, y = tail(outline_df, 1))
+
+      # break the loop if the polygon is closed
+      if(closed){ break }
+
+    }
+  }
+
+  return(outline_df)
+}
+
+
 
 
 # shift -------------------------------------------------------------------
@@ -2436,6 +2577,68 @@ smoothSpatially <- function(coords_df,
 
   base::return(smoothed_df)
 
+
+}
+
+
+
+
+# sort --------------------------------------------------------------------
+
+#' @title Sort edges into components
+#'
+#' @description This function sorts a set of edges into separate connected components.
+#' Each component represents a distinct outline or polygon in the form of connected edges.
+#'
+#' @param edges_df A data frame representing edges, with columns:
+#'   - `x1`, `y1`: starting coordinates of each edge
+#'   - `x2`, `y2`: ending coordinates of each edge
+#'
+#' (E.g. the output of `alphahull::ahull()$ashape.obj$edges`).
+#'
+#' @return A named list of data frames, where each data frame contains the edges
+#'   belonging to a separate connected component. The names of the list elements are "c1", "c2", etc.,
+#'   representing each unique component.
+#'
+#' @details
+#' The function identifies unique connected components in an undirected graph built from the edges.
+#' It first creates unique identifiers for the start and end points of each edge and constructs
+#' an undirected graph using these points. Connected components are then determined, and each component
+#' is assigned to a separate element in the output list.
+#'
+#' @examples
+#' # Sample data frame of edges
+#' edges_df <- data.frame(
+#'   x1 = c(0, 1, 2, 3),
+#'   y1 = c(0, 1, 2, 3),
+#'   x2 = c(1, 2, 3, 0),
+#'   y2 = c(1, 2, 3, 0)
+#' )
+#' sort_into_components(edges_df)
+sort_into_components <- function(edges_df){
+
+  # create unique identifiers for each edge's start and end points
+  edges_df$start <- paste(edges_df$x1, edges_df$y1, sep = ",")
+  edges_df$end <- paste(edges_df$x2, edges_df$y2, sep = ",")
+
+  # build an undirected graph from the edges to represent connectivity
+  g <- igraph::graph_from_data_frame(edges_df[, c("start", "end")], directed = FALSE)
+
+  # find connected components, where each component is a separate outline
+  components <- igraph::components(g)$membership
+
+  # create a character vector to name each component uniquely (e.g., "c1", "c2", ...)
+  cvec <- paste0("c", 1:dplyr::n_distinct(components))
+
+  # create a list of data frames, each representing one component
+  clst <-
+    purrr::map(
+      .x = unique(components),
+      .f = ~ edges_df[components[edges_df$start] == .x, ]
+    ) %>%
+    purrr::set_names(nm = cvec)
+
+  return(clst)
 
 }
 

@@ -1244,6 +1244,12 @@ check_new_variable_name <- function(object, new_name, overwrite = NULL){
 #' @keywords internal
 check_object <- function(object){
 
+  if(class(object) != "SPATA2"){
+
+    stop("Input object is not of class SPATA2.")
+
+  }
+
   ver_cur <- version_string(current_spata2_version)
   ver_obj <- version_string(object@version)
 

@@ -81,7 +81,7 @@ for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discover
 \item{signif_threshold}{Numeric value. Significance values below \code{signif_threshold}
 are not included.}
 
-\item{color_by}{Character value. The \link[=concept_variable]{variables} by which
+\item{color_by}{Character value. The \link[=concept_variables]{variables} by which
 to color the data points.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}

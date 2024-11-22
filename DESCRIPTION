@@ -1,10 +1,11 @@
 Package: SPATA2
 Type: Package
 Title: A Toolbox for Spatial Expression Analysis
-Version: 3.1.2
+Version: 3.1.3
 Authors@R: as.person(c(
     "Jan Kueckelhaus <jan.kueckelhaus@uk-erlangen.de> [aut, cre]", 
     "Simon Frerich [ctb]",
+    "Daniel Delev [ctb]",
     "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]" 
   ))
 Description: This package provides a framework of functions and shiny-applications to make it as easy  and intuitive as possible to work with spatial expression data. 

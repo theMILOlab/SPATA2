@@ -53,7 +53,7 @@ represent the group.}
 continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 valid input options.}
 
-\item{color_by}{Character value. The \link[=concept_variable]{variables} by which
+\item{color_by}{Character value. The \link[=concept_variables]{variables} by which
 to color the data points.}
 
 \item{concavity}{Numeric value. Given to argument \code{concavity} of

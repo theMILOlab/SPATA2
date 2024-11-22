@@ -3,14 +3,14 @@
 \name{asMolecularAssay}
 \alias{asMolecularAssay}
 \alias{asMolecularAssay,Assay5-method}
-\alias{asMolecularAssay,SCTAssay-method}
+\alias{asMolecularAssay,Assay-method}
 \title{Transform miscellaneous objects to MolecularAssay objects}
 \usage{
 asMolecularAssay(object, ...)
 
 \S4method{asMolecularAssay}{Assay5}(object, modality = "undefined", active_mtr = "counts")
 
-\S4method{asMolecularAssay}{SCTAssay}(object, modality = "undefined", active_mtr = "counts")
+\S4method{asMolecularAssay}{Assay}(object, modality = "undefined", active_mtr = "counts")
 }
 \arguments{
 \item{object}{Any object for which a method has been defined.}

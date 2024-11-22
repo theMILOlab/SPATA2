@@ -253,6 +253,34 @@ recBinwidth <- function(...){
 
 #' @rdname recSgsRes
 #' @export
+recAlpha <- function(object){
+
+  if(containsCCD(object)){
+
+    out <- getCCD(object)*1.25
+
+  } else {
+
+    coords_mtr <-
+      getCoordsDf(object) %>%
+      dplyr::select(x, y) %>%
+      base::as.matrix()
+
+    knn_out <-
+      FNN::knn.dist(data = coords_mtr, k = 1) %>%
+      base::mean()
+
+    out <- knn_out*10
+
+  }
+
+  return(out)
+
+}
+
+
+#' @rdname recSgsRes
+#' @export
 recDbscanEps <- function(object){
 
   if(containsCCD(object)){
@@ -286,17 +314,15 @@ recDbscanMinPts <- function(object){
 
     out <- 3
 
-  } else if(containsMethod(object, method = "MERFISH")){
+  } else {
 
     out <- 25
 
-    warning(paste0("minPts is set to ", out, ". May require adjustments for optimal performance."))
-
-  } else {
-
-    out <- 12
-
-    warning(paste0("minPts is set to ", out, ". May require adjustments for optimal performance."))
+    rlang::warn(
+      message = paste0("minPts for non-Visium platforms defaults to ", out, ". May require adjustments for optimal results"),
+      .frequency = "once",
+      .frequency_id = "rec_dbscan_min_pts"
+      )
 
   }
 
@@ -318,23 +344,30 @@ recDbscanMinPts <- function(object){
 #' @details
 #'
 #' \itemize{
-#'  \item{`recDbscanEps`}{ The default input for the `eps` argument of [`dbscan::dbscan()`].
-#'  For objects derived from the Visium platform, we recommend
-#'   a binwidth equal to the center-to-center distance as obtained by [`getCCD()`] multiplied
-#'   by *1.25*.
-#'   For objects derived from platforms that do not rely on a fixed grid of data points
-#'   (MERFISH, SlideSeq, etc.), we recommend the average minimal distance between the
-#'   data points multiplied by *1.25*. }
-#'  \item{`recDbscanMinPts`}{ The default input for the `minPts` argument of [`dbscan::dbscan()`].
-#'  For objects derived from the Visium platform, we recommend `minPts = 3`.
-#'   For objects derived from platforms that do not rely on a fixed grid of data points
-#'   (MERFISH, SlideSeq, etc.), we recommend `minPts = 12`. }
-#'  \item{`recSgsRes()`}{ The default input for the `resolution` argument of the spatial
-#'  gradient screening algorithm. For objects derived from the Visium platform, we recommend
-#'   a binwidth equal to the center-to-center distance as obtained by [`getCCD()`].
-#'   For objects derived from platforms that do not rely on a fixed grid of data points
-#'   (MERFISH, SlideSeq, etc.), we recommend the average minimal distance between the
-#'   data points.}
+#'   \item{`recAlpha`}{ The recommended `alpha` input for [`alphahull::ahull()`].
+#'     For objects derived from the Visium platform, we recommend
+#'     a binwidth equal to the center-to-center distance as obtained by [`getCCD()`] multiplied
+#'     by *1.25*.
+#'     For objects derived from platforms that do not rely on a fixed grid of data points
+#'     (MERFISH, SlideSeq, etc.), we recommend the average minimal distance between the
+#'     data points multiplied by *1.25*.}
+#'   \item{`recDbscanEps`}{ The default input for the `eps` argument of [`dbscan::dbscan()`].
+#'     For objects derived from the Visium platform, we recommend
+#'     a binwidth equal to the center-to-center distance as obtained by [`getCCD()`] multiplied
+#'     by *1.25*.
+#'     For objects derived from platforms that do not rely on a fixed grid of data points
+#'     (MERFISH, SlideSeq, etc.), we recommend the average minimal distance between the
+#'     data points multiplied by *1.25*. }
+#'   \item{`recDbscanMinPts`}{ The default input for the `minPts` argument of [`dbscan::dbscan()`].
+#'     For objects derived from the Visium platform, we recommend `minPts = 3`.
+#'     For objects derived from platforms that do not rely on a fixed grid of data points
+#'     (MERFISH, SlideSeq, etc.), we recommend `minPts = 12`. }
+#'   \item{`recSgsRes()`}{ The default input for the `resolution` argument of the spatial
+#'     gradient screening algorithm. For objects derived from the Visium platform, we recommend
+#'     a binwidth equal to the center-to-center distance as obtained by [`getCCD()`].
+#'     For objects derived from platforms that do not rely on a fixed grid of data points
+#'     (MERFISH, SlideSeq, etc.), we recommend the average minimal distance between the
+#'     data points.}
 #' }
 #'
 #' @return Single values of different classes depending on the function. See details for more.
@@ -357,6 +390,8 @@ recSgsRes <- function(object, unit = getDefaultUnit(object)){
     out <-
       FNN::knn.dist(data = coords_mtr, k = 1) %>%
       base::mean()
+
+    out <- out*2
 
   }
 
@@ -2412,21 +2447,23 @@ renameMetaFeatures <- function(object, ...){
 #' @export
 renameMolecularAssay <- function(object, assay_name, new_assay_name, set_signatures = FALSE){
 
+  check_object(object)
+
   confuns::check_one_of(
     input = assay_name,
     against = getAssayNames(object)
   )
 
   confuns::check_none_of(
-    input = assay_name_new,
+    input = new_assay_name,
     against = getAssayNames(object),
-    ref.input = "`assay_name_new`",
+    ref.input = "`new_assay_name`",
     ref.against = "existing molecular assays"
   )
 
   ma <- object@assays[[assay_name]]
-  ma@modality <- assay_name_new
-  object@assays[[assay_name_new]] <- ma
+  ma@modality <- new_assay_name
+  object@assays[[new_assay_name]] <- ma
 
   object@assays[[assay_name]] <- NULL
 
