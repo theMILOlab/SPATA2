@@ -2183,39 +2183,12 @@ getDimRedDf <- function(object,
 # getF --------------------------------------------------------------------
 
 
-#' @title Obtain metadata column names
-#'
-#' @description Extracts names of entries **from the meta data.frame**.
-#'
-#' @inherit argument_dummy params
-#' @param of_class Character vector. Specify the class(es) a metadata entry must be of for
-#' its name to be returned.
-#'
-#' @return A named character vector of the variables in the metadata slot (excluding 'sample').
-#' @export
 
+#' @rdname getMetaNames
+#' @export
 getFeatureNames <- function(object, of_class = NULL, ...){
 
-  deprecated( ...)
-
-  check_object(object)
-  confuns::is_vec(x = of_class, mode = "character", skip.allow = TRUE, skip.val = NULL)
-
-  feature_df <- getMetaDf(object = object)
-
-  feature_names <- base::colnames(feature_df)
-
-  classes <- base::sapply(feature_df[,feature_names], base::class)
-
-  base::names(feature_names) <- classes
-
-  if(!base::is.null(of_class)){
-
-    feature_names <- feature_names[classes %in% of_class]
-
-  }
-
-  return(feature_names[!feature_names %in% c("barcodes", "sample")])
+  getMetaNames(object = object, of_class = of_class, ...)
 
 }
 

@@ -1784,6 +1784,44 @@ removeProcessedMatrix <- function(object,
 
 }
 
+
+#' @title Remove molecular signatures
+#'
+#' @description Removes \link[=concept_molecular_signatures]{molecular signatures} from the `SPATA2` object.
+#'
+#' @param signatures Character vector. The names of the signatures to be removed from
+#' the assay of choice.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @note GSEA results remain unaffected.
+#'
+#' @export
+#'
+removeSignatures <- function(object,
+                             signatures,
+                             assay_name = activeAssay(object)){
+
+  confuns::check_one_of(
+    input = signatures,
+    against = getSignatureNames(object, assay_name = assay_name)
+  )
+
+  ma <- getAssay(object, assay_name = assay_name)
+
+  for(s in signatures){
+
+    ma@signatures[[s]] <- NULL
+
+  }
+
+  object <- setAssay(object, assay = ma)
+
+  returnSpataObject(object)
+
+}
+
+
 #' @title Remove spatial annotations
 #'
 #' @description Removes spatial annotations from the SPATA2 object.
