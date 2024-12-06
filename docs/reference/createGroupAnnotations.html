@@ -18,7 +18,7 @@ group of data points (spots or cells). See details for more information."><!-- m
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">3.1.3</span>
       </span>
     </div>
 
@@ -143,6 +143,8 @@ group of data points (spots or cells). See details for more information.</p>
 <span>  minPts <span class="op">=</span> <span class="fu"><a href="recSgsRes.html">recDbscanMinPts</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
 <span>  min_size <span class="op">=</span> <span class="fu"><a href="nObs.html">nObs</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0.01</span>,</span>
 <span>  force1 <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  method_outline <span class="op">=</span> <span class="st">"concaveman"</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fu"><a href="recSgsRes.html">recAlpha</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
 <span>  concavity <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">NULL</span></span>
@@ -218,6 +220,24 @@ how many are eventually created. E.g. if <code>id = "my_ann"</code> and the algo
 created two spatial annotations, they are named <em>my_ann_1</em> and <em>my_ann_2</em>.</p></dd>
 
 
+<dt id="arg-method-outline">method_outline<a class="anchor" aria-label="anchor" href="#arg-method-outline"></a></dt>
+<dd><p>Character value. The method used to create the outline
+of the spatial annotations. Either <em>'concaveman'</em> or <em>'alphahull'</em>.</p>
+<ul><li><p><em>'concaveman'</em>: A fast algorithm that creates concave hulls with adjustable detail.
+It captures more intricate shapes and is generally computationally efficient, but may produce
+less smooth outlines compared to alpha shapes. <code>concavity</code> determines the level of detail.</p></li>
+<li><p><em>'alphahull'</em>: (BETA) Generates an alpha shape outline by controlling the boundary tightness
+with the <code>alpha</code> parameter. Smaller <code>alpha</code> values produce highly detailed boundaries, while
+larger values approximate convex shapes. It’s more precise for capturing complex edges but
+can be computationally more intensive.</p></li>
+</ul></dd>
+
+
+<dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
+<dd><p>Numeric value. Given to <code>alpha</code> of <code><a href="https://rdrr.io/pkg/alphahull/man/ahull.html" class="external-link">alphahull::ahull()</a></code>.
+Default is <code><a href="recSgsRes.html">platform dependent</a></code>.</p></dd>
+
+
 <dt id="arg-concavity">concavity<a class="anchor" aria-label="anchor" href="#arg-concavity"></a></dt>
 <dd><p>Numeric value. Given to argument <code>concavity</code> of
 <code><a href="https://joelgombin.github.io/concaveman/reference/concaveman.html" class="external-link">concaveman::concaveman()</a></code>. Determines the relative measure of concavity.
@@ -256,8 +276,8 @@ group and subsequently, one spatial annotation encompassing the whole sample.
 Consider to allow the creation of multiple spatial annotations (suffixed with an index)
 and merging them afterwards via <code><a href="mergeSpatialAnnotations.html">mergeSpatialAnnotations()</a></code> if they are too
 close together.</p>
-<p>Lastly, the remaining data points are fed into the concaveman algorithm on a
-per-group basis. The algorithm calculates concave polygons outlining the groups
+<p>Lastly, the remaining data points are fed into either the concaveman or the alphahull algorithm on a
+per-group basis. The algorithm calculates polygons outlining the groups
 of data points. If <code>dbscan_use</code> is <code>FALSE</code>, all data points that remained after the
 initial filtering are submitted to the algorithm. Subsequently, these polygons are
 integrated into <code><a href="addSpatialAnnotation.html">addSpatialAnnotation()</a></code> along with the unsuffixed <code>id</code> and
@@ -270,6 +290,14 @@ integrated into <code><a href="addSpatialAnnotation.html">addSpatialAnnotation()
 
 <p>The vignette on distance measures in SPATA2 has been replaced. Click
 <code><a href="concept_distance_measure.html">here</a></code> to read it.</p>
+    </div>
+    <div id="references">
+    <h2>References</h2>
+    <p>P. J. de Oliveira and A. C. P. F. da Silva (2012). alphahull:
+Generalization of the convex hull of a sample of points in the plane. R package version 2.1.
+<a href="https://CRAN.R-project.org/package=alphahull" class="external-link">https://CRAN.R-project.org/package=alphahull</a></p>
+<p>Graham, D., &amp; Heaton, D. (2018). concaveman: A very fast 2D concave hull algorithm.
+R package version 1.1.0. <a href="https://CRAN.R-project.org/package=concaveman" class="external-link">https://CRAN.R-project.org/package=concaveman</a></p>
     </div>
     <div id="see-also">
     <h2>See also</h2>

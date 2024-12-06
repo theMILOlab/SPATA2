@@ -263,6 +263,8 @@ scale_nuclei_df <- function(object,
 #' Segments that would cause intersections are removed. If the constructed polygon closes on itself,
 #' it terminates the process.
 #'
+#' @keywords internal
+#' @export
 #' @examples
 #'
 #' # Sample data frame of arcs
@@ -2605,6 +2607,9 @@ smoothSpatially <- function(coords_df,
 #' It first creates unique identifiers for the start and end points of each edge and constructs
 #' an undirected graph using these points. Connected components are then determined, and each component
 #' is assigned to a separate element in the output list.
+#'
+#' @keywords internal
+#' @export
 #'
 #' @examples
 #' # Sample data frame of edges

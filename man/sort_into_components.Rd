@@ -40,3 +40,4 @@ edges_df <- data.frame(
 )
 sort_into_components(edges_df)
 }
+\keyword{internal}

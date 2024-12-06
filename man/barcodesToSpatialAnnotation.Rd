@@ -13,7 +13,7 @@ barcodesToSpatialAnnotation(
   use_dbscan = TRUE,
   inner_borders = TRUE,
   eps = getCCD(object) * 1.25,
-  minPts = 3,
+  minPts = recDbscanMinPts(object),
   min_size = nBarcodes(object) * 0.005,
   fct_incr = 20,
   force1 = FALSE,

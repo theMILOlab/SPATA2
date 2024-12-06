@@ -1665,7 +1665,8 @@ getSignatureList <- function(object,
 
       class_inp <-
         stringr::str_c(class, collapse = "|") %>%
-        stringr::str_c("^(",. ,")")
+        stringr::str_c("^(",. ,")") %>%
+        stringr::str_c(., "_")
 
       signature_names <- base::names(signatures)
 
