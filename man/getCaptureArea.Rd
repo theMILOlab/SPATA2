@@ -23,8 +23,8 @@ If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. E
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
 }
 \value{
-List of two length two vectors named \emph{x} and \emph{y}. Values correspond
-to the range of the capture area along the respective axis.
+Data.frame of vertices used to outline the capture area. Column names
+are \emph{x_orig}, \emph{y_orig}, \emph{x}, \emph{y} and \emph{idx} (index of each vertex).
 }
 \description{
 Extracts the frame in which data points are expected.

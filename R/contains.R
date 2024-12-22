@@ -24,6 +24,54 @@ containsAssay <- function(object, assay_name, error = FALSE){
 
 }
 
+#' @title Check availability of capture area
+#'
+#' @description Checks if the object contains a capture area data.frame
+#' as obtained by [`getCaptureArea()`].
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
+#' @export
+setGeneric(name = "containsCaptureArea", def = function(object, ...){
+
+  standardGeneric(f = "containsCaptureArea")
+
+})
+
+#' @rdname containsCaptureArea
+#' @export
+setMethod(
+  f = "containsCaptureArea",
+  signature = "SPATA2",
+  definition = function(object, error = FALSE){
+
+    getSpatialData(object) %>%
+      containsCaptureArea(., error = error)
+
+  }
+)
+
+#' @rdname containsCaptureArea
+#' @export
+setMethod(
+  f = "containsCaptureArea",
+  signature = "SpatialData",
+  definition = function(object, error = FALSE){
+
+    out <- nrow(object@capture_area) >= 3
+
+    if(isFALSE(out) & isTRUE(error)){
+
+      stop("No capture area in this object.")
+
+    }
+
+    return(out)
+
+  }
+)
 
 #' @title Check availability of center to center distance
 #'
@@ -260,7 +308,9 @@ setMethod(
   signature = "HistoImage",
   definition = function(object, error = FALSE){
 
-    out <- !base::identical(x = object@image, y = empty_image)
+    out <-
+      !base::identical(x = object@image, y = empty_image) &
+      nrow(object@image) != 1
 
     if(base::isFALSE(out) & base::isTRUE(error)){
 

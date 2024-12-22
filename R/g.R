@@ -576,8 +576,8 @@ ggpLayerCaptureArea <- function(object,
     out[["crop"]] <-
       ggpLayerZoom(
         object = object,
-        xrange = ca$x,
-        yrange = ca$y,
+        xrange = range(ca$x),
+        yrange = range(ca$y),
         expand_x = expand_x,
         expand_y = expand_y,
         img_name = img_name

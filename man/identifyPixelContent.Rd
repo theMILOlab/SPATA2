@@ -21,6 +21,7 @@ identifyPixelContent(object, ...)
   eps = 1.414 * 2,
   minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
+  use_capture_area = containsCaptureArea(object),
   verbose = TRUE
 )
 
@@ -35,6 +36,8 @@ identifyPixelContent(object, ...)
   eps = 1.414 * 2214,
   minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
+  use_capture_area = containsCaptureArea(object),
+  bg_dark = FALSE,
   verbose = TRUE
 )
 
@@ -48,6 +51,8 @@ identifyPixelContent(object, ...)
   eps = 1.414 * 2214,
   minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
+  capture_area = NULL,
+  bg_dark = FALSE,
   verbose = TRUE
 )
 
@@ -61,6 +66,8 @@ identifyPixelContent(object, ...)
   frgmt_threshold = c(0.001, 0.05),
   eps = 1.414 * 2214,
   minPts = 0.005,
+  capture_area = NULL,
+  bg_dark = FALSE,
   verbose = TRUE,
   ...
 )
@@ -124,10 +131,21 @@ of pixels than the maximum threshold are considered tissue sections. If a thresh
 it is calculated as a percentage of the total number of pixels in the image.
 If a threshold value is greater than or equal to 1, it is taken as an absolute value.}
 
+\item{use_capture_area}{Logical value. If \code{TRUE}, the capture area as obtained by \code{\link[=getCaptureArea]{getCaptureArea()}}
+is used to guide the analysis. Defaults to \code{TRUE} as long as the object contains a valid
+capture area data.frame.}
+
 \item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{bg_dark}{Logical value. Should be set to \code{TRUE}, if the background is darker than
+the tissue. Defaults to \code{FALSE}.}
+
+\item{capture_area}{Data.frame or \code{NULL}. If data.frame contains the vertices of the polygon
+that corresponds to the capture area in which the tissue is located in. Data.frame should have
+at least three rows with variables idx (integer), x (numeric), y (numeric).}
 }
 \value{
 The method for class \code{Image} returns a data.frame of the following

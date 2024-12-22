@@ -114,41 +114,6 @@ activeGrouping <- function(object, verbose = NULL, arg = "across"){
 
 }
 
-
-#' @rdname activateImage
-#' @export
-setGeneric(name = "activeImage", def = function(object, ...){
-
-  standardGeneric(f = "activeImage")
-
-})
-
-
-#' @rdname activateImage
-#' @export
-setMethod(
-  f = "activeImage",
-  signature = "SPATA2",
-  definition = function(object){
-
-    getSpatialData(object) %>%
-      activeImage()
-
-  }
-)
-
-#' @rdname activateImage
-#' @export
-setMethod(
-  f = "activeImage",
-  signature = "SpatialData",
-  definition = function(object){
-
-    object@name_img_active
-
-  }
-)
-
 #' @title Default image name
 #'
 #' @description Sets and extracts the active (default) image name.
@@ -160,7 +125,7 @@ setMethod(
 #' @return
 #'  \itemize{
 #'     \item{activateImage()}: Updated `SPATA2` object.
-#'     \item{activeImage()}: Character value. Name of the currently active image.
+#'     \item{activeImage()}: Character value. Name of the currently active image. Empty string if no images exist.
 #'  }
 #'
 #' @seealso [`getImage()`], [`getHistoImage()`], [`getImageNames()`]
@@ -365,7 +330,39 @@ setMethod(
   }
 )
 
+#' @rdname activateImage
+#' @export
+setGeneric(name = "activeImage", def = function(object, ...){
 
+  standardGeneric(f = "activeImage")
+
+})
+
+
+#' @rdname activateImage
+#' @export
+setMethod(
+  f = "activeImage",
+  signature = "SPATA2",
+  definition = function(object){
+
+    getSpatialData(object) %>%
+      activeImage()
+
+  }
+)
+
+#' @rdname activateImage
+#' @export
+setMethod(
+  f = "activeImage",
+  signature = "SpatialData",
+  definition = function(object){
+
+    object@name_img_active
+
+  }
+)
 
 
 #' @title Default matrix name

@@ -968,6 +968,29 @@ flipAll <- function(object, axis, verbose = FALSE){
 
 #' @rdname flipAll
 #' @export
+flipCaptureArea <- function(object, axis, verbose = NULL){
+
+  ca <- getCaptureArea(object)
+
+  ca <-
+    flip_coords_df(
+      df = ca,
+      axis = axis,
+      ranges =
+        purrr::map(
+          .x = getImageRange(object),
+          .f = function(ir){ ir[2] <- ir[2]/isf; return(ir) }
+        )
+    )
+
+  object <- setCaptureArea(object, capture_area = ca)
+
+  return(object)
+
+}
+
+#' @rdname flipAll
+#' @export
 flipCoordinates <- function(object, axis, verbose = FALSE){
 
   object <- flipCoordsDf(object, axis = axis, verbose = verbose)

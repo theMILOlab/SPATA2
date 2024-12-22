@@ -435,6 +435,17 @@ setMethod(
 #' it is calculated as a percentage of the total number of pixels in the image.
 #' If a threshold value is greater than or equal to 1, it is taken as an absolute value.
 #'
+#' @param capture_area Data.frame or `NULL`. If data.frame contains the vertices of the polygon
+#' that corresponds to the capture area in which the tissue is located in. Data.frame should have
+#' at least three rows with variables idx (integer), x (numeric), y (numeric).
+#'
+#' @param use_capture_area Logical value. If `TRUE`, the capture area as obtained by [`getCaptureArea()`]
+#' is used to guide the analysis. Defaults to `TRUE` as long as the object contains a valid
+#' capture area data.frame.
+#'
+#' @param bg_dark Logical value. Should be set to `TRUE`, if the background is darker than
+#' the tissue. Defaults to `FALSE`.
+#'
 #' @inherit make_binary_image params
 #' @inherit background_white params details
 #' @inherit argument_dummy params
@@ -507,6 +518,7 @@ setMethod(
                         eps = 1.414*2,
                         minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
+                        use_capture_area = containsCaptureArea(object),
                         verbose = TRUE){
 
     if(base::is.null(img_name)){
@@ -529,6 +541,7 @@ setMethod(
         eps = eps,
         minPts = minPts,
         frgmt_threshold = frgmt_threshold,
+        use_capture_area = use_capture_area,
         verbose = verbose
       )
 
@@ -554,6 +567,8 @@ setMethod(
                         eps = 1.414*2214,
                         minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
+                        use_capture_area = containsCaptureArea(object),
+                        bg_dark = FALSE,
                         verbose = TRUE){
 
     containsHistoImages(object, error = TRUE)
@@ -567,6 +582,16 @@ setMethod(
 
       hist_img <- getHistoImage(object, img_name = img_name[i])
 
+      if(use_capture_area){
+
+        capture_area <- getCaptureArea(object, img_name = img_name)
+
+      } else {
+
+        capture_area <- NULL
+
+      }
+
       hist_img <-
         identifyPixelContent(
           object = hist_img,
@@ -578,6 +603,8 @@ setMethod(
           eps = eps,
           minPts = minPts,
           frgmt_threshold = frgmt_threshold,
+          capture_area = capture_area,
+          bg_dark = bg_dark,
           verbose = verbose
         )
 
@@ -603,6 +630,8 @@ setMethod(
                         eps = 1.414*2214,
                         minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
+                        capture_area = NULL,
+                        bg_dark = FALSE,
                         verbose = TRUE){
 
     confuns::give_feedback(
@@ -618,7 +647,7 @@ setMethod(
 
     pxl_df_out <-
       identifyPixelContent(
-        object = object@image,
+        object = getImage(object),
         sigma = sigma,
         method = method,
         percentile = percentile,
@@ -627,6 +656,8 @@ setMethod(
         eps = eps,
         minPts = minPts,
         frgmt_threshold = frgmt_threshold,
+        capture_area = capture_area,
+        bg_dark = bg_dark,
         verbose = verbose
       )
 
@@ -656,13 +687,22 @@ setMethod(
                         frgmt_threshold = c(0.001, 0.05),
                         eps = 1.414*2214,
                         minPts = 0.005,
+                        capture_area = NULL,
+                        bg_dark = FALSE,
                         verbose = TRUE,
                         ...){
+
+    confuns::check_one_of(
+      input = method,
+      against = c("otsu", "sps")
+    )
 
     image_orig <- object
 
     # extract image data and create base pixel df
     img_dims <- base::dim(image_orig@.Data)
+
+    bg_val <- ifelse(bg_dark, yes = 0, no = 1)
 
     if(eps < 1){
 
@@ -675,6 +715,8 @@ setMethod(
       minPts <- minPts * base::max(img_dims[1:2])
 
     }
+
+    pxl_df_base <- getPixelDf(object)
 
     # start algorithm
     if(method == "sps"){
@@ -700,16 +742,6 @@ setMethod(
         n <- 1
 
       }
-
-      pxl_df_base <-
-        tidyr::expand_grid(
-          width = 1:img_dims[1],
-          height = 1:img_dims[2]
-        )
-
-      pxl_df_base[["pixel"]] <- stringr::str_c("px", 1:base::nrow(pxl_df_base))
-
-      pxl_df_base <- dplyr::select(pxl_df_base, pixel, width, height)
 
       # increase contrast by setting potential background pixels to white
       if(percentile != 0){
@@ -839,6 +871,33 @@ setMethod(
         )
 
     } else if(method == "otsu") {
+
+      if(is.data.frame(capture_area)){
+
+        pxl_df_base <- getPixelDf(object, colors = TRUE)
+
+        pxl_df <-
+          identify_obs_in_polygon(
+            coords_df = dplyr::mutate(pxl_df_base, x = width, y = height),
+            polygon_df = capture_area,
+            strictly = TRUE,
+            opt = "inside"
+          )
+
+        pxl_df$col1[!pxl_df$inside] <- bg_val
+        pxl_df$col2[!pxl_df$inside] <- bg_val
+        pxl_df$col3[!pxl_df$inside] <- bg_val
+
+        object <- pixel_df_to_image(pxl_df)
+
+      }
+
+      # revert
+      if(bg_dark){
+
+        object[,,1:3] <- 1-object[,,1:3]
+
+      }
 
       pxl_df_base <-
         object %>%

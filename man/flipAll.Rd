@@ -2,6 +2,7 @@
 % Please edit documentation in R/f.R
 \name{flipAll}
 \alias{flipAll}
+\alias{flipCaptureArea}
 \alias{flipCoordinates}
 \alias{flipCoordsDf}
 \alias{flipImage}
@@ -10,6 +11,8 @@
 \title{Mirror invert image and coordinates}
 \usage{
 flipAll(object, axis, verbose = FALSE)
+
+flipCaptureArea(object, axis, verbose = NULL)
 
 flipCoordinates(object, axis, verbose = FALSE)
 
