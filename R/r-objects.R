@@ -437,7 +437,7 @@ create_spatial_trajectories_descr <- list(
 
 
 #' @export
-current_spata2_version <- list(major = 3, minor = 1, patch = 3)
+current_spata2_version <- list(major = 3, minor = 1, patch = 4)
 current_spata_version <- current_spata2_version # deprecated
 
 
@@ -627,6 +627,7 @@ dist_units <- c(base::names(dist_unit_abbr))
 
 # e -----------------------------------------------------------------------
 
+#' @export
 empty_image <- EBImage::as.Image(x = base::matrix(0))
 
 empty_logfile_df <-
@@ -902,20 +903,18 @@ projection_df_names <- c("barcodes", "sample", "x", "y", "projection_length", "t
 protected_spatial_method_info_slots <- c("ccd")
 
 #' @export
-protected_variable_names <- c(
-  "barcodes",
-  "col",
-  "imagecol", "imagerow",
-  "projection_length",
-  "row",
-  "sample",
-  "sp_outlier",
-  "tissue_section",
-  "x",
-  "y",
-  "x_orig",
-  "y_orig"
-)
+protected_variable_names_lst <-
+  list(
+    mea = c("mea_name"),
+    meta_features = c("sp_outlier", "tissue_secton"),
+    misc = c("projection_length"),
+    obj_info = c("barcodes", "sample"),
+    spatial = c("col", "imagecol", "imagerow", "row", "x", "x_orig","xend", "xend_orig", "y", "y_orig", "yend", "yend_orig")
+  )
+
+#' @export
+protected_variable_names <-
+  purrr::flatten_chr(protected_variable_names_lst)
 
 
 pub_dropbox_links <- list(

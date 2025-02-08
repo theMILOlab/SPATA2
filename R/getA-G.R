@@ -416,8 +416,8 @@ getBarcodeSpotDistances <- function(object,
 #'
 #' @inherit argument_dummy params
 #'
-#' @return List of two length two vectors named *x* and *y*. Values correspond
-#' to the range of the capture area along the respective axis.
+#' @return Data.frame of vertices used to outline the capture area. Column names
+#' are *x_orig*, *y_orig*, *x*, *y* and *idx* (index of each vertex).
 #'
 #' @seealso [`setCaptureArea()`]
 #'

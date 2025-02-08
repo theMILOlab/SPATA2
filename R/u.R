@@ -68,23 +68,26 @@ setMethod(
   signature = "HistoImage",
   definition = function(object, verbose = TRUE, ...){
 
-    if(containsImage(object) &&
-       !purrr::is_empty(object@dir) &&
-       file.exists(object@dir)){
+    if(containsImage(object)){
 
-      confuns::give_feedback(
-        msg = glue::glue("Unloading image {object@name}."),
-        verbose = verbose
-      )
+      if(!purrr::is_empty(object@dir) &&
+         file.exists(object@dir)){
 
-      object@image <- empty_image
+        confuns::give_feedback(
+          msg = glue::glue("Unloading image {object@name}."),
+          verbose = verbose
+        )
 
-    } else {
+        object@image <- empty_image
 
-      confuns::give_feedback(
-        msg = glue::glue("No image directory found and/or the directory does not exist on this device. Did not unload image {object@name}."),
-        verbose = verbose
-      )
+      } else {
+
+        confuns::give_feedback(
+          msg = glue::glue("No image directory found and/or the directory does not exist on this device. Did not unload image {object@name}."),
+          verbose = verbose
+        )
+
+      }
 
     }
 

@@ -122,7 +122,6 @@ nMetabolites <- function(object){
 normalizeCounts <- function(object,
                             method = "LogNormalize",
                             mtr_name_new = method,
-                            sct_clip_range = c(-sqrt(x = ncol(x = umi)/30), sqrt(x = ncol(x = umi)/30)), # default clip range for SCTransform
                             activate = TRUE,
                             assay_name = activeAssay(object),
                             overwrite = FALSE,
@@ -150,7 +149,7 @@ normalizeCounts <- function(object,
 
     proc_mtr <-
       Seurat::CreateSeuratObject(counts = count_mtr, assay = "X") %>%
-      Seurat::SCTransform(object = ., verbose = verbose, assay = "X", clip.range = sct_clip_range, ...) %>%
+      Seurat::SCTransform(object = ., verbose = verbose, assay = "X", ...) %>%
       Seurat::GetAssayData(object = ., layer = "data")
 
   } else {

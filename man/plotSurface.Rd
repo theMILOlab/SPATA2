@@ -36,6 +36,7 @@ plotSurface(object, ...)
   img_alpha = 1,
   img_name = NULL,
   geom = "point",
+  mtr_name = activeMatrix(object),
   verbose = NULL,
   ...
 )
@@ -152,6 +153,9 @@ x-coordinate 500px. If \code{NULL}, the original range is used.}
 \item{img_name}{Character value. The name of the image of interest.
 If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
+
+\item{mtr_name}{Character value. The name of the matrix of interest. Defaults
+to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
 
 \item{verbose}{Logical. If \code{TRUE}, informative messages regarding
 the computational progress will be printed.

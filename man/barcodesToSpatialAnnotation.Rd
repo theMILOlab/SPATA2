@@ -14,7 +14,7 @@ barcodesToSpatialAnnotation(
   inner_borders = TRUE,
   eps = getCCD(object) * 1.25,
   minPts = recDbscanMinPts(object),
-  min_size = nBarcodes(object) * 0.005,
+  min_size = nObs(object) * 0.005,
   fct_incr = 20,
   force1 = FALSE,
   method_outline = "concavity",
