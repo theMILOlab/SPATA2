@@ -240,8 +240,6 @@ setMethod(
   }
 )
 
-
-
 #' @title Check availability of an image
 #'
 #' @description Checks if the input object has an image in the

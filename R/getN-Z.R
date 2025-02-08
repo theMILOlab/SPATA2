@@ -472,7 +472,6 @@ setMethod(
   }
 )
 
-
 #' @title Obtain platform name
 #'
 #' @description Generic function to retrieve the platform information from the
@@ -1461,8 +1460,6 @@ setMethod(
 
   }
 )
-
-
 
 
 #' @title Obtain segmentation variable names

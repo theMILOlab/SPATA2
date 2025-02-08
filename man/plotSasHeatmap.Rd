@@ -103,11 +103,9 @@ library(ggplot2)
 
 data("example_data")
 
-object <- example_data$object_UKF313T_diet
+object <- loadExampleObject("UKF313T", process = TRUE, meta = TRUE)
 
 ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
-
-object <- normalizeCounts(object, activate = T)
 
 # visualize with lines
 plotSasLineplot(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +

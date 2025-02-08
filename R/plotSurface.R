@@ -75,6 +75,7 @@ setMethod(
                         img_alpha = 1,
                         img_name = NULL,
                         geom = "point",
+                        mtr_name = activeMatrix(object),
                         verbose = NULL,
                         ...){
 
@@ -83,6 +84,14 @@ setMethod(
     if(base::is.character(img_name)){
 
       object <- activateImageInt(object, img_name = img_name)
+
+    }
+
+    if(mtr_name != activeMatrix(object)){
+
+      confuns::give_feedback(msg = glue::glue("Using matrix {mtr_name}."), verbose = verbose)
+
+      object <- activateMatrix(object, mtr_name = mtr_name, verbose = FALSE)
 
     }
 

@@ -8,7 +8,6 @@ normalizeCounts(
   object,
   method = "LogNormalize",
   mtr_name_new = method,
-  sct_clip_range = c(-sqrt(x = ncol(x = umi)/30), sqrt(x = ncol(x = umi)/30)),
   activate = TRUE,
   assay_name = activeAssay(object),
   overwrite = FALSE,

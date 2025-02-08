@@ -364,7 +364,6 @@ setMethod(
   }
 )
 
-
 #' @title Default matrix name
 #'
 #' @description Sets and extracts the active (default) matrix name of a [`MolecularAssay`].

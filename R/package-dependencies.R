@@ -3,6 +3,10 @@
 #'
 NULL
 
+#' @import SPATA2
+#'
+NULL
+
 #' @import SummarizedExperiment
 #'
 NULL
@@ -10,3 +14,5 @@ NULL
 #' @import units
 #'
 NULL
+
+
