@@ -1613,12 +1613,42 @@ setMethod(
           tibble::rownames_to_column(var = "barcodes") %>%
           dplyr::select(-dplyr::any_of("cell")) %>%
           dplyr::rename(x_orig = x, y_orig = y) %>%
+          dplyr::mutate(
+            x_orig = as.integer(x_orig),
+            y_orig = as.integer(y_orig)
+          ) %>%
           tibble::as_tibble()
 
       } else {
 
         stop("Unknown Visium-Seurat class. Please raise an issue at GitHub.")
 
+      }
+      
+      if(stringr::str_detect(class(seurat_image), "Visium")){
+       # Crop EBImage to square based on spot coordinates if not already square
+       # Solves Issue 219 when applying rotateAll below
+       if (abs(dim(img)[1] - dim(img)[2])/max(dim(img)[1], dim(img)[2]) > 0.20) {
+         # Only crop if dimensions differ by more than 20% 
+         warning("Image dimensions not square, cropping to square based on spot coordinates")
+         x_min <- min(coordinates$x_orig * scale_factors[[img_scale_fct]])
+         x_max <- max(coordinates$x_orig * scale_factors[[img_scale_fct]])
+         y_min <- min(coordinates$y_orig * scale_factors[[img_scale_fct]])
+         y_max <- max(coordinates$y_orig * scale_factors[[img_scale_fct]])
+         
+         margin <- 100  # margin in micrometers
+         center_x <- (x_min + x_max)/2
+         center_y <- (y_min + y_max)/2
+         size <- max(x_max - x_min, y_max - y_min) + 2*margin
+         
+         # Calculate crop boundaries (ensure they are within image bounds)
+         left <- max(1, center_x - size/2)
+         right <- min(dim(img)[1], center_x + size/2)
+         top <- max(1, center_y - size/2)
+         bottom <- min(dim(img)[2], center_y + size/2)
+         
+         img <- img[left:right, top:bottom, ]
+       }
       }
 
       histo_image <-
